@@ -18,3 +18,16 @@ ruby core/golden-sun/extract-huffman-text-ids.rb \
 ```
 
 輸出的遊戲文本屬於本地研究中間產物，已由 `.gitignore` 排除。
+
+## 原版字形預覽
+
+`render-original-glyphs.rb` 可把抽出的字符 ID 畫成聯絡表。預設偏移對應《失落的時代》日版 `AGFJ01` Rev.00；其他版本必須明確提供經過驗證的 `--single-font` 與 `--extended-font`。
+
+```sh
+ruby core/golden-sun/render-original-glyphs.rb \
+  --rom path/to/clean.gba \
+  --output research/glyphs.ppm \
+  008d 0095 0104
+```
+
+`render-original-text.rb` 則把本地 TSV 中間產物逐句渲染為放大的 PGM，便於人工辨識。正式碼表必須用多條字串上下文交叉驗證，不能只依賴低解析度 OCR。

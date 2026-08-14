@@ -21,7 +21,10 @@
 **/research/*-text-ids.tsv
 **/research/*.pgm
 **/research/*.ppm
-**/research/glyph-sample.png
+**/research/*.png
+**/research/**/*.pgm
+**/research/**/*.ppm
+**/research/**/*.png
 **/work/
 **/build/
 **/dist/
@@ -31,4 +34,3 @@
 .idea/
 .vscode/
 *.log
-

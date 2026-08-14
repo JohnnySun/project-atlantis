@@ -22,10 +22,10 @@
     "targets": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["zh-Hans", "zh-Hant"],
+      "required": ["zh-Hans", "zh-TW"],
       "properties": {
         "zh-Hans": { "$ref": "#/$defs/translation" },
-        "zh-Hant": { "$ref": "#/$defs/translation" }
+        "zh-TW": { "$ref": "#/$defs/translation" }
       }
     },
     "context": {
@@ -67,4 +67,3 @@
     }
   }
 }
-
