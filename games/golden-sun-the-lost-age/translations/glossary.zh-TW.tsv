@@ -41,3 +41,5 @@ ja	zh-TW	category	status	notes
 いしにする	石化	status	provisional	封鎖行動的異常狀態
 リカバリー	恢復	battle	provisional	精靈在召喚後回到可用狀態的週期
 ひっさつこうげき	必殺攻擊	battle	provisional	可能直接使敵人戰鬥不能的攻擊
+マーズ	瑪爾斯	element	provisional	火元素系統專名
+はんげき	反擊	battle	provisional	受到攻擊時回擊的戰鬥效果
