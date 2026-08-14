@@ -4,7 +4,7 @@
 
 名稱取自 Nintendo 在 1990 年代研究的 32-bit Game Boy 後繼機 **Project Atlantis**。它不是後來 GBA 的正式開發代號，但可視為相關技術探索的前身；這裡借用「被重新發掘的掌機計畫」作為工程意象。
 
-《黃金太陽 開啟的封印》是第一個試驗項目，用來驗證既有漢化審計、自訂中文字碼逆向，以及簡體／繁體雙版本共用資料模型。
+《黃金太陽 開啟的封印》是第一個漢化審計項目；《黃金太陽 失落的時代》則用來驗證從乾淨日版開始的文字抽取、字庫接入、簡繁翻譯和補丁重建流程。
 
 ## 核心原則
 
@@ -22,6 +22,7 @@ core/                         通用抽取、轉換、字庫、QA、構建介面
 locales/                      簡體與繁體的共用規則、字形和術語層
 games/                        各遊戲的 manifest、工具、研究與譯文
   golden-sun-the-broken-seal/ 第一個試驗項目
+  golden-sun-the-lost-age/    從日版開始的漢化試驗
 docs/                         架構、資料格式、工作流與合規邊界
 schemas/                      原案、譯文與審核狀態的機器可驗證格式
 examples/                     不含商業遊戲文本的最小示例
@@ -31,13 +32,13 @@ vendor/fonts/                 經授權、固定版本且附來源記錄的第�
 
 ## 第一階段
 
-1. 完成《黃金太陽》自訂中文字碼及字庫映射。
+1. 完成《黃金太陽》兩作的原版／自訂中文字碼及字庫映射。
 2. 定義不綁定遊戲的字串交換格式。
 3. 建立原文、`zh-Hans`、`zh-Hant`、術語和 QA 狀態的資料管線。
 4. 產生兩套最小字庫，檢查缺字、寬度與 VRAM／ROM 預算。
 5. 從乾淨 ROM 可重現地輸出測試構建與 BPS，並在模擬器和實機驗證。
 
-詳見 [計畫章程](docs/PROJECT_CHARTER.md)、[工作管線](docs/PIPELINE.md)及[黃金太陽項目](games/golden-sun-the-broken-seal/README.md)。
+詳見 [計畫章程](docs/PROJECT_CHARTER.md)、[工作管線](docs/PIPELINE.md)、[《開啟的封印》項目](games/golden-sun-the-broken-seal/README.md)及[《失落的時代》項目](games/golden-sun-the-lost-age/README.md)。
 
 原案的第一版交換格式是 [localization-record.schema.json](schemas/localization-record.schema.json)，示例見 [localization-records.jsonl](examples/localization-records.jsonl)。
 

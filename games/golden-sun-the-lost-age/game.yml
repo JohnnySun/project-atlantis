@@ -1,0 +1,19 @@
+id: golden-sun-the-lost-age
+platform: gba
+titles:
+  ja: "黄金の太陽 失われし時代"
+  zh-Hans: "黄金太阳 失落的时代"
+  zh-Hant: "黃金太陽 失落的時代"
+source:
+  region: JP
+  game_code: AGFJ01
+  revision: 0
+  size: 16777216
+  crc32: 830b795f
+  md5: 9d84ad590d1dffa33b1b1e2e1d64fb4d
+  sha1: 4c79e60962299654981628ccd99b122ef27043f7
+  sha256: 19dd48b74726f323cd829e226b60aa1b373c51fb2e840804efe2d2dc2891a890
+targets:
+  - zh-Hans
+  - zh-Hant
+status: research
