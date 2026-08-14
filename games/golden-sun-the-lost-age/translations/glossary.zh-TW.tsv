@@ -24,3 +24,9 @@ ja	zh-TW	category	status	notes
 すばやさ	敏捷	status	provisional	角色能力值
 うんのよさ	幸運	status	provisional	角色能力值
 かこう	鍛造	shop	provisional	依鏽蝕物品加工機制暫譯
+かいふく	恢復	battle	provisional	HP、EP 與狀態恢復的通用動詞
+まぼろし	幻覺	status	provisional	降低命中可靠性的異常狀態
+しびれ	麻痺	status	provisional	無法行動的異常狀態
+ねむり	睡眠	status	provisional	無法行動的異常狀態
+せんとうふのう	戰鬥不能	status	provisional	角色失去戰鬥能力的狀態
+エレメンタルたいせい	元素抗性	battle	provisional	對地水火風屬性攻擊的承受能力

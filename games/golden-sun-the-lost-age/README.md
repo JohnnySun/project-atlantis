@@ -8,8 +8,8 @@
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
 - 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形和完整碼表確認首批系統訊息，建立 122 條 `zh-Hans`／`zh-TW` 可審核草稿。
-- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 242 個繁體中文字形，並替換 122 條訊息。
+- 已用日版原字形和完整碼表確認首批系統訊息，建立 158 條 `zh-Hans`／`zh-TW` 可審核草稿。
+- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 284 個繁體中文字形，並替換 158 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 122 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面與商店狀態訊息；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
+目前替換 158 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態與戰鬥效果說明；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -75,6 +75,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 102–106 | 資料轉移 | `密碼`／`連接線`／`黃金`／`白銀`／`青銅` |
 | 115–123 | 設定介面 | `設定項目`／`精神力快捷鍵`／`文字速度`／`視窗顏色`／`戰鬥鏡頭` |
 | 4647–4669 | 商店與裝備狀態 | `持有金幣`／`售價`／`無法裝備`／`敏捷`／`可以鍛造` |
+| 2268–2308 | 戰鬥效果說明 | `恢復全體HP`／`解除幻覺、麻痺、睡眠`／`元素抗性`／`戰鬥不能` |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -89,19 +90,20 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --translations games/golden-sun-the-lost-age/translations/system-messages.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/ui-labels.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/shop-status.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/battle-effects.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 259,520 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 260,480 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FBF418` | `0xFBF418` |
-| 文字表 | `0x08FBF430` | `0xFBF430` |
+| Huffman 表 | `0x08FBF7D8` | `0xFBF7D8` |
+| 文字表 | `0x08FBF7F0` | `0xFBF7F0` |
 
-新增字形 ID 已到 `0x289`，因此構建器使用三組上下文 Huffman 樹；通用抽取器可從三組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0x2B3`，因此構建器使用三組上下文 Huffman 樹；通用抽取器可從三組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -113,12 +115,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`c3cb3aa2`
-- BPS CRC32：`ffc5c103`
-- BPS 大小：261,486 bytes
-- 試作與重套 ROM SHA-256：`e6834df352f50976e53db77057fd7acbce3e03a4a4e5a9d26fccd776708e241d`
+- 試作 CRC32：`12f695fd`
+- BPS CRC32：`444cb49b`
+- BPS 大小：262,438 bytes
+- 試作與重套 ROM SHA-256：`2611a14f7bd0a61d18f0641ffaccc2b7899904c8062888deab8c63c441eaa853`
 
-用新指標重新抽取後，只有三個翻譯批次指定的 122 個 ID 不同；其餘 12,650 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
+用新指標重新抽取後，只有四個翻譯批次指定的 158 個 ID 不同；其餘 12,614 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 翻譯目標可用大寫 `{HH}` 明確標出已確認的內部控制碼，例如角色名插值 `{12}` 或數值插值 `{16}`。共用解析器會把標記還原為 0x00–0x1F 代碼；構建器要求譯文控制碼的順序與數量和來源完全一致，並同樣核對換行 `{03}`。沒有顯式標記的既有短字串仍可繼承來源前後綴控制碼。
 
