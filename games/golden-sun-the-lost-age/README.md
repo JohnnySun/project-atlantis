@@ -8,8 +8,8 @@
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
 - 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形和完整碼表確認首批系統訊息、序章對話、德里村民、坎德拉寺及海神祠孩童救援與調查文本，建立 914 條 `zh-Hans`／`zh-TW` 可審核草稿。
-- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 1,115 個繁體中文字形，並替換 914 條訊息。
+- 已用日版原字形和完整碼表確認系統訊息、序章、德里、坎德拉寺、海神祠、瑪德拉、米卡薩拉及波比奇滿月事件文本，建立 1,444 條 `zh-Hans`／`zh-TW` 可審核草稿。
+- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 1,412 個繁體中文字形，並替換 1,444 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 914 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊、亞歷克斯使命、席芭命運分支、德里村、坎德拉寺，以及海神祠失蹤孩童的繩索救援、會合、返村與祠內調查文本；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
+目前替換 1,444 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊、亞歷克斯使命、席芭命運分支、德里村、坎德拉寺、海神祠、瑪德拉、米卡薩拉，以及波比奇滿月夜與瑪哈揭密文本；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -97,6 +97,11 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 6250–6347 | 坎德拉寺修行與試煉 | 皮波伊會面選項、浮空修行、弟子考核、洞窟旁觀反應、玩家通關、解縛術領取與使用提示、通關後弟子群像、熱鍋反應與可疑牆壁提示 |
 | 6348–6386 | 海神祠孩童救援 | 貝查羅反覆拋繩、庫普爾脫困、兩人向隊伍致謝、討論追捕祠內神秘生物，以及因飢餓返村的場景收尾 |
 | 6387–6388 | 海神祠內調查 | 與德里村神殿相似的神像，以及亞歷克斯取走祠內資金購船並留下的分頁留言 |
+| 6389–6486 | 德里災後收尾 | 孩童返家、村民更新、前往瑪德拉的道路情報，以及亞歷克斯離隊後的完整村莊狀態 |
+| 6487–6511 | 印德拉海岸與基朋波線索 | 梅娜蒂留下的船、寶珠機關、基朋波潛入者及封印門調查 |
+| 6512–6700 | 瑪德拉襲擊與皮卡德事件 | 占婆劫囚、帕亞亞姆追捕、皮卡德審問與冰之精神力、通往奧瑟尼亞的許可及沉船調查 |
+| 6701–6746 | 米卡薩拉與西奧瑟尼亞 | 艾爾斯岩、波比奇、南島及繞行道路情報，並介紹狼人與獸人的傳聞 |
+| 6747–6918 | 波比奇滿月夜 | 加拉哈德警告、狼人初遇、滿月村莊狀態、旋風術與旋風石、追蹤獸人、瑪哈會談及透視術祕密 |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -140,19 +145,32 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --translations games/golden-sun-the-lost-age/translations/sea-god-shrine-rope.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/sea-god-shrine-reunion.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/sea-god-shrine-discovery.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/deli-after-rescue.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/deli-children-home.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/deli-alex-departure.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/deli-post-departure.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/indra-wreck-and-kibombo.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/madra-arrival.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/madra-crisis-rumors.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/madra-piers-interrogation.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/madra-osenia-route.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/mikasalla-west-osenia.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/garoh-werewolf-encounter.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/garoh-full-moon-night.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/garoh-maha-revelation.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 286,484 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 296,484 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FC5D54` | `0xFC5D54` |
-| 文字表 | `0x08FC5D84` | `0xFC5D84` |
+| Huffman 表 | `0x08FC8454` | `0xFC8454` |
+| 文字表 | `0x08FC8494` | `0xFC8494` |
 
-新增字形 ID 已到 `0x5F2`，因此構建器使用六組上下文 Huffman 樹；通用抽取器已從六組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0x71B`，因此構建器使用八組上下文 Huffman 樹；通用抽取器已從八組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -164,12 +182,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`5dcddf27`
-- BPS patch CRC32：`d324cb6f`
-- BPS 大小：287,805 bytes
-- 試作與重套 ROM SHA-256：`aef6f184b8dbde0281d02e5e6edf497593b958ca60d0c8f9beaaaea646a323fe`
+- 試作 CRC32：`3b07c555`
+- BPS patch CRC32：`f5f7b8f0`
+- BPS 大小：297,620 bytes
+- 試作與重套 ROM SHA-256：`1ad87259dd40d03e13025e18917f24b6240a88a35689ad5cb9680abf2fba49c3`
 
-用新指標重新抽取後，只有三十二個翻譯批次指定的 914 個 ID 不同；其餘 11,858 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
+用新指標重新抽取後，只有四十五個翻譯批次指定的 1,444 個 ID 不同；其餘 11,328 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 翻譯目標可用大寫 `{HH}` 明確標出已確認的內部控制碼，例如角色名插值 `{12}` 或數值插值 `{16}`。共用解析器會把標記還原為 0x00–0x1F 代碼；構建器要求譯文控制碼的順序與數量和來源完全一致，並同樣核對換行 `{03}`。ID 6345 的 `{09}{02}` 是感嘆詞前的效果選擇前綴與模式值，後方另有獨立的 `{02}` 訊息結束碼；三個單元均原樣保留，具體視聽效果仍待場景 QA。沒有顯式標記的既有短字串仍可繼承來源前後綴控制碼。
 
