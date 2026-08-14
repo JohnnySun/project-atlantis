@@ -1,0 +1,6 @@
+[submodule "vendor/fonts/fusion-pixel-font"]
+	path = vendor/fonts/fusion-pixel-font
+	url = https://github.com/TakWolf/fusion-pixel-font.git
+[submodule "vendor/fonts/ark-pixel-font"]
+	path = vendor/fonts/ark-pixel-font
+	url = https://github.com/TakWolf/ark-pixel-font.git

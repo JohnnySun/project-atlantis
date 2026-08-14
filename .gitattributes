@@ -1,0 +1,4 @@
+# Preserve vendored upstream license files byte-for-byte so their recorded
+# SHA-256 hashes remain reproducible across platforms.
+vendor/fonts/unifont/LICENSE.txt binary
+vendor/fonts/unifont/OFL-1.1.txt binary
