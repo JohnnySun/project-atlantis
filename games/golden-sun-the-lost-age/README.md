@@ -8,8 +8,8 @@
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
 - 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形和完整碼表確認首批系統訊息，建立 35 條 `zh-Hans`／`zh-TW` 可審核草稿。
-- 已完成資料驅動的 `zh-TW` 技術試作：從翻譯 JSONL 重建全套 Huffman 資料、加入 125 個繁體中文字形，並替換 35 條訊息。
+- 已用日版原字形和完整碼表確認首批系統訊息，建立 71 條 `zh-Hans`／`zh-TW` 可審核草稿。
+- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 184 個繁體中文字形，並替換 71 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 35 條開機、存檔、資料繼承、難度選擇與姓名輸入訊息；以下列出代表項目，完整資料見 `translations/system-messages.draft.jsonl`：
+目前替換 71 條開機、存檔、資料繼承、難度選擇、姓名輸入、戰鬥與基礎選單訊息；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -69,6 +69,9 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 32–33 | 寫入警告 | `處理完成前，請勿`／`關閉電源` |
 | 36 | 前作資料繼承 | `要繼承前作《開啟的封印》的`／`通關資料嗎？` |
 | 39 | 困難模式 | `要以困難模式開始嗎？`／`(怪物會變得更強)` |
+| 58–62 | 戰鬥指令 | `攻擊`／`精神力`／`道具`／`防禦`／`逃跑` |
+| 73–74 | 精靈系統 | `精靈`／`召喚` |
+| 84–86 | 神殿服務 | `治療中毒`／`驅除惡靈`／`解除詛咒` |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -81,19 +84,20 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --text-ids games/golden-sun-the-lost-age/research/jp-text-ids.tsv \
   --codepage games/golden-sun-the-lost-age/codepages/ja-extended.tsv \
   --translations games/golden-sun-the-lost-age/translations/system-messages.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/ui-labels.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 256,384 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 257,980 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FBE7D8` | `0xFBE7D8` |
-| 文字表 | `0x08FBE7F0` | `0xFBE7F0` |
+| Huffman 表 | `0x08FBEE14` | `0xFBEE14` |
+| 文字表 | `0x08FBEE2C` | `0xFBEE2C` |
 
-新增字形 ID 已到 `0x214`，因此構建器實際產生了第三組上下文 Huffman 樹；通用抽取器可從三組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0x24F`，因此構建器使用三組上下文 Huffman 樹；通用抽取器可從三組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -105,12 +109,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`2e5132d5`
-- BPS CRC32：`27bccf07`
-- BPS 大小：258,440 bytes
-- 試作與重套 ROM SHA-256：`518a722e3bcc55fe8026d31f6e0b9b253058260bcbbc55d658151094b1f93ff7`
+- 試作 CRC32：`84181dda`
+- BPS CRC32：`638b1d5b`
+- BPS 大小：260,043 bytes
+- 試作與重套 ROM SHA-256：`d56be0619d437c453cd1815c346b6000086cbcfd44cb49b8f5672582bd4c2e60`
 
-用新指標重新抽取後，只有翻譯資料指定的 35 個 ID 不同；其餘 12,737 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
+用新指標重新抽取後，只有兩個翻譯批次指定的 71 個 ID 不同；其餘 12,701 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 ## 合規邊界
 

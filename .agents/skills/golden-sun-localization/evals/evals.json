@@ -30,6 +30,22 @@
         "The report identifies undeclared changed ID 2.",
         "The input fixtures remain unchanged."
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "This Golden Sun rebuild combines two reviewed translation batches. Verify that the built TSV changes exactly the union of both manifests, then write report.txt with the accepted ID set. Do not modify the fixtures.",
+      "expected_output": "An acceptance report that proves two manifests jointly declare changed IDs 1 and 2.",
+      "files": [
+        "evals/fixtures/invalid-source.tsv",
+        "evals/fixtures/invalid-built.tsv",
+        "evals/fixtures/invalid-translations.jsonl",
+        "evals/fixtures/second-translations.jsonl"
+      ],
+      "expectations": [
+        "The report accepts the exact combined text delta.",
+        "The report identifies translated IDs 1 and 2.",
+        "The report shows that both translation manifests were included."
+      ]
     }
   ]
 }

@@ -3,16 +3,18 @@
 
 require "json"
 
-source_path, built_path, translations_path = ARGV
-abort "usage: verify_text_delta.rb SOURCE.tsv BUILT.tsv TRANSLATIONS.jsonl" unless ARGV.length == 3
+source_path, built_path, *translation_paths = ARGV
+abort "usage: verify_text_delta.rb SOURCE.tsv BUILT.tsv TRANSLATIONS.jsonl [MORE.jsonl ...]" if ARGV.length < 3
 
 source_lines = File.readlines(source_path, chomp: true)
 built_lines = File.readlines(built_path, chomp: true)
 abort "text TSV line counts differ" unless source_lines.length == built_lines.length
 
-expected_ids = File.readlines(translations_path, chomp: true)
-  .reject(&:empty?)
-  .map { |line| Integer(JSON.parse(line).fetch("string_id")) }
+expected_ids = translation_paths.flat_map do |translations_path|
+  File.readlines(translations_path, chomp: true)
+    .reject(&:empty?)
+    .map { |line| Integer(JSON.parse(line).fetch("string_id")) }
+end
 abort "duplicate translation IDs" unless expected_ids.uniq.length == expected_ids.length
 expected_ids.sort!
 

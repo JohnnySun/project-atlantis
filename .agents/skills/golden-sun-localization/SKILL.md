@@ -27,7 +27,7 @@ Use this workflow to make localization batches reproducible while preventing unr
 1. Run the game-specific data-driven builder using the clean verified ROM, extracted text IDs, game codepage, translation JSONL, licensed BDF, and an ignored output path.
 2. Let the builder reject source mismatches, duplicate IDs, missing glyphs, and control-code mismatches. Fix the data rather than weakening these checks.
 3. Re-extract all strings from the rebuilt ROM using the new pointer locations printed by the builder.
-4. Run `scripts/verify_text_delta.rb SOURCE.tsv BUILT.tsv TRANSLATIONS.jsonl`. The changed IDs must exactly equal the IDs declared by the translation data.
+4. Run `scripts/verify_text_delta.rb SOURCE.tsv BUILT.tsv TRANSLATIONS.jsonl [MORE_TRANSLATIONS.jsonl ...]`. The changed IDs must exactly equal the union of IDs declared by every translation batch.
 5. When generated glyph IDs cross a `0x100` boundary, confirm the context Huffman writer emits the additional tree group and that the generic extractor still decodes all strings.
 
 ## Verify the patch

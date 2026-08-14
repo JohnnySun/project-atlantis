@@ -9,23 +9,27 @@ options = {
   insert_offset: 0xf80000,
   original_extended_font: 0x05bf8c,
   original_extended_count: 152,
+  translations: [],
   font_pointer_literal: 0x03aa38,
   huffman_pointer_literal: 0x038578,
   text_pointer_literal: 0x0385dc
 }
 
 OptionParser.new do |parser|
-  parser.banner = "usage: build_zh_tw_trial.rb --rom ROM --text-ids TSV --codepage TSV --translations JSONL --bdf FONT.bdf --output ROM"
+  parser.banner = "usage: build_zh_tw_trial.rb --rom ROM --text-ids TSV --codepage TSV --translations JSONL [--translations JSONL ...] --bdf FONT.bdf --output ROM"
   parser.on("--rom FILE") { |value| options[:rom] = value }
   parser.on("--text-ids FILE") { |value| options[:text_ids] = value }
   parser.on("--codepage FILE") { |value| options[:codepage] = value }
-  parser.on("--translations FILE") { |value| options[:translations] = value }
+  parser.on("--translations FILE", "repeat for additional translation batches") do |value|
+    options[:translations] << value
+  end
   parser.on("--bdf FILE") { |value| options[:bdf] = value }
   parser.on("--output FILE") { |value| options[:output] = value }
 end.parse!
 
-required = %i[rom text_ids codepage translations bdf output]
+required = %i[rom text_ids codepage bdf output]
 abort "missing required options" unless required.all? { |key| options[key] }
+abort "missing required options" if options[:translations].empty?
 
 rom = File.binread(options[:rom])
 abort "expected a 16 MiB ROM" unless rom.bytesize == 16 * 1024 * 1024
@@ -42,36 +46,39 @@ abort "expected 12,772 strings" unless strings.length == 12_772
 
 source_codepage = GoldenSun::JapaneseCodepage.load_extended(options[:codepage])
 trial_strings = {}
-File.foreach(options[:translations]).with_index(1) do |line, line_number|
-  next if line.strip.empty?
-  record = JSON.parse(line)
-  abort "unexpected game on translation line #{line_number}" unless record.fetch("game") == "golden-sun-the-lost-age"
-  abort "unexpected revision on translation line #{line_number}" unless record.fetch("revision") == "AGFJ01-rev0"
-  id = Integer(record.fetch("string_id"))
-  abort "translation ID outside extracted text: #{id}" unless id.between?(0, strings.length - 1)
-  abort "duplicate translation ID: #{id}" if trial_strings.key?(id)
+options[:translations].each do |translations_path|
+  File.foreach(translations_path).with_index(1) do |line, line_number|
+    next if line.strip.empty?
+    record = JSON.parse(line)
+    location = "#{translations_path}:#{line_number}"
+    abort "unexpected game at #{location}" unless record.fetch("game") == "golden-sun-the-lost-age"
+    abort "unexpected revision at #{location}" unless record.fetch("revision") == "AGFJ01-rev0"
+    id = Integer(record.fetch("string_id"))
+    abort "translation ID outside extracted text: #{id}" unless id.between?(0, strings.length - 1)
+    abort "duplicate translation ID: #{id}" if trial_strings.key?(id)
 
-  original = strings.fetch(id)
-  decoded_source = GoldenSun::JapaneseCodepage.decode(original, extended: source_codepage, strict: true)
-    .gsub(/\{[0-9A-F]{2}\}/, "")
-  abort "Japanese source mismatch for translation ID #{id}" unless record.fetch("source").fetch("text") == decoded_source
-  declared_controls = record.dig("context", "control_codes") || []
-  actual_controls = original.select { |unit| unit < 0x20 }.map { |unit| "%04x" % unit }
-  abort "control-code mismatch for translation ID #{id}" unless declared_controls == actual_controls
+    original = strings.fetch(id)
+    decoded_source = GoldenSun::JapaneseCodepage.decode(original, extended: source_codepage, strict: true)
+      .gsub(/\{[0-9A-F]{2}\}/, "")
+    abort "Japanese source mismatch for translation ID #{id}" unless record.fetch("source").fetch("text") == decoded_source
+    declared_controls = record.dig("context", "control_codes") || []
+    actual_controls = original.select { |unit| unit < 0x20 }.map { |unit| "%04x" % unit }
+    abort "control-code mismatch for translation ID #{id}" unless declared_controls == actual_controls
 
-  first_display = original.index { |unit| unit >= 0x20 }
-  last_display = original.rindex { |unit| unit >= 0x20 }
-  abort "translation ID #{id} has no display text" unless first_display && last_display
-  internal_controls = original[first_display..last_display].select { |unit| unit < 0x20 && unit != 0x03 }
-  abort "translation ID #{id} has unsupported internal controls" unless internal_controls.empty?
+    first_display = original.index { |unit| unit >= 0x20 }
+    last_display = original.rindex { |unit| unit >= 0x20 }
+    abort "translation ID #{id} has no display text" unless first_display && last_display
+    internal_controls = original[first_display..last_display].select { |unit| unit < 0x20 && unit != 0x03 }
+    abort "translation ID #{id} has unsupported internal controls" unless internal_controls.empty?
 
-  trial_strings[id] = {
-    text: record.fetch("targets").fetch("zh-TW").fetch("text"),
-    prefix: original[0...first_display].reject { |unit| unit == 0x03 },
-    suffix: original[(last_display + 1)..].reject { |unit| unit == 0x03 }
-  }
+    trial_strings[id] = {
+      text: record.fetch("targets").fetch("zh-TW").fetch("text"),
+      prefix: original[0...first_display].reject { |unit| unit == 0x03 },
+      suffix: original[(last_display + 1)..].reject { |unit| unit == 0x03 }
+    }
+  end
 end
-abort "translation file is empty" if trial_strings.empty?
+abort "translation files are empty" if trial_strings.empty?
 
 new_glyph_ids = {}
 trial_strings.each_value do |trial|
