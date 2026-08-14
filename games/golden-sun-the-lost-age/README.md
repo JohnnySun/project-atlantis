@@ -8,8 +8,8 @@
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
 - 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形和完整碼表確認首批系統訊息及序章對話，建立 652 條 `zh-Hans`／`zh-TW` 可審核草稿。
-- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 854 個繁體中文字形，並替換 652 條訊息。
+- 已用日版原字形和完整碼表確認首批系統訊息及序章對話，建立 673 條 `zh-Hans`／`zh-TW` 可審核草稿。
+- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 862 個繁體中文字形，並替換 673 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 652 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸與尋人入隊分支；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
+目前替換 673 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊及亞歷克斯使命分支；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -91,6 +91,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 6023–6062 | 燈塔墜落與海嘯 | 席芭說明加西亞相救、眾人發現大陸及海嘯逼近；語言中性的 ID 6052 `???` 保留原值，不計入替換數 |
 | 6063–6075 | 海嘯後靠岸 | 保留 `{1E}` 身體檢查選項、斯庫雷塔甦醒、確認半島靠岸及入隊訊息 |
 | 6076–6126 | 尋人與入隊分支 | 覆蓋潔絲敏、席芭、斯庫雷塔在不同尋找順序下的全部對話、`{1E}` 選項及動態姓名入隊訊息 |
+| 6127–6147 | 亞歷克斯的使命 | 亞歷克斯離島尋船、四座元素燈塔與大東海／大西海方位，以及加西亞、潔絲敏救回家人的旅程動機 |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -118,19 +119,20 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --translations games/golden-sun-the-lost-age/translations/opening-tsunami.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/opening-landfall.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/opening-party-search.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/opening-alex-mission.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 277,812 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 278,072 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FC3B7C` | `0xFC3B7C` |
-| 文字表 | `0x08FC3BA4` | `0xFC3BA4` |
+| Huffman 表 | `0x08FC3C80` | `0xFC3C80` |
+| 文字表 | `0x08FC3CA8` | `0xFC3CA8` |
 
-新增字形 ID 已到 `0x4ED`，因此構建器使用五組上下文 Huffman 樹；通用抽取器已從五組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0x4F5`，因此構建器使用五組上下文 Huffman 樹；通用抽取器已從五組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -142,12 +144,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`56832d85`
-- BPS patch CRC32：`1cecd788`
-- BPS 大小：279,100 bytes
-- 試作與重套 ROM SHA-256：`b30ed63ffb549120337c1d72ee438378b9689bfedec045b7d305624b48e308e3`
+- 試作 CRC32：`998ddd2f`
+- BPS patch CRC32：`8d243cfe`
+- BPS 大小：279,342 bytes
+- 試作與重套 ROM SHA-256：`ac47aa87c01cdc5fb3622be49616b61456ffec8c91fff7b32a3c7d4bc8139e8d`
 
-用新指標重新抽取後，只有十六個翻譯批次指定的 652 個 ID 不同；其餘 12,120 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
+用新指標重新抽取後，只有十七個翻譯批次指定的 673 個 ID 不同；其餘 12,099 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 翻譯目標可用大寫 `{HH}` 明確標出已確認的內部控制碼，例如角色名插值 `{12}` 或數值插值 `{16}`。共用解析器會把標記還原為 0x00–0x1F 代碼；構建器要求譯文控制碼的順序與數量和來源完全一致，並同樣核對換行 `{03}`。沒有顯式標記的既有短字串仍可繼承來源前後綴控制碼。
 
