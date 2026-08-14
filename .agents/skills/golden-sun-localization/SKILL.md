@@ -19,13 +19,13 @@ Use this workflow to make localization batches reproducible while preventing unr
 1. Rebuild or inspect the ignored decoded Japanese JSONL produced by `core/golden-sun/decode-text-ids.rb`.
 2. Confirm each source string against the strict codepage decoder. Use OCR only as candidate evidence; do not copy OCR output directly into translation records.
 3. Select a coherent, reachable batch such as save UI, combat commands, or configuration labels.
-4. Preserve the order and exact multiplicity of control codes. Delay records with unknown internal controls or dynamic interpolation until their semantics are understood.
+4. Preserve the order and exact multiplicity of control codes. Delay records with unknown controls until their semantics are understood. For a supported internal interpolation, write uppercase `{HH}` markers such as `{12}` or `{16}` directly in the target text; the builder must reject missing, reordered, duplicated, or out-of-range markers.
 5. Write `zh-TW` explicitly. Keep noun and verb terminology consistent, and mark unreviewed work as draft.
 
 ## Build safely
 
 1. Run the game-specific data-driven builder using the clean verified ROM, extracted text IDs, game codepage, translation JSONL, licensed BDF, and an ignored output path.
-2. Let the builder reject source mismatches, duplicate IDs, missing glyphs, and control-code mismatches. Fix the data rather than weakening these checks.
+2. Let the builder reject source mismatches, duplicate IDs, missing glyphs, and control-code mismatches. A target without explicit `{HH}` markers may inherit source prefix/suffix controls, but its newlines must still match the declared `0003` sequence. Fix the data rather than weakening these checks.
 3. Re-extract all strings from the rebuilt ROM using the new pointer locations printed by the builder.
 4. Run `scripts/verify_text_delta.rb SOURCE.tsv BUILT.tsv TRANSLATIONS.jsonl [MORE_TRANSLATIONS.jsonl ...]`. The changed IDs must exactly equal the union of IDs declared by every translation batch.
 5. When generated glyph IDs cross a `0x100` boundary, confirm the context Huffman writer emits the additional tree group and that the generic extractor still decodes all strings.

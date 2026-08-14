@@ -4,6 +4,7 @@ require "optparse"
 require "json"
 require_relative "../../../core/golden-sun/context_huffman"
 require_relative "../../../core/golden-sun/japanese_codepage"
+require_relative "../../../core/golden-sun/localized_text"
 
 options = {
   insert_offset: 0xf80000,
@@ -68,36 +69,36 @@ options[:translations].each do |translations_path|
     first_display = original.index { |unit| unit >= 0x20 }
     last_display = original.rindex { |unit| unit >= 0x20 }
     abort "translation ID #{id} has no display text" unless first_display && last_display
-    internal_controls = original[first_display..last_display].select { |unit| unit < 0x20 && unit != 0x03 }
-    abort "translation ID #{id} has unsupported internal controls" unless internal_controls.empty?
+    target_text = record.fetch("targets").fetch("zh-TW").fetch("text")
+    if GoldenSun::LocalizedText.explicit_controls?(target_text)
+      target_controls = GoldenSun::LocalizedText.controls(target_text).map { |unit| "%04x" % unit }
+      abort "translated control-code mismatch for translation ID #{id}" unless target_controls == actual_controls
+      trial_strings[id] = { text: target_text, prefix: [], suffix: [] }
+    else
+      internal_controls = original[first_display..last_display].select { |unit| unit < 0x20 && unit != 0x03 }
+      abort "translation ID #{id} needs explicit internal control markers" unless internal_controls.empty?
 
-    trial_strings[id] = {
-      text: record.fetch("targets").fetch("zh-TW").fetch("text"),
-      prefix: original[0...first_display].reject { |unit| unit == 0x03 },
-      suffix: original[(last_display + 1)..].reject { |unit| unit == 0x03 }
-    }
+      prefix = original[0...first_display].reject { |unit| unit == 0x03 }
+      suffix = original[(last_display + 1)..].reject { |unit| unit == 0x03 }
+      target_controls = (prefix + GoldenSun::LocalizedText.controls(target_text) + suffix)
+        .map { |unit| "%04x" % unit }
+      abort "translated control-code mismatch for translation ID #{id}" unless target_controls == actual_controls
+      trial_strings[id] = { text: target_text, prefix: prefix, suffix: suffix }
+    end
   end
 end
 abort "translation files are empty" if trial_strings.empty?
 
 new_glyph_ids = {}
 trial_strings.each_value do |trial|
-  trial.fetch(:text).each_char do |character|
-    next if character == "\n" || character.ord.between?(0x20, 0x7e)
+  GoldenSun::LocalizedText.display_characters(trial.fetch(:text)).each do |character|
+    next if character.ord.between?(0x20, 0x7e)
     new_glyph_ids[character] ||= options[:original_extended_count] + 0x100 + new_glyph_ids.length
   end
 end
 trial_strings.each do |id, trial|
   strings[id] = trial.fetch(:prefix) +
-    trial.fetch(:text).each_char.map do |character|
-      if character == "\n"
-        0x03
-      elsif character.ord.between?(0x20, 0x7e)
-        character.ord
-      else
-        new_glyph_ids.fetch(character)
-      end
-    end +
+    GoldenSun::LocalizedText.encode(trial.fetch(:text), new_glyph_ids) +
     trial.fetch(:suffix)
 end
 
