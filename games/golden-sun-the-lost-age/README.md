@@ -8,8 +8,8 @@
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
 - 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形和完整碼表確認首批系統訊息、序章對話、德里村民及坎德拉寺試煉與授術對話，建立 855 條 `zh-Hans`／`zh-TW` 可審核草稿。
-- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 1,076 個繁體中文字形，並替換 855 條訊息。
+- 已用日版原字形和完整碼表確認首批系統訊息、序章對話、德里村民及坎德拉寺試煉、授術與通關後對話，建立 870 條 `zh-Hans`／`zh-TW` 可審核草稿。
+- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 1,100 個繁體中文字形，並替換 870 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 855 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊、亞歷克斯使命、席芭命運分支、德里村及坎德拉寺入口、弟子考核、試煉結果、解縛術授予與使用提示；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
+目前替換 870 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊、亞歷克斯使命、席芭命運分支、德里村及坎德拉寺入口、弟子考核、試煉結果、解縛術授予、使用提示與通關後弟子反應；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，首版術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -94,7 +94,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 6127–6147 | 亞歷克斯的使命 | 亞歷克斯離島尋船、四座元素燈塔與大東海／大西海方位，以及加西亞、潔絲敏救回家人的旅程動機 |
 | 6148–6178 | 席芭的命運 | 席芭同行理由、風元素使身分、朱庇特燈塔所需精神力、讀心術回答分支及序章登陸決定 |
 | 6179–6249 | 德里村海嘯後對話 | 村莊與印德拉大陸介紹、海嘯災情、失蹤孩童、瑪德拉／坎德拉寺道路情報、旅店飲食及離村建議分支 |
-| 6250–6329 | 坎德拉寺修行與試煉 | 皮波伊會面選項、浮空修行、弟子考核、洞窟旁觀反應、玩家通關、解縛術原理、正式領取與使用提示 |
+| 6250–6344 | 坎德拉寺修行與試煉 | 皮波伊會面選項、浮空修行、弟子考核、洞窟旁觀反應、玩家通關、解縛術領取與使用提示，以及通關後弟子群像與修行格言 |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -133,19 +133,20 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --translations games/golden-sun-the-lost-age/translations/kandorean-trial-result.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/kandorean-lash-reward.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/kandorean-lash-receipt.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/kandorean-post-trial.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 285,340 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 285,996 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FC58DC` | `0xFC58DC` |
-| 文字表 | `0x08FC590C` | `0xFC590C` |
+| Huffman 表 | `0x08FC5B6C` | `0xFC5B6C` |
+| 文字表 | `0x08FC5B9C` | `0xFC5B9C` |
 
-新增字形 ID 已到 `0x5CB`，因此構建器使用六組上下文 Huffman 樹；通用抽取器已從六組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0x5E3`，因此構建器使用六組上下文 Huffman 樹；通用抽取器已從六組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -157,12 +158,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`a4c844e3`
-- BPS patch CRC32：`9f7e485a`
-- BPS 大小：286,756 bytes
-- 試作與重套 ROM SHA-256：`695a4159a0d7bd57e641c41c0d7d35d34d5e3ca508d2d260f633742a91ab51a6`
+- 試作 CRC32：`161dff93`
+- BPS patch CRC32：`a994710e`
+- BPS 大小：287,357 bytes
+- 試作與重套 ROM SHA-256：`08283c4aff3215af2dc286391ec8726c86832d124268809393b2adb13bf5886c`
 
-用新指標重新抽取後，只有二十七個翻譯批次指定的 855 個 ID 不同；其餘 11,917 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
+用新指標重新抽取後，只有二十八個翻譯批次指定的 870 個 ID 不同；其餘 11,902 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 翻譯目標可用大寫 `{HH}` 明確標出已確認的內部控制碼，例如角色名插值 `{12}` 或數值插值 `{16}`。共用解析器會把標記還原為 0x00–0x1F 代碼；構建器要求譯文控制碼的順序與數量和來源完全一致，並同樣核對換行 `{03}`。沒有顯式標記的既有短字串仍可繼承來源前後綴控制碼。
 
