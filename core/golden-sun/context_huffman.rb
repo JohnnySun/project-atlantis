@@ -75,7 +75,9 @@ module GoldenSun
         assign_codes(queue.first, [], codes[previous])
       end
 
-      tree_groups = 2.times.map { |group| build_tree_group(group, roots) }
+      highest_context = frequencies.keys.max || 0
+      tree_group_count = [2, (highest_context >> 8) + 1].max
+      tree_groups = tree_group_count.times.map { |group| build_tree_group(group, roots) }
       text_blocks = []
       strings.each_slice(256) do |block_strings|
         data = +""

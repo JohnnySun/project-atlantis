@@ -6,10 +6,10 @@
 
 - 日版 Rev.00 基準 ROM 的標頭與多種雜湊已校驗。
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
-- 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列；完整字形到 Unicode 的映射仍待完成。
+- 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形人工確認首批系統訊息，建立 3 條 `zh-Hans`／`zh-TW` 可審核草稿。
-- 已完成首個可玩的 `zh-TW` 技術試作：重建全套 Huffman 資料、加入 15 個繁體中文字形，並替換兩條訊息。
+- 已用日版原字形和完整碼表確認首批系統訊息，建立 13 條 `zh-Hans`／`zh-TW` 可審核草稿。
+- 已完成資料驅動的 `zh-TW` 技術試作：從翻譯 JSONL 重建全套 Huffman 資料、加入 58 個繁體中文字形，並替換 13 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -36,14 +36,36 @@ ruby ../../core/golden-sun/extract-huffman-text-ids.rb \
   --string-pointer-table 0x09cf40
 ```
 
+日文碼表由 Apple Vision `.accurate` OCR、多句對齊投票、ROM 字形與 BDF 像素比對共同建立。OCR 只作候選證據；碼表仍標記為 provisional，便於後續逐字複核。完整本地解碼工作集可用下列命令重建，輸出已由 `.gitignore` 排除：
+
+```sh
+ruby ../../core/golden-sun/decode-text-ids.rb \
+  --text-ids research/jp-text-ids.tsv \
+  --codepage codepages/ja-extended.tsv \
+  --output research/jp-decoded.jsonl
+```
+
+在 macOS 上需要重新產生 OCR 候選時，可先把 `render-original-text.rb` 的 PGM 輸出交給 Vision，再將結果與代碼序列對齊。這是研究輔助流程，不是正常構建的必要步驟：
+
+```sh
+swift tools/ocr_jp_text.swift research/jp-ocr-all/*.pgm > /tmp/gs2-jp-ocr.tsv
+ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
+```
+
+推導器與正式解碼器共用 `core/golden-sun/japanese_codepage.rb`，避免兩份基礎假名映射產生分歧。投票結果仍須用原 ROM 字形人工複核後才能修改 `codepages/ja-extended.tsv`。
+
 ## `zh-TW` 技術試作
 
-目前只替換兩條訊息：
+目前替換 13 條開機、存檔與姓名輸入訊息；以下列出代表項目，完整資料見 `translations/system-messages.draft.jsonl`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
-| 0 | 刪除存檔確認 | `(要刪除紀錄嗎？)`（保留原版 ASCII 括號） |
+| 0 | 無存檔資料 | `(沒有紀錄)`（保留原版 ASCII 括號） |
+| 5 | 存檔損毀 | `部分資料已損毀，`／`無法正確復原。` |
+| 6 | 從神殿復原 | `要嘗試從神殿`／`復原嗎？` |
+| 10 | 遊玩時間標籤 | `遊戲時間` |
 | 15 | 新遊戲姓名輸入 | `請輸入你的名字。` |
+| 18 | 繼續遊戲 | `請選擇要繼續的紀錄。` |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -54,17 +76,19 @@ ruby ../../core/golden-sun/extract-huffman-text-ids.rb \
 ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --rom games/golden-sun-the-lost-age/roms/base/Ougon_no_Taiyou_Ushinawareshi_Toki_JP_AGFJ01.gba \
   --text-ids games/golden-sun-the-lost-age/research/jp-text-ids.tsv \
+  --codepage games/golden-sun-the-lost-age/codepages/ja-extended.tsv \
+  --translations games/golden-sun-the-lost-age/translations/system-messages.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 253,080 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 254,180 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FBDAF8` | `0xFBDAF8` |
-| 文字表 | `0x08FBDB08` | `0xFBDB08` |
+| Huffman 表 | `0x08FBDF44` | `0xFBDF44` |
+| 文字表 | `0x08FBDF54` | `0xFBDF54` |
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -76,12 +100,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`e6fa4e92`
-- BPS CRC32：`a36c5a20`
-- BPS 大小：255,048 bytes
-- 試作與重套 ROM SHA-256：`a2704e87235ecbc4ffa6f002e9b090c153fa3ecfcb938822aede4450fa0f9141`
+- 試作 CRC32：`b08ff446`
+- BPS CRC32：`2b887d8d`
+- BPS 大小：256,102 bytes
+- 試作與重套 ROM SHA-256：`6a5487c53c3f6c82622a5826f9e05b14321372ea07ef01786182787fc9334d51`
 
-用新指標重新抽取後，只有 ID 0 與 15 不同；其餘 12,770 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。
+用新指標重新抽取後，只有翻譯資料指定的 13 個 ID 不同；其餘 12,759 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 ## 合規邊界
 

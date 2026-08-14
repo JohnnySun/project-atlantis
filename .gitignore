@@ -19,6 +19,7 @@
 **/research/vendor/
 **/research/ocr-samples/
 **/research/*-text-ids.tsv
+**/research/*-decoded.jsonl
 **/research/*.pgm
 **/research/*.ppm
 **/research/*.png
