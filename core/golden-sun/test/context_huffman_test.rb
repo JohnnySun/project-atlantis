@@ -17,4 +17,12 @@ class ContextHuffmanTest < Minitest::Test
     assert_equal 3, bundle.fetch(:tree_groups).length
     refute_equal 0x8000, third_group_offsets.fetch(0x34)
   end
+
+  def test_adds_fourth_tree_group_after_0x2ff
+    bundle = GoldenSun::ContextHuffman.build([[0x30d, 0x41]])
+    fourth_group_offsets = bundle.fetch(:tree_groups).fetch(3).fetch(:offsets).unpack("v*")
+
+    assert_equal 4, bundle.fetch(:tree_groups).length
+    refute_equal 0x8000, fourth_group_offsets.fetch(0x0d)
+  end
 end

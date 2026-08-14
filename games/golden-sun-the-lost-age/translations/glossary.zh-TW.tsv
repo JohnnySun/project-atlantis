@@ -39,3 +39,5 @@ ja	zh-TW	category	status	notes
 エレメンタルパワー	元素力量	battle	provisional	地水火風元素的攻擊能力值
 ヴィーナス	維納斯	element	provisional	地元素系統專名
 いしにする	石化	status	provisional	封鎖行動的異常狀態
+リカバリー	恢復	battle	provisional	精靈在召喚後回到可用狀態的週期
+ひっさつこうげき	必殺攻擊	battle	provisional	可能直接使敵人戰鬥不能的攻擊
