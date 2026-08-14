@@ -8,8 +8,8 @@
 - 已定位日版文字的上下文 Huffman 樹、分塊指標和壓縮資料。
 - 已無損抽取 **12,772 條**訊息的 12-bit 代碼序列，並建立涵蓋全部 152 個擴展字形的 provisional 日文碼表；全量解碼沒有未映射字符。
 - 已找到一份本機既有中文版作為行為參考。它以美版 `AGFE01` 為基礎，重寫了解碼程式，不能作為日版可直接套用的補丁。
-- 已用日版原字形和完整碼表確認系統訊息、序章至海迪亞返鄉結局、通關後支線及元素石碑文本，建立 7,292 條 `zh-Hans`／`zh-TW` 可審核草稿；全量缺漏審計另找到 4,104 條仍含日文的早期資料文本，尚未完成。
-- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 2,275 個繁體中文字形，並替換 7,292 條訊息。
+- 已用日版原字形和完整碼表確認系統訊息、角色預設名、裝備／道具資料、序章至海迪亞返鄉結局、通關後支線及元素石碑文本，建立 8,108 條 `zh-Hans`／`zh-TW` 可審核草稿；全量缺漏審計仍有 3,288 條含日文的文本尚未完成。
+- 已完成資料驅動的 `zh-TW` 技術試作：從多個翻譯 JSONL 重建全套 Huffman 資料、加入 2,367 個繁體中文字形，並替換 8,108 條訊息。
 - 試作 ROM 已在 mGBA 0.10.5 成功開機至標誌與姓名輸入畫面；這只是管線驗證，**不是完整翻譯**。
 
 ## 日版文字佈局
@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 7,292 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章至海迪亞返鄉結局、通關後支線、精靈教學及元素石碑文本；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，術語見 `translations/glossary.zh-TW.tsv`：
+目前替換 8,108 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、角色預設名、裝備與道具名稱／說明、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章至海迪亞返鄉結局、通關後支線、精靈教學及元素石碑文本；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -74,6 +74,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 84–86 | 神殿服務 | `治療中毒`／`驅除惡靈`／`解除詛咒` |
 | 102–106 | 資料轉移 | `密碼`／`連接線`／`黃金`／`白銀`／`青銅` |
 | 115–123 | 設定介面 | `設定項目`／`精神力快捷鍵`／`文字速度`／`視窗顏色`／`戰鬥鏡頭` |
+| 131–1126 | 角色、裝備與道具資料 | 八名角色預設名、記錄回答、武器與防具說明、消耗品、精神力授予物、鍛造材料、關鍵道具、基礎及鍛造裝備名稱與四元素精靈分類；`?`／`???` 佔位內容保留原值 |
 | 4647–4669 | 商店與裝備狀態 | `持有金幣`／`售價`／`無法裝備`／`敏捷`／`可以鍛造` |
 | 2268–2308 | 戰鬥效果說明 | `恢復全體HP`／`解除幻覺、麻痺、睡眠`／`元素抗性`／`戰鬥不能` |
 | 3262–3290 | 插值戰鬥訊息 | `{12}的攻擊力下降{16}點！`／`{12}陷入幻覺！`／`{12}被惡靈附身了！` |
@@ -127,6 +128,16 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --codepage games/golden-sun-the-lost-age/codepages/ja-extended.tsv \
   --translations games/golden-sun-the-lost-age/translations/system-messages.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/ui-labels.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/character-defaults-and-responses.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-descriptions-core.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-descriptions-forged.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-names-weapons.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-names-armor.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-names-consumables.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-names-forged-weapons.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-names-forged-armor.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-names-materials-quests.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/item-djinn-categories.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/shop-status.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/battle-effects.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/battle-messages.draft.jsonl \
@@ -261,15 +272,15 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 299,340 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 300,880 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FC8F64` | `0xFC8F64` |
-| 文字表 | `0x08FC8FBC` | `0xFC8FBC` |
+| Huffman 表 | `0x08FC9568` | `0xFC9568` |
+| 文字表 | `0x08FC95C0` | `0xFC95C0` |
 
-新增字形 ID 已到 `0xA7A`（共 2,275 個），因此構建器使用十一組上下文 Huffman 樹；通用抽取器已從十一組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0xAD6`（共 2,367 個），因此構建器使用十一組上下文 Huffman 樹；通用抽取器已從十一組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -281,12 +292,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`57a42c5e`
-- BPS patch CRC32：`43b0689a`
-- BPS 大小：299,421 bytes
-- 試作與重套 ROM SHA-256：`9c55c6d81080e559f017e3621071cf3f47b6d037efda19118f03139f9e1ccbbe`
+- 試作 CRC32：`a6ddb008`
+- BPS patch CRC32：`e6a2e77a`
+- BPS 大小：300,977 bytes
+- 試作與重套 ROM SHA-256：`0eff48dc864a923282af04c8df02c08115956df5ce83a29d069475fbbf621073`
 
-用新指標重新抽取後，只有 132 個翻譯批次指定的 7,292 個 ID 不同；其餘 5,480 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。對未替換訊息的全量審計顯示，其中 4,104 條仍含日文，後續將按道具、技能、怪物、系統說明及調查文本等語義群組逐批處理。
+用新指標重新抽取後，只有 142 個翻譯批次指定的 8,108 個 ID 不同；其餘 4,664 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。對未替換訊息的全量審計顯示，其中 3,288 條仍含日文，後續將按精神力、怪物、戰鬥說明及調查文本等語義群組逐批處理。
 
 翻譯目標可用大寫 `{HH}` 明確標出已確認的內部控制碼，例如角色名插值 `{12}` 或數值插值 `{16}`。共用解析器會把標記還原為 0x00–0x1F 代碼；構建器要求譯文控制碼的順序與數量和來源完全一致，並同樣核對換行 `{03}`。ID 6345 的 `{09}{02}` 是感嘆詞前的效果選擇前綴與模式值，後方另有獨立的 `{02}` 訊息結束碼；三個單元均原樣保留，具體視聽效果仍待場景 QA。沒有顯式標記的既有短字串仍可繼承來源前後綴控制碼。
 
