@@ -1,0 +1,32 @@
+name: 翻譯／排版問題
+description: 記錄錯譯、術語、錯字、標點、缺字或溢出
+title: "[text] "
+labels: ["translation", "needs-triage"]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: 遊戲與版本
+    validations:
+      required: true
+  - type: input
+    id: string_id
+    attributes:
+      label: 字串 ID／場景
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: 目前文字與問題
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建議簡體／繁體版本
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截圖、存檔或重現步驟
+

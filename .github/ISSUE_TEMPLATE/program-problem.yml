@@ -1,0 +1,34 @@
+name: 程式／相容性問題
+description: 記錄穩定可重現的渲染、構建或執行異常
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: input
+    id: build
+    attributes:
+      label: 遊戲、構建雜湊與執行環境
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 重現步驟
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 預期結果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 實際結果
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: 存檔、截圖與日誌
+

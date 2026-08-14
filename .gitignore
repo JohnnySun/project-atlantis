@@ -1,0 +1,34 @@
+# Commercial ROMs, upstream patches and device backups stay local.
+**/roms/
+**/backups/
+**/upstream/
+*.gba
+*.agb
+*.rom
+*.sav
+*.srm
+*.state
+*.zip
+*.7z
+*.rar
+*.bps
+*.ips
+*.ups
+
+# Extracted copyrighted text, generated glyph sheets and third-party research.
+**/research/vendor/
+**/research/ocr-samples/
+**/research/*-text-ids.tsv
+**/research/*.pgm
+**/research/*.ppm
+**/research/glyph-sample.png
+**/work/
+**/build/
+**/dist/
+
+# Local environment.
+.DS_Store
+.idea/
+.vscode/
+*.log
+

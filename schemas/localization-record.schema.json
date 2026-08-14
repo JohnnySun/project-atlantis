@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/gba-localization-record.schema.json",
+  "title": "GBA localization record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["game", "revision", "string_id", "source", "targets", "status"],
+  "properties": {
+    "game": { "type": "string", "minLength": 1 },
+    "revision": { "type": "string", "minLength": 1 },
+    "string_id": { "type": ["string", "integer"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locale", "text"],
+      "properties": {
+        "locale": { "type": "string", "minLength": 2 },
+        "text": { "type": "string" },
+        "provenance": { "type": "string" }
+      }
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["zh-Hans", "zh-Hant"],
+      "properties": {
+        "zh-Hans": { "$ref": "#/$defs/translation" },
+        "zh-Hant": { "$ref": "#/$defs/translation" }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scene": { "type": "string" },
+        "speaker": { "type": "string" },
+        "notes": { "type": "string" },
+        "max_width": { "type": "integer", "minimum": 1 },
+        "max_lines": { "type": "integer", "minimum": 1 },
+        "control_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "terms": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "status": {
+      "enum": ["untranslated", "ai_draft", "human_review", "in_game_qa", "approved"]
+    },
+    "review_notes": { "type": "string" }
+  },
+  "$defs": {
+    "translation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string" },
+        "author": { "type": "string" },
+        "model": { "type": "string" },
+        "reviewed_by": { "type": "string" }
+      }
+    }
+  }
+}
+

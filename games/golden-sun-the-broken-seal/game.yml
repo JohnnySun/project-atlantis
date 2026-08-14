@@ -1,0 +1,19 @@
+id: golden-sun-the-broken-seal
+platform: gba
+titles:
+  ja: "黄金の太陽 開かれし封印"
+  zh-Hans: "黄金太阳 开启的封印"
+  zh-Hant: "黃金太陽 開啟的封印"
+source:
+  region: JP
+  game_code: AGSJ01
+  revision: 0
+  size: 8388608
+  crc32: fb96d9de
+  md5: cf33e45e59b0ee3801b5cf18a9e58524
+  sha256: 088bedae4bad8b67e87ff10035a898d3639f3182d486fe5a5d113bab223e0a26
+targets:
+  - zh-Hans
+  - zh-Hant
+status: research
+
