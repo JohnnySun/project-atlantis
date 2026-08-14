@@ -43,3 +43,5 @@ ja	zh-TW	category	status	notes
 ひっさつこうげき	必殺攻擊	battle	provisional	可能直接使敵人戰鬥不能的攻擊
 マーズ	瑪爾斯	element	provisional	火元素系統專名
 はんげき	反擊	battle	provisional	受到攻擊時回擊的戰鬥效果
+しをせんこく	死亡宣告	status	provisional	倒數後造成戰鬥不能的狀態
+きゅうせん	休戰	battle	provisional	暫時停止交戰的效果
