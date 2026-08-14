@@ -56,7 +56,7 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 
 ## `zh-TW` 技術試作
 
-目前替換 1,444 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊、亞歷克斯使命、席芭命運分支、德里村、坎德拉寺、海神祠、瑪德拉、米卡薩拉，以及波比奇滿月夜與瑪哈揭密文本；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，術語見 `translations/glossary.zh-TW.tsv`：
+目前替換 1,988 條開機、存檔、資料繼承、密碼轉移、難度選擇、姓名輸入、戰鬥、基礎選單、設定介面、商店狀態、戰鬥效果、插值戰鬥訊息、四元素精靈效果、召喚效果說明、序章燈塔出口、拉利貝洛守衛分支、撤離路線、燈塔碑文、半島會合、船隻調查、漂流、生還者、海嘯、靠岸、尋人入隊、亞歷克斯使命、席芭命運分支、德里村、坎德拉寺、海神祠、瑪德拉、米卡薩拉、波比奇滿月夜與瑪哈揭密、艾爾斯岩線索、揚皮沙漠追捕，以及阿拉弗拉帕亞亞姆事件文本；以下列出代表項目，完整資料見 `translations/*.draft.jsonl`，術語見 `translations/glossary.zh-TW.tsv`：
 
 | ID | 場景 | 試譯 |
 | ---: | --- | --- |
@@ -102,6 +102,9 @@ ruby tools/infer_ja_codepage.rb research/jp-text-ids.tsv /tmp/gs2-jp-ocr.tsv
 | 6512–6700 | 瑪德拉襲擊與皮卡德事件 | 占婆劫囚、帕亞亞姆追捕、皮卡德審問與冰之精神力、通往奧瑟尼亞的許可及沉船調查 |
 | 6701–6746 | 米卡薩拉與西奧瑟尼亞 | 艾爾斯岩、波比奇、南島及繞行道路情報，並介紹狼人與獸人的傳聞 |
 | 6747–6918 | 波比奇滿月夜 | 加拉哈德警告、狼人初遇、滿月村莊狀態、旋風術與旋風石、追蹤獸人、瑪哈會談及透視術祕密 |
+| 6919–7079 | 波比奇清晨與艾爾斯岩 | 狼人真相後續、瑪哈對精神力之石的推論、精靈贈禮，以及艾爾斯岩碑文與機關提示 |
+| 7080–7120 | 揚皮沙漠追捕 | 瑪德拉追捕隊穿越沙漠、商旅與路人情報，以及接近阿拉弗拉的路線提示 |
+| 7121–7462 | 阿拉弗拉與帕亞亞姆 | 海嘯後港鎮、避難居民、帆船與桅杆困境、帕亞亞姆對峙及投降、查烏查母子與瑪德拉交涉 |
 
 構建器使用 Fusion Pixel Font 10px Monospaced `v2026.08.11` 的
 `fusion-pixel-10px-monospaced-zh_hant.bdf`。`zh_hant` 是上游檔名；Atlantis 的輸出語種仍明確定義為 `zh-TW`，兩者不可混為未指定地區的通用繁體目標。
@@ -158,19 +161,27 @@ ruby games/golden-sun-the-lost-age/tools/build_zh_tw_trial.rb \
   --translations games/golden-sun-the-lost-age/translations/garoh-werewolf-encounter.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/garoh-full-moon-night.draft.jsonl \
   --translations games/golden-sun-the-lost-age/translations/garoh-maha-revelation.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/garoh-morning-aftermath.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/garoh-maha-theory.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/garoh-reward-and-airs-rock.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/yampi-madra-pursuit.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/alhafra-arrival.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/alhafra-town-and-port.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/alhafra-pirates.draft.jsonl \
+  --translations games/golden-sun-the-lost-age/translations/alhafra-resolution.draft.jsonl \
   --bdf games/golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output games/golden-sun-the-lost-age/roms/build/golden-sun-tla-zh-tw-trial.gba
 ```
 
-目前的試作資料從 `0xF80000` 寫入 296,484 bytes，指標改為：
+目前的試作資料從 `0xF80000` 寫入 301,284 bytes，指標改為：
 
 | 項目 | 新 GBA pointer | ROM offset |
 | --- | ---: | ---: |
 | 擴展字型 | `0x08F80000` | `0xF80000` |
-| Huffman 表 | `0x08FC8454` | `0xFC8454` |
-| 文字表 | `0x08FC8494` | `0xFC8494` |
+| Huffman 表 | `0x08FC9714` | `0xFC9714` |
+| 文字表 | `0x08FC9754` | `0xFC9754` |
 
-新增字形 ID 已到 `0x71B`，因此構建器使用八組上下文 Huffman 樹；通用抽取器已從八組樹完整反解全部 12,772 條訊息。
+新增字形 ID 已到 `0x7C7`，因此構建器使用八組上下文 Huffman 樹；通用抽取器已從八組樹完整反解全部 12,772 條訊息。
 
 用通用 BPS 工具產生及重套補丁：
 
@@ -182,12 +193,12 @@ ruby core/patches/bps_apply.rb BASE.gba TRIAL.bps REAPPLIED.gba
 本次可重現結果：
 
 - 基準 CRC32：`830b795f`
-- 試作 CRC32：`3b07c555`
-- BPS patch CRC32：`f5f7b8f0`
-- BPS 大小：297,620 bytes
-- 試作與重套 ROM SHA-256：`1ad87259dd40d03e13025e18917f24b6240a88a35689ad5cb9680abf2fba49c3`
+- 試作 CRC32：`a4d702d0`
+- BPS patch CRC32：`76b19049`
+- BPS 大小：302,125 bytes
+- 試作與重套 ROM SHA-256：`53e71c0a21f3367d35528ae6fa0bdfc4a9234de609732ab6684c2a29f61e440c`
 
-用新指標重新抽取後，只有四十五個翻譯批次指定的 1,444 個 ID 不同；其餘 11,328 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
+用新指標重新抽取後，只有五十三個翻譯批次指定的 1,988 個 ID 不同；其餘 10,784 條訊息的 12-bit 代碼序列與來源 TSV 完全一致。構建器會先用碼表反解並核對每筆翻譯記錄的日文原文，避免人工辨識錯誤直接進入 ROM。
 
 翻譯目標可用大寫 `{HH}` 明確標出已確認的內部控制碼，例如角色名插值 `{12}` 或數值插值 `{16}`。共用解析器會把標記還原為 0x00–0x1F 代碼；構建器要求譯文控制碼的順序與數量和來源完全一致，並同樣核對換行 `{03}`。ID 6345 的 `{09}{02}` 是感嘆詞前的效果選擇前綴與模式值，後方另有獨立的 `{02}` 訊息結束碼；三個單元均原樣保留，具體視聽效果仍待場景 QA。沒有顯式標記的既有短字串仍可繼承來源前後綴控制碼。
 
