@@ -30,3 +30,10 @@ ja	zh-TW	category	status	notes
 ねむり	睡眠	status	provisional	無法行動的異常狀態
 せんとうふのう	戰鬥不能	status	provisional	角色失去戰鬥能力的狀態
 エレメンタルたいせい	元素抗性	battle	provisional	對地水火風屬性攻擊的承受能力
+こんらん	混亂	status	provisional	影響行動判斷的異常狀態
+こころをうばう	魅惑	status	provisional	心智受控制的異常狀態
+リフレクト	反射	status	provisional	反射攻擊或效果的狀態
+けっかい	屏障	battle	provisional	阻擋攻擊或效果的防護
+しりょう	死靈	status	provisional	倒數後造成戰鬥不能的附身效果
+もう毒	劇毒	status	provisional	比中毒造成更高持續傷害
+エレメンタルパワー	元素力量	battle	provisional	地水火風元素的攻擊能力值
