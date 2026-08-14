@@ -166,6 +166,24 @@ ja	zh-TW	category	status	notes
 ドドンパ	多東帕	character	provisional	倫帕之孫、目前統治倫帕村的盜賊；依日文名稱音譯
 グラインド	研磨術	psynergy	provisional	海德羅授予隊伍、能排除海上岩礁並開通西海航路的地元素精神力
 レムリアのいずみ	雷姆利亞之泉	location	provisional	可恢復 HP／EP 並進行幸運硬幣投擲遊戲的雷姆利亞泉水
+マグマボール	熔岩球	item	provisional	在熔岩岩火山口生成、可由大炮發射以破除北海厚冰的火焰石球
+プロクス	普羅克斯	location	provisional	位於維亞德極北、火之一族居住並守護瑪爾斯燈塔的冰封村莊；依日文名稱音譯
+ギアナ	基亞那	location	provisional	阿特卡大陸上繼承阿尼莫斯傳說、建造飛翼的村莊；依日文名稱音譯
+アネモス	阿尼莫斯	group	provisional	古代能操縱風與飛行、其血脈延續於基亞那族的文明與族群；依日文名稱音譯
+アネモスのツバサ	阿尼莫斯飛翼	item	provisional	依預言打造、裝上精神力船後可配合重力術飛行的巨大飛翼
+プロミネンス	烈焰術	psynergy	provisional	從熔岩岩石板取得、能產生更強烈火焰的火元素精神力；按技能效果翻譯
+イエグロス	耶格羅斯	character	provisional	基亞那族傳說勇者，曾與薩滿族勇者納瓦霍在試煉之路交戰；依日文名稱音譯
+ナバホ	納瓦霍	character	provisional	薩滿族傳說勇者，與耶格羅斯訂立交換手杖與寶玉的約定；依日文名稱音譯
+シャーマン村	薩滿村	location	provisional	赫斯佩里亞大陸中央、排斥外人並守護重力之玉的村莊；按日文名稱翻譯
+モアパ	摩阿帕	character	provisional	薩滿村村長與當代勇者，在試煉之路測試隊伍資格；依日文名稱音譯
+グラビティのヒスイ	重力之玉	item	provisional	薩滿族代基亞那守護、用於習得重力術並讓飛翼船升空的寶玉
+トライアルロード	試煉之路	location	provisional	薩滿村用競速、裝備負重與山頂戰鬥考驗勇者的洞窟道路；按日文語義翻譯
+シャーマンのツエ	薩滿之杖	item	provisional	納瓦霍交給耶格羅斯、用來交換重力之玉並證明勇者資格的手杖
+ハモ	哈莫	character	provisional	繼承阿尼莫斯之力的基亞那領袖，也是伊萬的姊姊；依日文名稱音譯
+ハメット	哈梅特	character	provisional	撫養伊萬並在卡萊立足的安加拉商人；依日文名稱音譯
+カレイ	卡萊	location	provisional	哈梅特在安加拉大陸統治的城鎮；依日文名稱音譯
+ジュピタースター	朱庇特之星	item	provisional	封存風元素力量、用於點燃朱庇特燈塔的元素之星
+マーズスター	瑪爾斯之星	item	provisional	封存火元素力量、用於點燃瑪爾斯燈塔的元素之星
 アガティオ	阿加迪奧	character	provisional	與卡斯特同行、準備接替薩帝羅斯點燃燈塔的火元素使；依日文名稱音譯
 チルド	冰凍術	psynergy	provisional	皮卡德用於凍結水面的水元素精神力；按技能效果翻譯
 エレメンタルスター	元素之星	world	provisional	封存四元素力量、用於點燃元素燈塔的關鍵寶石；按日文語義翻譯
