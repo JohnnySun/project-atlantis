@@ -34,7 +34,7 @@ Use this workflow to make localization batches reproducible while preventing unr
 
 1. Generate a BPS patch from the verified clean ROM and rebuilt ROM.
 2. Apply the BPS patch to the clean ROM into a second ignored output.
-3. Compare rebuilt and reapplied ROMs byte for byte, then record CRC32, patch size, and SHA-256 in the game README.
+3. Compare rebuilt and reapplied ROMs byte for byte, then record target CRC32, patch size, and SHA-256 in the game README. For the BPS identifier, record the `patch CRC32` printed by `bps_create.rb` before it appends the checksum; do not CRC32 the complete `.bps` file, whose valid trailing checksum makes the result the fixed residue `2144df1c`.
 4. Run the shared Ruby tests and compile-check any platform-specific OCR helper that changed.
 5. Perform mGBA runtime QA for reachable screens. Preserve test save data, and report screens that remain untested instead of inferring success.
 
