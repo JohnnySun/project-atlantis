@@ -1,0 +1,35 @@
+{
+  "skill_name": "golden-sun-localization",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "You are continuing a Golden Sun localization batch. Verify that the rebuilt text TSV changes exactly the IDs declared by the translation JSONL, then write a concise validation report to report.txt. Do not modify the input fixtures.",
+      "expected_output": "A report that records successful exact-delta validation and identifies translated ID 1.",
+      "files": [
+        "evals/fixtures/valid-source.tsv",
+        "evals/fixtures/valid-built.tsv",
+        "evals/fixtures/valid-translations.jsonl"
+      ],
+      "expectations": [
+        "The report says the exact text delta is valid.",
+        "The report identifies translated ID 1.",
+        "The report does not claim that any undeclared ID changed."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Audit this Golden Sun localization text rebuild. Run the appropriate deterministic check, do not modify the fixtures, and write report.txt explaining whether the build is safe to accept and which undeclared text IDs changed.",
+      "expected_output": "A rejection report that identifies undeclared changed ID 2.",
+      "files": [
+        "evals/fixtures/invalid-source.tsv",
+        "evals/fixtures/invalid-built.tsv",
+        "evals/fixtures/invalid-translations.jsonl"
+      ],
+      "expectations": [
+        "The report rejects the build as unsafe.",
+        "The report identifies undeclared changed ID 2.",
+        "The input fixtures remain unchanged."
+      ]
+    }
+  ]
+}

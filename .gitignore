@@ -23,6 +23,8 @@
 **/research/*.pgm
 **/research/*.ppm
 **/research/*.png
+.agents/skills/*-workspace/
+**/__pycache__/
 **/research/**/*.pgm
 **/research/**/*.ppm
 **/research/**/*.png
