@@ -17,3 +17,10 @@ ja	zh-TW	category	status	notes
 メッセージスピード	文字速度	config	provisional	-
 ウインドウカラー	視窗顏色	config	provisional	-
 せんとうカメラアングル	戰鬥鏡頭	config	provisional	-
+コイン	金幣	currency	provisional	遊戲通用貨幣
+ねだん	價格	shop	provisional	商店購入價格
+うりね	售價	shop	provisional	商店出售價格
+かいとる	收購	shop	provisional	由商店視角表述購入玩家物品
+すばやさ	敏捷	status	provisional	角色能力值
+うんのよさ	幸運	status	provisional	角色能力值
+かこう	鍛造	shop	provisional	依鏽蝕物品加工機制暫譯
