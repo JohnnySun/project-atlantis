@@ -116,6 +116,57 @@ case REG_KEYINPUT: {
 - `c`（continue）不會立即回應；等到中斷點／watchpoint 命中才會收到非同步的 `T05...;` 封包（watchpoint 命中會附 `watch:`／`rwatch:`／`awatch:` 加位址）。這個封包本身仍是標準 `$...#xx` framing，可以直接用既有的 `_read_packet()` 消化，只是要给一個遠比一般指令回覆更長的逾時（`cont_and_wait()` 已內建）。
 - **中斷點／watchpoint 命中後，如果不先 `s`（single step）一次就直接再 `c`，會立刻在同一個 PC 上重新命中**（尤其是寫入 watchpoint 卡在一個緊湊複製迴圈裡時，會看起來像「暫存器完全不變」，很容易誤判成單步沒有生效——其實是同一個未跨過的指令被反覆重新命中）。命中後一律先 `s` 一次再繼續，除非明確要利用這個特性連續攔截同一個輪詢點（例如本輪對 KEYINPUT 讀取的做法，那裡的重複命中是預期行為，因為每次都是新的一個畫格）。
 
+## 第四輪偵察（存檔選擇畫面 BG 字型表：找到字型表本體＋部分 codepage）
+
+工具環境同第三輪。本輪新增 `games/shining-soul-1/tools/navigate_and_dump.py`（把第三輪
+「跳過標題畫面／推進到存檔選擇畫面」的按鍵注入流程寫成可重跑腳本，第三輪只有文字描述、
+沒有存成腳本）與 `games/shining-soul-1/tools/extract_bg_fonttable.py`（擷取／驗證／渲染
+本輪找到的 ROM 字型表）。詳細方法、完整 codepage 表、confirmed／未確認分級，見專門的
+`research/bg-fonttable-codepage-partial.md`（分析結論，非原文，可提交）。
+
+**本輪重跑 `navigate_and_dump.py` 時的一個教訓**：第一次執行時在按鍵注入迴圈裡多加了一次
+`s`（single-step），且「標題畫面已穩定」的等待時間太短（DISPCNT 剛變成 `0x1240` 就立刻視為
+穩定），結果整個流程原地打轉，兩次「按鍵」都完全沒有效果（`DISPCNT` 全程停在 `0x1240`，
+OAM 渲染出來還是標題畫面本身）。同時拿掉多餘的 single-step、並在偵測到 `0x1240` 後再多
+free-run 約 4 秒才真正設 watchpoint（**兩個改動一起做**，沒有分開驗證是哪一個真正解決了問題，
+下次如果同樣的手法又失敗，應該先分開測試這兩個變因，而不是預設兩個都必要），第二次就穩定成功
+推進到存檔選擇畫面（`DISPCNT=0x1d40`，與第三輪記錄一致）。可以確定的教訓：**「DISPCNT 讀到
+目標值」不等於「畫面已經穩定到能接受輸入」**，尤其是可能還在淡入／淡出過渡幀的時候；下次一樣
+的手法要記得抓多一點穩定緩衝時間。整個過程都設了明確逾時
+（`cont_and_wait` 帶 timeout、bash 呼叫本身也不依賴無窮等待），沒有發生掛住不回應的情況。
+
+**已確認、重大結構性發現**：存檔選擇畫面的 BG2（`screenbase 0xf000`）／BG3（`screenbase
+0xf800`）都用 `charbase 0x0`；ROM file offset **`0x1398e8`** 是一張 **1024 格**（0–1023，
+剛好是 4bpp tilemap tile-number 欄位的完整定址範圍）、每格 32 bytes 的字型表，總長度
+`0x8000`，結束於 `0x1418e8`。**已用窮舉逐格比對確認**：存檔選擇畫面實際載入的 VRAM
+charbase `0x0` 內容與這整段 ROM 範圍逐位元組完全相同，覆蓋全部 1024 格，第一個不相符位置
+剛好落在 tile-index 1024（定址範圍邊界本身，不是提早分歧）——這代表 BG tilemap 的
+tile-number 欄位是直接定址進這張表，**tile-index 本身在這條渲染路徑上就是字符代碼**，
+不存在另一層「字符代碼→tile-index」的間接對照要另外找。這張表與第二輪確認的 OBJ 字型
+（ROM `0x62AA44`–`0x62B8E4`，標題／模式選擇畫面用）位置完全不同，是兩套獨立系統——目前
+仍不知道對話文字（如果之後找到）用的是這兩套裡的哪一套，還是第三套。
+
+**已確認的部分 codepage**（約 32 個相異字符，片假名＋Latin 字母＋數字，來自 FILE／SELECT／
+PAGE／ATK／DEF／DEX／STR／VIT／INT／Lv. 等已知文字）：完整表格、confirmed／中信心／
+低信心分級、以及每一條的驗證方式，記在 `research/bg-fonttable-codepage-partial.md`，
+不在此重複列出以免兩處不同步。摘要重點：
+- 這是一套**窄體壓縮字型**——多數 Latin 字母是兩個半形字元塞進同一格 8×8 tile（例如一格畫
+  "FI"），只有片假名和少數數字／收尾字母是嚴格一格一字。嚴格「一個 tile-index＝一個字符」
+  的假設**不成立**，下一輪如果要繼續擴充這張表，需要先弄清楚哪些格是 packed、哪些不是。
+- 找到目前為止唯一一個「同一 tile-index 被兩個不同標籤共用」的直接證據（tile 112 的「DE」
+  同時被 DEF 與 DEX 標籤引用，逐位元組核對確認），支持這確實是可重用字型系統而非各自獨立
+  美術；但也發現同樣內容在表裡有第二份獨立拷貝（tile 118，內容與 112 相同但是不同 index），
+  以及至少 4 個視覺相似但逐位元組互不相同的「▷」三角形圖示——這套系統顯然沒有做嚴格去重複，
+  細節仍有不少沒解釋清楚的地方。
+- 「同一個字符在不同情境下可能是不同 tile-index、不同字形」已有具體反例：FILE 方框樣式的
+  數字「1」（tile 87）與 PAGE 頁碼樣式的數字「1」（tile 81）逐位元組核對確認**不是**同一份
+  資料——同一遊戲內至少有兩種視覺上不同的「1」。
+- **項目 1（是否為跨畫面共通的系統級 codepage）本輪未完成**：目前只有存檔選擇畫面成功
+  讀到 BG2／BG3 內容；重新造訪的標題／模式選擇畫面只啟用 BG1＋OBJ，不使用 BG2／BG3，
+  沒有機會做跨畫面對照。字型表圖片裡有一段低信心判讀懷疑是「キャラクタ／カラーセンタク」
+  （角色／顏色選擇），如果屬實會是角色建立畫面的 UI 文字——這與 ROADMAP 原本建議的下一步
+  （選取 FILE 1 建立新角色）直接對應，是下一輪驗證這一點的好機會。
+
 ## 中文譯名核對
 
 `game.yml` 的 `zh-Hans`／`zh-TW` 標題採用「光明之魂」，依專案「專有名詞音譯政策」核對後決定：巴哈姆特 ACG 資料庫（`acg.gamer.com.tw`，條目 `s=3915`）明確使用「光明之魂」；另有多個獨立中文遊戲站台（`indienova.com`、`99danji.com`、`sptuner.blogspot.com` 等）不約而同使用同一譯名，未發現任何分歧版本。維基百科中文版似乎沒有這款遊戲的獨立條目（查詢「光明與黑暗系列」條目及站內搜尋皆未命中），因此本次未能取得政策要求的「Wikipedia＋巴哈姆特」雙來源中的 Wikipedia 那一份；但多個獨立巴哈姆特以外站台一致無異議，已達到政策「不只看單一來源」的精神，故採用「光明之魂」而非留白或自創音譯。目錄檔名本身也是「光明之魂1」，與此結果一致（但目錄檔名本身不算獨立來源，只是佐證）。
@@ -176,14 +227,29 @@ python3 games/shining-soul-1/tools/scan_sjis_runs.py \
   --charbase 0x0 --screenbase 0xe800 --bpp 4 --out out.ppm
 ```
 
+第四輪新增兩支工具（用法與方法論見上方「第四輪偵察」一節、`research/bg-fonttable-codepage-partial.md`、各自 docstring）：
+
+```sh
+# 自動跳過標題畫面、推進到存檔選擇畫面，dump VRAM/palette/OAM（唯一會寫模擬器狀態的工具，不寫 ROM 檔案）
+/usr/bin/python3 games/shining-soul-1/tools/navigate_and_dump.py --out-dir /tmp/ss1_dump
+# 需先背景啟動：/opt/homebrew/bin/mgba -g games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba &
+
+# 擷取／驗證／渲染 ROM 裡確認到的 1024 格 BG 字型表（ROM 0x1398e8 起）
+/usr/bin/python3 games/shining-soul-1/tools/extract_bg_fonttable.py \
+  games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba \
+  --out-bin /tmp/fonttable.bin --out-png /tmp/fonttable.png \
+  --palette /tmp/ss1_dump/03_save_select.pal.bin \
+  --verify-against /tmp/ss1_dump/03_save_select.vram.bin
+```
+
 ## 下一步（供下一輪偵察或動手解碼參考）
 
-**已確認、不必重做**：BIOS 壓縮呼叫候選已用反組譯覆核過，全部無法確認為真指令；title／模式選擇／存檔選擇三個畫面的渲染，GBA 4bpp/32-bytes-per-tile 格式假設，OBJ 字形資料在 ROM `0x62AA44`–`0x62B8E4` 附近的位置，都已用視覺渲染＋逐位元組比對確認（見上方「第二輪偵察」「第三輪偵察」）。直接寫 `KEYINPUT` 記憶體無效的根因已對照 mGBA 0.10.5 原始碼確認（`GBAIORead` 每次讀取都會用 `keysActive`／`keyCallback` 覆寫該位址，架構性地不可能用純記憶體寫入模擬按鍵）；改用讀取 watchpoint＋暫存器覆寫已能穩定跳過標題畫面並推進到存檔選擇畫面。渲染時務必先分清 VRAM offset 落在 charblock（像素）還是 screenblock（tilemap）範圍。
+**已確認、不必重做**：BIOS 壓縮呼叫候選已用反組譯覆核過，全部無法確認為真指令；title／模式選擇／存檔選擇三個畫面的渲染，GBA 4bpp/32-bytes-per-tile 格式假設，OBJ 字形資料在 ROM `0x62AA44`–`0x62B8E4` 附近的位置，都已用視覺渲染＋逐位元組比對確認（見上方「第二輪偵察」「第三輪偵察」）。直接寫 `KEYINPUT` 記憶體無效的根因已對照 mGBA 0.10.5 原始碼確認（`GBAIORead` 每次讀取都會用 `keysActive`／`keyCallback` 覆寫該位址，架構性地不可能用純記憶體寫入模擬按鍵）；改用讀取 watchpoint＋暫存器覆寫已能穩定跳過標題畫面並推進到存檔選擇畫面（`navigate_and_dump.py` 已把整套流程寫成可重跑腳本）。渲染時務必先分清 VRAM offset 落在 charblock（像素）還是 screenblock（tilemap）範圍。**第四輪新增**：存檔選擇畫面 BG 文字用的 1024 格字型表本體已定位在 ROM `0x1398e8`–`0x1418e8`（窮舉逐格比對確認，見「第四輪偵察」），約 32 個相異字符的部分 codepage 已建立（見 `research/bg-fonttable-codepage-partial.md`）；這與 OBJ 字型（`0x62AA44`–`0x62B8E4`）是兩套獨立系統。
 
-1. **最高優先**：直接讀取 BG2（screenbase `0xf000`）／BG3（screenbase `0xf800`）存檔選擇畫面的 tilemap 16-bit tile-index 陣列，比對每個 tile-index 對應的字符圖形（已知這批畫面的 charbase 皆為 `0x0`），這是目前最快、最可靠的 codepage 起點——不需要再猜測 ROM 位址，直接從「已知會顯示什麼文字」的畫面反推 tile-index 與字符的對應關係。可繼續用第三輪已驗證的按鍵注入技巧（讀取 watchpoint 盯 `KEYINPUT` `0x04000130`＋`P` 封包覆寫目的暫存器）推進到更多畫面（例如選取 FILE 1 建立新角色，應該會出現名稱輸入這種更直接考驗文字輸入系統的畫面）。
-2. 找到字型搬移的通用「傳輸佇列」機制本身之後，回溯是哪段程式碼把 (來源=字型 ROM 位址, 目的=VRAM tile 槽, mode) 三元組寫進佇列 entry——本輪測試過的候選推入函式（ROM `0x08001154`）已用 150＋400 次即時攔截**否定**，不是字型使用的推入路徑，需要換一個候選或换一種找法（見上方「第三輪偵察」Goal 2 一節「未確認／已測試但否定的假設」）。
-3. 若第 1 點的 tilemap 反查途徑受阻，才退回本輪已定位的「傳輸佇列」呼叫鏈（ROM file offset 約 `0x11a0`–`0x11fe`，`bl` 呼叫兩個 swi wrapper：`0x503bc`＝`svc #0xc`／`CpuFastSet`，`0x503c0`＝`svc #0xb`／`CpuSet`，皆已用 capstone 反組譯 ROM 位元組直接確認）繼續往上追呼叫者——這是「字元代碼→字形 tile 索引」codepage 對照表的必經之路，但目前判斷 tilemap 反查路徑更快、更可靠，優先順序放在它之後。
-4. 仍未解決：文字究竟是 BIOS 壓縮、自訂壓縮、還是完全不壓縮直接存放——本輪新增的確認是「字型 tile 搬移用的是 BIOS `CpuSet`／`CpuFastSet`（`svc 0x0B`／`0x0C`，已反組譯確認立即值，非推測）這類純搬移服務，不是壓縮服務」，但這只涵蓋 title／選單這批固定 UI 圖塊，尚不能推論到對話文字（量遠大於 UI 提示字樣）用的是否為同一套機制。
+1. **最高優先**：推進到角色建立畫面（在存檔選擇畫面對 FILE 1 送出 `A`），用 `navigate_and_dump.py` 已驗證的按鍵注入技巧（讀取 watchpoint 盯 `KEYINPUT` `0x04000130`＋`P` 封包覆寫目的暫存器）應該可以直接推進。這同時服務兩個目的：(a) 這是 ROADMAP 一直建議的「更直接考驗文字輸入系統的畫面」；(b) 第四輪在 BG 字型表裡目測到疑似「キャラクタ／カラーセンタク」（角色／顏色選擇）字樣（低信心、未核對），如果角色建立畫面真的用到這批 tile-index，會是「同一張表跨畫面共用」的第一個直接證據——這正是第四輪 README 任務指定但未完成的「項目 1」。
+2. 擴充 `research/bg-fonttable-codepage-partial.md` 裡「低信心／僅結構性判讀」那些條目——tile 0–9、16–25 兩組額外數字樣式、tile 91–94 疑似 5–8、tile 176–191 疑似另一份 FILE+數字拷貝——目前都只從字型表圖片目測，沒有在任何實際畫面上看過被引用，需要找到會用到它們的畫面才能核實。
+3. 找到字型搬移的通用「傳輸佇列」機制本身之後，回溯是哪段程式碼把 (來源=字型 ROM 位址, 目的=VRAM tile 槽, mode) 三元組寫進佇列 entry——本輪測試過的候選推入函式（ROM `0x08001154`）已用 150＋400 次即時攔截**否定**，不是字型使用的推入路徑，需要換一個候選或换一種找法（見上方「第三輪偵察」Goal 2 一節「未確認／已測試但否定的假設」）。這條路線優先度低於上面兩點，因為 tile-index 已確認直接對應 ROM 字型表位址，不再迫切需要靠這條呼叫鏈反推 codepage。
+4. 仍未解決：對話文字（量遠大於 UI 提示字樣）究竟走 BG／OBJ 這兩套已知字型表的哪一套（或完全是第三套系統）；本輪確認的兩張字型表都只涵蓋片假名＋Latin 字母＋數字，沒有 hiragana、沒有漢字，不能假設就是對話文字系統。文字究竟是 BIOS 壓縮、自訂壓縮、還是完全不壓縮直接存放也仍未解——第二、三輪確認的是「字型 tile 搬移」不經壓縮，但那只涵蓋固定 UI 圖塊。
 
 ## skill 使用備註（`gba-localization`）
 
@@ -195,6 +261,7 @@ python3 games/shining-soul-1/tools/scan_sjis_runs.py \
 - Zip 檔名編碼（GBK 而非 UTF-8）導致 `unzip` 直接失敗，skill 沒有提到這個常見障礙；已在上方「ROM 識別」記下繞過方法（Python `zipfile` 手動轉碼），供下次快速解決同類問題。
 - 第二輪心得：skill 建議「渲染字型＋OCR」或「模擬器中斷點觀察 VRAM」作為 Shift-JIS／指標表都找不到時的備案，這次證實**後者比純靜態反組譯有效得多**——花在「用 capstone 覆核 swi 候選」上的時間只換到一個強化版負面結果（137 個候選全部無法確認），而改用 mGBA GDB stub 直接觀察執行期 VRAM，一次就拿到「畫面渲染吻合＋字形格式確認＋部分字形資料 ROM 位置」三項正面結果。教訓：**對於「連文字大致存放區域都還沒鎖定」的新遊戲，如果有能力起模擬器，應該優先於純靜態反組譯**，因為靜態反組譯在沒有從 entry point 做完整控制流重建的情況下，對 THUMB 這種密集編碼指令集的「這是真指令」判斷力很弱（見上方「反組譯結果」一節）。
 - 第三輪心得：mGBA GDB stub 支援的功能比「純輪詢記憶體」豐富得多（watchpoint＋暫存器寫入＋非同步 stop-reply），但這些能力**沒有寫在任何 GDB remote protocol 通用文件裡能直接照搬**——mGBA 的 stub 是部分實作，正確用法（封包格式、位元組序、命中後要不要先 `s` 再 `c`）只能對照它自己的原始碼（`src/debugger/gdb-stub.c`）核對，用「照 GDB 標準協定文件猜」會在暫存器位元組序（`P` 封包）這種細節上出錯而不自知。另外一個具體教訓：遇到「寫記憶體看起來完全無效」的情況，不要停在「時機不對／格式不對」的猜測，直接去讀模擬器原始碼確認**這個位址的讀取路徑是否本來就會覆寫記憶體內容**（本輪的 `KEYINPUT` 正是這種情況）——這比反覆調整寫入時機／數值快得多，也才是真正的根因而非表面現象的修補。
+- 第四輪心得（game-agnostic，值得留在這個 skill 而非只留在本遊戲文件）：**當畫面上已知會顯示什麼文字時（UI 標籤、選單提示等固定字串），直接讀取 tilemap 的 tile-index 陣列＋逐格用正確 palette bank 渲染核對，比 OCR 或統計投票快得多、也精確得多**——本輪完全跳過 OCR，單靠「已知答案」反查，一次就拿到約 32 個字符的 confirmed／分級碼表，且順藤摸瓜找到整張 1024 格字型表的 ROM 位置。這是 skill 文件裡「Two separate problems」一節目前只列了「raster byte-matching」與「render+OCR」兩種 codepage 取得法，這次證實還有第三種、成本更低的路徑：**當遊戲畫面本身包含已知明文時，直接用它當 ground truth，跳過 OCR**——但這只在「碰巧有已知明文畫面」時才適用，不是所有情境都能套用，是這兩種既有方法之外的機會主義捷徑，不是取代品。另外一個教訓：「DISPCNT 讀到目標值」不等於「畫面已經穩定到能接受輸入」，可能還在淡入淡出過渡幀——用「continue 一段時間＋讀 DISPCNT＋不符合就再 continue」的迴圈判斷穩定時，建議在第一次讀到目標值後再額外多等一段緩衝時間，而不是立刻信任第一次命中。
 
 ## 合規邊界
 

@@ -10,13 +10,13 @@
 - [x] 確認目前沒有公開的《光明之魂》GBA 文字格式逆向工程資料可參考。
 - [x] **第二輪已完成**：用 capstone 反組譯覆核 BIOS 壓縮呼叫候選（結論：137 個候選全部無法確認為真指令，強化版負面結果）；用 `mgba --gdb` 即時觀察執行期 VRAM，確認標題畫面渲染內容、GBA 4bpp/32-bytes-per-tile 格式假設、以及片假名＋拉丁字母混排字形資料在 ROM `0x62AA44`–`0x62B8E4` 附近的位置（逐位元組比對確認未經 BIOS 壓縮）。詳見 `games/shining-soul-1/README.md`「第二輪偵察」一節。
 - [x] **第三輪已完成**：對照 mGBA 0.10.5 原始碼確認直接寫 `KEYINPUT` 記憶體為何架構性無效（每次讀取都被 `keysActive`／`keyCallback` 覆寫）；改用讀取 watchpoint＋暫存器覆寫成功跳過標題畫面，一路推進並渲染確認到「模式選擇」「存檔選擇」兩個新畫面（見 `games/shining-soul-1/README.md`「第三輪偵察」一節，渲染圖存於 `research/mode-select-screen-obj-render.png`、`research/save-select-screen-bg2-char-stats-render.png`、`research/save-select-screen-bg3-file-slots-render.png`）；找到字型 tile 搬入 VRAM 使用的真實 `swi`（BIOS CpuSet／CpuFastSet）呼叫與其所屬的通用「傳輸佇列」flush 迴圈（ROM file offset 約 `0x11a0`–`0x11fe`）；一個「字型專屬推入函式」候選（`0x08001154`）經即時攔截測試後被**否定**（誠實記錄，非成功結論）。
-- [ ] **尚未開始**：字元代碼→字形 tile 索引對照表（codepage）——本輪判斷最快路徑是直接反查存檔選擇畫面 BG2／BG3 tilemap 的 tile-index 陣列（已知會顯示什麼文字），而非繼續往上追字型傳輸佇列的呼叫鏈，留給下一輪。
+- [~] **第四輪已完成部分**：直接反查存檔選擇畫面 BG2／BG3 tilemap 的 tile-index 陣列，建立約 32 個相異字符的部分 codepage（confirmed／中信心／低信心分級，見 `games/shining-soul-1/research/bg-fonttable-codepage-partial.md`）；並確認支撐這批 BG 文字渲染的 1024 格字型表本體位於 ROM `0x1398e8`–`0x1418e8`（窮舉逐格比對確認，tile-index 直接對應表內位址，無需另找間接對照層）。**尚未完成**：跨畫面驗證（是否為系統通用 codepage，而非單畫面美術表）、對話文字系統本身（本輪找到的兩張字型表都只涵蓋 UI／選單短字串，無 hiragana／漢字）。
 
 ## 里程碑 1：文字系統與可逆試補丁
 
 - [x] 反組譯覆核 BIOS 解壓縮呼叫候選——結論是全部候選都無法確認為真指令，「文字經 BIOS 常式解壓縮」目前沒有直接證據（但也未被排除，需要更完整的控制流重建才能真正排除）。
-- [~] 找到字型／字形點陣資料——**部分完成，第三輪有推進**：已確認 title 畫面「シャイニング・ソウル／PUSH START」用的 OBJ 字形資料格式（4bpp／32 bytes/tile）與 ROM 位置（約 `0x62AA44`–`0x62B8E4`，逐位元組原封不動搬移，非 BIOS 壓縮），且已在模式選擇畫面看到**同一套機制載入的第二組不同字符**（片假名選單文字），確認這是可重用字型系統而非單一畫面的專屬美術資源。搬移機制本身（真實 `swi` BIOS CpuSet／CpuFastSet 呼叫＋通用傳輸佇列 flush 迴圈，ROM file offset 約 `0x11a0`–`0x11fe`）已定位；但「哪段程式碼決定要把哪個字元排進佇列」（真正的字型載入器決策點／codepage 前置邏輯）**仍未定位**，一個候選推入函式已測試否定。
-- [ ] 建立 provisional 碼表或改用渲染+OCR 路線（視文字系統形狀而定，尚無法判斷哪種更適合）——第三輪已找到三個獨立的動態文字畫面（標題、模式選擇、存檔選擇），下一輪可直接從存檔選擇畫面的 BG tilemap tile-index 反查碼表，不必再等更多畫面。
+- [~] 找到字型／字形點陣資料——**部分完成，第四輪有新推進**：OBJ 字型（title／模式選擇畫面，`0x62AA44`–`0x62B8E4`）位置與可重用性第二、三輪已確認（見上）。**第四輪新增**：找到並完整確認了第二張、獨立的 BG 字型表本體——ROM `0x1398e8`–`0x1418e8`（1024 格、`0x8000` bytes），存檔選擇畫面的 BG2／BG3 內容經窮舉逐格比對，與這整段 ROM 範圍逐位元組完全相同，涵蓋 tile-number 欄位能定址的全部範圍；tile-index 直接對應表內位址，這條渲染路徑上不存在需要另外尋找的間接 codepage 層。兩張表（OBJ 版、BG 版）位置不同、彼此獨立，對話文字用哪一套仍未知。
+- [~] 建立 provisional 碼表——**第四輪已建立部分**：直接反查存檔選擇畫面 BG2／BG3 tilemap tile-index，取得約 32 個相異字符的 confirmed／中信心／低信心分級碼表，見 `games/shining-soul-1/research/bg-fonttable-codepage-partial.md`。尚未完成：跨畫面驗證這是否為系統通用 codepage（本輪只成功讀到一個有 BG2／BG3 內容的畫面）；OCR 路線目前判斷不需要，因為已知文字＋直接讀 tilemap 比 OCR 更精確，OCR 只在遇到「不知道正確答案」的未知字串時才需要動用。
 - [ ] 定位字串數量、分段方式與（若存在）指標表結構，寫出本遊戲專屬的抽取器。
 - [ ] 建立本機原文表 `research/shining-soul-1-decoded.jsonl`（`{"string_id", "locale", "text", "provenance"}`），供 `core/ledger/restore_translations.rb` 使用。
 
