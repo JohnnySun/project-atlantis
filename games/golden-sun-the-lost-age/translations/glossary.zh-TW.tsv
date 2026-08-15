@@ -188,7 +188,7 @@ ja	zh-TW	category	status	notes
 チルド	冰凍術	psynergy	provisional	皮卡德用於凍結水面的水元素精神力；按技能效果翻譯
 ロッホ	洛荷	location	provisional	巴爾提卡大陸上的採礦村，從古代遺跡挖出大炮；依日文名稱音譯
 ピュール	普耶爾	character	provisional	普羅克斯村長，主張在深淵吞噬村莊前點亮瑪爾斯燈塔；依日文名稱音譯
-ギョルギス	喬爾吉斯	character	provisional	在拉利貝洛收養並撫養席芭的居民；依日文名稱音譯
+ギョルギス	喬爾吉斯	character	provisional	在拉利貝洛收養並撫養西芭的居民；依日文名稱音譯
 バルチカ	巴爾提卡	location	provisional	洛荷所在、與阿特卡隔海相望的大陸；依日文名稱音譯
 たいほう	大炮	item	provisional	洛荷從古代遺跡挖出的武器，可發射熔岩球破壞北海厚冰
 エレメンタルスター	元素之星	world	provisional	封存四元素力量、用於點燃元素燈塔的關鍵寶石；按日文語義翻譯
@@ -203,10 +203,10 @@ ja	zh-TW	category	status	notes
 ロビン	羅賓	character	provisional	前作地元素使主角；依既有劇情翻譯統一
 ジェラルド	傑拉德	character	provisional	前作火元素使夥伴；依既有劇情翻譯統一
 イワン	伊萬	character	provisional	前作風元素使夥伴；依既有劇情翻譯統一
-メアリィ	米雅	character	provisional	前作水元素使夥伴；依系列英語名 Mia 音譯
+メアリィ	米雅莉	character	provisional	前作水元素使夥伴；依系列英語名 Mia 音譯；2026-08-15 依 Wikipedia 與社群 wiki 慣用寫法「米雅莉」統一（原「米雅」）
 ガルシア	加西亞	character	provisional	本作地元素使主角；依既有劇情翻譯統一
 ジャスミン	潔絲敏	character	provisional	本作火元素使夥伴；依既有劇情翻譯統一
-シバ	席芭	character	provisional	本作風元素使夥伴；依既有劇情翻譯統一
+シバ	西芭	character	provisional	本作風元素使夥伴；依既有劇情翻譯統一；2026-08-15 依 Wikipedia 與社群 wiki 慣用寫法「西芭」統一（原「席芭」）
 長剣	長劍	item	provisional	武器分類；用於裝備說明
 かるめの剣	輕劍	item	provisional	武器分類；涵蓋短劍、刺劍與忍者刀等
 アックス	斧	item	provisional	武器分類；用於裝備說明
