@@ -99,13 +99,16 @@ ruby ../../core/golden-sun/decode-text-ids.rb \
 
 第一部與第二部有大量共用系統文字（存檔、資料處理、隊伍加入、精神力學習等 UI 訊息，兩作原句逐字相同）。`tools/build_translation_batch.py` 以「去除控制碼後的原文是否與第二部語料庫完全相同」為準，沿用第二部已審訂的 `zh-Hans`／`zh-TW` 譯文；找不到完全相同原句的條目留待新譯，不臆測套用相近譯文。
 
-目前已完成 2,802／11,115 條（25.2%）：
+目前已完成 10,119／11,115 條（91.0%）：
 
 - `translations/system-messages.draft.jsonl`：id 0–30，存檔／資料處理 UI，31 條。
 - `translations/battle-shop-config-and-defaults.draft.jsonl`：id 31–116，戰鬥指令、商店／設定關鍵字，68 條（原 75 條，因角色預設名姓名緩衝區截斷 bug 移除 id 102–108 七條，見下方「角色預設名 bug」）。
 - `translations/items-weapons-and-armor.draft.jsonl`：id 117–1118，武器／防具／道具資料庫，737 條。
 - `translations/djinn-names.draft.jsonl`：id 1119–1350，精靈名稱與四系召喚，202 條。
 - `translations/shared-corpus-reuse.draft.jsonl`：id 1350 以後散布全 ROM 範圍與第二部逐字相同的系統／戰鬥／道具／劇情文字，1,764 條。
+- `translations/dialogue-batch-00~20-*.draft.jsonl`：id 1498–11011 區間全部真人劇情對話與戰鬥訊息，21 個批次（各 350 條、最後一批 317 條），共 7,317 條，由多個平行子代理逐批新譯，每批獨立通過來源比對與控制碼序列驗證後才 commit。
+
+未涵蓋的 996 條為：ROM 內部場景／房間除錯標籤（非日文顯示文字，如 `TITLE`、`DGN01B`）與單一半形「?」除錯佔位符（見下段說明），依既有慣例原樣保留不翻譯。
 
 全部通過 `schemas/localization-record.schema.json` 驗證，且逐一與《失落的時代》既有語料庫按「去除控制碼後原文完全相同」比對——能重用的直接沿用既有審訂譯文，找不到的才新譯（見各檔 `review_notes`）。全 ROM 範圍另有 744 條原文即為單一半形「?」、無任何控制碼的除錯／未用插槽佔位字串，比照既有 `?`／`???` 慣例原樣保留、不列入翻譯批次。
 
@@ -143,21 +146,27 @@ ruby tools/build_zh_tw_trial.rb \
   --translations translations/battle-shop-config-and-defaults.draft.jsonl \
   --translations translations/items-weapons-and-armor.draft.jsonl \
   --translations translations/djinn-names.draft.jsonl \
+  --translations translations/shared-corpus-reuse.draft.jsonl \
+  --translations translations/dialogue-batch-*.draft.jsonl \
   --bdf ../golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
   --output roms/build/golden-sun-tbs-zh-tw-trial.gba
 ```
 
-驗證結果（最新一次建置，2,802 條譯文，涵蓋 id 0–11114 全範圍散布區段）：
+（實際建置腳本呼叫需展開 `--translations` 為每個檔案各一個旗標；Ruby `OptionParser` 對長串重複旗標的字串串接方式敏感，建置腳本應以 shell 陣列組出引數，而非字串拼接後未加引號展開，否則會出現 `missing required options` 的偽陽性錯誤。）
+
+驗證結果（2026-08-15 最終建置，10,119 條譯文，id 0–11114 全範圍）：
 
 | 項目 | 結果 |
 | --- | --- |
-| 目標 ROM CRC32 | `9d1efd45` |
-| BPS 補丁 CRC32（`bps_create.rb` 輸出的 patch CRC32，非整檔 CRC32） | `8936be8e` |
+| 目標 ROM CRC32 | `41307fe9` |
+| BPS 補丁 CRC32（`bps_create.rb` 輸出的 patch CRC32，非整檔 CRC32） | `dde87dc6` |
 | BPS 補丁大小 | 2,097,218 bytes |
 | 重新抽取比對 | 全部 11,115 條可解碼，逐位元組與建置腳本輸出一致 |
-| `verify_text_delta.rb` | 變動 ID 集合與五份翻譯批次宣告 ID 完全相同（2,802 條） |
+| `verify_text_delta.rb` | 變動 ID 集合與全部 26 份翻譯批次宣告 ID 完全相同（10,119 條） |
 | BPS 往返校驗 | 對乾淨 ROM 套用補丁後與直接建置產物逐位元組 `IDENTICAL` |
-| mGBA／點陣直讀 QA | 見下方「角色預設名 bug」與「實機驗證範圍」 |
+| 點陣直讀 QA | 見下方「實機驗證範圍」 |
+
+建置過程中發現並修復一例字庫相容性問題：骰子賭博規則文字使用全形乘號「×」，其在 Fusion Pixel 字型中的 BBX 為 5×10（非建置腳本要求的 10×10 自訂字形格），改以 ASCII `x` 替代（本就落在引擎內建單位元組字形範圍，不需自訂字形格，且符合遊戲文字慣用的倍率標示法）。
 
 （注意：`ruby ../../core/golden-sun/extract-huffman-text-ids.rb` 的 `--huffman-pointer-table`／`--string-pointer-table` 參數吃的是 ROM **檔案內偏移量**，不是建置腳本印出的 `0x08xxxxxx` GBA 位址——後者要先減去 `0x08000000` 基底才能餵給抽取工具，否則會報 `32-bit read outside ROM`。）
 
