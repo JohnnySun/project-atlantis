@@ -45,6 +45,71 @@ def strip_controls(raw_text):
     return "".join(out), codes
 
 
+def prefix_and_suffix_codes(raw_text):
+    """Split raw_text's control-code sequence (0003 included) into
+    (prefix, internal_non_0003, suffix) around its first/last display
+    character, mirroring build_zh_tw_trial.rb's implicit-control path:
+    prefix/suffix (with any embedded 0003 dropped, same as the Ruby
+    `.reject { |unit| unit == 0x03 }`) are what a reused target with no
+    explicit {HH} markers of its own automatically inherits."""
+    events = []
+    i = 0
+    while i < len(raw_text):
+        if raw_text[i] == "\n":
+            events.append(("code", "0003"))
+            i += 1
+            continue
+        m = CONTROL_RE.match(raw_text, i)
+        if m:
+            events.append(("code", f"00{m.group(1).lower()}"))
+            i = m.end()
+            continue
+        events.append(("display", None))
+        i += 1
+    first_display = next((idx for idx, (kind, _) in enumerate(events) if kind == "display"), None)
+    if first_display is None:
+        return None, None, None
+    last_display = max(idx for idx, (kind, _) in enumerate(events) if kind == "display")
+    prefix = [code for kind, code in events[:first_display] if kind == "code" and code != "0003"]
+    internal = [code for kind, code in events[first_display : last_display + 1] if kind == "code" and code != "0003"]
+    suffix = [code for kind, code in events[last_display + 1 :] if kind == "code" and code != "0003"]
+    return prefix, internal, suffix
+
+
+def implicit_reuse_matches(raw_text, codes, candidate_target):
+    """Replicate build_zh_tw_trial.rb's implicit-control acceptance check in
+    Python: candidate_target has no explicit {HH} marker of its own, so it
+    can only be reused if source has no internal (non-0003) control code, and
+    prefix-codes + candidate's own newline-derived 0003s + suffix-codes
+    reproduces this game's actual full control sequence exactly."""
+    prefix, internal, suffix = prefix_and_suffix_codes(raw_text)
+    if prefix is None or internal:
+        return False
+    reconstructed = prefix + target_control_codes(candidate_target) + suffix
+    return reconstructed == codes
+
+
+def target_control_codes(target_text):
+    """Extract the ordered {HH}/implicit-0003 control-code sequence a reused
+    target string declares, using the same convention strip_controls() applies
+    to Japanese source text -- so it can be checked against this game's own
+    actual control-code sequence for the id being reused into."""
+    codes = []
+    i = 0
+    while i < len(target_text):
+        if target_text[i] == "\n":
+            codes.append("0003")
+            i += 1
+            continue
+        m = CONTROL_RE.match(target_text, i)
+        if m:
+            codes.append(f"00{m.group(1).lower()}")
+            i = m.end()
+            continue
+        i += 1
+    return codes
+
+
 def load_reference_index(pattern):
     index = {}
     for path in glob.glob(pattern):
@@ -87,7 +152,26 @@ def main():
             if raw is None:
                 continue
             stripped, codes = strip_controls(raw)
-            candidates = reference_index.get(stripped)
+            if stripped == "?" and not codes:
+                # Bare "?" with no control codes at all is this corpus's
+                # established debug/unused-slot placeholder pattern (see
+                # README "?"/"???" exclusion convention) -- never translate it.
+                continue
+            candidates = reference_index.get(stripped) or []
+            usable = None
+            for candidate in candidates:
+                candidate_target = candidate["targets"]["zh-TW"]["text"]
+                if CONTROL_RE.search(candidate_target):
+                    # explicit_controls? path (core/golden-sun/localized_text.rb):
+                    # the target alone must fully reproduce this game's actual
+                    # control-code sequence -- no automatic prefix/suffix.
+                    if target_control_codes(candidate_target) == codes:
+                        usable = candidate
+                        break
+                elif implicit_reuse_matches(raw, codes, candidate_target):
+                    usable = candidate
+                    break
+            candidates = [usable] if usable else []
 
             record = {
                 "game": args.game,

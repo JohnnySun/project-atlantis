@@ -99,14 +99,17 @@ ruby ../../core/golden-sun/decode-text-ids.rb \
 
 第一部與第二部有大量共用系統文字（存檔、資料處理、隊伍加入、精神力學習等 UI 訊息，兩作原句逐字相同）。`tools/build_translation_batch.py` 以「去除控制碼後的原文是否與第二部語料庫完全相同」為準，沿用第二部已審訂的 `zh-Hans`／`zh-TW` 譯文；找不到完全相同原句的條目留待新譯，不臆測套用相近譯文。
 
-目前已完成 id 0–1350 區間，共 1,045 條（另有 306 條 `?`／`???` 佔位或除錯標籤依《失落的時代》既有慣例原樣保留，不列入翻譯批次）：
+目前已完成 2,802／11,115 條（25.2%）：
 
 - `translations/system-messages.draft.jsonl`：id 0–30，存檔／資料處理 UI，31 條。
-- `translations/battle-shop-config-and-defaults.draft.jsonl`：id 31–116，戰鬥指令、商店／設定關鍵字、角色預設名，75 條。
+- `translations/battle-shop-config-and-defaults.draft.jsonl`：id 31–116，戰鬥指令、商店／設定關鍵字，68 條（原 75 條，因角色預設名姓名緩衝區截斷 bug 移除 id 102–108 七條，見下方「角色預設名 bug」）。
 - `translations/items-weapons-and-armor.draft.jsonl`：id 117–1118，武器／防具／道具資料庫，737 條。
 - `translations/djinn-names.draft.jsonl`：id 1119–1350，精靈名稱與四系召喚，202 條。
+- `translations/shared-corpus-reuse.draft.jsonl`：id 1350 以後散布全 ROM 範圍與第二部逐字相同的系統／戰鬥／道具／劇情文字，1,764 條。
 
-全部通過 `schemas/localization-record.schema.json` 驗證，且逐一與《失落的時代》既有語料庫按「去除控制碼後原文完全相同」比對——能重用的直接沿用既有審訂譯文，找不到的才新譯（見各檔 `review_notes`）。
+全部通過 `schemas/localization-record.schema.json` 驗證，且逐一與《失落的時代》既有語料庫按「去除控制碼後原文完全相同」比對——能重用的直接沿用既有審訂譯文，找不到的才新譯（見各檔 `review_notes`）。全 ROM 範圍另有 744 條原文即為單一半形「?」、無任何控制碼的除錯／未用插槽佔位字串，比照既有 `?`／`???` 慣例原樣保留、不列入翻譯批次。
+
+`tools/build_translation_batch.py` 的重用比對已加強為**同時核對控制碼結構**，不只比對顯示文字：即使兩作原文逐字相同，其控制碼（換行位置、`{HH}` 插值標記、終止碼）仍可能不同（例如同一句話在第一部多一個換行，或插入的角色索引參數不同），直接照搬 GS2 譯文會導致建置失敗（`translated control-code mismatch`），甚至（若手動繞過檢查）在遊戲內顯示錯誤的插值內容。工具現在會針對每個候選逐一核對控制碼序列是否與本作原始資料完全吻合，不吻合的一律歸類為「需要新譯」，不強行沿用。
 
 ### 人名／地名一致性
 
@@ -144,17 +147,19 @@ ruby tools/build_zh_tw_trial.rb \
   --output roms/build/golden-sun-tbs-zh-tw-trial.gba
 ```
 
-驗證結果（1,038 條譯文，id 0–1350 區間，見下方「角色預設名 bug」說明為何是 1,038 而非 1,045）：
+驗證結果（最新一次建置，2,802 條譯文，涵蓋 id 0–11114 全範圍散布區段）：
 
 | 項目 | 結果 |
 | --- | --- |
-| 目標 ROM CRC32 | `15e71211` |
-| BPS 補丁 CRC32（`bps_create.rb` 輸出的 patch CRC32，非整檔 CRC32） | `f6c132ed` |
+| 目標 ROM CRC32 | `9d1efd45` |
+| BPS 補丁 CRC32（`bps_create.rb` 輸出的 patch CRC32，非整檔 CRC32） | `8936be8e` |
 | BPS 補丁大小 | 2,097,218 bytes |
 | 重新抽取比對 | 全部 11,115 條可解碼，逐位元組與建置腳本輸出一致 |
-| `verify_text_delta.rb` | 變動 ID 集合與四份翻譯批次宣告 ID 完全相同（1,038 條） |
+| `verify_text_delta.rb` | 變動 ID 集合與五份翻譯批次宣告 ID 完全相同（2,802 條） |
 | BPS 往返校驗 | 對乾淨 ROM 套用補丁後與直接建置產物逐位元組 `IDENTICAL` |
-| mGBA 實機 QA | 見下方「角色預設名 bug」與「實機驗證範圍」 |
+| mGBA／點陣直讀 QA | 見下方「角色預設名 bug」與「實機驗證範圍」 |
+
+（注意：`ruby ../../core/golden-sun/extract-huffman-text-ids.rb` 的 `--huffman-pointer-table`／`--string-pointer-table` 參數吃的是 ROM **檔案內偏移量**，不是建置腳本印出的 `0x08xxxxxx` GBA 位址——後者要先減去 `0x08000000` 基底才能餵給抽取工具，否則會報 `32-bit read outside ROM`。）
 
 ### 角色預設名 bug：名字緩衝區單位元組截斷（已修復）
 
