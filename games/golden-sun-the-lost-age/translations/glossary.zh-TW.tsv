@@ -51,7 +51,7 @@ ja	zh-TW	category	status	notes
 スクレータ	斯庫雷塔	character	provisional	依日文名稱音譯；待全篇專名統一審核
 エレメンタルの灯台	元素燈塔	world	provisional	四座元素燈塔的總稱
 サテュロス	薩帝羅斯	character	provisional	依日文名稱音譯；待前作與全篇專名統一審核
-錬金じゅつ	煉金術	world	provisional	系列世界觀核心概念
+錬金じゅつ	煉金術	world	provisional	系列世界觀核心概念；2026-08-15 QA 複核：本作語料庫內部多數為「鍊金術」(46/12檔) 對「煉金術」(15/6檔)，但前作 golden-sun-the-broken-seal 語料庫壓倒性使用「煉金術」(37 對「鍊金術」3)，且該作術語表明載沿用本作譯名以維持系列一致；為免跨作品用語分裂，保留原「煉金術」為準，並將本作 12 個檔案的「鍊金術」少數用例回改為「煉金術」（見下方 2026-08-15 二次修訂記錄）
 ヨデム	尤迪姆	character	provisional	依日文名稱音譯；待前作與全篇專名統一審核
 ラリベロ	拉利貝洛	location	provisional	維納斯燈塔附近城鎮；依日文名稱音譯
 トレビ	托雷比	location	provisional	前作城邦與戰士所屬地；依日文名稱音譯
@@ -86,7 +86,7 @@ ja	zh-TW	category	status	notes
 くろまじゅつ	黑魔法	world	provisional	瑪德拉居民傳聞中岡瓦納的神秘力量；待基朋波劇情統一審核
 3つまたのヤリ	三叉戟	item	provisional	傳說中對抗海怪所需的三叉武器；待正式道具名稱與海怪劇情統一審核
 ピカード	皮卡德	character	provisional	在瑪德拉遭誤捕的水元素使；依日文名稱音譯
-シン	辛	character	provisional	瑪德拉牢房中審問皮卡德的守衛；依日文名稱音譯
+シン	辛	character	provisional	瑪德拉牢房中審問皮卡德的守衛；依日文名稱音譯；2026-08-15 QA 複核：madra-return-karst.draft.jsonl 與 piers-joins-ship-launch.draft.jsonl 共 8 筆同一角色（村女的戀人，後被皮爾斯冰系精神力嚇怕）誤植為「新」，已回改為「辛」以符合 madra-piers-interrogation.draft.jsonl 的原始登場稱呼
 ミーカサラ	米卡薩拉	location	provisional	奧瑟尼亞大陸東南方的小村；依日文名稱音譯
 ヤンピさばく	揚皮沙漠	location	provisional	奧瑟尼亞大陸通往阿拉弗拉途中的沙漠；依日文名稱音譯
 サウスアイランド	南島	location	provisional	米卡薩拉以南、終年積雪的島嶼；依日文語義直譯
@@ -96,7 +96,7 @@ ja	zh-TW	category	status	notes
 サトレージ	薩特拉吉	character	provisional	前作托雷比競技場戰士；依英語版 Satrage 音譯
 アザート	阿札特	character	provisional	前作托雷比競技場戰士；依英語版 Azart 音譯
 ナヴァンバ	納凡巴	character	provisional	前作托雷比競技場戰士；依英語版 Navampa 音譯
-コロッセオ	競技場	location	provisional	托雷比舉行戰士競技大會的競技場；按劇情功能翻譯
+コロッセオ	競技場	location	provisional	托雷比舉行戰士競技大會的競技場；按劇情功能翻譯；2026-08-15 QA 複核：本作語料庫內部多數為「鬥技場」(19/5檔) 對「競技場」(3/1檔)，但前作 golden-sun-the-broken-seal 語料庫壓倒性使用「競技場」(284 對「鬥技場」0)，且該作術語表明載沿用本作譯名以維持系列一致；為免跨作品用語分裂，保留原「競技場」為準，並將本作 5 個檔案的「鬥技場」少數用例回改為「競技場」（見下方 2026-08-15 二次修訂記錄）
 スピン	旋風術	psynergy	provisional	以風力旋轉或吹動目標的精神力；待能力選單與艾爾斯岩機關 QA
 スピンストーン	旋風石	world	provisional	會對旋風術產生反應的特殊巨石；待艾爾斯岩機關 QA
 マハ	瑪哈	character	provisional	波比奇村掌握透視術的長者；依日文名稱音譯
@@ -223,3 +223,4 @@ ja	zh-TW	category	status	notes
 サークル	頭環	item	provisional	頭部防具分類；與一般環形首飾區分
 ドリー	德利	character	provisional	第一部村莊角色（伊薩克的父親形象／養父）；2026-08-15 統一少數變體「多利」為「德利」，與第一部語料庫一致
 キニー	基妮	character	provisional	第一部村莊角色（照顧主角的長輩）；2026-08-15 統一少數變體「琪妮」為「基妮」，與第一部語料庫一致
+アメン・ラー	阿蒙拉	summon	provisional	四元素召喚之一；原譯「拉美西斯」誤植為埃及法老名，2026-08-15 QA 修正為對應的太陽神 Amun-Ra 正確譯名
