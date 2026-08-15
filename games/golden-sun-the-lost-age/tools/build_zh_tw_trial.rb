@@ -11,9 +11,9 @@ options = {
   original_extended_font: 0x05bf8c,
   original_extended_count: 152,
   translations: [],
-  font_pointer_literal: 0x03aa38,
-  huffman_pointer_literal: 0x038578,
-  text_pointer_literal: 0x0385dc
+  font_pointer_literals: [0x0387f8, 0x03aa38, 0x03d144],
+  huffman_pointer_literals: [0x038578, 0x03d400],
+  text_pointer_literals: [0x0385dc]
 }
 
 OptionParser.new do |parser|
@@ -180,15 +180,18 @@ append.call(:text_table, text_table)
 
 abort "trial data exceeds blank ROM tail" if options[:insert_offset] + bundle.bytesize > rom.bytesize
 rom[options[:insert_offset], bundle.bytesize] = bundle
-rom[options[:font_pointer_literal], 4] = [pointer.call(layout.fetch(:font))].pack("V")
-rom[options[:huffman_pointer_literal], 4] = [pointer.call(layout.fetch(:huffman_table))].pack("V")
-rom[options[:text_pointer_literal], 4] = [pointer.call(layout.fetch(:text_table))].pack("V")
+font_pointer = [pointer.call(layout.fetch(:font))].pack("V")
+huffman_pointer = [pointer.call(layout.fetch(:huffman_table))].pack("V")
+text_pointer = [pointer.call(layout.fetch(:text_table))].pack("V")
+options[:font_pointer_literals].each { |offset| rom[offset, 4] = font_pointer }
+options[:huffman_pointer_literals].each { |offset| rom[offset, 4] = huffman_pointer }
+options[:text_pointer_literals].each { |offset| rom[offset, 4] = text_pointer }
 File.binwrite(options[:output], rom)
 
 warn "built zh-TW trial ROM: #{options[:output]}"
 warn "inserted #{bundle.bytesize} bytes at 0x%06x" % options[:insert_offset]
 warn "translated IDs: #{trial_strings.keys.sort.join(" ")}"
 warn "trial glyph IDs: #{new_glyph_ids.map { |character, id| "#{character}=0x%03x" % id }.join(" ")}"
-warn "extended font pointer: 0x%08x" % pointer.call(layout.fetch(:font))
-warn "Huffman pointer table: 0x%08x" % pointer.call(layout.fetch(:huffman_table))
-warn "text pointer table: 0x%08x" % pointer.call(layout.fetch(:text_table))
+warn "extended font pointer: 0x%08x (patched at #{options[:font_pointer_literals].map { |o| "0x%06x" % o }.join(", ")})" % pointer.call(layout.fetch(:font))
+warn "Huffman pointer table: 0x%08x (patched at #{options[:huffman_pointer_literals].map { |o| "0x%06x" % o }.join(", ")})" % pointer.call(layout.fetch(:huffman_table))
+warn "text pointer table: 0x%08x (patched at #{options[:text_pointer_literals].map { |o| "0x%06x" % o }.join(", ")})" % pointer.call(layout.fetch(:text_table))
