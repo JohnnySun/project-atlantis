@@ -11,6 +11,7 @@ source:
   size: 8388608
   crc32: fb96d9de
   md5: cf33e45e59b0ee3801b5cf18a9e58524
+  sha1: 35ef9e4c9f38183ebd6a3e3923a11ce9a4333718
   sha256: 088bedae4bad8b67e87ff10035a898d3639f3182d486fe5a5d113bab223e0a26
 targets:
   - zh-Hans
