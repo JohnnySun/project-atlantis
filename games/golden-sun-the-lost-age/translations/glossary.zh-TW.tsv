@@ -33,7 +33,7 @@ ja	zh-TW	category	status	notes
 こんらん	混亂	status	provisional	影響行動判斷的異常狀態
 こころをうばう	魅惑	status	provisional	心智受控制的異常狀態
 リフレクト	反射	status	provisional	反射攻擊或效果的狀態
-けっかい	屏障	battle	provisional	阻擋攻擊或效果的防護
+けっかい	結界	battle	provisional	阻擋攻擊或效果的防護；2026-08-15 QA 複核發現語料庫實際多數用法為「結界」（3 對 1），修正詞彙表以符合語料庫並統一少數變體
 しりょう	死靈	status	provisional	倒數後造成戰鬥不能的附身效果
 もう毒	劇毒	status	provisional	比中毒造成更高持續傷害
 エレメンタルパワー	元素力量	battle	provisional	地水火風元素的攻擊能力值
@@ -224,3 +224,4 @@ ja	zh-TW	category	status	notes
 ドリー	德利	character	provisional	第一部村莊角色（伊薩克的父親形象／養父）；2026-08-15 統一少數變體「多利」為「德利」，與第一部語料庫一致
 キニー	基妮	character	provisional	第一部村莊角色（照顧主角的長輩）；2026-08-15 統一少數變體「琪妮」為「基妮」，與第一部語料庫一致
 アメン・ラー	阿蒙拉	summon	provisional	四元素召喚之一；原譯「拉美西斯」誤植為埃及法老名，2026-08-15 QA 修正為對應的太陽神 Amun-Ra 正確譯名
+くろまじゅつし	黑術士	character	provisional	角色職業／頭銜（基朋波黑術士傳承）；多數譯名 12 對 1（少數變體「黑魔術師」出現於職業選單標籤，已統一）
