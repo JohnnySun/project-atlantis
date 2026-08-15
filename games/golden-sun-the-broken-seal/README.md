@@ -110,12 +110,64 @@ ruby ../../core/golden-sun/decode-text-ids.rb \
 
 ### 人名／地名一致性
 
-第一、二部劇情連貫、共用世界觀，玩家會接續遊玩，音譯人名地名不可兩作不同。已將第二部 `translations/glossary.zh-TW.tsv`（222 條）逐條比對第一部全量解碼文字，116 條確認同見（含兩作共通的七名可命名角色：羅賓、傑拉德、伊萬、米雅、加西亞、潔絲敏、席芭），寫入第一部自己的 `translations/glossary.zh-TW.tsv`；4 條字串比對誤判（如「シン」只出現在「アサッシンソード」等複合外來語中）已排除。詳見 `research/jp-codepage-derivation.md`「人名／地名跨作一致性」一節與 `tools/build_shared_glossary.py`。之後的翻譯批次應先查此檔，遇到已收錄的專有名詞一律沿用，不另行新譯。
+第一、二部劇情連貫、共用世界觀，玩家會接續遊玩，音譯人名地名不可兩作不同。已將第二部 `translations/glossary.zh-TW.tsv`（222 條）逐條比對第一部全量解碼文字，116 條確認同見（含兩作共通的七名可命名角色：羅賓、傑拉德、伊萬、米雅莉、加西亞、潔絲敏、西芭），寫入第一部自己的 `translations/glossary.zh-TW.tsv`；4 條字串比對誤判（如「シン」只出現在「アサッシンソード」等複合外來語中）已排除。詳見 `research/jp-codepage-derivation.md`「人名／地名跨作一致性」一節與 `tools/build_shared_glossary.py`。之後的翻譯批次應先查此檔，遇到已收錄的專有名詞一律沿用，不另行新譯。
 
-### 尚未完成（下一里程碑）
+（2026-08-15 更新：依社群主流命名核對結果，メアリィ／席芭 兩名分別改為「米雅莉」「西芭」，第一部與第二部語料庫已同步修正，見下方「建置成果」。）
 
-建置可燒錄 BPS 補丁前，還需要：
+### 建置成果（2026-08-15）
 
-- 定位第一部原始日文字型渲染／Huffman／文字指標在程式碼中的參照位址（第二部 `tools/build_zh_tw_trial.rb` 的 `font_pointer_literal`／`huffman_pointer_literal`／`text_pointer_literal` 等常數與其 16 MiB ROM 版面綁死，不能直接套用於 8 MiB 的第一部，需要重新逆向）。
-- 定位第一部 ROM 內足夠大的空白擴展區（第二部使用 `0xf80000`，第一部 ROM 只有一半大小，需另尋位置）。
-- 擴充翻譯批次覆蓋全部 11,115 條文字，並比照第二部流程執行 `verify_text_delta.rb`、BPS 產生與往返校驗、mGBA 實機 QA。
+第一部自己的擴充／指標逆向已完成，`tools/expand_rom.rb`＋`tools/build_zh_tw_trial.rb` 已可從乾淨日版 ROM 產出可燒錄 BPS 補丁：
+
+- ROM 擴充：8 MiB 原始 ROM 補零擴充至 10,485,760 bytes（`tools/expand_rom.rb --size 10485760`），插入點固定於 `0x800000`（原始 ROM 結尾）。
+- 指標常數（與第二部不同，第一部每個角色各有兩處字面量參照，需全部同步修補，否則另一條程式路徑仍讀舊表）：
+  - 字型指標字面量：`0x157e4`、`0x179a0`
+  - Huffman 指標字面量：`0x1556c`、`0x19d04`
+  - 文字指標字面量：`0x155cc`（僅一處）
+- 字型來源：`../golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf`（與第二部同一版本，SIL OFL 1.1 授權，已 SHA256 核對）。
+- 建置指令：
+
+```sh
+ruby tools/expand_rom.rb \
+  --rom roms/base/Ougon_no_Taiyou_Hirakareshi_Fuuin_JP_AGSJ01.gba \
+  --size 10485760 \
+  --output roms/build/Ougon_no_Taiyou_Hirakareshi_Fuuin_JP_AGSJ01.expanded.gba
+
+ruby tools/build_zh_tw_trial.rb \
+  --rom roms/build/Ougon_no_Taiyou_Hirakareshi_Fuuin_JP_AGSJ01.expanded.gba \
+  --text-ids research/jp-text-ids.tsv \
+  --codepage codepages/ja-extended.tsv \
+  --translations translations/system-messages.draft.jsonl \
+  --translations translations/battle-shop-config-and-defaults.draft.jsonl \
+  --translations translations/items-weapons-and-armor.draft.jsonl \
+  --translations translations/djinn-names.draft.jsonl \
+  --bdf ../golden-sun-the-lost-age/research/vendor/fusion-pixel-font-10px-monospaced-bdf-v2026.08.11/fusion-pixel-10px-monospaced-zh_hant.bdf \
+  --output roms/build/golden-sun-tbs-zh-tw-trial.gba
+```
+
+驗證結果（1,038 條譯文，id 0–1350 區間，見下方「角色預設名 bug」說明為何是 1,038 而非 1,045）：
+
+| 項目 | 結果 |
+| --- | --- |
+| 目標 ROM CRC32 | `15e71211` |
+| BPS 補丁 CRC32（`bps_create.rb` 輸出的 patch CRC32，非整檔 CRC32） | `f6c132ed` |
+| BPS 補丁大小 | 2,097,218 bytes |
+| 重新抽取比對 | 全部 11,115 條可解碼，逐位元組與建置腳本輸出一致 |
+| `verify_text_delta.rb` | 變動 ID 集合與四份翻譯批次宣告 ID 完全相同（1,038 條） |
+| BPS 往返校驗 | 對乾淨 ROM 套用補丁後與直接建置產物逐位元組 `IDENTICAL` |
+| mGBA 實機 QA | 見下方「角色預設名 bug」與「實機驗證範圍」 |
+
+### 角色預設名 bug：名字緩衝區單位元組截斷（已修復）
+
+首次建置（1,045 條，含 id 102–108 七個可命名角色的預設名翻譯，如「羅賓」）在 mGBA 中開新遊戲，喚醒對話「おきるのよ ロビン。」的名字位置顯示成亂碼「34」，命名輸入畫面的預覽框同樣顯示「34」而非預期的中文名字。
+
+原因：遊戲以控制碼 `{11}{01}` 從存檔用的「姓名緩衝區」插入主角名字，該緩衝區**每字元只佔 1 byte**（原版遊戲只會存放假名／ASCII，且命名輸入鍵盤本身也只能輸入假名）。新遊戲初始化時，引擎把預設名字串（id 102，`PC01`）複製進此緩衝區；若該字串被翻譯成中文，其擴充字形 ID（如「羅」=`0x233`、「賓」=`0x234`）會被截斷成低位元組（`0x33`＝ASCII `'3'`、`0x34`＝ASCII `'4'`），因此顯示「34」——與觀察到的亂碼完全吻合。這個截斷發生在遊戲自己的姓名複製路徑，不是指標表或 Huffman 解碼的問題（`verify_text_delta.rb` 對這批字串的一般性解碼驗證本來就是通過的）。
+
+修復：`translations/battle-shop-config-and-defaults.draft.jsonl` 移除 id 102–108（七個角色預設名），保留原始假名不譯——姓名緩衝區的單位元組限制與命名輸入鍵盤只能輸入假名，兩者共同決定了整個姓名系統只能自洽於假名，不宜翻譯。移除後批次總數由 1,045 降為 1,038，已重新建置並通過上表全部驗證；mGBA 複測確認命名畫面與喚醒對話均正確顯示「ロビン」。
+
+**同類風險見於第二部**：《失落的時代》語料庫（`../golden-sun-the-lost-age/translations/`）同樣翻譯了角色預設名（id 131–137 一類），若其姓名緩衝區為相同單位元組設計，其試建置 ROM 極可能有同樣的截斷 bug；第二部尚未有實機 QA 通過命名畫面的紀錄。已在第二部 `ROADMAP.md` 記錄此風險，作為下次建置前的必查項。
+
+### 實機驗證範圍
+
+- mGBA 無頭執行（libmgba C API）確認：Nintendo／Camelot 商標畫面、標題畫面、命名輸入假名鍵盤（含上述 bug 修復後的「ロビン」正確顯示）、開場喚醒對話正常渲染。
+- 因開場為强制過場，尚未在模擬器內實際走到會顯示本批翻譯（系統訊息／戰鬥指令／道具／精靈名稱）的畫面；改以直接讀取建置後 ROM 在指標重定向後的真實位置（`0x800000` 起的擴充字型點陣資料）逐字元渲染多組已翻譯字串（如「設定項目」「文字速度」「記錄完成。」），確認點陣資料與指標表皆正確，視覺上清晰可辨、無亂碼或缺字。
+- 尚未驗證：實際遊玩路徑觸發戰鬥／商店／存檔選單等會顯示本批翻譯內容的畫面。

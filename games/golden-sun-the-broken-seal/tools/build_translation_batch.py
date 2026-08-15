@@ -20,16 +20,24 @@ CONTROL_RE = re.compile(r"\{([0-9A-Fa-f]{2})\}")
 
 
 def strip_controls(raw_text):
+    """core/golden-sun/japanese_codepage.rb decodes control unit 0x03 as a
+    literal "\n" character, not a "{03}" bracket marker (unlike every other
+    control unit < 0x20) -- so newlines must be counted as an implicit 0003
+    in the returned control-code sequence, in their actual source position,
+    or the declared control_codes list silently drops them."""
     codes = []
     out = []
     i = 0
     while i < len(raw_text):
+        if raw_text[i] == "\n":
+            codes.append("0003")
+            out.append("\n")
+            i += 1
+            continue
         m = CONTROL_RE.match(raw_text, i)
         if m:
             code = m.group(1).lower()
             codes.append(f"00{code}")
-            if code == "03":
-                out.append("\n")
             i = m.end()
             continue
         out.append(raw_text[i])
