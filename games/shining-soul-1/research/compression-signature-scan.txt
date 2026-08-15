@@ -1,0 +1,24 @@
+=== LZ77 (0x10) candidates: 11455 total, word-aligned scan, size in [16,2097152] ===
+  offset 0x0004a4  decompressed_size 1836213 (0x1c04b5)
+  offset 0x0004b0  decompressed_size 189 (0xbd)
+  offset 0x000782  decompressed_size 1837896 (0x1c0b48)
+  offset 0x0007da  decompressed_size 1851784 (0x1c4188)
+  offset 0x00086a  decompressed_size 1654848 (0x194040)
+  ... 11450 more not shown
+
+=== Huffman (0x24) candidates: 2298 total, word-aligned scan, size in [16,2097152] ===
+  offset 0x00013c  decompressed_size 1703936 (0x1a0000)
+  offset 0x001936  decompressed_size 795652 (0xc2404)
+  offset 0x002b8c  decompressed_size 224 (0xe0)
+  offset 0x002c0c  decompressed_size 528278 (0x80f96)
+  offset 0x002d6c  decompressed_size 795652 (0xc2404)
+  ... 2293 more not shown
+
+=== RLE (0x30) candidates: 3022 total, word-aligned scan, size in [16,2097152] ===
+  offset 0x0007bc  decompressed_size 262145 (0x40001)
+  offset 0x0007c8  decompressed_size 196637 (0x3001d)
+  offset 0x000828  decompressed_size 196637 (0x3001d)
+  offset 0x000948  decompressed_size 262325 (0x400b5)
+  offset 0x000a24  decompressed_size 1835957 (0x1c03b5)
+  ... 3017 more not shown
+

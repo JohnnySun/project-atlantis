@@ -1,0 +1,21 @@
+id: shining-soul-1
+platform: gba
+titles:
+  ja: "シャイニング・ソウル"  # not ROM-verified; header title field is plain ASCII "SHINING SOUL"
+  en: "Shining Soul"
+  zh-Hans: "光明之魂"
+  zh-TW: "光明之魂"
+source:
+  region: JP
+  game_code: AHUJ
+  maker_code: "8P"
+  revision: 0
+  size: 8388608
+  crc32: 521450d1
+  md5: 0cb9989beb289f843cdb69bb0bd8c8be
+  sha1: 5fe69468dc1ecd9fb40f0ab3ca361963006dbb02
+  sha256: 7adebc47af58a7cb12c6e862482e3fd1b2cb82aab2dc3a556ac93f9e78df6b28
+targets:
+  - zh-Hans
+  - zh-TW
+status: research
