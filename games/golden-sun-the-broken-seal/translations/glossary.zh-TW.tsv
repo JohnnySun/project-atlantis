@@ -131,3 +131,9 @@ ja	zh-TW	category	status	notes
 ブラックオーブ	黑寶珠	item	provisional	尤迪姆座船控制道具；擴展既有オーブ=寶珠條目；跨批次確認一致
 ノイル川	諾伊爾河	location	provisional	卡萊附近河流；首次出現
 ヘルストーム	地獄風暴	psynergy	provisional	首次出現的招式名稱
+ラマ寺	喇嘛寺	location	provisional	西安（陳道場）以西、哈莫所在的寺院；藏傳佛教寺院慣用譯名；review_notes 待核對社群慣用譯名多數 56 對少數變體「拉瑪寺」4（批次10），已統一為「喇嘛寺」
+コリマ	科利馬	location	provisional	比里比諾附近的森林與村落地區、特雷特／連特兩位精靈的守護地；review_notes 待核對社群慣用譯名多次一致出現（92），未見變體
+ゴマ山みゃく	戈馬山脈	location	provisional	科利馬森林通往比里比諾一帶的山脈與洞窟；review_notes 待核對社群慣用譯名多次一致出現（15），未見變體
+イミル	伊米爾	location	provisional	科利馬北方的村落／神殿／瀑布洞窟地區；review_notes 待核對社群慣用譯名多次一致出現（50），未見變體
+リフト	抬升術	psynergy	provisional	薩滿之杖試煉相關能力；道具/精靈清單簡稱「抬升」，敘事文本統一補「術」為「抬升術」；已修正批次09原譯「起重術」不一致（2 處）
+アメン・ラー	阿蒙拉	summon	provisional	四元素召喚之一；原譯「拉美西斯」誤植為埃及法老名，2026-08-15 QA 修正為對應的太陽神 Amun-Ra 正確譯名
