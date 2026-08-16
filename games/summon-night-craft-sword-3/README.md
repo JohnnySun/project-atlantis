@@ -6,7 +6,7 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5 與 M2.1 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip。字型、未命名 VM opcode、完整回插 encoder 與 ROM container rebuild 仍未完成。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1 與 M2.2 static font slice 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer 與 27-slot POC。未命名 VM opcode、palette／runtime VRAM、完整回插 encoder 與 ROM container rebuild 仍未完成，尚未開始大批翻譯。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md) 與 [`ROADMAP.md`](ROADMAP.md)。
 
 ### ROM metadata／外部比對
 
@@ -61,6 +61,21 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract
 
 尚未由 extractor 覆蓋的候選仍必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。共用 `core/gba/capture_runtime.py` 與 renderer 已可用，且共用測試 6 項通過；本次 B3CJ capture 仍受 runtime port 阻塞：其他 session 佔用 2345，`ports.qt.gdbPort=25352` 未建立 listener，既有 `/private/tmp` redirect dylib 的一次重用也未建立 25351。RUNTIME-003 只限制 live RAM／VRAM 交叉驗證，不否定已由本機 ROM、固定 pointer table 與 csm3 consumer 重跑的 M1.5 靜態結果；不新增遊戲專屬 GDB／dump／renderer。
 
+## M2.2 字型鏈與 static POC
+
+`tools/inspect_font.py` 只接受固定 B3CJ 身分，並逐次驗證 csm3 commit `7e388ac` 對應的本機 function ranges／literal pool。它確認 type-3 resource `id=2` 的 `BIT` payload 位於 file `0x14d5c6c`、glyph base `0x14d5c88`，共有 `0x860` 個 24-byte、12×12 cell；`sub_0800348C` 的 table A/B、zero fallback 與 `glyph_id=value-1` 定址也已由 8 個 identity/addressing samples 交叉驗證。掃描得到 2087 個 strict code units 對應 2087 個 physical slots，安全未引用空白槽是 `0x845..0x85f` 共 27 個；非空但不可尋址的 `0x141..0x15e` 共 30 個不分配。palette、VRAM/OAM arrangement 與 runtime 仍維持獨立 blocked。
+
+只用 repository 已固定的 GNU Unifont 17.0.05 產生兩個 ignored static POC glyph：opaque `ec48`／`ec49` 分別暫映射到 `的`／`你` 的 `0x845`／`0x846`，並用 untouched `0x844` 做鄰接 render。POC 的 table/cell 修改區域共 52 bytes，固定 source 下實際非零 byte diff 為 43；輸出 ROM／PGM／summary 均在 ignored `work/`，不代表翻譯或可發布 patch。來源、SHA-256、授權及 16→12 packing 規則見 [`research/font-sources.md`](research/font-sources.md) 與 [`research/m2.2-font.md`](research/m2.2-font.md)。
+
+重跑 font summary：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/inspect_font.py \
+  games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba \
+  --source-jsonl games/summon-night-craft-sword-3/research/summon-night-craft-sword-3-decoded.jsonl \
+  --summary-output games/summon-night-craft-sword-3/work/m2.2-font-summary.json
+```
+
 ## 文字系統研究邊界
 
 外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL?oldid=53006) 提供主日文字型的 16-bit code-table 線索；本輪已用固定 B3CJ ROM 的多個 `0x0308 ... 0x0000` record 交叉驗證：VM halfword 仍按 little-endian 讀取，但 marker 後的 codepage bytes 必須以記憶體原始順序直接做 strict Shift-JIS decode，不能逐 halfword swap。M2.1 另以 csm3 handler／expression callsite 證實有限控制形狀，未知 word 保留 opaque；這不代表字型與所有 opcode 都已命名，也不能假設第一、二代的格式相同。完整格式見 [`research/static-format.md`](research/static-format.md) 與 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。研究時必須分開記錄：
@@ -85,14 +100,15 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 
 目標語言固定明寫為 `zh-TW`。專有名詞先查臺灣繁體 Wikipedia、巴哈姆特等多個社群來源，採既有主流寫法；若來源分裂，保留現有選擇並在 review note 說明，不自行創造音譯。既有英文／中文 patch 可參考工程資訊，但不是未審核的日文翻譯來源。
 
-## 完成標準（M2.1 已達成，後續尚未達成）
+## 完成標準（M2.2 static slice 已達成，翻譯／回插尚未達成）
 
 - clean 日版 ROM 的 header、revision、CRC32、SHA-256 已記錄並可重跑。
 - type-2 script table、LZ77、`PSI3` stream、bounded text record、Shift-JIS codepage 與 csm3 consumer 有遊戲專用、可重跑證據。
 - 已命名控制碼的參數寬度、opaque fallback、361 筆 source re-encode 與 13 個 resource 的 decoded stream byte-identical round-trip 有收據。
+- M2.2 已由本機 callsite／literal、type-3 BIT resource、code-unit lookup、12×12／24-byte cell 與 8 個 identity/addressing samples 證實 static glyph chain；已掃描 2144 slots，保留 27 個明確空槽，並完成不破壞既有 mapping 的 2-glyph static POC。
 - 相同 byte length 的 record-level 原地修改可行；zero padding 縮短 blocked，變長需 resource rebuild；完整 VM、字型、LZ77／pointer encoder 與 ROM 回插仍待建立。
 - 至少一個有限量批次通過 `restore → work → strip` 往返與 repository safety check。
 - 編碼器／回插器拒絕來源 hash、缺字、控制碼或長度不一致，而不是放寬檢查。
 - 重建 ROM 重新抽取吻合；BPS round-trip 與 mGBA 核心畫面回歸另有收據。
 
-目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser 與 361 筆 ignored source extraction；尚無翻譯、ROM build、BPS、字型／完整 VM／回插或 runtime QA 收據。
+目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction 與 M2.2 static font chain／POC；尚無翻譯、ROM build、BPS、完整 VM／resource rebuild／font insertion 或 runtime QA 收據。

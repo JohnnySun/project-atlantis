@@ -1,4 +1,4 @@
-# B3CJ M1.5/M2.1 靜態格式證據
+# B3CJ M1.5/M2.1/M2.2 靜態格式證據
 
 本文件描述已由固定 B3CJ ROM 與 csm3 callsite 交叉驗證的最小格式，不保存日文原文。完整抽取結果只在 ignored 的 `research/summon-night-craft-sword-3-decoded.jsonl`。
 
@@ -37,10 +37,36 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract
 
 工具固定要求 B3CJ、32 MiB、CRC32 `12afae5d`、SHA-1 `3f5253fcf57e07ce52472bd29a61d16b98a12376` 與 header checksum `0x6b`，並限制 table、expanded size 與 record 數量。JSONL 是 ignored source boundary，不能 stage。
 
+## M2.2：字型與 glyph 定址
+
+本機 B3CJ 的 type-3 directory 位於 file `0x14d446c`；csm3
+`sub_08003620` 以 `(type=3, id=2)` 取 entry，entry `relative_units=0x180`、
+`span_units=0xc92`，因此 BIT payload 是 file `0x14d5c6c`，`payload+0x1c`
+的 glyph base 是 `0x14d5c88`。BIT header 的 version 是 `0x08`、metric bytes
+是 `0c 00 0c 00`、data size 是 `0xc900`；這與 2144 個 `0x18`-byte cell
+完全相等，resource 尾端另有 4 bytes zero padding。
+
+`sub_0800348C` 的本機 function hash 與 literal pool 已由
+`tools/inspect_font.py` 驗證。table A/B 的 GBA addresses 是 `0x08b6d624`／
+`0x08b704a4`（file offsets `0xb6d624`／`0xb704a4`）；輸入是 raw memory-order
+`[lead, trail]`，索引為 `(lead-0x81)*0xc0 + (trail-0x40)`（table B 則將
+lead row 改為 `lead-0xe0`），u16 table value
+為 zero 時走 `0x08b6d5d0` fallback，否則 `glyph_id=value-1`，由 runtime
+`gUnk_03002984 + glyph_id*0x18` 取得 cell。
+
+cell 格式是 12 rows × 2 bytes，前 12 bits 以 MSB-first 表示 active pixels，
+所以 cell stride 是 24 bytes。這個結論由 lookup table、BIT size、local cell
+bytes 與 csm3 renderer callsite 共同支持；palette、VRAM/OAM tile arrangement
+與 live screen 仍未證實。完整 slot scan、8 個 identity/addressing samples、
+27 個可用空槽、30 個非空不可尋址槽及 static POC 收據見
+[`research/m2.2-font.md`](m2.2-font.md)。
+
 ## 尚未證實的部分
 
 - `0x0302`、`0x0304`、`0x0316`、`0x047e` 等周邊 VM word 的 handler、參數寬度與語意仍保留 opaque；`0x0309`／`0x030A` 只有 callsite-level input/state 形狀。
-- 字型 tile 位址、glyph lookup、glyph identity 與 VRAM 對應尚未證實。
+- palette、glyph writer 的 runtime destination、VRAM/OAM tile arrangement 與 live screen 對應尚未證實；glyph lookup、cell stride 與 bounded identity/addressing samples 已由 M2.2 static chain 證實。
+- table value `0` 的 fallback glyph 語意、三個 strict code unit 的 out-of-resource target，以及非空但不可尋址的 30 個 physical slots 尚未安全命名或分配。
 - 字串修改後的長度契約、指標重建、編碼器與可逆回插路徑尚未建立。
 
-因此 M2.1 只宣稱「已命名控制形狀的 record/stream parser 與 no-op round-trip 已成立」，不宣稱完整 script VM、字型、翻譯或 ROM 回插已完成。
+因此 M2.2 只宣稱「字型 resource、cell packing、lookup/addressing 與 static POC
+已成立」；不宣稱 palette、runtime VRAM、完整 script VM、翻譯或 ROM 回插已完成。

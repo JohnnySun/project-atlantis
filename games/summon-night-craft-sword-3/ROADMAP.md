@@ -25,7 +25,7 @@
 - [x] 以本機 ROM 交叉驗證 type-2 table `0x1718ffc`、16-byte pointer units、LZ77 MSB-first flags、`PSI3`／`+0x10` stream 與 `0x0308 ... 0x0000` record。
 - [x] 建立 bounded `tools/extract_static.py` 與測試；可由固定 B3CJ ROM 重抽 361 筆真實 record，完整日文 source 只寫 ignored JSONL。
 - [x] 保留 stable `string_id`、pointer／payload provenance、compressed/decompressed hash 與 control token；tracked 文件不含完整原文。
-- [ ] 完成完整 VM opcode／換行語意、font lookup／glyph identity、修改長度契約與回插路徑。
+- [~] 完成完整 VM opcode／換行語意、修改長度契約與回插路徑；font lookup／glyph identity 已在 M2.2 static 範圍完成，但 palette／runtime／正式 encoder 仍未完成。
 
 M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉驗證的獨立 blocked 項，不是本里程碑的 gate。格式證據與重跑命令見 [`research/static-format.md`](research/static-format.md)。
 
@@ -40,11 +40,24 @@ M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉�
 
 M2.1 的完整 opcode／round-trip／length-contract 收據見 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。
 
+## M2.2：字型／glyph 鏈與 static POC
+
+- [x] 從固定 csm3 commit 的 `sub_0800D084`、`sub_08001F14`、`sub_0800348C`、`sub_08003620`、`sub_080036F8`／`sub_0800379C` 與 `sub_0800B730` callsite 往下追 renderer、font loader、lookup 與 writer；以本機 B3CJ function hash／literal 交叉驗證，不只採外部 symbol 名稱。
+- [x] 定位 type-3 resource `id=2` 的 `BIT` font：payload `0x14d5c6c`、glyph base `0x14d5c88`、12×12 active bits、row stride 2、cell stride `0x18`、header metric `0c 00 0c 00` 與 2144 physical slots。
+- [x] 建立 raw memory-order Shift-JIS code unit → table A/B → `glyph_id` → cell file offset 公式；以 `正`、`直`、`同`、`部`、`屋`、`ら`、`す`、`γ` 八個樣本分開記錄 Unicode identity 與 addressing evidence。
+- [x] 掃描實際 strict code format：6879 accepted pairs、2087 mapped slots、27 個未引用全零可用槽 `0x845..0x85f`；30 個非空不可尋址槽 `0x141..0x15e` 與 3 個 out-of-resource table target 不分配。
+- [x] 建立 `tools/inspect_font.py`、靜態 12×12 renderer、Unifont 17.0.05 來源／授權紀錄與測試；static POC 只把 opaque `ec48`／`ec49` 暫映射到 `0x845`／`0x846`，並 render adjacent untouched `0x844`。
+- [x] POC 的 table/cell 修改區域共 52 bytes，固定 source 下實際非零 byte diff 為 43；ROM／PGM／summary 留在 ignored `work/`，未更新 header／script container，未宣稱翻譯、可發布 patch 或 runtime QA。
+- [ ] 證實 palette、writer 的實際 VRAM/OAM layout、fallback 語意、out-of-resource targets、font/resource encoder 與 ROM-level insertion；RUNTIME-003 仍為獨立 live evidence blocker。
+
+M2.2 的完整字型、slot、source/license 與 POC 收據見 [`research/m2.2-font.md`](research/m2.2-font.md) 與 [`research/font-sources.md`](research/font-sources.md)。
+
 ## M2：文本與字型格式
 
 - [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。
 - [~] 已確認 type-2 pointer、GBA LZ77、script bytecode、record-level Shift-JIS 與部分 expression／control width；未知 VM opcode、完整換行／分頁語意仍待命名。
-- [ ] 定位字型資料與渲染器；分開驗證 glyph addressing 與 glyph identity。
+- [x] 定位字型資料與渲染器；分開驗證 glyph addressing 與 glyph identity（static M2.2 範圍）。
+- [~] palette、writer output、VRAM/OAM layout 與 live screen 仍待 runtime 交叉驗證。
 - [ ] 確認字串 ID、指標、換行、控制碼、字寬／行數上限與未修改內容的回插契約。
 - [ ] 以 ROM-to-VRAM byte match、已知畫面內容或全語料庫上下文重讀交叉確認解碼。
 
