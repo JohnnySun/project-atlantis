@@ -1,0 +1,55 @@
+{
+  "schema": "super-robot-taisen-d-m4-wide-reuse-audit-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "identity_policy": "strict Shift-JIS source context; never bitmap-position inference"
+  },
+  "rom": {
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84"
+  },
+  "resource": {
+    "start": "0x08120DBC",
+    "end_exclusive": "0x0814F664",
+    "stride": 26,
+    "glyph_payload_bytes": 24,
+    "physical_slots": 7332,
+    "new_slot_capacity": 0
+  },
+  "source_corpus": {
+    "record_count": 2325,
+    "wide_identity_count": 743,
+    "wide_occurrence_count": 3983,
+    "codepoint_index_sha256": "c126fe8aa176d349078934e7e74a5749d73be935eba5fb72c5f9a105aaaa7499",
+    "code_unit_index_sha256": "eceec2251a6a7481a84f4d0ba258a77925238193835f7ce336e1952075ded884",
+    "slot_index_sha256": "02df90b8088f5202d450c506905ceab751c46c24b8ad4c9470d296af1864167d",
+    "one_to_one_identity": true
+  },
+  "runtime_boundary": {
+    "bounded_runtime_confirmed_identity_count": 1,
+    "bounded_runtime_confirmed_code_units": ["0xDA88"],
+    "bounded_runtime_confirmed_unicode": ["U+79FB"],
+    "bounded_runtime_confirmed_slot": 905,
+    "bounded_runtime_confirmed_glyph_sha256": "14b957c056e66cdd282857d73cfa04df932fa7dcaaec7e4a9c026c24c8323515",
+    "static_source_context_only_count": 742,
+    "runtime_status_policy": "static rows are not runtime proof"
+  },
+  "reusable_existing_wide_policy": {
+    "allowed": "only codepoints present in this source-context map and mapped to initialized existing slots",
+    "new_wide_slot_allocation": "reject",
+    "unmapped_target_codepoint": "reject",
+    "font_expansion": "not implemented"
+  },
+  "gate": {
+    "rom_hash_match": true,
+    "source_record_count_match": true,
+    "strict_source_context": true,
+    "initialized_existing_slots": true,
+    "codepoint_code_unit_slot_one_to_one": true,
+    "wide_new_slot_capacity_zero": true,
+    "source_text_emitted": false,
+    "rom_modified": false,
+    "translation_started": false
+  }
+}

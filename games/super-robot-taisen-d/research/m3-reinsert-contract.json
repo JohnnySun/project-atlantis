@@ -1,0 +1,68 @@
+{
+  "schema": "super-robot-taisen-d-m3-reinsert-v1",
+  "source_text_emitted": false,
+  "status": "bounded_static_narrow_only",
+  "records": [
+    {
+      "string_id": 526424,
+      "source_raw_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+      "source_ledger_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+      "source_payload_length": 4,
+      "source_unit_count": 2,
+      "source_line_width": 16,
+      "target_payload_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+      "same_length": true,
+      "control_tokens": []
+    },
+    {
+      "string_id": 526432,
+      "source_raw_sha256": "b5635bbc6aff0e3cb4cb6a25838273e93da18ab965919b445df2f4246a621a90",
+      "source_ledger_sha256": "538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705",
+      "source_payload_length": 4,
+      "source_unit_count": 2,
+      "source_line_width": 16,
+      "target_payload_sha256": "642b5a7c22e966adfe764779aeeea157512a63a506ecdff2160c7b85abc441b3",
+      "same_length": true,
+      "control_tokens": []
+    }
+  ],
+  "allocator": {
+    "mode": "narrow_only",
+    "free_blank_slots_before": 165,
+    "allocated_slot_count": 4,
+    "allocated_slots": [540, 541, 542, 543],
+    "protected_blank_referenced_slots": [0, 57, 58],
+    "wide_new_slots": 0,
+    "global_duplicate_codepoints_reused": true,
+    "font_hash_match": true,
+    "source_hash_matches": true,
+    "same_length": true,
+    "rejects": [
+      "rom_hash_mismatch",
+      "source_hash_mismatch",
+      "wide_glyph",
+      "opaque_or_control",
+      "missing_glyph",
+      "capacity_exceeded",
+      "variable_length",
+      "code_unit_slot_collision",
+      "record_overlap"
+    ]
+  },
+  "font": {
+    "source_sha256": "c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53",
+    "license_sha256": "869692af094c57fb7258c57fe26820c759319603321d0ffeb278de3651763ded",
+    "transform": "Unifont T-source 16x16 box-any downsample to 8x12"
+  },
+  "rom": {
+    "base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_sha256": "e275e9a7c913bd3443f142bd5a55dd1a3d2e9de4dd355222d1e7ff9a5311b78c"
+  },
+  "bps": {
+    "bytes": 97,
+    "sha256": "b85317d2e65f35aa0be455baa1c04f70f1195109cc434b4d4a39c7ec8822e25a",
+    "apply_byte_identical": true
+  },
+  "runtime_status": "pending; static reinsert only",
+  "scope_limit": "This proves only two narrow, one-line records; wide resources, opaque/control tokens, newline/speaker semantics, full corpus insertion, and runtime screen QA remain unproven."
+}

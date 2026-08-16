@@ -1,0 +1,79 @@
+{
+  "schema": "super-robot-taisen-d-m2-ui-batch-v1",
+  "batch_id": "m2-ui-batch-1",
+  "translation_status": "ai_draft",
+  "source_text_emitted": false,
+  "target": {
+    "string_id": 526432,
+    "source_address": "0x08080860",
+    "source_raw_sha256": "b5635bbc6aff0e3cb4cb6a25838273e93da18ab965919b445df2f4246a621a90",
+    "source_ledger_sha256": "538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705",
+    "payload_length": 4,
+    "unit_count": 2,
+    "line_width": 16,
+    "terminator": "NUL",
+    "control_tokens": [],
+    "zh_tw": "存在",
+    "target_payload_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+    "target_render_1bpp_sha256": "e8e404393714709f459025488b27c45b38de4648777652abd05f0757e993f647",
+    "target_render_4bpp_sha256": "7423be02b127d9db6c86f8f6bedb90b6736b1f4c44141525c7d5472046693cef",
+    "allocations": [
+      {
+        "slot": 543,
+        "code_unit_little_endian": "0xE883",
+        "glyph_bytes_sha256": "2122a153249e37f7f75ee10d9bd590d5ddc4c0d58d50e5cdb9d56a0cba0ff41d",
+        "render_4bpp_sha256": "99d93d74f1d0edf3c2d7262e1febd131a64aba7a684609f471181ac9e03f84e8"
+      },
+      {
+        "slot": 542,
+        "code_unit_little_endian": "0xE783",
+        "glyph_bytes_sha256": "9134e073dbe3d533ea7634ed2c07e32d7c1b78c820314271d978fb5ca4ae2611",
+        "render_4bpp_sha256": "d13bd68f4a91da45c3bb40d9511ad37b574c830d37f9c33cf5420c192f4d8e2d"
+      }
+    ]
+  },
+  "adjacent_untouched": {
+    "string_id": 526424,
+    "source_raw_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "base_payload_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "patched_payload_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "base_render_1bpp_sha256": "20b2c971fdc3f2643de157bb542dd62f3658f40024d5c3502d6edfc80db89105",
+    "patched_render_1bpp_sha256": "20b2c971fdc3f2643de157bb542dd62f3658f40024d5c3502d6edfc80db89105",
+    "base_render_4bpp_sha256": "c0ef81f33c1de225a8f8f7dced258c92641ed2b7daa1e62c7f2d173bfb99c54f",
+    "patched_render_4bpp_sha256": "c0ef81f33c1de225a8f8f7dced258c92641ed2b7daa1e62c7f2d173bfb99c54f"
+  },
+  "allocator": {
+    "mode": "narrow_only",
+    "free_blank_slots_before": 165,
+    "allocated_slots": [543, 542],
+    "protected_blank_referenced_slots": [0, 57, 58],
+    "wide_new_slots": 0,
+    "same_length": true,
+    "source_hash_match": true,
+    "font_hash_match": true,
+    "control_and_opaque_rejected": true
+  },
+  "rejected_candidate": {
+    "string_id": 509548,
+    "source_raw_sha256": "185566ea417123afc51d9e3c1528286f4736487456827a354f68d8409b3c1e13",
+    "observed_line_width": 24,
+    "reason": "wide_glyph",
+    "wide_new_slot_capacity": 0,
+    "translation_created": false
+  },
+  "rom": {
+    "base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_sha256": "e6ed511606759222eb2a397518509ce3077595e74fe6d1c9bc359986c5473e13",
+    "changed_ranges": [
+      {"address": "0x08080860", "length": 4, "kind": "source_record_same_length"},
+      {"address": "0x08150FD8", "length": 12, "kind": "narrow_glyph_slot", "slot": 543},
+      {"address": "0x08150FCC", "length": 12, "kind": "narrow_glyph_slot", "slot": 542}
+    ]
+  },
+  "bps": {
+    "bytes": 66,
+    "sha256": "1fe27b271c640425c7d5e6929fc72c749076df76c429489a9ff620d038567e16",
+    "apply_byte_identical": true
+  },
+  "runtime_status": "pending; static render gate only"
+}

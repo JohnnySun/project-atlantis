@@ -1,0 +1,35 @@
+{
+  "schema": "super-robot-taisen-d-m3-roundtrip-audit-v1",
+  "source_text_emitted": false,
+  "source_records": 2325,
+  "base_source_matches": 2325,
+  "target_records": 2,
+  "target_exact_matches": 2,
+  "untouched_records": 2323,
+  "untouched_exact_matches": 2323,
+  "actual_changed_bytes": 56,
+  "actual_changed_ranges": [
+    {"start": 526424, "end_exclusive": 526428, "length": 4},
+    {"start": 526432, "end_exclusive": 526436, "length": 4},
+    {"start": 1380276, "end_exclusive": 1380324, "length": 48}
+  ],
+  "allowed_range_count": 6,
+  "rom_outside_allowed_ranges_equal": true,
+  "target_summaries": [
+    {
+      "string_id": 526424,
+      "source_raw_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+      "target_payload_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+      "payload_length": 4,
+      "terminator": "NUL"
+    },
+    {
+      "string_id": 526432,
+      "source_raw_sha256": "b5635bbc6aff0e3cb4cb6a25838273e93da18ab965919b445df2f4246a621a90",
+      "target_payload_sha256": "642b5a7c22e966adfe764779aeeea157512a63a506ecdff2160c7b85abc441b3",
+      "payload_length": 4,
+      "terminator": "NUL"
+    }
+  ],
+  "runtime_status": "pending; static re-extraction only"
+}

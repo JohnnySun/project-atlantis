@@ -1,0 +1,101 @@
+{
+  "schema": "super-robot-taisen-d-m4-corpus-inventory-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "classification_policy": "structural glyph/opaque shape only; no semantic labels"
+  },
+  "rom": {
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "source_range": {
+      "start": "0x076000",
+      "end_exclusive": "0x082490"
+    }
+  },
+  "source_corpus": {
+    "record_count": 2325,
+    "record_digest_sha256": "712818382aefa3137afaf9c2f2dd3377823110e8b30426888a4593250651d10d",
+    "strict_shift_jis_identity_count": 2325,
+    "nul_terminated_count": 2325,
+    "no_op_token_encode_count": 2325,
+    "zero_width_record_count": 136,
+    "unique_source_codepoint_count": 1040,
+    "unique_source_codepoint_index_sha256": "363d0432ac277621f6e4c9987e7495ce5dc0eb81d0b11485609716e66b21f0e7",
+    "unique_glyph_code_unit_count": 1000,
+    "unique_glyph_code_unit_index_sha256": "e66cf49bce05308479e15cd5079dd039f3995cedf4679be51cfbe8d7f83577ac",
+    "payload_length_min": 2,
+    "payload_length_max": 56,
+    "line_width_min": 0,
+    "line_width_max": 240,
+    "line_width_distinct_count": 57
+  },
+  "structural_partitions": {
+    "glyph_only_mixed": {
+      "record_count": 833,
+      "first_offset": "0x076C5C",
+      "last_offset": "0x08198C",
+      "offset_index_sha256": "b8a263b5e235a9eb38bcb8bd09ecb39cab32ffb73c1617af6d6106e21722fae3"
+    },
+    "glyph_only_narrow": {
+      "record_count": 939,
+      "first_offset": "0x076B2C",
+      "last_offset": "0x0819A8",
+      "offset_index_sha256": "d428a46ddbfb2bb17636e22684aca04768b2f4fd27a3a246c205231458602b92"
+    },
+    "glyph_only_wide": {
+      "record_count": 417,
+      "first_offset": "0x076C34",
+      "last_offset": "0x08193C",
+      "offset_index_sha256": "94543c7a7fbf4c258c518d37af77aaa848acdbf1e52882ce1dd23a3daa5ad819"
+    },
+    "opaque_or_unaligned": {
+      "record_count": 136,
+      "first_offset": "0x076000",
+      "last_offset": "0x082478",
+      "offset_index_sha256": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc"
+    }
+  },
+  "token_kind_counts": {
+    "glyph": 15885,
+    "opaque_ascii_or_format": 1032,
+    "opaque_unaligned_tail": 88
+  },
+  "glyph_class_counts": {
+    "narrow": 11902,
+    "wide": 3983
+  },
+  "offset_page_counts": {
+    "0x076000": {"record_count": 225, "partition_counts": {"glyph_only_mixed": 9, "glyph_only_narrow": 61, "glyph_only_wide": 28, "opaque_or_unaligned": 127}},
+    "0x077000": {"record_count": 220, "partition_counts": {"glyph_only_mixed": 19, "glyph_only_narrow": 175, "glyph_only_wide": 26}},
+    "0x078000": {"record_count": 196, "partition_counts": {"glyph_only_mixed": 28, "glyph_only_narrow": 159, "glyph_only_wide": 9}},
+    "0x079000": {"record_count": 195, "partition_counts": {"glyph_only_mixed": 46, "glyph_only_narrow": 140, "glyph_only_wide": 9}},
+    "0x07A000": {"record_count": 199, "partition_counts": {"glyph_only_mixed": 39, "glyph_only_narrow": 151, "glyph_only_wide": 9}},
+    "0x07B000": {"record_count": 162, "partition_counts": {"glyph_only_mixed": 97, "glyph_only_narrow": 51, "glyph_only_wide": 14}},
+    "0x07C000": {"record_count": 227, "partition_counts": {"glyph_only_mixed": 67, "glyph_only_narrow": 33, "glyph_only_wide": 125, "opaque_or_unaligned": 2}},
+    "0x07D000": {"record_count": 168, "partition_counts": {"glyph_only_mixed": 64, "glyph_only_narrow": 48, "glyph_only_wide": 55, "opaque_or_unaligned": 1}},
+    "0x07E000": {"record_count": 249, "partition_counts": {"glyph_only_mixed": 133, "glyph_only_narrow": 40, "glyph_only_wide": 76}},
+    "0x07F000": {"record_count": 203, "partition_counts": {"glyph_only_mixed": 141, "glyph_only_narrow": 27, "glyph_only_wide": 35}},
+    "0x080000": {"record_count": 169, "partition_counts": {"glyph_only_mixed": 108, "glyph_only_narrow": 33, "glyph_only_wide": 23, "opaque_or_unaligned": 5}},
+    "0x081000": {"record_count": 111, "partition_counts": {"glyph_only_mixed": 82, "glyph_only_narrow": 21, "glyph_only_wide": 8}},
+    "0x082000": {"record_count": 1, "partition_counts": {"opaque_or_unaligned": 1}}
+  },
+  "narrow_reinsert_boundary": {
+    "structurally_narrow_only_records": 939,
+    "structurally_rejected_records": 1386,
+    "accepted_shape": "glyph_only_narrow, two-byte units, NUL-terminated, same-length only",
+    "rejected_shapes": ["glyph_only_mixed", "glyph_only_wide", "opaque_or_unaligned"],
+    "wide_new_slot_capacity": 0,
+    "semantic_translation_status": "not_started"
+  },
+  "gate": {
+    "rom_hash_match": true,
+    "record_count_match": true,
+    "strict_source_identity": true,
+    "all_nul_terminated": true,
+    "token_encode_no_op": true,
+    "structural_partition_complete": true,
+    "source_text_emitted": false,
+    "translation_started": false
+  }
+}

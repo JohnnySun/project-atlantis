@@ -52,6 +52,10 @@
 - [x] M1.11 對 `0x08008724..0x08008A0C` 完成 bounded layout instruction gate，固定
   NUL／two-byte／8-or-12px／tile allocation 公式與 mode branch 邊界；speaker、
   newline、完整多行與 branch mode 語意仍維持 opaque。
+- [x] 建立全語料 source-safe structural inventory：2325/2325 strict source／NUL／
+  no-op 通過；939 筆全窄 glyph-only、833 筆混合、417 筆全寬、136 筆
+  opaque／unaligned。這是可重現的格式分區，不是話數／劇情語意分區；摘要在
+  `research/m4-corpus-inventory.json`，工具只輸出 hash／offset／count metadata。
 - [ ] 定義控制碼、終止符、換行、說話者、最大寬度／行數與分支邊界。
 - [ ] 用自然畫面或更多獨立語料上下文擴大重讀確認解碼結果；M1.6 的兩個 sample
   仍是同一受控 consumer path 的最小證據。
@@ -64,20 +68,56 @@
   完成一筆 source-safe、同長度的 M1.8 static `ai_draft` ledger POC；這不是批量
   翻譯，也不代表術語或完整 layout 已定稿。
 - [x] 建立 `translations/glossary.zh-TW.tsv`，以 Wikipedia zh-tw、RoboInfo、
-  巴哈姆特與日文攻略頁交叉核對 16 個 bounded terms；12 個術語通過雙來源 hash
-  provenance，4 個短名／標點衝突維持 `deferred_conflict`，不先回插。可重跑
+  巴哈姆特與日文攻略頁交叉核對 17 個 bounded terms；12 個術語通過雙來源 hash
+  provenance，4 個短名／標點衝突維持 `deferred_conflict`，另有 1 個 UI term 為
+  `provisional`，不先回插。可重跑
   `tools/m2_glossary_audit.py`，摘要在 `research/m2-glossary-audit.json`；TSV
   不保存完整日文原文。
-- [ ] 先做一個可達且邊界明確的小批次：例如 UI／精神指令／一個完整對話群，
-  不是整部作品一次翻譯。
-- [ ] 用 `restore_translations.rb` 產生本機工作檔；完成後只用
-  `strip_translations.rb` 產生可提交 ledger。
-- [ ] 通過 schema、repository safety、術語、字寬／行數與控制碼 QA。
+- [x] 完成第一個可達且邊界明確的 UI 小批次：`string_id=526432` 兩窄字、NUL、
+  16px line width、無 control token，以 `ai_draft`「存在」建立 static glyph／
+  adjacent／BPS gate；精神指令 `509548` 因 source wide glyph 被 fail-closed 拒絕，
+  沒有使用寬字新槽。
+- [x] 對 M2 batch-1 使用 `restore_translations.rb` 產生 ignored working record，
+  再用 `strip_translations.rb` 產生 source-safe ledger；tracked ledger 不含 source。
+- [x] M2 batch-1 通過 ledger schema、repository safety、glossary provenance、字寬／
+  行數與控制碼 QA；全語料／全場景批次仍未宣稱完成。
 
 ## M3：回插與 QA
 
-- [ ] 建立遊戲專屬 codepage／字型子集／編碼器／回插器。
+- [x] 建立 bounded 遊戲專屬窄字 codepage／Unifont 8×12 子集／global allocator／
+  static reinsertor：`tools/m3_reinsert.py` 可合併多筆 source-safe working ledger，
+  共用重複 glyph、拒絕 source mismatch／wide／opaque／變長／slot collision／overlap；
+  contract 摘要在 `research/m3-reinsert-contract.json`。寬字、未知控制碼與完整 corpus
+  encoder 仍未完成。
 - [ ] 重抽取 rebuilt ROM，確認未修改字串與預期譯文一致。
-- [ ] 產生 BPS，套用回 clean ROM 並做 byte-for-byte round-trip。
+- [x] M3 bounded re-extraction comparator 已建立並對兩筆 static POC 驗證；完整
+  rebuilt-ROM／全語料 extraction 仍待完成。
+- [x] M3 bounded static POC 產生 BPS、套用 clean ROM 並完成 byte-for-byte round-trip；
+  full rebuilt-ROM extraction／全語料 BPS 仍待完成。
 - [ ] 以 mGBA 覆蓋標題、選單、分支入口、話間／戰鬥對話、機體／駕駛員／武器／
   精神指令等核心畫面；未測項目要列明，不從靜態結果推定通過。
+
+## M4：完整翻譯與發行驗收
+
+- [ ] 以可達 caller／自然畫面證據完成靜態池的話數、分支、UI、機體／駕駛員／
+  武器／精神與戰鬥／話間文本分區；未知 pointer、opaque token 與池外文本維持
+  可追蹤的未確認狀態。
+- [ ] 證明完整控制碼、newline、speaker、最大行寬／行數與 branch layout，或以
+  明確 fail-closed contract 排除未證明 record；不得以 M1.11 的 bounded width 外推。
+- [ ] 完成寬字 codepage／resource 策略：只能重用已證明 Unicode identity 的既有
+  slot，或以可回插、可重抽取、runtime 驗證的資源擴容；不得把寬字新槽容量 0
+  偷換成可翻譯容量。
+- [x] M4 bounded wide reuse audit 完成 2325 筆 source context 的 743 個一對一
+  Unicode→code-unit→既有 slot metadata（3983 occurrences），並確認既有 wide
+  slot payload 已初始化；其中 `0xDA88`／`U+79FB` 有 M1.6 runtime positive，
+  其餘 742 筆維持 static-only。新增寬槽與未在 map 的 target 仍 fail-closed；完整
+  font expansion／全場景 proof 尚未完成，摘要在 `research/m4-wide-reuse-audit.json`。
+- [ ] 在上述 gate 後建立完整 source-safe `zh-TW` ledger，所有專有名詞先通過
+  glossary provenance；每筆翻譯保留 restore／working／strip 可重現鏈，opaque／
+  變長／缺字／超寬 record fail-closed。
+- [ ] 完成全語料 encoder／回插、重抽取 byte round-trip、BPS create/apply，並以
+  target／untouched／font／ROM hash 及 changed-range audit 證明沒有旁改。
+- [ ] 以獨立 mGBA 覆蓋核心流程與 translated records，記錄自然／controlled 分欄、
+  screen／VRAM／writer evidence；所有未達成畫面保留 pending，不宣稱發行完成。
+- [ ] 最終通過 game tests、core/gba tests、strict source、ledger schema、AST、
+  repository safety，並以 path-limited JohnnySun commit 保存本作全部可提交成果。

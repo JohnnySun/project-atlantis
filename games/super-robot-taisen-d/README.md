@@ -140,12 +140,43 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   [`research/m111-layout-contract.json`](research/m111-layout-contract.json)，目前
   corpus 觀察最大 width 240／30 columns 不是引擎上限證明。
 - M2 glossary slice 已建立 [`translations/glossary.zh-TW.tsv`](translations/glossary.zh-TW.tsv)：
-  16 個 source-safe term entries 只保存 `string_id`、Shift-JIS raw hash、zh-TW
+  17 個 source-safe term entries 只保存 `string_id`、Shift-JIS raw hash、zh-TW
   候選、來源 URL 與決策記錄；12 個術語通過至少兩個社群來源，約修／莉姆、阿姆羅、
-  拉・凱拉姆的 4 個用法衝突明確維持 deferred。`tools/m2_glossary_audit.py` 在
-  ignored local source table 上驗證 17/17 hash matches、禁止 kana/source-text
+  拉・凱拉姆的 4 個用法衝突明確維持 deferred，另有 1 個 UI term provisional。
+  `tools/m2_glossary_audit.py` 在 ignored local source table 上驗證 18/18 hash matches、禁止 kana/source-text
   外洩；摘要在 [`research/m2-glossary-audit.json`](research/m2-glossary-audit.json)。
   這只是術語準備，不是翻譯批次或回插批准。
+- M2 batch-1 以 `restore_translations.rb` → ignored working → `strip_translations.rb`
+  建立一筆 `string_id=526432` 的 `ai_draft` UI ledger，target 是同長兩窄字「存在」；
+  static allocator 配置 slots `543/542`，target／font／adjacent render hashes、
+  BPS create/apply byte-identical 均通過。`string_id=509548` 的「覺醒」候選因 source
+  兩個 wide glyph 被 fail-closed 拒絕；寬字新槽容量維持 0。研究摘要在
+  [`research/m2-ui-batch1.json`](research/m2-ui-batch1.json)，runtime screen 仍 pending。
+- M3 已建立 [`tools/m3_reinsert.py`](tools/m3_reinsert.py) 的 bounded static reinsert
+  contract：以兩筆 source-safe working ledger 做 global narrow allocation，重複 target
+  codepoint 跨 record 共用 slot，並在 ROM／font／source hash、NUL、同長、control、
+  capacity、collision、overlap gates 通過後輸出 ignored patched ROM。這次合併 POC
+  配置 slots `543/542/541/540`，BPS 97 bytes apply byte-identical；研究摘要在
+  [`research/m3-reinsert-contract.json`](research/m3-reinsert-contract.json)，不是完整
+  encoder、wide-font 擴容或 runtime QA。
+- `tools/m3_roundtrip_audit.py` 會重新讀取 clean／patched ROM 的 2325 筆 source pool，
+  只輸出 base-source equality、target／untouched exact counts、hash 與 allowed diff
+  ranges；它已對 M3 兩筆 POC 建立可重現的 2325/2325、2/2、2323/2323 comparator，
+  不把此結果外推成完整劇情／戰鬥文本 round-trip。
+- M4 前置 inventory 已由 [`tools/m4_corpus_inventory.py`](tools/m4_corpus_inventory.py)
+  對同一個 clean ROM／ignored source table 完成 2325 筆 source-safe 結構分區；摘要在
+  [`research/m4-corpus-inventory.json`](research/m4-corpus-inventory.json)。分區只依
+  M1.7 已證明的 token shape，不命名語意：939 筆全窄 glyph-only、833 筆窄／寬混合、
+  417 筆全寬、136 筆 opaque／unaligned；strict source／NUL／token encode no-op 都是
+  2325/2325。窄字 reinsert 的結構入口因此精確限制為 939 筆，其他 1386 筆 fail-closed，
+  寬字新槽容量仍為 0。這不等於話數／劇情分區，也不等於翻譯覆蓋。
+- M4 wide reuse audit [`tools/m4_wide_reuse_audit.py`](tools/m4_wide_reuse_audit.py) 只
+  允許重用 strict Shift-JIS source context 已建立的一對一既有 wide codepoint／slot：
+  2325 筆 source 中有 743 個 identity、3983 次 occurrence，所有對應 24-byte payload
+  都是已初始化 slot，新增 wide slot capacity 仍為 0。`U+79FB`／`0xDA88` 是 M1.6
+  已有的 wide runtime positive；其餘 742 個是 static source-context only，不能冒充
+  runtime proof。未在 map 的 target、wide font expansion 與 ROM 修改一律拒絕；摘要在
+  [`research/m4-wide-reuse-audit.json`](research/m4-wide-reuse-audit.json)。
 - 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -196,6 +227,31 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
   games/super-robot-taisen-d/translations/glossary.zh-TW.tsv \
   games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
   --output games/super-robot-taisen-d/work/m2-glossary-audit.json
+
+# M2 batch-1 的完整 restore／target／strip／allocator／BPS 指令，見
+# work/m2-ui-present-*（均為 ignored local artifacts）；tracked metadata 在
+# research/m2-ui-batch1.json 與 translations/m2-ui-batch-1.jsonl。
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m3_reinsert.py \
+  --rom games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --ledger games/super-robot-taisen-d/translations/m18-static-poc.jsonl \
+  --working games/super-robot-taisen-d/work/m18-static-poc-working-final.jsonl \
+  --ledger games/super-robot-taisen-d/translations/m2-ui-batch-1.jsonl \
+  --working games/super-robot-taisen-d/work/m2-ui-present-working-final.jsonl \
+  --patched-rom games/super-robot-taisen-d/work/Super_Robot_Taisen_D_A6SJ_M3_batch_narrow.gba \
+  --report games/super-robot-taisen-d/work/m3-batch-narrow-report.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m3_roundtrip_audit.py \
+  --base-rom games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  --patched-rom games/super-robot-taisen-d/work/Super_Robot_Taisen_D_A6SJ_M3_batch_narrow.gba \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --working games/super-robot-taisen-d/work/m18-static-poc-working-final.jsonl \
+  --working games/super-robot-taisen-d/work/m2-ui-present-working-final.jsonl \
+  --reinsert-report games/super-robot-taisen-d/work/m3-batch-narrow-report.json \
+  --output games/super-robot-taisen-d/work/m3-roundtrip-audit.json
 
 PYTHONDONTWRITEBYTECODE=1 python3 \
   games/super-robot-taisen-d/tools/m18_narrow_allocator.py seed-ledger \
@@ -288,16 +344,33 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M1.11 完成 `0x08008724..0x08008A0C` 的 bounded layout instruction gate，固定
   NUL／two-byte／8-or-12px／tile allocation 公式與 mode branch 邊界；speaker、
   newline、完整多行與 branch mode 語意仍是 opaque。
-- [x] M2 glossary slice 完成 16 筆 source-safe zh-TW 詞彙 provenance：12 筆雙來源
-  通過、4 筆衝突 fail-closed deferred；工具測試涵蓋 source hash mismatch、kana
-  外洩、來源不足與 deferred 無 target，未開始批量翻譯。
+- [x] M4 前置 structural inventory 完成 2325/2325 source／NUL／token no-op gate，
+  並以 hash／offset／count metadata 分出 939 筆全窄、833 筆混合、417 筆全寬與
+  136 筆 opaque／unaligned；不把這個格式分區命名成劇情語意。
+- [x] M4 bounded wide reuse audit 完成 743 個既有 source-context identity 的一對一
+  codepoint／code-unit／slot map；新增 wide slot、未映射 target 與 font expansion
+  仍 fail-closed，runtime 僅有 `U+79FB` 的既有 bounded positive。
+- [x] M2 glossary slice 完成 17 筆 source-safe zh-TW 詞彙 provenance：12 筆雙來源
+  通過、4 筆衝突 fail-closed deferred、1 筆 provisional；工具測試涵蓋 source hash
+  mismatch、kana 外洩、來源不足與 deferred 無 target。
+- [x] M2 batch-1 完成一筆兩窄字 UI `ai_draft` 的 restore／strip、slot allocator、
+  target／相鄰 static render、BPS round-trip；wide-glyph 精神指令候選明確拒絕，
+  尚未做 patched runtime screen QA。
+- [x] M3 bounded static reinsertor 完成兩筆窄字 ledger 的 global allocation、
+  duplicate-codepoint reuse、strict reject gates 與 BPS round-trip；wide／opaque／
+  newline／完整 corpus／runtime 仍未完成。
+- [x] M3 bounded re-extraction audit 完成 clean／patched source pool 2325/2325 base
+  equality、2/2 target exact、2323/2323 untouched exact 與 allowed diff-range gate；
+  full corpus rebuild 仍未完成。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
-  流程保留 source provenance；M1.8 已完成一筆 static `ai_draft` POC，批量翻譯仍未開始。
-- [ ] 建立嚴格拒絕 source mismatch、缺字與控制碼不一致的編碼／回插器。
+  流程保留 source provenance；M1.8／M2 已完成兩筆 static `ai_draft` POC，完整批量
+  翻譯仍未開始。
+- [x] 建立 bounded strict-reject source mismatch、缺字、控制碼、wide、容量、collision
+  與變長的窄字編碼／回插器；完整 corpus、wide resource 與 runtime 仍待後續門檻。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始批量翻譯；M1.8 的一筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
+目前尚未開始完整批量翻譯；M1.8／M2 的兩筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
 glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼語意、zh-TW
 字型美術品質、自然畫面 runtime 或完整可逆回插已證明。

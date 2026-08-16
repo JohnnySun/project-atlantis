@@ -635,10 +635,10 @@ ignored `research/super-robot-taisen-d-decoded.jsonl` 讀取 source text 並只�
 
 | 項目 | 結果 |
 | --- | --- |
-| glossary entries | 16；accepted 12、deferred conflict 4 |
-| categories | character 4、unit 5、ship 1、spirit 5、system 1 |
-| source table | 2325 records；17 個 distinct referenced records |
-| source provenance | 17/17 raw Shift-JIS hash matches；source text emitted `false` |
+| glossary entries | 17；accepted 12、deferred conflict 4、provisional 1 |
+| categories | character 4、unit 5、ship 1、spirit 5、system 2 |
+| source table | 2325 records；18 個 distinct referenced records |
+| source provenance | 18/18 raw Shift-JIS hash matches；source text emitted `false` |
 | fail-closed | deferred entries 不帶 `zh_tw`；accepted／provisional 至少兩個 HTTPS sources |
 | test coverage | real glossary、hash mismatch、kana leak、single source、deferred target gate |
 
@@ -652,6 +652,145 @@ D 討論佐證；精神指令以兩個巴哈姆特資料頁交叉。約修／莉
 控制碼安全、翻譯品質或 ROM 回插已完成。下一輪仍須先選擇可達且 glyph-only 的小批次，
 以 restore／working／strip 做 ledger，並在每筆 target 建立 width、slot collision、
 control token 與 no-op／round-trip gate。
+
+## 2026-08-16：M2 batch-1 bounded UI target
+
+M2 第一筆新 `ai_draft` 只選 source record `string_id=526432`，因為它是已確認的
+兩窄字、NUL 終止、16px line width、無 control token record；相鄰 `526424` 留作
+untouched 對照。流程確實依序執行 `m18_narrow_allocator.py seed-ledger`、
+`restore_translations.rb`、target 設定、`strip_translations.rb`，再做 static build。
+tracked ledger 是 [`../translations/m2-ui-batch-1.jsonl`](../translations/m2-ui-batch-1.jsonl)，
+只含 source hash／target metadata／term key，不含 source object；完整本機 working、
+patched ROM、BPS、render 與 report 都在 ignored `work/`。
+
+### batch-1 static gate
+
+| 項目 | 結果 |
+| --- | --- |
+| target | `526432`／`0x08080860`；source raw SHA `b5635bbc…`；ledger SHA `538fa597…`；target `存在`，4-byte payload，2 units，16px width，NUL，無 controls |
+| narrow allocator | slots `543/542`；code units `0xE883/0xE783`；free narrow slots before 165；protected blank referenced `[0,57,58]` preserved；wide new slots 0 |
+| glyph/render | slot 543 glyph `2122a153…`／4bpp `99d93d74…`；slot 542 glyph `9134e073…`／4bpp `d13bd68f…`；target 1bpp `e8e40439…`／4bpp `7423be02…` |
+| adjacent | `526424` base／patched payload SHA `d00ed112…` identical；base／patched 1bpp `20b2c971…` identical；base／patched 4bpp `c0ef81f3…` identical |
+| ROM/BPS | patched ROM `e6ed5116…`；BPS 66 bytes／`1fe27b27…`；apply byte-identical |
+| runtime | `pending; static render gate only`；不把 PGM／hash 當成 mGBA 畫面證據 |
+
+同一 slice 也刻意嘗試 glossary 的精神指令 `string_id=509548`；source raw SHA
+`185566ea…`、觀察 line width 24，但兩個 glyph 都分類為 `wide`。因 M1.8 寬字新槽
+容量是 0，allocator 以 `wide_glyph` fail-closed 拒絕，沒有建立 translation 或修改
+ROM。這是有效的負向 gate，不是把 wide term 偷換成窄字 POC。
+
+因此 batch-1 證明的是一筆 source-safe、同長、窄字 static `ai_draft` 與一個 wide
+candidate 的拒絕路徑；它沒有證明 generic 「有／無」語境、完整 UI partition、
+newline／speaker semantics、patched runtime screen 或批量 translation readiness。
+
+## 2026-08-16：M3 bounded multi-record static reinsertor
+
+為避免把單筆 M1.8 builder 誤當成完整回插器，本輪新增
+[`tools/m3_reinsert.py`](../tools/m3_reinsert.py)。它只接受一組或多組成對的 source-safe
+ledger 與本機 restore working record，先逐筆驗證 source record／ROM bytes／ledger
+UTF-8 hash／Shift-JIS payload／NUL／glyph-only narrow shape／同長 target，再以同一份
+occupancy 建立 global Unicode codepoint → narrow slot → two-byte code unit map。不同
+record 重複使用同一 codepoint 時共用配置，不會因逐筆 patch 把同一個 glyph slot 覆寫成
+不同字；report 只寫 hash、offset、slot、count、control metadata，不寫 source text。
+
+### 可重現的兩筆合併 POC
+
+使用 M1.8 `526424` ledger 與 M2 batch-1 `526432` ledger，兩筆均為兩窄字／16px／
+NUL／無 control token。global allocator 從 165 個安全空槽配置 4 個 unique glyph，
+slots `[543,542,541,540]`，保護 `[0,57,58]`；同一 target codepoint 跨 record 只配置
+一次。source-safe report 在 [`m3-reinsert-contract.json`](m3-reinsert-contract.json)：
+
+| 項目 | 結果 |
+| --- | --- |
+| records | 2；source／ledger hash matches 2/2；same-length 2/2；control tokens 0 |
+| font／allocator | Unifont／OFL hashes match；narrow-only；4 allocations；wide new slots 0 |
+| patched ROM | base `12b706b6…` → `e275e9a7…`；只報 metadata，ROM 留 ignored `work/` |
+| BPS | 97 bytes／`b85317d2…`；apply byte-identical |
+| runtime | `pending; static reinsert only` |
+
+這個 bounded contract 將「可逆回插」收斂到兩筆窄字 static slice，但仍不代表完整
+codepage、wide resource 擴容、opaque／控制碼、newline／speaker／branch layout、
+自然 mGBA 畫面或全語料翻譯已完成；本輪另以 re-extraction comparator 驗證這兩筆及
+其餘 untouched records，不能把結果外推成完整 engine coverage。
+
+## 2026-08-16：M3 bounded re-extraction／diff-range audit
+
+新增 [`tools/m3_roundtrip_audit.py`](../tools/m3_roundtrip_audit.py)，以 clean ROM、
+ignored M3 patched ROM、ignored restored working records 與 reinsert report 做唯讀重抽取。
+它對整個 `0x076000..0x082490` source pool 逐筆驗證 base bytes 與本機 strict Shift-JIS
+source equality，對 ledger target 以 report 的 codepoint→code-unit metadata 重建預期
+payload，再檢查 target／NUL／length；其餘 records 必須與 clean ROM byte-identical。
+最後把所有 ROM diff 限制在兩個 target record ranges 與已配置 glyph slot ranges，
+report 不含 source text。
+
+### M3 POC comparator result
+
+| 項目 | 結果 |
+| --- | --- |
+| base source re-extraction | 2325/2325 strict source bytes 相符 |
+| target exact | 2/2；target payload hash 由 report 重建並核對 |
+| untouched exact | 2323/2323；NUL terminator／record boundary 未移動 |
+| diff safety | actual ROM changes 僅落在 target／glyph allowed ranges；outside equal |
+| source safety | `source_text_emitted=false`；只輸出 IDs／hash／count／range |
+| scope | static two-record POC；完整 rebuilt corpus、wide／opaque／control／runtime 仍 pending |
+
+這使 M3 的「重抽取／round-trip」由單純 `cmp` 擴展成 record-level comparator，摘要在
+[`m3-roundtrip-audit.json`](m3-roundtrip-audit.json)；但它仍不是完整文本 extractor
+或 runtime QA。下一步必須在不誤命名 opaque token 的前提下，決定 full-corpus
+translation coverage 與 wide resource／codepage 擴容策略。
+
+## 2026-08-16：M4 前置全語料 structural inventory
+
+新增 [`tools/m4_corpus_inventory.py`](../tools/m4_corpus_inventory.py)，只讀 clean A6SJ
+與 ignored `*-decoded.jsonl` source table，重新驗證每筆 Shift-JIS payload、NUL 邊界與
+M1.7 token encode no-op，然後只依 glyph class／opaque shape 分類。工具不輸出 source
+text，也不把 offset page 當成話數、UI 或劇情語意；完整 local output 留在 ignored
+`work/m4-corpus-inventory.json`，tracked hash／count 摘要在
+[`m4-corpus-inventory.json`](m4-corpus-inventory.json)。
+
+### 可重現結果
+
+| structural partition | records | offset index SHA-256 |
+| --- | ---: | --- |
+| glyph-only narrow | 939 | `d428a46d…` |
+| glyph-only mixed narrow/wide | 833 | `b8a263b5…` |
+| glyph-only wide | 417 | `94543c7a…` |
+| opaque／unaligned | 136 | `e46ce63b…` |
+
+全語料 strict source／NUL／token encode no-op 是 `2325/2325`；glyph token 是
+`15885`（narrow `11902`、wide `3983`），opaque token 是 ASCII／format-like `1032`
+與 unaligned tail `88`。目前窄字 static reinsert 的結構入口只能是全窄 939 筆，
+其餘 `1386` 筆拒絕；寬字新槽 capacity 仍固定為 `0`。這個 inventory 收斂的是
+可審核的格式覆蓋邊界，不是語意翻譯、newline／speaker 解碼或 runtime 覆蓋。
+
+本輪完成 M4 的前置資料盤點，但沒有因此擴大 ledger 或宣稱完整翻譯；下一步仍須
+以 caller／自然畫面完成語意分區，證明 wide resource 策略，再逐批建立可回插的
+zh-TW ledger。
+
+## 2026-08-16：M4 bounded wide existing-slot reuse audit
+
+新增 [`tools/m4_wide_reuse_audit.py`](../tools/m4_wide_reuse_audit.py)，只讀 clean ROM
+與 ignored strict source table，對每個 source Unicode character 的標準 Shift-JIS
+雙位元組建立 source-context identity，再以已證明的 `0x080085FC` code-unit formula
+解析到既有 wide resource slot。它不從 bitmap 位置猜 Unicode、不配置新 wide slot、
+不改 ROM；tracked 摘要在 [`m4-wide-reuse-audit.json`](m4-wide-reuse-audit.json)，
+完整 identity rows 只留 ignored `work/m4-wide-reuse-audit.json`。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| source records | 2325；wide occurrences 3983 |
+| source-context identities | 743 個 Unicode／code-unit／slot 一對一 mapping |
+| resource | `0x08120DBC..0x0814F664`；stride 26；payload 24 bytes；physical slots 7332 |
+| existing payload | 743/743 對應 slot 的 payload initialized；slot index hash 與 M1.7 resource audit 相符 |
+| runtime boundary | `U+79FB`／`0xDA88`／slot 905 有 M1.6 runtime positive；其餘 742 個 static-only |
+| allocation policy | 新 wide slot 0；未在 source-context map 的 target reject；font expansion 未實作 |
+
+這個 slice 只提供「可重用既有 wide glyph」的 source-safe static boundary，不能把
+743 個 identity 當成 743 個 runtime renderer proof，也不能解除 mixed／opaque record
+的其他 layout gate。下一步仍須完成控制碼／newline／speaker 語意與完整 encoder，並以
+自然或 controlled runtime 覆蓋翻譯後的 wide consumer。
 
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
@@ -667,7 +806,7 @@ control token 與 no-op／round-trip gate。
 | 壓縮 | 只有 BIOS／簽章候選，未確認與文本相關 |
 | 控制碼／終止碼／行寬 | NUL／窄字 bounded width 已確認；newline／完整控制語意仍未確認 |
 | 可逆回插 | 一筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
-| 翻譯 | 一筆 `ai_draft` static POC；未開始批量翻譯 |
+| 翻譯 | 兩筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
 
 ## 下一輪入口
 
@@ -676,4 +815,5 @@ control token 與 no-op／round-trip gate。
 2. 定義 newline／opaque token、完整行數／說話者／分支 layout，並以更多不含專名
    的短 UI record 擴大 allocator QA；wide 新槽仍不可用。
 3. 以 target／font／ROM hash、ledger restore／strip 與 BPS gate 維持可重現；
-   只有 full-game encoder、容量與場景 QA 完成後才擴大翻譯批次。
+   只有 full-game encoder、容量與場景 QA 完成後才擴大翻譯批次。M4 inventory
+   只把 939 筆全窄 record 標成結構入口，沒有替其他 1386 筆解除 opaque／wide gate。
