@@ -86,6 +86,28 @@
   `0x005E`／`0x0066` path 的共同關係；目前 confirmed identity `0`、provisional `2`，
   其他 code units unknown，控制碼與 source table gate 維持關閉。
 
+## 里程碑 1.8：BG1 keyboard asset provenance 有界切片
+
+- [x] 從 initial GDB stop 對 `BG1CNT=0x0400000A`、`0x06004020`／`0x06004040` 與
+  DMA0–3 control 設置 bounded write watch；工具重用 `core/gba` client/capture，
+  raw／圖片仍留 private／ignored。
+- [x] 取得一次 BG1CNT writer receipt：`PC=0x080141FA/LR=0x080141F3`、value
+  `0x0105`，反解為 charbase `0x4000`／screenbase `0x0800`。
+- [x] 取得一次 reset-stage `0x06004020` write：writer PC `0x00000008`、分類為
+  BIOS copy candidate，tile hash `02d449…`；它不等於 M1.6 keyboard tile-1 hash
+  `b5ae444…`，所以沒有提升 glyph identity。
+- [x] 留下 DMA control PC/LR 與 bounded protocol receipt；因暫存 mGBA 把
+  `T05watch`／`S05`／`S02`／上一筆 data payload 延遲到下個 command，source／
+  destination 欄位不採信，沒有把 `target_overlap=false` 冒充 DMA 排除。
+- [x] keyboard gate 的失敗可重現：參考 receipt 兩次 START 後 BG1 八格全為
+  `0x0000`，position match `0/8`；因此 keyboard transition 的 source→copy／DMA
+  chain 尚未確認，M1.8 confirmed identity `0`。
+- [x] 明確比較 M1.7 `0x080063C7`／`0x005E`／`0x0066` path：目前未見 shared LR、
+  record pointer 或 caller；記為未連接的 renderer candidates，不合併 codepage。
+- [ ] 在穩定 keyboard gate 後，以單通道／單次 DMA watch 或 `0x06004000` bounded
+  slice 重新取得可信 source/destination，完成 source bytes/hash／copy transform 與
+  BG1 tilemap 位置三方交叉；source table、控制碼、ledger 與翻譯維持關閉。
+
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
 - [ ] 先完成 Wikipedia zh-tw、Bahamut 與其他獨立社群來源的專有名詞核對；有分歧

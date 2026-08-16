@@ -7,7 +7,7 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7 執行期切片；尚未
+目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8 執行期切片；尚未
 開始有限量翻譯，也沒有可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
 以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
 read 與 renderer CPU VRAM store；但目的位址是 `0x060020xx/0x060023xx`，不是 BG1
@@ -16,6 +16,10 @@ table／work ledger。詳見
 [`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
 M1.7 的完整 writer／DMA／BG1 negative receipt 見
 [`research/m17-font-record-to-vram-20260816.md`](research/m17-font-record-to-vram-20260816.md)。
+M1.8 從 reset 觀察 BG1CNT、BG1 tile 與 DMA control：證明一個 reset-stage BIOS copy
+寫入 `0x06004020`，但 hash 不是 keyboard tile；keyboard gate 受暫存 mGBA queued
+packet 限制未通過，沒有把它冒充 keyboard source。完整 receipt 見
+[`research/m18-bg1-asset-20260816.md`](research/m18-bg1-asset-20260816.md)。
 M1.5 的圖層與 VRAM negative receipt 仍見
 [`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
 下一個安全技術關卡是把 font-record／runtime tile 的關係、控制碼與劇情／地圖／事件、
@@ -46,6 +50,11 @@ M1.5 的圖層與 VRAM negative receipt 仍見
   `0x08004C82`／`0x08004D1A` CPU VRAM consumer；BG1 `0x06004020`／`0x06004040` 的
   32-byte write watchpoint 為零且前後 hash 不變，故這是非 BG1 consumer，不能當作鍵盤
   glyph identity。DMA3 只取得不屬於該 record path 的 bounded setup receipt；控制碼仍未證明。
+- M1.8 從 initial GDB stop 對 BG1CNT、`0x06004020`／`0x06004040` 與 DMA0–3
+  control 做 bounded watch：BG1CNT 的 `0x0105` 設定與一個 BIOS tile write 已取得
+  PC/LR/hash；該 tile hash 不等於已知 keyboard tile，DMA source/destination 因
+  queued GDB payload 污染而維持 unknown。keyboard gate 未通過，confirmed identity
+  仍為 `0`，font-record path 沒有共同 caller 證據，source table／ledger／翻譯仍關閉。
 
 ## ROM 基準
 

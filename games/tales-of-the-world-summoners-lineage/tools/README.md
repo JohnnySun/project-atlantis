@@ -120,6 +120,29 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/too
   --output /private/tmp/tow-a9pj-m17-runtime-final/summary.json
 ```
 
+## M1.8 BG1 asset provenance slice
+
+`m18_bg1_asset_probe.py` 從 initial GDB stop 開始觀察 BG1CNT、BG1 charblock 的兩個
+32-byte tile target 與 DMA0–3 control，接著以最多兩次 `START` 做 bounded transition。
+它把 CPU／BIOS／DMA 分開保存 PC/LR、live pointer hash、register metadata 與 tile hash；
+只有 keyboard tilemap signature、runtime tile hash 與可信 source copy 三者一致時才會
+提高 identity。DMA source/destination 若遇到暫存 mGBA queued packet 或未對齊資料，會保留
+protocol-limited status，不會把欄位當成有效 source。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/tools/m18_bg1_asset_probe.py \
+  /private/tmp/project-atlantis-a9pj.gba --port 39123 \
+  --settle-seconds 5 --step-settle-seconds 0.75 --event-timeout 2 \
+  --max-dma-hits 1 --dump-dir /private/tmp/tow-a9pj-m18-runtime \
+  --output /private/tmp/tow-a9pj-m18-runtime/summary.json
+```
+
+`--watch-slice` 可把兩個 tile watch 改為 bounded `0x06004000–0x060040FF` 請求（若
+stub 不支援則退回 `0x20`）。輸出只含 hashes／counts／offset／PC/LR／register
+metadata；ROM、raw RAM／VRAM、rendered image 與完整原文必須留在 caller 的 ignored
+或 `/private/tmp` 路徑。參考 negative receipt 與 M1.7 path comparison 見
+[`../research/m18-bg1-asset-20260816.md`](../research/m18-bg1-asset-20260816.md)。
+
 ## 後續 decoder 約束
 
 真正的 `decoder` 必須以日版 ROM 為輸入、產生被 `.gitignore` 排除的
