@@ -39,6 +39,61 @@ class ConsumerProbeTests(unittest.TestCase):
         self.assertEqual(rows[0]["vram_offset"], "0x00020")
         self.assertEqual(rows[0]["rom_offsets"], ["0x000010"])
 
+    def test_resolver_pointer_is_filtered_to_strict_window_record(self):
+        records = {
+            0x146EE0: {
+                "string_id": "sjis:0x146EE0",
+                "file_offset": "0x146EE0",
+                "gba_address": "0x08146EE0",
+                "region": "text-pool",
+                "raw_length": 12,
+            }
+        }
+        result = consumer_probe.classify_resolved_pointer(
+            0x08146EE0, records
+        )
+        self.assertEqual(result["status"], "confirmed-window-record")
+        self.assertEqual(result["window"], "text-pool")
+        self.assertEqual(result["record"]["string_id"], "sjis:0x146EE0")
+
+    def test_resolver_pointer_does_not_promote_non_boundary_or_outside_value(self):
+        records = {
+            0x146EE0: {
+                "string_id": "sjis:0x146EE0",
+                "file_offset": "0x146EE0",
+                "gba_address": "0x08146EE0",
+                "region": "text-pool",
+                "raw_length": 12,
+            }
+        }
+        non_boundary = consumer_probe.classify_resolved_pointer(
+            0x08146EE1, records
+        )
+        self.assertEqual(
+            non_boundary["status"], "confirmed-window-nonstrict-offset"
+        )
+        self.assertEqual(
+            consumer_probe.classify_resolved_pointer(0, records)["status"],
+            "null-result",
+        )
+
+    def test_destination_candidates_only_report_gba_ram(self):
+        registers = {
+            "r0": 0x02001000,
+            "r1": 0x08146EE0,
+            "r2": 0x03007000,
+            "r3": 0x06000000,
+            "sp": 0x03007DC4,
+        }
+        self.assertEqual(
+            consumer_probe.destination_candidates(registers),
+            {
+                "r0": "0x02001000",
+                "r2": "0x03007000",
+                "sp": "0x03007DC4",
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

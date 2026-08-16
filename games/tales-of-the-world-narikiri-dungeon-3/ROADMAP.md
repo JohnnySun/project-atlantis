@@ -24,6 +24,16 @@
 - [x] 對 baseline BG charbase 做 ROM→VRAM exact byte match，並保留重複 tile／未歸因 glyph 的限制
 - [ ] 命中 selected record 的 live consumer，沿 caller 連到 decoder／codepage／glyph VRAM destination
 
+## M1.6：resolver live-edge boundary
+
+- [x] 在 `0x08003444` entry 與 `0x0800345C` return site 記錄 live `r0` table base、`r1` index、resolved `r0` 與 caller LR
+- [x] 以五個已確認文字窗及 strict record boundary 自動過濾 resolver return，不把高位資源位址誤升格成文字
+- [x] 長度受限 menu／button sequence 共 224 個 KEYINPUT events；resolver 8 hits 均為五窗外資源位址，caller 落在本作 asset-loader callsites
+- [x] selected `sjis:0x146EE0` read watchpoint 0 hit；state-table runtime override 只作 navigation negative，不當作正常流程證據
+- [ ] 找到 resolver 返回五窗 strict record 的正常遊戲 caller，並以 source read／RAM decoder／glyph destination 建立 text edge
+
+詳情見 [`research/m16-resolver-20260816.md`](research/m16-resolver-20260816.md)。目前仍不可宣稱 codepage、glyph identity、翻譯或回插成立。
+
 ## M2：尚未開始的必要證明
 
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者

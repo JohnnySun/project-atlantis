@@ -6,13 +6,15 @@ zh-TW 研究與本地化。ROM、存檔、完整日文原文表、解碼輸出�
 
 ## 目前狀態
 
-目前完成 M0 身分鎖定、M1 工程可行性偵察與 M1.5 的 bounded consumer 回合：已
+目前完成 M0 身分鎖定、M1 工程可行性偵察、M1.5 與 M1.6 的 bounded consumer 回合：已
 確認一批以 NUL 結尾的標準 Shift-JIS 候選資料、可重現的嚴格抽取邊界、五窗
 absolute／relative 指標分層，以及遊戲啟動期實際執行的 BIOS 圖形解壓縮路徑。
 M1.5 已確認早期 KEYINPUT polling caller，但選定 record 的 read watchpoint 在
-bounded menu 序列中為 negative；**尚未開始翻譯，也尚未證明文字 renderer、字型
-codepage 或可逆回插。** 不把既有英文 patch 的少量選單／開頭內容當作完整翻譯
-來源。
+bounded menu 序列中為 negative。M1.6 已確認 `0x08003444` 會被真實 UI／資源
+載入路徑呼叫，但本回合的 8 個 resolved pointers 全部在五個文字窗外；selected
+record `0x08146EE0` read watchpoint 仍為 negative。**尚未開始翻譯，也尚未證明
+文字 renderer、字型 codepage 或可逆回插。** 不把既有英文 patch 的少量選單／開頭
+內容當作完整翻譯來源。
 
 ## ROM 身分
 
@@ -61,7 +63,9 @@ ROM→VRAM exact-match 限制見
 [`research/m15-consumer-20260816.md`](research/m15-consumer-20260816.md)。可重跑
 工具是 [`tools/classify_pointers.py`](tools/classify_pointers.py) 與
 [`tools/consumer_probe.py`](tools/consumer_probe.py)；兩者都只輸出 offset、
-register、hash 與計數 metadata，不輸出完整日文原文。
+register、hash 與計數 metadata，不輸出完整日文原文。M1.6 的 resolver entry／
+return、caller LR、五窗 filter 與 selected-record negative 見
+[`research/m16-resolver-20260816.md`](research/m16-resolver-20260816.md)。
 
 ## 尚未確認與回插邊界
 
@@ -126,6 +130,25 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 
 這個 probe 的 JSON 不含完整原文；只有 record 命中後才會在指定 ignored／
 `/private/tmp` 目錄保存 VRAM、palette、OAM 與 IWRAM raw dump。
+
+M1.6 resolver 回合仍使用同一個本作獨立 mGBA/GDB port；以下命令會在
+`0x08003444` entry 與 `0x0800345C` return site 之間記錄 `r0/r1/lr`、resolved
+`r0`，只對五窗內的 strict record 做分類，並同時 watch selected
+`0x08146EE0`：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/consumer_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port <your-independent-gdb-port> --trace-offset 0x146EE0 \
+  --max-resolver-hits 24 --per-event-timeout 3 \
+  --sequence start:12,none:20,down:12,none:10,a:12,none:20,right:12,none:10,a:12,none:20,left:12,none:10,b:12,none:10,up:12,none:10,select:8,none:10 \
+  --output /private/tmp/tow-nd3-m16-selected.json
+```
+
+若要先取得候選再選 concrete record，可用 `--resolver-only`；若沒有 selected
+record 命中，可用 `--trace-first-record` 對第一個實際返回的 strict-window
+record 做有界 caller/source read trace。兩種模式都不做 runtime pointer scan。
 
 ## 外部工程參考
 
