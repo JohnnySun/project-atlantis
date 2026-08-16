@@ -6,7 +6,7 @@
 
 截至 2026-08-16，已由使用者提供的本機日版 ZIP 唯讀解出一份 8 MiB ROM 到被忽略的 `roms/base/AFEJ.gba`，並完成 GBA 標頭、CRC32、SHA-1／SHA-256 與 `recon_afej.py` 核對。ROM 未加入 Git。
 
-目前已由 AFEJ 執行期確認一條文字路徑：EWRAM 文字緩衝區會被字元消費者讀取，經兩位元組碼表查找後，glyph index 會寫入 EWRAM 渲染物件。完整劇情／支援／事件表、控制碼、字型 bitmap 的 VRAM 搬運與可逆回插仍未完成。
+目前已由 AFEJ 執行期確認一條文字路徑：EWRAM 文字緩衝區會被字元消費者讀取，經兩位元組碼表查找後，glyph index 會寫入 EWRAM 渲染物件並進入 VRAM bitmap composer。完整劇情／支援／事件表、控制碼、glyph pool／tile stride／palette 對應與可逆回插仍未完成。
 
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
