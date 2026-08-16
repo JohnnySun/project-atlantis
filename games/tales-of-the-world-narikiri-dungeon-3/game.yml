@@ -1,0 +1,19 @@
+id: tales-of-the-world-narikiri-dungeon-3
+platform: gba
+titles:
+  ja: "テイルズ オブ ザ ワールド なりきりダンジョン3"
+  en: "Tales of the World: Narikiri Dungeon 3"
+  zh-TW: "世界傳說：換裝迷宮 3"
+source:
+  region: JP
+  game_code: B3TJ
+  maker_code: "AF"
+  revision: 0
+  size: 16777216
+  crc32: 1867ccef
+  md5: 289bbb2e151a6ca11f896ca4712c9835
+  sha1: 263b5ba40b1e0afbc2c23f478cc83f794846a47f
+  sha256: d083d66b818b1353a449af7f1dd4232b490c254a4107951a3749973d03a0a394
+targets:
+  - zh-TW
+status: research
