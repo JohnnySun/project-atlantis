@@ -8,7 +8,7 @@
 ## 當前狀態（2026-08-16）
 
 - **ROM 身分已核對**：委派提供的 ZIP 只有一個 ROM entry，解壓後為 4 MiB；本機 ignored 路徑為 `roms/base/B3EJ_JP_candidate.gba`。GBA header 為 `EIKETSUDEN`／`B3EJ`／maker `C8`／revision `0`，與公開 `B3EJ` 產品候選一致。
-- **雜湊已記錄**：CRC32 `a4a1c956`、MD5 `76cccc133899422854687e672f335cbd`、SHA-1 `32b5eeb82b0ffa14adc54223fb9e423efe8a1aa4`、SHA-256 `d61e284ba882cfba6b960b147bbdd0df642c402a8ed2adce3ccb9b837f0c97b0`。header 儲存補數為 `0xe1`、依標準公式計算為 `0x13`，不相符；已原樣保留，沒有修補 ROM。
+- **雜湊與共用 ROM guard 已核對**：CRC32 `a4a1c956`、MD5 `76cccc133899422854687e672f335cbd`、SHA-1 `32b5eeb82b0ffa14adc54223fb9e423efe8a1aa4`、SHA-256 `d61e284ba882cfba6b960b147bbdd0df642c402a8ed2adce3ccb9b837f0c97b0`。共用 `scripts/gba-rom-identity.py` 以 size `4194304`、game code `B3EJ`、CRC32／SHA-256 contract 執行，exit `0`／`status=pass`，stored/calculated header complement 均為 `0xe1`；未使用 `--allow-invalid-header`。舊 `tools/inspect_rom.py` 的 bounded probe 仍保留，但其 legacy checksum 報告不作正式身分 gate。
 - **靜態文本線索已建立**：已確認可讀的標準 Shift-JIS 字串群、`0x00` 終止／`0x0A` 換行、格式參數與候選指標池；`research/recon-ledger.md` 僅記錄偏移、分類與證據，不保存完整原文。
 - **四組 bounded text-pool decoder 與獨立劇情池 E 靜態分析（2026-08-16）已完成**：`tools/extract_text_pools.py` 預設對 A `0x0CBC54/183`、B `0x0D1FFC/44`、C `0x0D20D8/4`、D `0x0D4D00/28` 做 explicit pointer／NUL／Shift-JIS 驗證，產生 ignored `research/sangokushi-eiketsuden-decoded.jsonl`；metadata 顯示 A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未發現 opaque control byte。另以 `--include-story` 明確 opt-in 的 story-event E `0x0CDB64/33` 通過 33/33 strict Shift-JIS、32/33 LF、0 opaque control bytes 與邊界檢查；E 的靜態 chain 為 `0x080CDB64 → 0x08011904 → 0x080118C8 → 0x0800CAD8`，自然 runtime 仍 pending。這是結構與 decoder 證據，不把任何池直接宣稱為完整劇情或自然畫面文本。
 - **執行期已完成標題畫面有界 capture**：使用共用 `core/gba` 工具在獨立 mGBA/GDB session 讀取 ROM、IWRAM、VRAM、OAM 與 palette，確認 Mode 0 下 BG0–BG3 的 screenbase，並以共用 renderer 重建出開始提示、版權列、日文標題圖樣與裝飾層；尚未把靜態 Shift-JIS 字串池連到文字呼叫、字型 glyph identity 或可逆回插路徑。
@@ -38,6 +38,13 @@
   `0x0805FB06`；另固定 `0x0805CA94 → 0x0805D10C` title/menu input/display edge
   與 state-12 reset write。這不包含 Table-B index bound、自然 event cohort 或
   handler 的具體畫面語意；詳見 `research/m2-8-title-menu-state-static-20260817.md`。
+- **M2.9 natural state/runtime receipt（2026-08-17）已完成有界收尾**：fresh clean
+  PID `29182`／2345、single connection、`none:8,start:4,none:20`、32/32 input
+  events；state dispatcher natural hit `31`（state values `{0,3}`、LR `0x0805E081`），
+  title owner `32`，normal reader／state gate／B consumer／index setup 全 `0`，VRAM
+  before/after hash unchanged。這是 static state → known-screen runtime receipt 與
+  精確 natural negative，不是自然 `<44` 或 story/battle consumer proof；詳見
+  `research/m2-9-natural-state-runtime-20260817.md`。
 - **獨立 story-event pool E static consumer chain（2026-08-16）已建立**：`tools/analyze_story_pool.py` 固定 file `0x0CDB64`／GBA `0x080CDB64` 的 33 entries、33 unique targets（`0x077328–0x077E68`）、32/33 LF、33/33 strict Shift-JIS、0 opaque controls；`0x08011990` literal 與 caller span 的 27 個 entry-range slots 接到 `0x08011904` → `0x080118C8` → `0x0800CAD8`。這是 static-consumer-confirmed、natural-runtime-pending；story pool 與四池 custom-glyph audit 分離，因 E source 使用 `0x8141`／`0x8142`／`0x8148`／`0x8158`，不能盲套既有 17-map。
 - **E 已知結局流程交叉證據（2026-08-16）已建立**：日文 GBA 攻略 Wiki 的夷陵／劉備生死結局流程，和 E pool 的 hash-only record 分組相符；另有系列流程資料交叉支持史實／假想與生死差異。這只標為 `provisional-known-screen-cross`，不冒充自然 runtime glyph receipt；詳見 `research/m3-story-known-screen-cross-20260816.md`。
 - **E known-screen／codepage／layout bounded cross-check（2026-08-16）已建立**：E:000–E:032
@@ -189,6 +196,11 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/m2_4_static.py \
   roms/base/B3EJ_JP_candidate.gba --output /private/tmp/b3ej-m24-static.json
 PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_title_menu_state.py \
   roms/base/B3EJ_JP_candidate.gba --output /private/tmp/b3ej-m28-title-menu-state.json
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m2_9_state_runtime.py \
+  roms/base/B3EJ_JP_candidate.gba --port 2345 \
+  --sequence 'none:8,start:4,none:20' --settle-seconds 9 \
+  --event-timeout 2 --max-stops 512 \
+  --output /private/tmp/b3ej-m29-state-clean.json
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools -p 'test*.py' -v
 ```
 
@@ -196,7 +208,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools -p 'test*.py' -v
 
 ## 後續唯讀偵察順序
 
-1. 以 `inspect_rom.py` 重跑 header、CRC32／MD5／SHA-1／SHA-256 和 bounded probes；產品候選與 ROM header 仍分開記錄。
+1. 以共用 `scripts/gba-rom-identity.py` 重跑 size／header／CRC32／SHA-256 identity gate；需要 bounded 探索時另以 `inspect_rom.py` 執行，產品候選與 ROM header 仍分開記錄。
 2. 以 `scan_text_pointers.py` 重跑已審核的指標池候選；每個候選都要記錄偏移和判定理由，不把合法位元組模式直接當成文字。
 3. 若要繼續，才以 mGBA／GDB 觀察實際文字渲染、VRAM tile／tilemap、字型搬移和執行期資料。需分開記錄「字型位址已定位」和「glyph identity 已確認」兩種進度。
 4. 解出一小段可重現的字串結構後，建立遊戲專用解碼器，輸出本機 `research/sangokushi-eiketsuden-decoded.jsonl`：每行至少含 `string_id`、`locale`、`text`、`provenance`，並標記 confirmed／provisional／unmapped 證據層級。四池 decoder 已完成 bounded metadata；story-event E 需用 `--include-story` 明確選取，完整畫面語意仍待核對。

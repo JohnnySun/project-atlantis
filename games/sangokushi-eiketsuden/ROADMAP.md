@@ -10,7 +10,7 @@
 
 ## 里程碑 1：ROM 身分與唯讀資料偵察
 
-- [x] 解析 header title、game code、maker code、revision、大小與補數校驗；記錄儲存值 `0xe1` 與計算值 `0x13` 的異常，不修改 ROM。
+- [x] 解析 header title、game code、maker code、revision、大小與補數校驗；共用 ROM identity guard 以標準公式確認 stored/calculated complement 均為 `0xe1`，未修改 ROM。舊本作 bounded probe 的 legacy checksum 結果不再作正式 gate。
 - [x] 記錄 CRC32、MD5、SHA-1、SHA-256；確認本地 dump 的 `B3EJ` header 與公開產品候選相符。
 - [x] 掃描標準 Shift-JIS、候選指標表、GBA 位址指標、BIOS 壓縮標記與 bounded 候選計數。
 - [x] 建立 `inspect_rom.py`、`scan_text_pointers.py` 與 ROM-independent tests；候選輸出只含偏移／計數，不含完整原文。
@@ -53,6 +53,12 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
   `0x0805CA94 → 0x0805D10C` title/menu owner edge 均已驗證；state-12 reset write
   也已固定。這仍不證明自然 Table-B `<44`、normal event-ready gate 或任何 handler
   的具體畫面語意。詳見 `research/m2-8-title-menu-state-static-20260817.md`。
+- [x] M2.9 完成一條 fresh clean natural state/runtime receipt：PID `29182`／2345、
+  single connection、`none:8,start:4,none:20`、32/32 input events；dispatcher `31`
+  hits（state `{0,3}`、LR `0x0805E081`）、title owner `32` hits，normal reader／
+  state gate／B consumer／index setup 全 `0`，VRAM hash unchanged。這只把 static
+  state route 接到 known-screen runtime negative，不關閉自然 `<44` 或 story/battle
+  consumer gate。詳見 `research/m2-9-natural-state-runtime-20260817.md`。
 - [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
 - [x] 分別確認四組 bounded candidate pool 的完整 NUL／Shift-JIS／LF／控制碼統計；A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未把 noisy compression signature 當成文本壓縮。各池完整畫面語意與其餘 runtime glyph identity 仍分開 pending；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [x] 建立 story-event E 的 bounded static boundary／consumer chain：`0x0CDB64/33`、33 unique targets、32/33 LF、33/33 strict Shift-JIS、0 opaque controls，並驗證 `0x080CDB64 → 0x08011904 → 0x080118C8 → 0x0800CAD8`；另以日文 GBA 攻略的夷陵／劉備生死結局流程建立 `provisional-known-screen-cross`，但 E 的 natural runtime、glyph receipt 和完整語意仍 pending，且不併入四池 custom-glyph source non-use。

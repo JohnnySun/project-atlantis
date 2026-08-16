@@ -20,7 +20,7 @@
 | header game code | `B3EJ` | header `0xAC–0xAF`；與產品候選分開記錄後相符 |
 | maker code | `C8` | header `0xB0–0xB1` |
 | software version | `0` | header `0xBC` |
-| header complement | stored `0xe1`; calculated `0x13`; **mismatch** | 依 GBA header bytes `0xA0–0xBC` 的標準公式計算；原 ROM 未修補 |
+| header complement | stored `0xe1`; common guard calculated `0xe1`; **pass** | 以共用 `scripts/gba-rom-identity.py` 的標準公式核對；舊本作 bounded probe 的 legacy checksum `0x13` 不作正式 gate；原 ROM 未修補 |
 | CRC32 | `a4a1c956` | 本機完整 ROM |
 | MD5 | `76cccc133899422854687e672f335cbd` | 本機完整 ROM |
 | SHA-1 | `32b5eeb82b0ffa14adc54223fb9e423efe8a1aa4` | 本機完整 ROM |
@@ -31,7 +31,7 @@
 | 項目 | 狀態 | 已有證據 | 尚未證實／下一個安全邊界 |
 |---|---|---|---|
 | 公開產品候選 | `confirmed-public` | 公開資料列出 `AGB-P-B3EJ`；來源見 `term-sources.md` | 公開資料不能替代本機 ROM hash |
-| ROM 身分 | `confirmed-static` | header `EIKETSUDEN`／`B3EJ`／`C8`／revision `0`，大小與 hash 已記錄 | header complement 異常要保留，不能當作 clean dump 證明 |
+| ROM 身分 | `confirmed-static` | header `EIKETSUDEN`／`B3EJ`／`C8`／revision `0`，大小與 hash 已記錄；共用 identity guard exit `0`／`status=pass` | 產品候選與本機 ROM 身分仍分欄；舊 bounded probe 的 legacy checksum 不覆蓋共用 guard |
 | codepage | `confirmed-static` | 多個集中區可直接以標準 Shift-JIS 解出日文；probe 命中 `策略`、`劉備`、`援軍`、選單詞等 | 尚未把每一池與遊戲畫面／呼叫點逐字串對應 |
 | 文本候選區 | `confirmed-static / provisional-map` | `0x075a80–0x077100`、`0x077328–0x077e68`、`0x078528–0x0786fc`、`0x07880c–0x078848`、`0x079764–0x0797e4` 有可讀 Shift-JIS／系統或事件候選 | 尚未區分完整劇情、武將、地名、官職、策略和戰役 event 的所有池 |
 | 四池 decoder | `confirmed-static / source-local` | `tools/extract_text_pools.py` 預設對 A `183/183`、B `44/44`、C `4/4`、D `28/28` 做 bounded absolute-pointer、NUL、Shift-JIS 驗證；A 有 `177` 筆 LF，四池均無 opaque control byte；完整原文只寫 ignored decoded JSONL | pool A/C/D 的自然畫面／劇情語意與完整 runtime glyph identity 尚未逐池核對；D 有 6 筆空字串，保留為資料而不臆測 |
@@ -71,6 +71,7 @@
 | M2.6 event-system patched menu QA | `negative / bounded-patched-screen` | event-system batch 2 BPS output fresh process；settled／final I/O 與 clean 相同；OAM SHA-256 `1b50ba64…f50a6f`、render hash 與 clean identical | D batch 2 尚未證明是這三列 OAM menu 的 source；不能把 patched／clean 相同畫面當翻譯通過，D natural consumer／menu label identity pending |
 | M2.7 menu-selection path | `negative / bounded-natural` | clean fresh process；`none:8,start:1,none:12,down:4,none:2,a:2,none:3`；32/32 input stops 在 `0x0805cf5e`；final `DISPCNT=0x1f40`、VRAM hash unchanged | 未進入 `0x0800c61c` normal reader、state gate 或任何 B/D/E consumer；下一步 static 追 `0x0805d10c` caller／menu owner，不把 title-only negative 外推 |
 | M2.8 title/menu state dispatcher | `confirmed-static / provisional-family-label; event-negative` | `tools/analyze_title_menu_state.py`：dispatcher `0x0805d2ec` 17 Thumb instructions；state byte `0x030042d1`；range `1..12`／fallback `0x0805dfa6`；12 pointers／10 unique handlers；callers `0x0805e07c`、`0x0805fb06`；owner `0x0805ca94→0x0805d10c`；state-12 reset write | 未建立 Table-B index bound、`r4+0x14` ready transition、自然 event cohort 或 handler 個別畫面 identity；不把 family label 當 menu/battle proof |
+| M2.9 natural state runtime | `confirmed-runtime / state-known-screen; consumer-negative` | fresh clean PID `29182`／2345；single connection；`none:8,start:4,none:20`、32/32 input events；dispatcher `31` hits、state `{0,3}`、LR `0x0805e081`；title owner `32`；settled/final I/O `0x1e40→0x1f40`；VRAM before/after `5bbfad1b…cf7463` unchanged | normal reader、state gate、B consumer、index setup 全 0；natural cohort `0`；`<44`、runtime count、story E／battle D writer receipt 仍 unknown；readiness helper 的 `ps` 子程序在 sandbox 被拒絕，ownership 由 launch command／PID／lsof 交叉確認 |
 | M2.4 normal count | `unknown / runtime-pending` | static builder source remains `[0x02014E78]` terminated by `0xFF`; harness now records bounded sentinel/count metadata only when builder is naturally entered | no natural builder hit；不能把 empty-path count 44 外推 |
 | story-event E static chain | `confirmed-static / natural-runtime-pending; known-screen-cross provisional` | `tools/analyze_story_pool.py` 驗證 table boundary、27 個 entry-range literal slots、有效 Thumb caller／pair-helper／writer callsites；pointer-table SHA-256 `729b6f1e...ec6febe3`、ordered target SHA-256 `03f9d9a5...f3ad8f4`；公開夷陵／結局資料支持 E 的分支分類 | 這只證明 E 的 static consumer chain 與已知流程交叉；沒有把它當成自然 runtime glyph evidence；E source 與既有 custom units `0x8141/0x8142/0x8148/0x8158` 重疊 |
 | compression | `not-confirmed` | bounded signature scan 僅得到 noisy counts：LZ77 `10744`、Huffman `6692`、RLE `4704`、Diff `4966` | 沒有把任何 signature 當成文本壓縮；需由 code／runtime 呼叫證實 |
