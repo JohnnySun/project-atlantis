@@ -9,6 +9,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
 import parser_record_runtime_probe  # noqa: E402
+import state7_readiness_probe  # noqa: E402
 
 
 class ParserRecordRuntimeProbeTests(unittest.TestCase):
@@ -24,6 +25,22 @@ class ParserRecordRuntimeProbeTests(unittest.TestCase):
         self.assertIsNone(
             parser_record_runtime_probe.parser_callsite_from_lr(0x08009999)
         )
+
+    def test_state_handler_entries_are_fixed_and_one_shot_candidates(self):
+        self.assertEqual(
+            parser_record_runtime_probe.STATE_HANDLER_ENTRIES,
+            {
+                "state7": 0x080A85D8,
+                "state7_epilogue": 0x080A8644,
+                "state3": 0x080A4E64,
+            },
+        )
+        self.assertEqual(parser_record_runtime_probe.STATE_NEXT, 0x02000000)
+
+    def test_state7_readiness_probe_keeps_fixed_resource_field_boundary(self):
+        self.assertEqual(state7_readiness_probe.STATE7_ENTRY, 0x080A85D8)
+        self.assertEqual(state7_readiness_probe.A82AC_ENTRY, 0x080A82AC)
+        self.assertEqual(state7_readiness_probe.RESOURCE_STATUS_OFFSET, 0x28)
 
     def test_parser_input_requires_exact_strict_record_start(self):
         records = {

@@ -32,6 +32,7 @@ from consumer_probe import (  # noqa: E402
     register_snapshot,
 )
 from font_record_runtime_probe import classify_source_pointer  # noqa: E402
+from state_probe import state_metadata  # noqa: E402
 
 
 ROM_BASE = 0x08000000
@@ -39,6 +40,10 @@ PARSER_ENTRY = 0x080025CC
 PARSER_WRITER_ENTRY = 0x08001DBC
 PARSER_CURSOR_GLOBAL = 0x03001588
 KEYINPUT_ADDRESS = 0x04000130
+STATE7_HANDLER_ENTRY = 0x080A85D8
+STATE7_HANDLER_EPILOGUE = 0x080A8644
+STATE3_HANDLER_ENTRY = 0x080A4E64
+STATE_NEXT = 0x02000000
 RAM_RANGES = (
     (0x02000000, 0x02040000),
     (0x03000000, 0x03008000),
@@ -46,6 +51,16 @@ RAM_RANGES = (
 PARSER_CALLSITES = tuple(
     ROM_BASE + offset for offset in (0x164C, 0x1D92, 0x1E26, 0x281C)
 )
+STATE_HANDLER_ENTRIES = {
+    "state7": STATE7_HANDLER_ENTRY,
+    "state7_epilogue": STATE7_HANDLER_EPILOGUE,
+    "state3": STATE3_HANDLER_ENTRY,
+}
+# Optional bounded observations for a temporary or future fixed handler set.
+# The default probe leaves this empty so it neither adds breakpoints nor reads
+# arbitrary runtime memory.  A caller may opt in with a handler name mapped to
+# one guarded register-relative byte field, e.g. ``("r0", 0x28)``.
+STATE_HANDLER_MEMORY_FIELDS: dict[str, tuple[str, int]] = {}
 
 
 def _hex(value: int, width: int = 8) -> str:
@@ -172,6 +187,9 @@ def trace_after_navigation(
             "parser": _hex(PARSER_ENTRY),
             "cursor_global": _hex(PARSER_CURSOR_GLOBAL),
             "writer": _hex(PARSER_WRITER_ENTRY),
+            "state7_handler": _hex(STATE7_HANDLER_ENTRY),
+            "state7_epilogue": _hex(STATE7_HANDLER_EPILOGUE),
+            "state3_handler": _hex(STATE3_HANDLER_ENTRY),
         },
         "sequence": [
             {"key": name, "events": count}
@@ -184,6 +202,7 @@ def trace_after_navigation(
         "source_read_hits": [],
         "output_write_hits": [],
         "writer_hits": [],
+        "state_handler_hits": [],
         "key_events": [],
         "classification": {
             "parser_entry": "unconfirmed-until-runtime-breakpoint-hit",
@@ -196,6 +215,7 @@ def trace_after_navigation(
     }
     parser_breakpoint = False
     writer_breakpoint = False
+    state_handler_breakpoints = {name: False for name in STATE_HANDLER_ENTRIES}
     key_watch = False
     source_watch = False
     source_address: int | None = None
@@ -209,6 +229,9 @@ def trace_after_navigation(
             parser_breakpoint = True
             client.set_breakpoint(PARSER_WRITER_ENTRY, kind=2)
             writer_breakpoint = True
+            for name, address in STATE_HANDLER_ENTRIES.items():
+                client.set_breakpoint(address, kind=2)
+                state_handler_breakpoints[name] = True
             client.set_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
             key_watch = True
         except (RuntimeError, TimeoutError, OSError, ConnectionError) as exc:
@@ -241,6 +264,60 @@ def trace_after_navigation(
                 stop_count += 1
                 kind, stop_address = parse_stop_watch(stop)
                 pc = normalized_pc(registers)
+
+                handler_name = next(
+                    (
+                        name
+                        for name, address in STATE_HANDLER_ENTRIES.items()
+                        if pc == address and state_handler_breakpoints[name]
+                    ),
+                    None,
+                )
+                if handler_name is not None:
+                    memory_fields: dict[str, object] = {}
+                    field_spec = STATE_HANDLER_MEMORY_FIELDS.get(handler_name)
+                    if field_spec is not None:
+                        register_name, offset = field_spec
+                        pointer = registers.get(register_name, 0)
+                        field: dict[str, object] = {
+                            "register": register_name,
+                            "pointer": _hex(pointer),
+                            "offset": _hex(offset, 2),
+                        }
+                        field_address = pointer + offset
+                        if is_ram_pointer(pointer) and is_ram_pointer(field_address):
+                            try:
+                                field["address"] = _hex(field_address)
+                                field["value"] = client.read_memory(
+                                    field_address, 1
+                                )[0]
+                                field["status"] = "metadata-byte-read"
+                            except (
+                                RuntimeError,
+                                TimeoutError,
+                                OSError,
+                                ConnectionError,
+                            ) as exc:
+                                field["status"] = "read-error"
+                                field["error_type"] = type(exc).__name__
+                        else:
+                            field["status"] = "guard-rejected-non-ram-pointer"
+                        memory_fields["field"] = field
+                    result["state_handler_hits"].append(
+                        {
+                            "state": handler_name,
+                            "entry": _stop_row(
+                                stop, kind, stop_address, registers
+                            ),
+                            "memory": memory_fields,
+                            "status": "confirmed-runtime-state-handler-entry",
+                        }
+                    )
+                    _remove_breakpoint(
+                        client, STATE_HANDLER_ENTRIES[handler_name]
+                    )
+                    state_handler_breakpoints[handler_name] = False
+                    continue
 
                 if parser_breakpoint and pc == PARSER_ENTRY:
                     r0 = registers.get("r0", 0)
@@ -349,6 +426,9 @@ def trace_after_navigation(
                             "index": event_index,
                             "phase": phase_name,
                             "requested_keyinput": _hex(desired, 4),
+                            "state": state_metadata(
+                                client.read_memory(STATE_NEXT, 3)
+                            ),
                             "write": _write_key(client, desired),
                         }
                     )
@@ -373,3 +453,6 @@ def trace_after_navigation(
             _remove_breakpoint(client, PARSER_ENTRY)
         if writer_breakpoint:
             _remove_breakpoint(client, PARSER_WRITER_ENTRY)
+        for name, address in STATE_HANDLER_ENTRIES.items():
+            if state_handler_breakpoints[name]:
+                _remove_breakpoint(client, address)

@@ -24,6 +24,12 @@ edge 的 static 條件。M1.8 已以正常 START gate 重現
 不把既有英文 patch 的少量選單／開頭
 內容當作完整翻譯來源。
 
+後續的 state7 readiness receipt 見
+[`research/m2-state7-readiness-runtime-20260816.md`](research/m2-state7-readiness-runtime-20260816.md)。
+它在正常 state 4→7 return 後確認 `0x080A85D8 → 0x080A82AC` 及
+`r0+0x28=0`，但 `none:256` 內 parser、strict source、output 與 IWRAM writer
+皆為 0；這是 loader/readiness boundary negative，不是文字不存在的結論。
+
 ## ROM 身分
 
 | 欄位 | 已核對值 |
@@ -212,6 +218,19 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 此 clean rerun 的 4 個 resolver return 均在五窗外，`source_read_count=0`、
 `caller_return_count=0`；下一步是 state 7 的真正 text consumer，不是擴大
 pointer scan 或開始翻譯。
+
+若要重跑 state7 的 bounded readiness boundary，可在本作自有 mGBA GDB session 上執行：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/state7_readiness_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port <independent-b3tj-gdb-port> --post-sequence none:256 \
+  --post-max-events 256 --post-max-stops 300 \
+  --output /private/tmp/tow-nd3-state7-readiness.json
+```
+
+完整界線見 [`research/m2-state7-readiness-runtime-20260816.md`](research/m2-state7-readiness-runtime-20260816.md)。
 
 M2 前置的 source-separated ledger 與控制標記 metadata 由
 [`tools/ledger_metadata.py`](tools/ledger_metadata.py) 產生；提交的

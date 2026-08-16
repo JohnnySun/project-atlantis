@@ -99,6 +99,10 @@ state 7 text-consumer trace，不是擴大 pointer scan。
   strict `r1` 安裝 source read-watch，對 RAM `r0` 保留 output candidate，並以
   `0x08001DBC` 作 writer breakpoint；本次 socket setup negative 不升格成 live
   consumer hit
+- [x] 以正常 state 4→7 流程進入 state7 與 `0x080A82AC` readiness check；確認
+  `r0=0x0200D10C`、`r0+0x28=0`，並在 `none:256` bounded phase 中保留 parser／strict
+  source／output／writer 全 0 的 natural-flow negative；不把 loader edge 當文字
+  consumer
 - [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
   edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
   仍保留為 unknown
