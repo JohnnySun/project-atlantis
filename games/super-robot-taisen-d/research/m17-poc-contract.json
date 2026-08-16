@@ -1,0 +1,86 @@
+{
+  "schema": "super-robot-taisen-d-m17-poc-v1",
+  "game_code": "A6SJ",
+  "record_count": 2,
+  "equal_source_length": true,
+  "translation_started": false,
+  "rom_modified": false,
+  "rejection_contract": [
+    "source_hash_mismatch",
+    "opaque_token_or_unaligned_record",
+    "control_token_or_glyph_class_mismatch",
+    "line_width_rejected",
+    "missing_glyph",
+    "capacity_exceeded",
+    "variable_length_rejected"
+  ],
+  "records": [
+    {
+      "string_id": "0x0007B380",
+      "source_address": "0x0807B380",
+      "source_hash": "7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381",
+      "source_length": 10,
+      "source_width": 56,
+      "token_count": 5,
+      "token_signature": [
+        {"kind": "glyph", "glyph_class": "wide", "layout_width": 12},
+        {"kind": "glyph", "glyph_class": "wide", "layout_width": 12},
+        {"kind": "glyph", "glyph_class": "wide", "layout_width": 12},
+        {"kind": "glyph", "glyph_class": "wide", "layout_width": 12},
+        {"kind": "glyph", "glyph_class": "narrow", "layout_width": 8}
+      ],
+      "required_slot_counts": {"narrow": 1, "wide": 4},
+      "required_slot_index_sha256": "2fe750444b7ac8b472f73c68edfd3afd4a9fa9984466da67e91e8a69dd956d18",
+      "no_op_roundtrip": {
+        "accepted": true,
+        "byte_identical": true,
+        "payload_length": 10,
+        "encoded_length_with_terminator": 11,
+        "source_payload_sha256": "7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381",
+        "encoded_payload_sha256": "7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381",
+        "encoded_record_sha256": "b1ed3b8f606e7e7da4564a7391495e5341878f0238a8557407bc6067a329539a",
+        "validation_reasons": []
+      }
+    },
+    {
+      "string_id": "0x0007B3FC",
+      "source_address": "0x0807B3FC",
+      "source_hash": "74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e",
+      "source_length": 10,
+      "source_width": 40,
+      "token_count": 5,
+      "token_signature": [
+        {"kind": "glyph", "glyph_class": "narrow", "layout_width": 8},
+        {"kind": "glyph", "glyph_class": "narrow", "layout_width": 8},
+        {"kind": "glyph", "glyph_class": "narrow", "layout_width": 8},
+        {"kind": "glyph", "glyph_class": "narrow", "layout_width": 8},
+        {"kind": "glyph", "glyph_class": "narrow", "layout_width": 8}
+      ],
+      "required_slot_counts": {"narrow": 5},
+      "required_slot_index_sha256": "cc81fc1f863ee7474fb9c17bd6b275396ed73b8c41743d54abfec5348bb9853a",
+      "no_op_roundtrip": {
+        "accepted": true,
+        "byte_identical": true,
+        "payload_length": 10,
+        "encoded_length_with_terminator": 11,
+        "source_payload_sha256": "74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e",
+        "encoded_payload_sha256": "74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e",
+        "encoded_record_sha256": "e94056f56910f1b42f909d4661586fe6d2d0116ab915dae7f3fc18bd0c2c5cdf",
+        "validation_reasons": []
+      }
+    }
+  ],
+  "policy": {
+    "source_hash": "candidate must declare the original source hash",
+    "control_tokens": "exact token signature; opaque and newline candidates reject",
+    "line_width": "exact source width and no overflow",
+    "missing_glyph": "reject",
+    "capacity": "reject new-slot demand beyond conservative resource capacity",
+    "variable_length": "reject; this slice only accepts equal source and candidate length"
+  },
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "unicode_identity_inferred_from_glyph_occupancy": false
+  }
+}

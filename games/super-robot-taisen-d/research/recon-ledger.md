@@ -328,6 +328,112 @@ temporary writes 只在兩個 slot nonzero guard 後發生；若自然畫面／q
 命中，不能把 controlled capture 擴張成完整場景覆蓋。M1.6 尚未處理控制碼與
 layout 邊界、zh-TW 字寬／容量、encoder／回插與 round-trip；翻譯仍未開始。
 
+## 2026-08-16：M1.7 bounded layout boundary／fail-closed no-op POC
+
+本輪停止廣泛 pointer 掃描，只使用已確認的 `0x08008724` consumer、A6SJ
+source table 與 M1.6 的兩個 resource base。工具為
+`tools/m17_layout.py`、`tools/m17_poc.py` 及其純測試；tracked metadata 為
+[`m17-layout-boundary.json`](m17-layout-boundary.json) 與
+[`m17-poc-contract.json`](m17-poc-contract.json)。ROM、完整日文 source、raw
+dump、圖片與 `work/` 報告都沒有進入 Git。
+
+### `0x08008724` consumer 的靜態分類
+
+以 A6SJ ROM 的 consumer code window `0x08008724..0x08008a0c` 做 bounded
+Capstone 反組譯，window SHA-256 為
+`b318d2b6e3dda2242397c61e2f9519114d7d898fe33c5475c93c99fa31abb613`。可直接
+支持的分類如下：
+
+| 類別 | 靜態證據 | 本輪名稱／策略 |
+| --- | --- | --- |
+| 終止 | `0x0800876c` load、`0x0800876e` compare、`0x08008770` branch to `0x08008798`；loop path 為 `0x08008950`／`0x08008952`／`0x08008954` to `0x08008958` | 只命名為 NUL terminator |
+| 單位元組 glyph | consumer 以 `ldrh` 讀取 code unit、每輪 `adds r5, #2`；沒有獨立 single-byte glyph branch | 未證明為 glyph；ASCII／odd tail 維持 opaque，POC 拒絕 |
+| 窄 glyph | `0x0800877a` 的低位元組 compare；`<= 0x87` 走 mode 1；`0x080088bc` lookup、`0x080088c8` base+offset | layout width 8、payload 12 bytes、address stride 12；base slot `0x020131d0` |
+| 寬 glyph | 同一分流的 `> 0x87` path；`0x0800880c` lookup、`0x08008818` base+offset | layout width 12、payload 24 bytes、address stride 26；base slot `0x020103ac` |
+| tile consumer | 兩條 glyph path 都呼叫 `0x08008650` | 已確認 writer target，不把 tile bytes當 Unicode identity |
+| newline | consumer window 沒有 LF／CR 專用 branch；source corpus 也沒有 raw LF／CR | `unconfirmed_opaque`，翻譯 POC 拒絕 |
+| 非文字／未知 | corpus 中 ASCII／format-like pair 與未對齊尾 byte 沒有已證明語意 | `opaque_ascii_or_format`／`opaque_unaligned_tail`，不憑數值命名；除 no-op 外拒絕 |
+
+`0x080085fc` 的 codepage arithmetic 只用來產生 lookup offset；本輪沒有把
+code unit 數值命名成控制碼，也沒有由 glyph 圖形或 slot 佔用推 Unicode 身分。
+source cursor 每個 consumer unit 前進 2 bytes；因此本 consumer 只有已證明的
+two-byte glyph unit 分流，沒有已證明的 single-byte glyph path。NUL 是目前唯一
+已證明的 record 終止條件，並不等於所有未定位文本都採用同一格式。
+
+### Corpus 與 bounded cohort
+
+對 ignored source table 做 strict byte reread 與 metadata-only tokenization：
+
+| 項目 | 結果 |
+| --- | ---: |
+| source records／strict ROM match | `2325`／`2325` |
+| source corpus digest | `53a6d1d0d17ccb93a5cf9684d3e807d229bd3f87e76f619ffe16d767a176cc87` |
+| NUL terminators | `2325` |
+| tokenization → encode no-op byte identity | full corpus `2325/2325`；16-record cohort `16/16` |
+| `glyph_only` records | `2189` |
+| `opaque_or_unaligned` records | `136` |
+| glyph units | `15885`（narrow `11902`、wide `3983`）|
+| opaque ASCII／format-like units | `1032` |
+| opaque unaligned tails | `88` |
+| glyph-only line width range | `8..240`，56 種 width |
+
+16-record cohort 以 `0x0807b3fc` 為中心，僅保存 stable string ID、offset、source
+hash、長度、token／width count 與 no-op hash；不保存原文。POC 所選的兩筆皆為
+10-byte payload、含一個 NUL terminator：
+
+| string ID／source offset | source hash | width | token signature |
+| --- | --- | ---: | --- |
+| `0x0007b380`／`0x0807b380` | `7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381` | 56 | wide×4、narrow×1 |
+| `0x0007b3fc`／`0x0807b3fc` | `74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e` | 40 | narrow×5 |
+
+兩筆都通過 `tokenization → encode` no-op，含 NUL 的 output 與 source
+byte-identical；這是編碼器邊界測試，不是翻譯輸出或回插成功證明。
+
+### Font resource occupancy 與保守容量
+
+由 M1.6 descriptor root `0x081196b8` 的 resource boundaries 計算實體 slot，
+再以 source codepage lookup 的 address formula 統計參照。空白 slot 只代表 bytes
+為零，不能代表可分配的 Unicode 字元：
+
+| resource | ROM range | payload／stride | physical／addressable | referenced | blank／unreachable | conservative new capacity |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| narrow (`0x020131d0`) | `0x0814f664..0x08150fe4` | 12／12 | 544／544 | 257 slots、11902 occurrences | blank 168；blank referenced 3；unreachable 0 | 165 narrow slots upper bound |
+| wide (`0x020103ac`) | `0x08120dbc..0x0814f664` | 24／26 | 7332／6580 | 743 slots、3983 occurrences | blank 0；unreachable 752 | 0 |
+
+因此本輪對 zh-TW CJK／寬字採保守容量 0；窄字 165 只是未證明 encoder 與
+語意前的 slot upper bound，不能當成可直接翻譯的字元表容量。resource pointer
+本身是 M1.6 live initialized ROM base；本輪沒有再靜態假設 RAM-only pointer，
+也沒有新增 resource copy／解壓路徑宣稱。
+
+### Fail-closed POC 契約
+
+`tools/m17_poc.py` 只對上列兩筆 source record 建立 contract，沒有修改 ROM，
+沒有建立 translation ledger。候選必須保留原始 source hash，且必須同時滿足：
+
+- exact control／token signature；opaque token、newline candidate、glyph class
+  mismatch 或 unaligned record 一律拒絕；
+- exact source line width 且不得 overflow；
+- 所需 glyph slot 不得缺字，新增 slot 不得超過保守容量；
+- candidate payload length 必須與 source length 相同；
+- source hash、控制 token、行寬、缺字、容量或長度任一不符即 fail-closed。
+
+兩筆結果均為 `accepted=true`、`byte_identical=true`，其 payload length 都是 10；
+兩份完整 metadata 與 rejection names 在 `m17-poc-contract.json`。這只是可逆
+POC 的輸入契約與 no-op round-trip 前置條件，尚未實作 zh-TW encoder、glyph
+allocation 或 ROM reinsert。
+
+### Runtime boundary 與下一個缺口
+
+本輪沒有新增 mGBA runtime capture：M1.6 已提供 initialized slot、consumer 與
+tile-writer 的 controlled proof；對 M1.7 的 token／capacity／no-op 邊界，靜態
+consumer 與 source-safe hash 已足夠，避免把 controlled layout 或 zero-base
+trampoline 誤報成自然畫面證據。自然 menu／queue 的 newline、layout break、
+說話者／分支控制仍未達到可審核條件。
+
+下一步必須先補齊：newline／opaque token 的實際 runtime 語意、完整行數／行寬
+與 record boundary、zh-TW codepoint 到 glyph slot 的合法 encoder／缺字策略、
+以及 rebuilt ROM 重抽取與 byte-level round-trip。未完成前不開始批量翻譯。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.6 更新見上）
 
 | 問題 | 狀態 |

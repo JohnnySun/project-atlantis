@@ -87,6 +87,19 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   writer-output hash；最小 provenance map 在
   [`research/m16-glyph-provenance.json`](research/m16-glyph-provenance.json)，
   原始 runtime／cohort 輸出仍只在 ignored `work/`。
+- M1.7 以 `0x08008724` consumer 的 bounded 靜態反組譯固定 NUL 終止、低位元組
+  分流的 two-byte 窄／寬 glyph、沒有已證明的 single-byte glyph path、8／12 layout width、12／26 address stride 與
+  `0x08008650` tile writer；沒有獨立 newline branch，ASCII／format-like pair
+  與其他未知單位維持 opaque。2325/2325 source record 完成 tokenization→encode
+  no-op byte-identical 驗證，其中 2189 筆是 glyph-only、136 筆拒絕為 opaque／
+  unaligned。resource scan 的保守新增容量為窄字 165 個空白 addressable slot、
+  寬字 0；這不是 Unicode identity 或完整 zh-TW 字型容量證明。
+- M1.7 建立兩筆同長度（各 10-byte payload）的 fail-closed POC contract，固定
+  source hash、token signature、line width、缺字、容量與變長拒絕條件；兩筆 no-op
+  都保持含 NUL 的 byte identity。可審核 metadata 在
+  [`research/m17-layout-boundary.json`](research/m17-layout-boundary.json) 與
+  [`research/m17-poc-contract.json`](research/m17-poc-contract.json)，沒有開始
+  翻譯、ledger 或 ROM 修改。
 - 回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -112,6 +125,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
   --port 24567 \
   --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
   --consumer-hijack --output games/super-robot-taisen-d/work/m16-font-runtime.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m17_layout.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --cohort-size 16 --output games/super-robot-taisen-d/work/m17-layout-report.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m17_poc.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --output games/super-robot-taisen-d/work/m17-poc-report.json
 ```
 
 `--show-text` 只把本機候選解碼輸出到終端，不應重導向到 Git 追蹤檔案。
@@ -141,6 +166,10 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M1.6 完成 font resource initialization 的 live slot writer／ROM resource
   pointer 證據，並以兩個 strict Shift-JIS source context 建立 glyph identity、
   glyph bytes hash 與 tile writer output hash 的最小可審核鏈。
+- [x] M1.7 完成 `0x08008724` consumer 的 bounded token／終止／glyph class 分類、
+  2325 筆 source 的 no-op byte-identical 統計、窄／寬 resource slot 容量盤點，
+  以及兩筆同長度 fail-closed POC contract；newline、完整 layout 與 zh-TW
+  Unicode capacity 仍維持 opaque／未證明。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
@@ -148,5 +177,5 @@ queue 觸發尚未取代這條受控驗證。
 - [ ] 建立嚴格拒絕 source mismatch、缺字與控制碼不一致的編碼／回插器。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始翻譯；M1.6 只完成兩個 glyph identity 的 bounded proof，不代表完整
-文字覆蓋、控制碼／layout、容量策略或可逆回插已證明。
+目前尚未開始翻譯；M1.7 只完成 bounded consumer／layout boundary 與 no-op contract，
+不代表完整文字覆蓋、newline／控制碼語意、zh-TW 字型容量或可逆回插已證明。

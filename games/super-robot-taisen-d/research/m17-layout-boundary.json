@@ -1,0 +1,181 @@
+{
+  "schema": "super-robot-taisen-d-m17-layout-v1",
+  "game_code": "A6SJ",
+  "consumer": {
+    "entry": "0x08008724",
+    "code_end_exclusive": "0x08008A0C",
+    "code_sha256": "b318d2b6e3dda2242397c61e2f9519114d7d898fe33c5475c93c99fa31abb613",
+    "source_cursor_advance": 2,
+    "terminator": {
+      "primary_load_pc": "0x0800876C",
+      "primary_compare_pc": "0x0800876E",
+      "primary_branch_pc": "0x08008770",
+      "primary_branch_target": "0x08008798",
+      "loop_load_pc": "0x08008950",
+      "loop_compare_pc": "0x08008952",
+      "loop_branch_pc": "0x08008954",
+      "loop_branch_target": "0x08008958",
+      "token": "NUL",
+      "evidence": "first source byte is compared with zero before glyph dispatch"
+    },
+    "glyph_class_branch": {
+      "pc": "0x0800877A",
+      "instruction": "cmp r0, #0x87",
+      "narrow_condition": "source code-unit low byte <= 0x87",
+      "wide_condition": "source code-unit low byte > 0x87",
+      "verified_glyph_unit_bytes": 2,
+      "source_cursor_advance": 2,
+      "single_byte_glyph_path": false,
+      "single_byte_policy": "opaque; no verified single-byte glyph branch"
+    },
+    "narrow": {
+      "codepage_lookup": "0x080085FC",
+      "codepage_mode": 1,
+      "base_slot": "0x020131D0",
+      "base_literal_load": "0x080088C2",
+      "base_dereference": "0x080088C4",
+      "base_plus_offset_pc": "0x080088C8",
+      "layout_width": 8,
+      "glyph_payload_bytes": 12,
+      "glyph_address_stride": 12,
+      "tile_writer": "0x08008650"
+    },
+    "wide": {
+      "codepage_lookup": "0x080085FC",
+      "codepage_mode": 0,
+      "base_slot": "0x020103AC",
+      "base_literal_load": "0x08008812",
+      "base_dereference": "0x08008814",
+      "base_plus_offset_pc": "0x08008818",
+      "layout_width": 12,
+      "glyph_payload_bytes": 24,
+      "glyph_address_stride": 26,
+      "tile_writer": "0x08008650"
+    },
+    "newline": {
+      "status": "unconfirmed_opaque",
+      "consumer_dedicated_branch": false,
+      "raw_lf_or_cr_branch": false,
+      "policy": "reject rather than assign newline semantics"
+    },
+    "non_text": {
+      "status": "opaque",
+      "common_corpus_class": "ascii_or_format_pair",
+      "policy": "preserve only for no-op; reject for translation POC"
+    }
+  },
+  "corpus": {
+    "record_count": 2325,
+    "source_corpus_digest": "53a6d1d0d17ccb93a5cf9684d3e807d229bd3f87e76f619ffe16d767a176cc87",
+    "terminator_count": 2325,
+    "no_op_roundtrip": {
+      "record_count": 2325,
+      "byte_identical_count": 2325,
+      "failed_count": 0
+    },
+    "status_counts": {
+      "glyph_only": 2189,
+      "opaque_or_unaligned": 136
+    },
+    "token_kind_counts": {
+      "glyph": 15885,
+      "opaque_ascii_or_format": 1032,
+      "opaque_unaligned_tail": 88
+    },
+    "glyph_class_counts": {
+      "narrow": 11902,
+      "wide": 3983
+    },
+    "supported_line_width": {
+      "record_count": 2189,
+      "minimum": 8,
+      "maximum": 240,
+      "distinct_count": 56
+    },
+    "cohort": {
+      "center": "0x0807B3FC",
+      "record_count": 16,
+      "no_op_roundtrip": {
+        "record_count": 16,
+        "byte_identical_count": 16,
+        "failed_count": 0
+      },
+      "rows": [
+        {"string_id":"0x0007B380","source_address":"0x0807B380","source_hash":"7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381","source_length":10,"terminator_address":"0x0807B38A","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"narrow":1,"wide":4},"line_width":56,"no_op_payload_sha256":"7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381"},
+        {"string_id":"0x0007B3A4","source_address":"0x0807B3A4","source_hash":"9a2bc85e9f039090d20fffd16d157a931ae8f6d26412003f8b757f9d13b384e3","source_length":10,"terminator_address":"0x0807B3AE","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"wide":5},"line_width":60,"no_op_payload_sha256":"9a2bc85e9f039090d20fffd16d157a931ae8f6d26412003f8b757f9d13b384e3"},
+        {"string_id":"0x0007B3B0","source_address":"0x0807B3B0","source_hash":"0484d86eb4bca35b454f15d7b3d1ecdc0adeb868e6b6fe499e7ce440e6bc4535","source_length":10,"terminator_address":"0x0807B3BA","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"wide":5},"line_width":60,"no_op_payload_sha256":"0484d86eb4bca35b454f15d7b3d1ecdc0adeb868e6b6fe499e7ce440e6bc4535"},
+        {"string_id":"0x0007B3BC","source_address":"0x0807B3BC","source_hash":"77403a7c6c6bcf1f8b0102c1bda20c858a4111ff9fe4cdfbc5fcb3a1329deecc","source_length":10,"terminator_address":"0x0807B3C6","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"wide":5},"line_width":60,"no_op_payload_sha256":"77403a7c6c6bcf1f8b0102c1bda20c858a4111ff9fe4cdfbc5fcb3a1329deecc"},
+        {"string_id":"0x0007B3C8","source_address":"0x0807B3C8","source_hash":"ff15be717d275feb9f29746b313e80a5981b4f9e42c2706e160f31f1659b8d0b","source_length":12,"terminator_address":"0x0807B3D4","status":"glyph_only","token_count":6,"glyph_count":6,"glyph_classes":{"narrow":2,"wide":4},"line_width":64,"no_op_payload_sha256":"ff15be717d275feb9f29746b313e80a5981b4f9e42c2706e160f31f1659b8d0b"},
+        {"string_id":"0x0007B3D8","source_address":"0x0807B3D8","source_hash":"56c535c03f1dc5361e4be3127e8dbaee43be5faa24e72a8c2f9d8f7a28f2c3e8","source_length":12,"terminator_address":"0x0807B3E4","status":"glyph_only","token_count":6,"glyph_count":6,"glyph_classes":{"narrow":2,"wide":4},"line_width":64,"no_op_payload_sha256":"56c535c03f1dc5361e4be3127e8dbaee43be5faa24e72a8c2f9d8f7a28f2c3e8"},
+        {"string_id":"0x0007B3E8","source_address":"0x0807B3E8","source_hash":"396ebb3653a58ef5bac4e6181e17917239ccb904084fc56f7b7cd2ca4f35b359","source_length":12,"terminator_address":"0x0807B3F4","status":"glyph_only","token_count":6,"glyph_count":6,"glyph_classes":{"narrow":2,"wide":4},"line_width":64,"no_op_payload_sha256":"396ebb3653a58ef5bac4e6181e17917239ccb904084fc56f7b7cd2ca4f35b359"},
+        {"string_id":"0x0007B3F8","source_address":"0x0807B3F8","source_hash":"49414ad3949deaba8d49e24440331252c6603584c7143b855af508c7cf5ce2c1","source_length":2,"terminator_address":"0x0807B3FA","status":"glyph_only","token_count":1,"glyph_count":1,"glyph_classes":{"narrow":1},"line_width":8,"no_op_payload_sha256":"49414ad3949deaba8d49e24440331252c6603584c7143b855af508c7cf5ce2c1"},
+        {"string_id":"0x0007B3FC","source_address":"0x0807B3FC","source_hash":"74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e","source_length":10,"terminator_address":"0x0807B406","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"narrow":5},"line_width":40,"no_op_payload_sha256":"74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e"},
+        {"string_id":"0x0007B408","source_address":"0x0807B408","source_hash":"635b7133ed07eae09e7e83fc87ab5e764a0425d5c2a6fdeb9f0cfcc9b4e29dc2","source_length":10,"terminator_address":"0x0807B412","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"narrow":5},"line_width":40,"no_op_payload_sha256":"635b7133ed07eae09e7e83fc87ab5e764a0425d5c2a6fdeb9f0cfcc9b4e29dc2"},
+        {"string_id":"0x0007B414","source_address":"0x0807B414","source_hash":"42deab29058b388aaf984e88659196ab58c29c49ebcf9c1365269ad35010d5c0","source_length":10,"terminator_address":"0x0807B41E","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"narrow":5},"line_width":40,"no_op_payload_sha256":"42deab29058b388aaf984e88659196ab58c29c49ebcf9c1365269ad35010d5c0"},
+        {"string_id":"0x0007B420","source_address":"0x0807B420","source_hash":"ebcafcc96f3bc6f3ec22a1f8b3f51edbbb21e09cf824409be1b789f309be5b5b","source_length":10,"terminator_address":"0x0807B42A","status":"glyph_only","token_count":5,"glyph_count":5,"glyph_classes":{"narrow":5},"line_width":40,"no_op_payload_sha256":"ebcafcc96f3bc6f3ec22a1f8b3f51edbbb21e09cf824409be1b789f309be5b5b"},
+        {"string_id":"0x0007B42C","source_address":"0x0807B42C","source_hash":"5b166e7d143d8d7e14f07085c81f677e52a545c79277cf68fe275af844129ce2","source_length":16,"terminator_address":"0x0807B43C","status":"glyph_only","token_count":8,"glyph_count":8,"glyph_classes":{"narrow":8},"line_width":64,"no_op_payload_sha256":"5b166e7d143d8d7e14f07085c81f677e52a545c79277cf68fe275af844129ce2"},
+        {"string_id":"0x0007B440","source_address":"0x0807B440","source_hash":"f0b94d5e1f13e9042f23c208cc2312f00b76d03ce3622c1c756649ac92547dc9","source_length":42,"terminator_address":"0x0807B46A","status":"glyph_only","token_count":21,"glyph_count":21,"glyph_classes":{"narrow":18,"wide":3},"line_width":180,"no_op_payload_sha256":"f0b94d5e1f13e9042f23c208cc2312f00b76d03ce3622c1c756649ac92547dc9"},
+        {"string_id":"0x0007B46C","source_address":"0x0807B46C","source_hash":"c1a3e57870063354546eb249a588fc8fdbabb3f9a90acb60c2ea44e82fd15097","source_length":36,"terminator_address":"0x0807B490","status":"glyph_only","token_count":18,"glyph_count":18,"glyph_classes":{"narrow":11,"wide":7},"line_width":172,"no_op_payload_sha256":"c1a3e57870063354546eb249a588fc8fdbabb3f9a90acb60c2ea44e82fd15097"},
+        {"string_id":"0x0007B494","source_address":"0x0807B494","source_hash":"0cc35b6c5426b08e9d3a45e1605b829a0cfe1d384477303ac4f130d269cfe5ff","source_length":36,"terminator_address":"0x0807B4B8","status":"glyph_only","token_count":18,"glyph_count":18,"glyph_classes":{"narrow":11,"wide":7},"line_width":172,"no_op_payload_sha256":"0cc35b6c5426b08e9d3a45e1605b829a0cfe1d384477303ac4f130d269cfe5ff"}
+      ]
+    }
+  },
+  "resources": {
+    "narrow": {
+      "descriptor_index": 3,
+      "descriptor_relative": "0x00035FAC",
+      "resource_start": "0x0814F664",
+      "resource_end_exclusive": "0x08150FE4",
+      "resource_size": 6528,
+      "stride": 12,
+      "glyph_payload_bytes": 12,
+      "physical_slots": 544,
+      "addressable_slots": 544,
+      "referenced_slots": 257,
+      "reference_occurrences": 11902,
+      "blank_slot_count": 168,
+      "blank_addressable_slots": 168,
+      "blank_referenced_slots": 3,
+      "conservative_new_slot_capacity": 165,
+      "blank_slot_index_sha256": "4f176f401def9a8f5986f90fd5595ff833fd526260b8793872ee41989dc4ceb4",
+      "referenced_slot_index_sha256": "1a8bfe9537599142862025a1a9a50e63d403f1575e44171d8660052c10ede618",
+      "unreachable_slot_count": 0,
+      "runtime_base_slot_literal_references": 2,
+      "resource_pointer_literal_references": 0
+    },
+    "wide": {
+      "descriptor_index": 2,
+      "descriptor_relative": "0x00007704",
+      "resource_start": "0x08120DBC",
+      "resource_end_exclusive": "0x0814F664",
+      "resource_size": 190632,
+      "stride": 26,
+      "glyph_payload_bytes": 24,
+      "physical_slots": 7332,
+      "addressable_slots": 6580,
+      "referenced_slots": 743,
+      "reference_occurrences": 3983,
+      "blank_slot_count": 0,
+      "blank_addressable_slots": 0,
+      "blank_referenced_slots": 0,
+      "conservative_new_slot_capacity": 0,
+      "blank_slot_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "referenced_slot_index_sha256": "02df90b8088f5202d450c506905ceab751c46c24b8ad4c9470d296af1864167d",
+      "unreachable_slot_count": 752,
+      "unreachable_slot_index_sha256": "d4275a1a2d41bafd028e8e68292b009c345019b9b59131aa3aa34fed82e99d96",
+      "runtime_base_slot_literal_references": 2,
+      "resource_pointer_literal_references": 0
+    }
+  },
+  "capacity_policy": {
+    "narrow_zh_tw_new_slot_upper_bound": 165,
+    "wide_zh_tw_new_slot_upper_bound": 0,
+    "identity_policy": "slot occupancy is not a Unicode identity claim",
+    "translation_allocation": "not started"
+  },
+  "source_policy": {
+    "source_text_emitted": false,
+    "unknown_tokens": "opaque",
+    "source_safe_hashes_only": true
+  }
+}

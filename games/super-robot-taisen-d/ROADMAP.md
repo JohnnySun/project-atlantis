@@ -29,6 +29,11 @@
   對話及 UI；目前只完成靜態池的局部分類。
 - [x] M1.6 已用 strict source context 分別證明兩個 bounded sample 的「glyph
   addressing」與「glyph identity」，不能以字符表位置猜測 Unicode 身分。
+- [x] M1.7 完成 `0x08008724` 的 bounded 靜態 token／NUL terminator／two-byte
+  窄寬 glyph class 分類（無已證明的 single-byte glyph path），並在 2325 筆 source
+  corpus 上驗證 no-op byte identity；同時盤點
+  resource stride、空白／不可達 slot 與保守容量，建立兩筆同長度 fail-closed POC。
+  newline 與未知 token 維持 opaque，尚未開始翻譯或修改 ROM。
 - [ ] 定義控制碼、終止符、換行、說話者、最大寬度／行數與分支邊界。
 - [ ] 用自然畫面或更多獨立語料上下文擴大重讀確認解碼結果；M1.6 的兩個 sample
   仍是同一受控 consumer path 的最小證據。
