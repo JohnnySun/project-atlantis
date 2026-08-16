@@ -792,6 +792,27 @@ zh-TW ledger。
 的其他 layout gate。下一步仍須完成控制碼／newline／speaker 語意與完整 encoder，並以
 自然或 controlled runtime 覆蓋翻譯後的 wide consumer。
 
+## 2026-08-16：M4 bounded UI batch-2 duplicate-codepoint POC
+
+在 M1.11 的 NUL／two-byte／width gate 已明確適用的前提下，選取另一筆 source
+`string_id=512228`：它是全窄 glyph-only、2 units、16px、NUL 終止且沒有 control token。
+流程依序使用 `m18_narrow_allocator.py seed-ledger`、`restore_translations.rb`、target
+設定、`strip_translations.rb`，tracked ledger 只保留 source hash 與 target metadata，
+source object 仍只在 ignored working。target 是同長 zh-TW `沒有`，沒有新增專有名詞。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| target | `512228`；raw SHA `d00ed112…`；ledger SHA `868310e1…`；4-byte payload；2 units；16px；NUL；control 0 |
+| combined static reinsert | 3 records；4 unique narrow allocations；batch-2 相對 M3 batch 新增 unique glyph `0`；`U+6C92`／`U+6709` reused |
+| BPS | 105 bytes／`3781a7e2…`；apply byte-identical；patched ROM `1c4940bd…` |
+| re-extraction | source 2325/2325；target 3/3；untouched 2322/2322；changed bytes 60；outside allowed ranges equal |
+| runtime | `pending; static re-extraction only`；不把 static hash 當成畫面證據 |
+
+這是 duplicate-codepoint／第二筆同長 UI 的 bounded POC，不是批量翻譯批准。mixed／
+wide／opaque、控制碼／newline／speaker、完整語意分區與 mGBA patched screen 仍未完成。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |
@@ -805,8 +826,8 @@ zh-TW ledger。
 | runtime 邊界 | ROM entry／VRAM transfer、font slot writer 與兩個 bounded glyph consumer 均有陽性；自然 boot／menu 覆蓋仍有限 |
 | 壓縮 | 只有 BIOS／簽章候選，未確認與文本相關 |
 | 控制碼／終止碼／行寬 | NUL／窄字 bounded width 已確認；newline／完整控制語意仍未確認 |
-| 可逆回插 | 一筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
-| 翻譯 | 兩筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
+| 可逆回插 | 三筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
+| 翻譯 | 三筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
 
 ## 下一輪入口
 

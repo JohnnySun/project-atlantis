@@ -1,0 +1,63 @@
+{
+  "schema": "super-robot-taisen-d-m4-ui-batch2-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "translation_status": "ai_draft"
+  },
+  "selection": {
+    "string_id": 512228,
+    "source_raw_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "source_ledger_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+    "payload_length": 4,
+    "unit_count": 2,
+    "line_width": 16,
+    "terminator": "NUL",
+    "control_tokens": [],
+    "glyph_class": "narrow_only",
+    "target_locale": "zh-TW",
+    "target_payload_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+    "target_codepoints": ["U+6C92", "U+6709"],
+    "target_length_equal": true
+  },
+  "duplicate_codepoint_reuse": {
+    "combined_records": 3,
+    "combined_unique_allocations": 4,
+    "batch2_new_unique_allocations_against_m3_batch": 0,
+    "reused_codepoints": ["U+6C92", "U+6709"],
+    "protected_blank_slots_preserved": [0, 57, 58],
+    "wide_new_slots": 0
+  },
+  "static_reinsert": {
+    "base_rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_rom_sha256": "1c4940bd80a3969e4c91a0d6bc2700a51840475fc6e909139fb4195fc6efe971",
+    "bps_size": 105,
+    "bps_sha256": "3781a7e20b3520acfac8e2e3f530e2e4cf9dc8116918764cc8f30b69dbe428dc",
+    "bps_apply_byte_identical": true,
+    "rom_modified_only_by_static_contract": true
+  },
+  "roundtrip": {
+    "source_records": 2325,
+    "base_source_matches": 2325,
+    "target_records": 3,
+    "target_exact_matches": 3,
+    "untouched_records": 2322,
+    "untouched_exact_matches": 2322,
+    "actual_changed_bytes": 60,
+    "allowed_range_count": 7,
+    "rom_outside_allowed_ranges_equal": true,
+    "runtime_status": "pending; static re-extraction only"
+  },
+  "gate": {
+    "source_hash_match": true,
+    "narrow_only": true,
+    "nul_terminated": true,
+    "control_tokens_empty": true,
+    "same_length": true,
+    "duplicate_codepoint_reuse": true,
+    "wide_new_slots_zero": true,
+    "source_text_emitted": false,
+    "runtime_screen_verified": false
+  }
+}

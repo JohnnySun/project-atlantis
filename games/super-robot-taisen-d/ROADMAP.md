@@ -115,6 +115,10 @@
 - [ ] 在上述 gate 後建立完整 source-safe `zh-TW` ledger，所有專有名詞先通過
   glossary provenance；每筆翻譯保留 restore／working／strip 可重現鏈，opaque／
   變長／缺字／超寬 record fail-closed。
+- [x] M4 bounded UI batch-2 完成一筆全窄、兩 unit、16px、NUL、無 control 的
+  `string_id=512228` `ai_draft`「沒有」；依 restore→working→strip 建 ledger，並與
+  M1.8／M2 三筆合併驗證 duplicate codepoint reuse（新增 unique glyph 0）。這是
+  static POC，不代表全語料翻譯或 runtime screen QA。
 - [ ] 完成全語料 encoder／回插、重抽取 byte round-trip、BPS create/apply，並以
   target／untouched／font／ROM hash 及 changed-range audit 證明沒有旁改。
 - [ ] 以獨立 mGBA 覆蓋核心流程與 translated records，記錄自然／controlled 分欄、

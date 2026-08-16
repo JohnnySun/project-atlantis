@@ -177,6 +177,13 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   已有的 wide runtime positive；其餘 742 個是 static source-context only，不能冒充
   runtime proof。未在 map 的 target、wide font expansion 與 ROM 修改一律拒絕；摘要在
   [`research/m4-wide-reuse-audit.json`](research/m4-wide-reuse-audit.json)。
+- M4 UI batch-2 選取另一筆同樣全窄、兩 unit、16px、NUL、無 control 的
+  `string_id=512228`，以 restore→working→strip 建立 source-safe `ai_draft`「沒有」。
+  它與既有 `526424`／`526432` 一起跑 M3 global allocator，兩個 target codepoint 都
+  重用既有配置，沒有新增 unique glyph；摘要在
+  [`research/m4-ui-batch2.json`](research/m4-ui-batch2.json)，ledger 在
+  [`translations/m4-ui-batch-2.jsonl`](translations/m4-ui-batch-2.jsonl)。BPS／重抽取
+  只作 static gate，runtime screen 仍 pending。
 - 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -350,6 +357,9 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M4 bounded wide reuse audit 完成 743 個既有 source-context identity 的一對一
   codepoint／code-unit／slot map；新增 wide slot、未映射 target 與 font expansion
   仍 fail-closed，runtime 僅有 `U+79FB` 的既有 bounded positive。
+- [x] M4 UI batch-2 完成 `512228` 的 restore／strip、duplicate-codepoint global
+  allocation、BPS apply 與 2325 筆 re-extraction comparator；3/3 target、2322/2322
+  untouched、runtime screen 仍 pending。
 - [x] M2 glossary slice 完成 17 筆 source-safe zh-TW 詞彙 provenance：12 筆雙來源
   通過、4 筆衝突 fail-closed deferred、1 筆 provisional；工具測試涵蓋 source hash
   mismatch、kana 外洩、來源不足與 deferred 無 target。
@@ -365,12 +375,12 @@ queue 觸發尚未取代這條受控驗證。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
-  流程保留 source provenance；M1.8／M2 已完成兩筆 static `ai_draft` POC，完整批量
+  流程保留 source provenance；M1.8／M2／M4 已完成三筆 static `ai_draft` POC，完整批量
   翻譯仍未開始。
 - [x] 建立 bounded strict-reject source mismatch、缺字、控制碼、wide、容量、collision
   與變長的窄字編碼／回插器；完整 corpus、wide resource 與 runtime 仍待後續門檻。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始完整批量翻譯；M1.8／M2 的兩筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
+目前尚未開始完整批量翻譯；M1.8／M2／M4 的三筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
 glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼語意、zh-TW
 字型美術品質、自然畫面 runtime 或完整可逆回插已證明。
