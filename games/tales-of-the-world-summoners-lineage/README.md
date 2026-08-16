@@ -25,6 +25,9 @@
   自訂碼元，但英文譯文不是本專案的日文原文依據。
 - M1 的有界擷取 receipt 見 [`research/runtime-text-capture-20260816.md`](research/runtime-text-capture-20260816.md)；
   source table 的本機 row contract 與證據門檻見 [`research/source-table-spec-20260816.md`](research/source-table-spec-20260816.md)。
+- 共用 `core/gba` baseline 已確認實際 BG1／BG2／BG3 tilemap 與 startup／演出圖層可
+  重建；這是 graphics path 證據，不是事件／選單文字或 codepage 證據，詳見
+  [`research/runtime-baseline-core-20260816.md`](research/runtime-baseline-core-20260816.md)。
 
 ## ROM 基準
 

@@ -14,6 +14,8 @@
 
 - [x] 在獨立 `23901` listener 完成一次有界 read-watchpoint capture；receipt 與負結果
   已記錄，沒有把 stub `OK` 當成文字命中。
+- [x] 使用共用 `core/gba` 完成 1 秒／5 秒 startup runtime baseline，並以共用 BG／OAM
+  renderer 重建實際 graphics layer；研究結論不把 graphics 當成文字證據。
 - [ ] 從原 ROM 的候選 pointer／record 結構分離劇情、地圖／事件、角色、戰鬥與
   圖像／字型資料。
 - [ ] 以 mGBA GDB watchpoint／VRAM 證據確認至少一條實際文字渲染路徑；記錄讀取
