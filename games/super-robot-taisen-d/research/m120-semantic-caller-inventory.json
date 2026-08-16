@@ -1,0 +1,242 @@
+{
+  "consumer_callsites": {
+    "candidate_count": 5,
+    "candidate_instruction_index_sha256": "cd76a98e5a60c6ea4c39f9f48c931a38bc0bf0316c2aebccde914b04274a1fb0",
+    "consumer": "0x08008724",
+    "entries": [
+      {
+        "callsite": "0x0800869E",
+        "consumer": "0x08008724",
+        "kind": "direct_branch",
+        "static": {
+          "instruction_window": {
+            "end_exclusive": "0x080086A2",
+            "instruction_count": 5,
+            "instruction_pcs_sha256": "0f7c65f3ffb0aa13a6b1c71b5e2e736397c092e03cecdbcb3c5bc524dcb634fe",
+            "length": 12,
+            "sha256": "c64a6e42773eaccf6f8fd491a461bc60673c6b132fe07a798f889b39f0665432",
+            "start": "0x08008696"
+          },
+          "mismatches": [],
+          "status": "verified",
+          "structural_class": "wrapper_fallback_zero_stack_arg",
+          "trigger_condition": "wrapper_zero_test_falls_through_to_consumer;stack_arg_0=0"
+        }
+      },
+      {
+        "callsite": "0x08008E1C",
+        "consumer": "0x08008724",
+        "kind": "direct_branch",
+        "static": {
+          "instruction_window": {
+            "end_exclusive": "0x08008E20",
+            "instruction_count": 13,
+            "instruction_pcs_sha256": "2101593358be7ff6e89d4af3554cabb141faad8dbc3e069a59de319e836bc39b",
+            "length": 28,
+            "sha256": "d7babb6f93e9a76151df5f1958c4acc974a2b74a897c5ceaa4b7cd30ac8dd659",
+            "start": "0x08008E04"
+          },
+          "mismatches": [],
+          "status": "verified",
+          "structural_class": "queue_entry_drain_loop",
+          "trigger_condition": "entry_pointer_[r7]_nonzero;index_0..0x3b;clear_after_consumer"
+        }
+      },
+      {
+        "callsite": "0x08066050",
+        "consumer": "0x08008724",
+        "kind": "direct_branch",
+        "static": {
+          "instruction_window": {
+            "end_exclusive": "0x08066054",
+            "instruction_count": 9,
+            "instruction_pcs_sha256": "9164c32ded82b9b987b79044274d209bda9505eb3386c115d9f25c5eb25d5abb",
+            "length": 20,
+            "sha256": "a3300b2934479b6b9d7abd30c984523a8fc6f53ed1099e8c039f06ebbe7c0e1a",
+            "start": "0x08066040"
+          },
+          "mismatches": [],
+          "status": "verified",
+          "structural_class": "dual_buffer_ui",
+          "trigger_condition": "dual_buffer_setup;r0_from_r7;stack_arg_0=1"
+        }
+      },
+      {
+        "callsite": "0x08066062",
+        "consumer": "0x08008724",
+        "kind": "direct_branch",
+        "static": {
+          "instruction_window": {
+            "end_exclusive": "0x08066066",
+            "instruction_count": 8,
+            "instruction_pcs_sha256": "8860e145b17e276e0aab8afec1eebdc7b3ad68d5df553a7a835497740671f278",
+            "length": 18,
+            "sha256": "6f007256f32193029035328de3d52bb313ce7d1e5f37bd766c171149fc4ad1b6",
+            "start": "0x08066054"
+          },
+          "mismatches": [],
+          "status": "verified",
+          "structural_class": "dual_buffer_ui",
+          "trigger_condition": "dual_buffer_setup;r0_from_r8;stack_arg_0=1"
+        }
+      },
+      {
+        "callsite": "0x0806E01C",
+        "consumer": "0x08008724",
+        "kind": "direct_branch",
+        "static": {
+          "instruction_window": {
+            "end_exclusive": "0x0806E020",
+            "instruction_count": 7,
+            "instruction_pcs_sha256": "1f9dd972fbd4dcc2e69a10563d54e59b854dc4d997fa2af6c2a34573cc706839",
+            "length": 16,
+            "sha256": "783c19c22d8fdd1f1bf803ca5a1f567470f6c01b6abc641a3b68d40f8948c8dc",
+            "start": "0x0806E010"
+          },
+          "mismatches": [],
+          "status": "verified",
+          "structural_class": "indexed_object_buffer",
+          "trigger_condition": "indexed_object_buffer_[r6]_nonzero;stack_arg_0=1"
+        }
+      }
+    ]
+  },
+  "corpus_coverage": {
+    "caller_cohort_count": 123,
+    "exact_source_candidate_count": 609,
+    "exact_source_record_count": 370,
+    "natural_caller_status": "not_observed",
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_count": 2325,
+    "semantic_partition": {
+      "battle_dialogue": "unconfirmed",
+      "branch": "unconfirmed",
+      "engine_width_limit": "unconfirmed",
+      "newline": "unconfirmed",
+      "reason": "structural caller class and RAM buffer identity do not prove scene semantics",
+      "speaker": "unconfirmed",
+      "story": "unconfirmed",
+      "ui": "unconfirmed",
+      "unit_pilot_weapon_spirit": "unconfirmed"
+    }
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "all_callsite_windows_verified": true,
+    "branch_semantics_proven": false,
+    "direct_consumer_candidates_5": true,
+    "engine_width_limit_proven": false,
+    "newline_engine_proven": false,
+    "pointer_report_reused_without_rescan": true,
+    "rom_hash_match": true,
+    "runtime_callsite_matches_static_candidate": true,
+    "semantic_labels_inferred": false,
+    "source_records_2325": true,
+    "speaker_semantics_proven": false,
+    "translation_status": "ai_draft"
+  },
+  "layout_boundary": {
+    "branch_semantics": "unconfirmed",
+    "engine_width_limit_proven": false,
+    "glyph_units": {
+      "cursor_advance_pixels": "8 for low-byte <= 0x87; 12 otherwise",
+      "load": {
+        "mnemonic": "ldrh",
+        "operands": "r1, [r5]",
+        "pc": "0x08008774"
+      },
+      "loop_back": {
+        "mnemonic": "bne",
+        "operands": "#0x8008774",
+        "pc": "0x08008796"
+      },
+      "loop_back_target": "0x08008774",
+      "narrow_branch": {
+        "mnemonic": "bls",
+        "operands": "#0x8008788",
+        "pc": "0x0800877C"
+      },
+      "narrow_branch_target": "0x08008788",
+      "narrow_width_add": {
+        "mnemonic": "movs",
+        "operands": "r1, #8",
+        "pc": "0x08008788"
+      },
+      "source_cursor_advance_bytes": 2,
+      "verified_unit_bytes": 2,
+      "wide_width_add": {
+        "mnemonic": "add",
+        "operands": "sl, r0",
+        "pc": "0x08008780"
+      },
+      "width_compare": {
+        "mnemonic": "cmp",
+        "operands": "r0, #0x87",
+        "pc": "0x0800877A"
+      }
+    },
+    "newline_branch_in_bounded_consumer": false,
+    "newline_engine_semantics": "unconfirmed",
+    "observed_width_maximum": 240,
+    "observed_width_minimum": 0,
+    "speaker_semantics": "unconfirmed",
+    "terminator": {
+      "compare": {
+        "mnemonic": "cmp",
+        "operands": "r0, #0",
+        "pc": "0x0800876E"
+      },
+      "exit": {
+        "mnemonic": "beq",
+        "operands": "#0x8008798",
+        "pc": "0x08008770"
+      },
+      "exit_target": "0x08008798",
+      "render_loop_exit": {
+        "mnemonic": "beq",
+        "operands": "#0x8008958",
+        "pc": "0x08008954"
+      },
+      "render_loop_exit_target": "0x08008958",
+      "render_loop_load": {
+        "mnemonic": "ldrb",
+        "operands": "r0, [r5]",
+        "pc": "0x08008950"
+      },
+      "source_byte_load": {
+        "mnemonic": "ldrb",
+        "operands": "r0, [r5]",
+        "pc": "0x0800876C"
+      },
+      "token": "NUL"
+    }
+  },
+  "next_condition": "identify a source-buffer producer or target caller/index before assigning story/branch/battle/unit/UI labels",
+  "rom": {
+    "expected_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "hash_match": true,
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84"
+  },
+  "runtime_observation": {
+    "caller_callsite": "0x08066050",
+    "caller_callsite_matches_static_candidate": true,
+    "consumer_entry_status": "consumer_entry_observed",
+    "natural_screen_proven": false,
+    "source_pointer": "0x02018368",
+    "source_pointer_region": "ram_or_io",
+    "target_pointer_match": false,
+    "target_render_proven": false
+  },
+  "schema": "super-robot-taisen-d-m120-semantic-caller-inventory-v1",
+  "source_policy": {
+    "pointer_report_reused_without_rescan": true,
+    "raw_memory_emitted": false,
+    "semantic_labels_inferred": false,
+    "source_text_emitted": false
+  }
+}

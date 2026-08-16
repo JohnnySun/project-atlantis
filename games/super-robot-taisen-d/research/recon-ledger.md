@@ -797,6 +797,42 @@ buffer、完整 source 或畫面。下一個 runtime 條件是取得 target call
 producer 的可審核來源，再進行一次受控 callee-entry／screen proof；在此之前不把
 自然 hit 外推成 patched glyph QA，也不擴大翻譯批次。
 
+## 2026-08-16：M1.20 bounded semantic caller／layout inventory
+
+本輪不重新掃描 pointer，也不把自然 caller 的 RAM buffer 猜成 source record。工具重用
+修正後的 M1.15 five-candidate report、M1.17 full-corpus coverage、M1.18 consumer/layout
+contract 與 M1.19 caller reroute，只對五個已知 direct `BL -> 0x08008724` 做 bounded
+Thumb instruction-window verification。
+
+### 結構性 callsite 結果
+
+| callsite | 結構分類 | bounded trigger／argument fact |
+| --- | --- | --- |
+| `0x0800869E` | `wrapper_fallback_zero_stack_arg` | wrapper zero-test fallback；stack arg 0=`0` |
+| `0x08008E1C` | `queue_entry_drain_loop` | `[r7]` entry nonzero；index `0..0x3B`；consumer 後清除 entry |
+| `0x08066050` | `dual_buffer_ui` | `r0<-r7`；stack arg 0=`1`；followed by paired buffer path |
+| `0x08066062` | `dual_buffer_ui` | `r0<-r8`；stack arg 0=`1`；paired with `0x08066050` |
+| `0x0806E01C` | `indexed_object_buffer` | indexed buffer nonzero；`r2=0x0D`、`r3=0`、stack arg 0=`1` |
+
+五個窗口各自保存 start／end、length、instruction count、PC-index hash 與 raw-window
+SHA-256；tracked report 不保存完整 ROM bytes、RAM buffer 或 source text。M1.19 runtime
+自然命中 `0x08066050`，與這個 inventory 的 candidate／setup 對上，但 `r0=0x02018368`
+仍是 RAM buffer，沒有 target `0x08080858` 的 source identity 或 screen proof。
+
+### 語意與 layout gate
+
+全 corpus coverage 仍是 `2325` records、`609` exact candidates、`370` exact records、
+`123` caller cohorts；partition 與 candidate hash 重用 M1.17，沒有重新掃描。這輪只
+證明 caller 的結構形狀，沒有把 queue／dual-buffer/object 名稱升級成話數、分支、戰鬥、
+機體／駕駛員／武器／精神或 UI 的語意 label。M1.18 的 bounded consumer 仍為 NUL、
+two-byte narrow／wide；consumer window 沒有 dedicated newline branch，source observed
+width 仍為 `0..240px` 而非 engine limit proof；newline、speaker、branch、最大寬度與
+natural screen 全部維持 `unconfirmed`／`not_proven`。
+
+下一個安全入口是以 source-buffer producer、可證明的 queue index 或 target caller
+觸發一個明確 record，再做一次 controlled callee-entry／VRAM proof；在此以前不擴大
+翻譯 ledger，也不把結構分類當成完整文本分區。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

@@ -429,6 +429,13 @@ queue 觸發尚未取代這條受控驗證。
   `r2=0x0D`、`r3=0x05`、stack arg `1`。runtime `r0=0x02018368` 是 RAM buffer，
   與 target `0x08080858` 不匹配，因此 target glyph／tile／screen proof 仍拒絕；摘要在
   [`research/m119-caller-reroute.json`](research/m119-caller-reroute.json)。
+- [x] M1.20 對五個已確認 direct consumer callsite 做 bounded instruction-window
+  inventory：`0x0800869E` wrapper fallback、`0x08008E1C` queue-entry drain、
+  `0x08066050/62` dual-buffer UI、`0x0806E01C` indexed object buffer；每個窗口
+  都有 static hash／trigger metadata。這些是結構分類，不是 story／branch／battle／
+  unit／speaker 語意；全 corpus 仍 2325 筆、609 exact candidates／370 records／123
+  cohorts，newline engine semantics、最大寬度、自然 screen 仍未證明。摘要在
+  [`research/m120-semantic-caller-inventory.json`](research/m120-semantic-caller-inventory.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

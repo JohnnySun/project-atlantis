@@ -86,6 +86,12 @@
   `0x08066050`，font base nonzero；static callsite argument setup 已核對，但
   `r0=0x02018368` 是 RAM buffer 而非 target `0x08080858`。target render／VRAM／screen
   仍 `not_proven`，摘要在 `research/m119-caller-reroute.json`。
+- [x] M1.20 只重用既有 source-safe coverage/layout reports 與五個 direct consumer
+  candidates，完成 bounded caller inventory：wrapper fallback、queue-entry drain、
+  dual-buffer UI、indexed object buffer 四種結構類別，並對五個 instruction window
+  做 hash／指令驗證。這些不是 scene semantics；story／branch／battle／unit／speaker、
+  newline engine semantics、engine width limit 與 natural screen 均維持 `unconfirmed`。
+  摘要在 `research/m120-semantic-caller-inventory.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
