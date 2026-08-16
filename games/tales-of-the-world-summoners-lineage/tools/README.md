@@ -28,6 +28,15 @@ ROM、patch、解壓資源或完整原文放入工作區的可提交路徑。
 - `m15_trace_boot_tile.py`：從初始 GDB `S02` 即對同一個 BG0 cell 設一個 byte write
   watchpoint，在固定秒數內檢查開機／資源初始化是否由 CPU 搬移該 cell；timeout 與人工
   interrupt 分開記錄，不把它們冒充 tile hit。
+- `m16_keyboard_metadata.py`：解析已確認的 BG1 `0x4000/0x0800` 4bpp 假名鍵盤位置，
+  輸出 tile ID、flip／palette、固定 stride、hash 與 clean-ROM exact-match offset；
+  不把孤立 byte match 標成字元身份。
+- `m16_name_entry_probe.py`：以 BG1 八格簽名自動停止在已知鍵盤，執行 `A, RIGHT, A`，
+  做 EWRAM／IWRAM bounded diff，並可對明確 code-unit 候選設 one-shot writer／reader
+  watchpoint。報告含 code unit、PC／LR／寄存器與 ROM font-record address math；完整
+  RAM／VRAM 只寫 caller 指定的 ignored／`/private/tmp` dump。
+- `test_m16_keyboard_metadata.py`：測試 tilemap 欄位／座標、diff／append filter 與
+  0x18 font-record address arithmetic。
 
 ## 重現基準掃描
 
@@ -67,6 +76,25 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/too
 寄存器列為參數，並將每個 stop packet／PC／LR 記入本機摘要。顯示改變後，再依摘要中的
 `DISPCNT`／`BGxCNT` 使用共用 `core/gba/render_vram.py` 或 `render_oam.py`，不要把
 screenblock 當作 pixel 或把孤立 glyph 當成已知 codepage。
+
+## M1.6 name-entry code-unit slice
+
+這一切片不重做 startup logo baseline。工具會先讀 BG1 screenblock；只有在
+`DISPCNT=0x1B40`、`BG1CNT=0x0106` 且八個已知 tile ID 都吻合時，才送出 `A, RIGHT, A`。
+phase receipt、hash、watchpoint PC／LR 與負證據見
+`../research/m16-name-entry-code-unit-20260816.md`。例如候選 buffer 的重跑命令如下：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/tools/m16_name_entry_probe.py \
+  /private/tmp/project-atlantis-a9pj.gba --port 39123 \
+  --write-watch-address 0x02004014 --read-watch-address 0x02004014 \
+  --dump-dir /private/tmp/tow-a9pj-m16-phase3 \
+  --output /private/tmp/tow-a9pj-m16-phase3/summary.json
+```
+
+`0x02004014` 的 writer／reader 已由 runtime 命中，但 glyph identity 仍須同時通過
+鍵盤位置、ROM exact match 與 table arithmetic；目前沒有 confirmed identity，因此不
+建立 source table、work ledger 或翻譯 batch。
 
 ## 後續 decoder 約束
 

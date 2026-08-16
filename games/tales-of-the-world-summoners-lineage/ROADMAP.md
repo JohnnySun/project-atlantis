@@ -38,8 +38,31 @@
   codepage、控制碼分欄記錄；ROM exact match 僅保留為 byte／圖形候選。
 - [x] 對 transition 與初始 boot 各做一次有界 1-byte VRAM write watchpoint；兩次均
   留下 `tile_hit_count=0` 的可重現陰性 receipt，沒有把人工 interrupt 當成 hit。
-- [ ] 取得實際 source buffer／DMA 邊界或控制流上的文字 consumer／caller，確認至少一組
-  code unit→glyph 關係與控制碼；在此之前 source table／work ledger 維持空白。
+- [x] 取得實際 source buffer 與控制流上的文字 consumer／caller；M1.6 已確認一組
+  code unit→font-record 關係，但 DMA 邊界、glyph identity 與控制碼仍未確認，source
+  table／work ledger 維持空白。
+
+## 里程碑 1.6：name-entry code-unit／font-record 有界切片
+
+- [x] 以 BG1 `charbase=0x4000`、`screenbase=0x0800` 建立八個五十音鍵盤位置的
+  tile ID／flip／palette／hash metadata；`[1,2,3,4,5,27,28,29]` 的固定 32-byte
+  runtime stride 已由實際 tilemap 與 rendered grid 交叉確認。
+- [x] 對八個 runtime tile 做 clean-ROM exact match；本次只有 1/8 個未對齊 accidental
+  match、0/8 個 32-byte aligned match，因此 confirmed glyph identity 維持 `0`。
+- [x] 以 adaptive `START` gate 後執行 `A, RIGHT, A`；三個取樣畫面均維持已確認的
+  BG1 keyboard signature，EWRAM diff 收斂為第一格 `0x0001→0x005E`、第二格
+  `0x0001→0x0066`，IWRAM 沒有 append candidate。
+- [x] 對 `0x02004014` 重跑 one-shot writer／reader watchpoint：取得 writer
+  `PC=0x08052BBC/LR=0x0806B66F` 與 reader `PC=0x080063B8/LR=0x080063C7`，
+  並保留 code unit 與寄存器 receipt。
+- [x] 由 reader caller `0x080049A0` 的 `code_unit * 0x18` arithmetic 反推出 ROM
+  font-record base `0x08089E00`；這是 code-unit→font-record consumer 證據，不冒充
+  runtime tile identity 或控制碼。
+- [x] 擴充遊戲專用 metadata／diff／filter／address-math probe 與 5 個單元測試；raw
+  記憶體、VRAM、圖片與 ROM 均留在 private／ignored 路徑。
+- [ ] 取得 font-record 到實際 BG1 charblock tile 的直接 DMA／copy 或寫入證據，並以
+  table arithmetic、runtime tile match 與鍵盤位置三者共同確認 glyph identity；gate
+  通過前不建立 source table、work ledger 或翻譯。
 
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 

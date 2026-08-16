@@ -7,14 +7,16 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5 執行期切片；尚未開始
-有限量翻譯，也沒有可回插的文字 patch。M1.5 已用 KEYINPUT 導航到第一個互動的
-name-entry／kana 畫面，並以共用 BG／OAM renderer 分離出 BG0、BG1、BG3；選定的 BG0
-glyph cell 在 transition 與從 reset 開始的 bounded write watchpoint 都沒有 CPU hit，
-所以沒有把候選 tile 宣稱成文字 consumer、codepage 或控制碼。詳見
+目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6 執行期切片；尚未
+開始有限量翻譯，也沒有可回插的文字 patch。M1.6 已在不重做 startup baseline 的
+前提下，以 BG1 假名鍵盤簽名安全導航，證明 EWRAM 姓名 buffer 的第一、第二個 code
+unit 變動，並以 writer／reader watchpoint 追到 font-record renderer caller；glyph
+identity 仍是 provisional，沒有建立 source table／work ledger。詳見
+[`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
+M1.5 的圖層與 VRAM negative receipt 仍見
 [`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
-下一個安全技術關卡仍是以 source buffer／DMA 邊界或控制流證據分離劇情、地圖／事件、
-角色／戰鬥資料與圖像／字型資料，再確認自訂碼頁、控制碼和可逆回插規則。
+下一個安全技術關卡是把 font-record／runtime tile 的關係、控制碼與劇情／地圖／事件、
+角色／戰鬥資料分離，再確認可逆回插規則。
 
 - ROM 身分、大小與雜湊已記錄；標頭補數校驗不一致，這個異常必須保留在基準資料中。
 - 全 ROM 未找到常見日文 UI 詞的 literal Shift-JIS 命中，不能把一般 Shift-JIS 當成
@@ -32,6 +34,11 @@ glyph cell 在 transition 與從 reset 開始的 bounded write watchpoint 都沒
   [`research/runtime-baseline-core-20260816.md`](research/runtime-baseline-core-20260816.md)。
 - M1.5 的互動畫面、glyph addressing、renderer 判定與兩段 bounded negative watchpoint
   receipt 見 [`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
+- M1.6 的 BG1 八格 metadata／hash、EWRAM/IWRAM diff、`0x02004014` writer／reader
+  receipt 與 `0x08089E00 + code_unit * 0x18` font-record arithmetic 見
+  [`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
+- M1.6 只確認 code-unit consumer／caller；selected BG1 glyph 的 clean-ROM aligned
+  exact match 為零，confirmed glyph identity 為零，故仍不產生 source rows 或翻譯。
 
 ## ROM 基準
 
