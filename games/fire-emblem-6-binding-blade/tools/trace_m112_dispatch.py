@@ -62,6 +62,7 @@ from trace_m18_callers import (  # noqa: E402
     scan_direct_calls,
     snapshot,
     table_provenance,
+    _capstone_instructions,
     u32,
 )
 
@@ -96,6 +97,10 @@ DISPATCH_TABLE_STRIDE = 8
 DISPATCH_OBJECT_ADDRESS = 0x02024750
 DISPATCH_OBJECT_WRITER_FUNCTION = 0x08003A04
 DISPATCH_OBJECT_WRITER_INSTRUCTION = 0x08003A18
+DISPATCH_OBJECT_ALLOCATOR_ENTRY = 0x08003C54
+DISPATCH_OBJECT_ALLOCATOR_RETURN = 0x08003C7E
+DISPATCH_OBJECT_ALLOCATOR_LITERAL = 0x08003C74
+DISPATCH_OBJECT_ALLOCATOR_GLOBAL = 0x020258C8
 
 RENDERER_BREAKPOINTS = (
     0x08098F68,
@@ -316,6 +321,7 @@ def _generic_call_chain_gate(rom: bytes) -> dict[str, object]:
         "dispatch_object_writer_instruction_text": "str r1,[r0]",
         "dispatch_object_allocator_callsite": "0x08003a0e",
         "dispatch_object_allocator_target": "0x08003c54",
+        "dispatch_object_allocator": _dispatch_object_allocator_gate(rom),
         "high_caller_dispatch_pointer": {
             "pointer_word": hex32(GENERIC_HIGH_POINTER_WORD),
             "file_offset": f"0x{pointer_offset:06x}",
@@ -323,6 +329,144 @@ def _generic_call_chain_gate(rom: bytes) -> dict[str, object]:
             "aligned_match_count": len(pointer_locations),
             "record_window": record_window,
         },
+    }
+
+
+def _dispatch_object_allocator_gate(rom: bytes) -> dict[str, object]:
+    """Describe the small helper called by the observed object writer.
+
+    The helper is intentionally recorded as an opaque EWRAM cursor/value
+    operation.  The literal and instruction flow prove where its input comes
+    from without assigning a C-like allocator or scene meaning to it.
+    """
+
+    prologues = prologue_addresses(rom)
+    returns = return_addresses(rom, ROM_BASE, ROM_BASE + len(rom))
+    callsites = scan_direct_calls(rom, DISPATCH_OBJECT_ALLOCATOR_ENTRY)
+    function_returns = [
+        address
+        for address in returns
+        if DISPATCH_OBJECT_ALLOCATOR_ENTRY <= address < DISPATCH_OBJECT_ALLOCATOR_ENTRY + 0x100
+    ]
+    instructions = _capstone_instructions(
+        rom,
+        DISPATCH_OBJECT_ALLOCATOR_ENTRY,
+        DISPATCH_OBJECT_ALLOCATOR_RETURN + 2,
+    )
+    literal_specs = (
+        (0x08003C5A, 0x18, "r1"),
+        (0x08003C62, 0x10, "r1"),
+        (0x08003C64, 0x0C, "r0"),
+        (0x08003C66, 0x0C, "r1"),
+    )
+    literal_loads = []
+    for instruction, immediate, register in literal_specs:
+        literal_address = ((instruction + 4) & ~3) + immediate
+        literal_loads.append({
+            "instruction": hex32(instruction),
+            "instruction_text": next(
+                f"{hex32(int(row['address']))}: {row['mnemonic']} {row['op_str']}".rstrip()
+                for row in instructions
+                if int(row["address"]) == instruction
+            ),
+            "destination_register": register,
+            "literal_address": hex32(literal_address),
+            "literal_value": hex32(u32(rom, literal_address)),
+        })
+    return {
+        "entry": hex32(DISPATCH_OBJECT_ALLOCATOR_ENTRY),
+        "return": hex32(DISPATCH_OBJECT_ALLOCATOR_RETURN),
+        "direct_callsite_count": len(callsites),
+        "direct_callsites": [hex32(address) for address in callsites],
+        "caller_function_boundaries": [
+            _function_for_call(address, prologues, returns)
+            for address in callsites
+        ],
+        "function_boundary": {
+            "function_start": hex32(DISPATCH_OBJECT_ALLOCATOR_ENTRY),
+            "function_return": hex32(function_returns[0]) if function_returns else None,
+            "confidence": "local_prologue_and_first_return"
+            if function_returns
+            else "missing_return",
+        },
+        "literal_loads": literal_loads,
+        "literal_pool_word": {
+            "address": hex32(DISPATCH_OBJECT_ALLOCATOR_LITERAL),
+            "value": hex32(u32(rom, DISPATCH_OBJECT_ALLOCATOR_LITERAL)),
+            "value_kind": "EWRAM_address_literal",
+        },
+        "global_flow": [
+            "[0x020258c8] -> r0",
+            "[r0] -> r1 -> [r7]",
+            "[0x020258c8] -> r2",
+            "r2 + 4 -> r1 -> [0x020258c8]",
+            "[r7] -> r0 -> return",
+        ],
+        "instruction_flow": [
+            f"{hex32(int(row['address']))}: {row['mnemonic']} {row['op_str']}".rstrip()
+            for row in instructions
+            if int(row["address"]) < DISPATCH_OBJECT_ALLOCATOR_RETURN
+        ],
+        "global_address": hex32(DISPATCH_OBJECT_ALLOCATOR_GLOBAL),
+        "semantic_name_assigned": False,
+    }
+
+
+def _allocator_receipt_summary(receipts: list[dict[str, object]]) -> dict[str, object]:
+    """Summarize adjacent allocator entry/return receipts without raw memory."""
+
+    entries = [row for row in receipts if row.get("kind") == "dispatch_object_allocator_entry"]
+    returns = [row for row in receipts if row.get("kind") == "dispatch_object_allocator_return"]
+    paired = min(len(entries), len(returns))
+    allocator_kinds = [
+        row.get("kind")
+        for row in receipts
+        if row.get("kind") in {
+            "dispatch_object_allocator_entry",
+            "dispatch_object_allocator_return",
+        }
+    ]
+    pair_order_ok = (
+        len(allocator_kinds) == paired * 2
+        and all(
+            allocator_kinds[index:index + 2]
+            == [
+                "dispatch_object_allocator_entry",
+                "dispatch_object_allocator_return",
+            ]
+            for index in range(0, len(allocator_kinds), 2)
+        )
+    )
+    callsites: dict[str, int] = {}
+    cursor_pairs = 0
+    return_pairs = 0
+    for entry, returned in zip(entries, returns):
+        callsite = entry.get("derived_callsite")
+        if isinstance(callsite, str):
+            callsites[callsite] = callsites.get(callsite, 0) + 1
+        try:
+            before = int(str(entry["global_word_before"]), 16)
+            after = int(str(returned["global_word_after"]), 16)
+            cursor_pairs += int(after == before + 4)
+            pointed = int(str(entry["pointed_value_before"]), 16)
+            result = int(str(returned["return_value_r0"]), 16)
+            return_pairs += int(result == pointed)
+        except (KeyError, TypeError, ValueError):
+            pass
+    return {
+        "entry_count": len(entries),
+        "return_count": len(returns),
+        "paired_count": paired,
+        "pair_order_ok": pair_order_ok,
+        "derived_callsite_counts": callsites,
+        "cursor_increment_ok_count": cursor_pairs,
+        "return_value_matches_pointed_ok_count": return_pairs,
+        "all_pairs_consistent": (
+            paired > 0
+            and pair_order_ok
+            and cursor_pairs == paired
+            and return_pairs == paired
+        ),
     }
 
 
@@ -372,6 +516,8 @@ def _route_report(
             "callback_entries": [],
             "call_chain_receipts": [],
             "dispatch_object_write_receipts": [],
+            "dispatch_object_allocator_receipts": [],
+            "dispatch_object_allocator_summary": {},
             "renderer_events": [],
             "loader_records": [],
             "hit_counts": {},
@@ -390,6 +536,8 @@ def _route_report(
         GENERIC_WRAPPER_CALLSITE,
         GENERIC_HIGH_CALLER,
         DISPATCH_CALLSITE,
+        DISPATCH_OBJECT_ALLOCATOR_ENTRY,
+        DISPATCH_OBJECT_ALLOCATOR_RETURN,
         *RENDERER_BREAKPOINTS,
         HIGH_CALLER,
         HIGH_CALLSITE,
@@ -531,6 +679,51 @@ def _route_report(
                 "caller_lr_before_bl": hex32(regs["lr"]),
             })
             runtime["call_chain_receipts"].append(event.copy())
+        elif pc == DISPATCH_OBJECT_ALLOCATOR_ENTRY:
+            global_before = None
+            cursor_before = None
+            pointed_value_before = None
+            try:
+                global_before = int.from_bytes(
+                    _read_memory(client, DISPATCH_OBJECT_ALLOCATOR_GLOBAL, 4),
+                    "little",
+                )
+                if _valid_rom_or_ram(global_before, 4):
+                    cursor_before = hex32(global_before)
+                    pointed_value_before = hex32(
+                        int.from_bytes(_read_memory(client, global_before, 4), "little")
+                    )
+            except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+                pass
+            event.update({
+                "kind": "dispatch_object_allocator_entry",
+                "function": hex32(DISPATCH_OBJECT_ALLOCATOR_ENTRY),
+                "caller_lr": hex32(regs["lr"]),
+                "derived_callsite": hex32((regs["lr"] & ~1) - 4),
+                "global_address": hex32(DISPATCH_OBJECT_ALLOCATOR_GLOBAL),
+                "global_word_before": None if global_before is None else hex32(global_before),
+                "cursor_before": cursor_before,
+                "pointed_value_before": pointed_value_before,
+            })
+            runtime["dispatch_object_allocator_receipts"].append(event.copy())
+        elif pc == DISPATCH_OBJECT_ALLOCATOR_RETURN:
+            global_after = None
+            try:
+                global_after = int.from_bytes(
+                    _read_memory(client, DISPATCH_OBJECT_ALLOCATOR_GLOBAL, 4),
+                    "little",
+                )
+            except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+                pass
+            event.update({
+                "kind": "dispatch_object_allocator_return",
+                "function": hex32(DISPATCH_OBJECT_ALLOCATOR_ENTRY),
+                "return_pc": hex32(DISPATCH_OBJECT_ALLOCATOR_RETURN),
+                "return_value_r0": hex32(regs["r0"]),
+                "global_address": hex32(DISPATCH_OBJECT_ALLOCATOR_GLOBAL),
+                "global_word_after": None if global_after is None else hex32(global_after),
+            })
+            runtime["dispatch_object_allocator_receipts"].append(event.copy())
         elif pc == DISPATCH_THUNK:
             event.update({
                 "kind": "dispatch_bx_r1_thunk",
@@ -714,6 +907,9 @@ def _route_report(
                 break
         continue_for(args.final_seconds)
         runtime["steps"] = route_steps
+        runtime["dispatch_object_allocator_summary"] = _allocator_receipt_summary(
+            runtime["dispatch_object_allocator_receipts"]
+        )
         runtime["hit_counts"] = counts
         runtime["pointer_watch_hit_counts"] = pointer_counts
         runtime["display_io"] = _display_io(client)

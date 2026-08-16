@@ -169,6 +169,20 @@ M1.14 同一路徑的 `0x085c4414`／舊 callback pointer read-watch 均 0，表
 
 M1.15 對 `0x02024750` 加上一次性 write-watch，取得第一筆 dispatch-object producer：watch stop PC `0x08003a1a` 的實際前一條 writer 是 `0x08003a18: str r1,[r0]`，static function boundary `0x08003a04–0x08003ad6`，其 allocator callsite `0x08003a0e` → `0x08003c54`。runtime `r1=0x08691858`、`r0=0x02024750`，after-value 也為 `0x08691858`；與 M1.14 的 table index/pointer receipt 分欄保存。這只是 object 初始化的一個可重跑 write receipt，尚未證明 `0x08691858` 的完整來源或任何文本語義。
 
+M1.16 沿同一個 static callsite 往下追 `0x08003c54`：ROM 內只有一個合法 direct BL caller `0x08003a0e`，helper function boundary 是 `0x08003c54–0x08003c7e`。四個 literal load 都指向 `0x08003c74`，其 literal value 是 EWRAM global address `0x020258c8`；指令資料流是 `[0x020258c8] → cursor`、`[cursor] → return value`、再將 `cursor + 4` 寫回同一 global，最後回傳暫存的 pointed value。這是 static provenance，不把它命名為 allocator 或文本物件。
+
+fresh mGBA／單一 GDB connection 的同一路徑取得 56 組 `0x08003c54` entry／`0x08003c7e` return receipts（entry/return hit count 各 56）。每組 entry 的 `LR=0x08003a13` 都回推到 `0x08003a0e`；首組 `global_before=0x020257c4`、`[cursor]=0x02023cc4`，return `r0=0x02023cc4` 且 `global_after=0x020257c8`，56/56 組均滿足相同關係。該 bounded route 也重現既有 selector/generic loader chain；但沒有用 allocator 收據替代文本 consumer／renderer 證據，完整 JSON 只留 `/private/tmp`，不提交 raw EWRAM。
+
+M1.16 的可重跑命令（先以自己的 mGBA GDB port 啟動 AFEJ）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
+  roms/base/AFEJ.gba --port 23901 --source-port 25042 \
+  --route-name m116-natural-generic-allocator \
+  --sequence start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a \
+  --output /private/tmp/afej-m116-natural-generic-allocator-schema.json
+```
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：

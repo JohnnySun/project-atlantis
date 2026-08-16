@@ -68,6 +68,25 @@ class AfejM112DispatchTests(unittest.TestCase):
         self.assertEqual(chain["dispatch_object_writer_instruction_text"], "str r1,[r0]")
         self.assertEqual(chain["dispatch_object_allocator_callsite"], "0x08003a0e")
         self.assertEqual(chain["dispatch_object_allocator_target"], "0x08003c54")
+        allocator = chain["dispatch_object_allocator"]
+        self.assertEqual(allocator["entry"], "0x08003c54")
+        self.assertEqual(allocator["return"], "0x08003c7e")
+        self.assertEqual(allocator["direct_callsite_count"], 1)
+        self.assertEqual(allocator["direct_callsites"], ["0x08003a0e"])
+        self.assertEqual(allocator["function_boundary"]["function_start"], "0x08003c54")
+        self.assertEqual(allocator["function_boundary"]["function_return"], "0x08003c7e")
+        self.assertEqual(allocator["global_address"], "0x020258c8")
+        self.assertEqual(allocator["literal_pool_word"]["address"], "0x08003c74")
+        self.assertEqual(allocator["literal_pool_word"]["value"], "0x020258c8")
+        self.assertEqual(
+            [row["literal_address"] for row in allocator["literal_loads"]],
+            ["0x08003c74"] * 4,
+        )
+        self.assertEqual(
+            [row["literal_value"] for row in allocator["literal_loads"]],
+            ["0x020258c8"] * 4,
+        )
+        self.assertEqual(allocator["semantic_name_assigned"], False)
         entry = next(
             row for row in pointer["record_window"] if row["file_offset"] == "0x5c4414"
         )
@@ -77,6 +96,29 @@ class AfejM112DispatchTests(unittest.TestCase):
     def test_stale_packet_filters_are_bounded(self) -> None:
         self.assertTrue(dispatch._packet_is_registers("0" * (len(dispatch.REG_NAMES) * 8)))
         self.assertFalse(dispatch._packet_is_registers("0e16"))
+
+    def test_allocator_receipt_summary_checks_adjacent_invariants(self) -> None:
+        receipts = [
+            {
+                "kind": "dispatch_object_allocator_entry",
+                "pc": "0x08003c54",
+                "derived_callsite": "0x08003a0e",
+                "global_word_before": "0x020257c4",
+                "pointed_value_before": "0x02023cc4",
+            },
+            {
+                "kind": "dispatch_object_allocator_return",
+                "pc": "0x08003c7e",
+                "global_word_after": "0x020257c8",
+                "return_value_r0": "0x02023cc4",
+            },
+        ]
+        summary = dispatch._allocator_receipt_summary(receipts)
+        self.assertEqual(summary["paired_count"], 1)
+        self.assertTrue(summary["pair_order_ok"])
+        self.assertEqual(summary["cursor_increment_ok_count"], 1)
+        self.assertEqual(summary["return_value_matches_pointed_ok_count"], 1)
+        self.assertTrue(summary["all_pairs_consistent"])
 
 
 @unittest.skipUnless(ROM_PATH.is_file(), "local reviewed AFEJ ROM is not installed")
