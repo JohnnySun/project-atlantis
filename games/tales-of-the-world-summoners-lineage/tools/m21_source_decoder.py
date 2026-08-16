@@ -45,6 +45,7 @@ from m20_text_record_probe import (
 DECODER_VERSION = "m21-source-decoder-20260816.v1"
 KNOWN_UI_DECODER_VERSION = "m34-known-ui-decoder-20260816.v1"
 KNOWN_STATIC_UI_DECODER_VERSION = "m45-known-static-ui-decoder-20260816.v1"
+KNOWN_STATIC_LEDGER_DECODER_VERSION = "m47-known-static-ledger-decoder-20260817.v1"
 ROM_BASE = 0x08000000
 DEFAULT_SCAN_START = 0
 DEFAULT_SCAN_END = 0x800000
@@ -144,6 +145,7 @@ STATIC_UI_ROWS = (
         "proof": "M37-M45-static-phrase-raster-cjk-anchor",
     },
 )
+STATIC_LEDGER_ROWS = (STATIC_UI_ROWS[0],)
 
 
 def keyboard_labels() -> tuple[tuple[str | None, ...], tuple[str | None, ...]]:
@@ -409,6 +411,51 @@ def decode_known_static_ui_rows(data: bytes) -> tuple[list[dict[str, object]], d
     }
 
 
+def decode_known_static_ledger_rows(data: bytes) -> tuple[list[dict[str, object]], dict[str, object]]:
+    """Expose only the first fixed prompt after the M47 bounded ledger gate.
+
+    This is intentionally a separate fixed mode.  It reuses M45's exact
+    stream/raster/hash checks and does not make the other static rows, the
+    general decoder, or any runtime-unclassified candidate ledger-eligible.
+    """
+
+    rows, _ = decode_known_static_ui_rows(data)
+    if len(rows) != len(STATIC_UI_ROWS):
+        raise ValueError("known-static-ui row count drift before ledger gate")
+    selected = []
+    for row in rows:
+        if row["string_id"] not in {spec["string_id"] for spec in STATIC_LEDGER_ROWS}:
+            continue
+        gated = dict(row)
+        gated["decoder_version"] = KNOWN_STATIC_LEDGER_DECODER_VERSION
+        gated["source_status"] = "static-phrase-confirmed-ledger-bounded"
+        gated["static_phrase_context"] = True
+        gated["eligible_for_ledger"] = True
+        gated["provenance"] = (
+            f"{row['provenance']};ledger-gate={KNOWN_STATIC_LEDGER_DECODER_VERSION}"
+        )
+        selected.append(gated)
+    if len(selected) != len(STATIC_LEDGER_ROWS):
+        raise ValueError("known-static-ledger fixed row selection drift")
+    rom_digest = sha256(data)
+    return selected, {
+        "decoder_version": KNOWN_STATIC_LEDGER_DECODER_VERSION,
+        "rom_sha256": rom_digest,
+        "expected_a9pj_sha256_match": rom_digest == EXPECTED_ROM_SHA256,
+        "known_static_rows_considered": len(STATIC_LEDGER_ROWS),
+        "terminated_rows_emitted": len(selected),
+        "complete_codepage_rows": len(selected),
+        "runtime_context_confirmed": False,
+        "known_screen_context_confirmed": False,
+        "static_phrase_context_confirmed": True,
+        "scene_roles_confirmed": True,
+        "eligible_for_ledger": True,
+        "general_codepage_confirmed": False,
+        "control_code_semantics_confirmed": False,
+        "source_text_rows_are_local_only": True,
+    }
+
+
 def decode_candidates(
     data: bytes,
     *,
@@ -527,17 +574,32 @@ def main() -> None:
         action="store_true",
         help="decode only the fixed M41 static-raster UI rows; never ledger-eligible",
     )
+    parser.add_argument(
+        "--known-static-ledger-only",
+        action="store_true",
+        help="decode only the M47 fixed prompt after its bounded static ledger gate",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.candidate_limit < 0:
         parser.error("candidate-limit must be non-negative")
     data = args.rom.read_bytes()
-    if args.known_ui_only and args.known_static_ui_only:
-        parser.error("known-ui-only and known-static-ui-only are mutually exclusive")
+    fixed_modes = sum(
+        bool(value)
+        for value in (
+            args.known_ui_only,
+            args.known_static_ui_only,
+            args.known_static_ledger_only,
+        )
+    )
+    if fixed_modes > 1:
+        parser.error("known decoder modes are mutually exclusive")
     if args.known_ui_only:
         rows, summary = decode_known_ui_rows(data)
     elif args.known_static_ui_only:
         rows, summary = decode_known_static_ui_rows(data)
+    elif args.known_static_ledger_only:
+        rows, summary = decode_known_static_ledger_rows(data)
     else:
         rows, summary = decode_candidates(
             data,

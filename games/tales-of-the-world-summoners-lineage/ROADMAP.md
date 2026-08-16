@@ -345,6 +345,29 @@
 - [ ] 為每個候選取得 A9PJ non-UI source offset／code-unit sequence、臺灣多來源核對與
   寬度／控制碼 receipt；M46 不建立 ledger 或翻譯 row。
 
+## 里程碑 2B.3：fixed static prompt ledger／target font POC（M47）
+
+- [x] 對 M24 `0x08066B38`／`0x08066B60`／`0x08066B76` direct caller 做一次有界上游
+  回看；確認其 display／object initialization 與兩個 ROM literal consumer，但沒有
+  live scene／non-UI 語境，故保留 `system-ui-static-candidate`，不誤升為地圖／事件／
+  角色／戰鬥 row，也不增加 provisional candidate layer。
+- [x] 導入共用 `scripts/gba-rom-identity.py` 重新核對 A9PJ size／title／code／maker／
+  CRC32／SHA-256；header complement mismatch 以明示 `--allow-invalid-header` 記錄，
+  exit `0/status=pass`；本作 expected values 仍留 README／研究文件。
+- [x] 擴充既有 `m21_source_decoder.py` 的 fixed mode 為
+  `--known-static-ledger-only`；只放行 M45 第一條 static prompt，source stream／
+  terminator／record raster／source hash／mapping 均完整，其他 static rows 與 broad
+  candidates 維持 `eligible_for_ledger=false`。
+- [x] 在既有 `0x08089E00 + unit*0x18` table 中確認七個 clean-ROM 全零 record slot，
+  建立外部本機字型輸入的 16×12、1bpp、MSB-first、threshold-128、fail-closed target
+  font policy；不提交字型檔、glyph raw 或 target image。
+- [x] 重用 `m33_target_reinsertion_poc.py` 的 relocation／encoder plumbing，固定一條
+  `zh-TW` prompt target；receipt 同時通過 seven record hash、blank-slot、terminator、
+  source-stream unchanged、re-extract、BPS create/apply equality。safe ledger 為
+  `translations/m47-static-attack-prompt.jsonl`，不含 `source`。
+- [ ] 以 `scripts/gba-runtime-session.py` 或可驗證的自有 mGBA manifest 完成 patched
+  target 的實機畫面／字形可讀性 QA；M47 的 static／BPS 證據不等於 runtime pass。
+
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
 - [x] 先完成目前已證實人名 row 的 Wikipedia zh-tw、Bahamut GNN 可用性與其他獨立

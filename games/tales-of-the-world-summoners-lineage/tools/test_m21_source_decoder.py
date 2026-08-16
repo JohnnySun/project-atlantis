@@ -15,9 +15,11 @@ from m21_source_decoder import (  # noqa: E402
     KNOWN_UI_ROWS,
     STATIC_PHRASE_MAPPING,
     STATIC_UI_ROWS,
+    STATIC_LEDGER_ROWS,
     build_keyboard_map,
     decode_known_ui_rows,
     decode_known_static_ui_rows,
+    decode_known_static_ledger_rows,
     decode_units,
     keyboard_labels,
 )
@@ -129,6 +131,13 @@ class M21SourceDecoderTests(unittest.TestCase):
     def test_known_static_ui_decoder_rejects_non_a9pj_input(self) -> None:
         with self.assertRaises(ValueError):
             decode_known_static_ui_rows(bytes(0x100))
+
+    def test_m47_static_ledger_mode_is_one_fixed_row_only(self) -> None:
+        self.assertEqual(len(STATIC_UI_ROWS), 3)
+        self.assertEqual(len(STATIC_LEDGER_ROWS), 1)
+        self.assertEqual(STATIC_LEDGER_ROWS[0]["string_id"], STATIC_UI_ROWS[0]["string_id"])
+        with self.assertRaises(ValueError):
+            decode_known_static_ledger_rows(bytes(0x100))
 
 
 if __name__ == "__main__":

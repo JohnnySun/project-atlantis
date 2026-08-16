@@ -460,6 +460,41 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
   --receipt /private/tmp/tow-a9pj-m34-reinsert/receipt.json
 ```
 
+## M47 fixed static ledger／target font profile
+
+M47 不增加 provisional candidate。`m21_source_decoder.py --known-static-ledger-only` 只
+放行 M45 第一條已完成 static raster／source-hash cross 的 prompt row；其餘兩條 fixed
+static rows、general decoder、runtime-unclassified rows 仍保持 `eligible_for_ledger=false`。
+source JSONL 只能輸出到 `/private/tmp` 或 ignored `research/*-decoded.jsonl`。
+
+`m33_target_reinsertion_poc.py --profile m47` 是同一個 bounded relocation tool 的固定
+target profile：它只接受 `請選擇要攻擊的單位。`，重用 `選=0x03A8`、`攻=0x04F4`、
+`。=0x0003`，並由 caller-supplied local font 產生七個 16×12、1bpp、MSB-first record，
+寫入 clean ROM 內明確全零的 `0x0F95/0x0FAA/0x1051/0x10FD/0x110F/0x11BF/0x11E5`
+slots。`--font` 的字型檔不會複製到 target image、receipt 以外的 repository 或 Git；
+超出 16×12、slot 非 blank、target 字串不完全相符都 fail closed。這不是 general CJK
+encoder，target image／BPS／font／receipt 必須留 private／ignored。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-summoners-lineage/tools/m21_source_decoder.py \
+  /private/tmp/project-atlantis-a9pj.gba --known-static-ledger-only \
+  --output /private/tmp/tow-a9pj-m47/static-ledger-source.jsonl
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-summoners-lineage/tools/m33_target_reinsertion_poc.py \
+  /private/tmp/project-atlantis-a9pj.gba --profile m47 \
+  --target-text '請選擇要攻擊的單位。' \
+  --font /Users/bmy001/Library/Fonts/NotoSansCJKtc-Regular.otf \
+  --output /private/tmp/tow-a9pj-m47/target.gba \
+  --receipt /private/tmp/tow-a9pj-m47/receipt.json
+```
+
+M47 tool receipt 必須同時顯示 pointer relocation、terminator、seven record hashes、
+clean blank-slot checks、target re-extract 與 source-stream unchanged；之後才可用
+`core/patches/bps_create.rb`／`bps_apply.rb` 做 private BPS equality。這些 checks 通過
+仍不等於 patched mGBA runtime QA 或完整 zh-TW coverage。
+
 ## M34 protagonist-name known-screen cross
 
 `m29_ui_row_cross_probe.py --protagonist-name-cross` 重用 M19 的已知 name-entry screen，

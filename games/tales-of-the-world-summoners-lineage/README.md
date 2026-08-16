@@ -223,6 +223,13 @@ semantic／glyph identity 尚未完成。
   BPS apply `2/2` byte-identical。詳見
   [`research/terminology-matrix-20260816.md`](research/terminology-matrix-20260816.md)
   與 [`research/m46-terminology-bps-regression-20260816.md`](research/m46-terminology-bps-regression-20260816.md)。
+- M47 對 M24 的 `0x08066B38` direct caller 做有界上游回看；它只保留為
+  `system-ui-static-candidate`，沒有把它誤升成地圖／事件／角色／戰鬥 scene。接著以
+  `--known-static-ledger-only` 放行一條 M45 fixed prompt row，並以外部本機字型和七個
+  clean-ROM 全零 record 槽完成固定 `zh-TW` target-font／pointer relocation／re-extract／
+  BPS POC。新增 `translations/m47-static-attack-prompt.jsonl` 只有 `source_hash`，
+  不代表 general CJK codepage 或 patched runtime QA。詳見
+  [`research/m47-static-ledger-target-font-20260817.md`](research/m47-static-ledger-target-font-20260817.md)。
 
 ## ROM 基準
 
@@ -259,13 +266,14 @@ pristine dump；後續所有抽取與測試都必須固定這組基準。
 
 - 角色、地圖、事件、戰鬥資料的 record schema 與每個文字欄位的語意。
 - 一般日文／CJK codepage 與完整 glyph identity。16-bit code unit 的位址形式已高信心，
-  M32/M34 只有兩個 bounded known-screen rows 的局部 identity；不會用英文 patch 反推
-  日文並直接寫入翻譯。
+  M32/M34 與 M47 只有三條 bounded UI/static rows 的局部 identity；不會用英文 patch
+  反推日文並直接寫入翻譯。
 - 換行、變數、姓名／道具插值、結束碼與其他控制碼。
 - ROM → working source table → ledger → 目標 ROM 的完整可逆回插路徑。
-- M32 已有 name-entry 畫面的 BG0／BG1／VRAM metadata 與 fixed record-to-raster
-  cross；這只授權一條已知 UI row 的 source checksum／ledger POC，不能外推成一般
-  codepage、事件文字或 live reader／byte-copy consumer。
+- M32/M34 已有 name-entry 畫面的 BG0／BG1／VRAM metadata 與 fixed record-to-raster
+  cross；M47 另有一條 static prompt 的 fixed source／target proof。這些只授權少量
+  bounded ledger／回插 POC，不能外推成一般 codepage、事件文字或 live reader／
+  byte-copy consumer。
 
 ## 外部工程參考
 
@@ -304,9 +312,9 @@ ruby core/ledger/strip_translations.rb \
   games/tales-of-the-world-summoners-lineage/translations/<batch>.jsonl
 ```
 
-在一般 codepage、控制碼與 `string_id` 穩定前，不建立翻譯 batch；目前只有 M32 一列
-經 `strip_translations.rb` 產生、僅供 schema／source-hash POC 的
-`translations/m32-ui-row.jsonl`，不代表一般翻譯已開批。
+在一般 codepage、控制碼與 `string_id` 穩定前，不建立大量翻譯 batch；目前只有 M32/M34
+兩列 known-screen 與 M47 一列 fixed static prompt 經 `strip_translations.rb` 產生，
+僅供 bounded schema／source-hash／target-font POC，不代表一般翻譯已開批。
 
 ## 工具
 

@@ -10,8 +10,11 @@ from m20_keyboard_codepage_probe import latin_row2_expected_values
 from m33_target_reinsertion_poc import (
     CALLER_POINTER_FILE_OFFSET,
     EXPECTED_OLD_POINTER,
+    M47_TARGET_TEXT,
+    M47_TARGET_NEW_UNITS,
     PROFILES,
     build_target,
+    m47_target_units,
     verify_target,
 )
 
@@ -59,6 +62,17 @@ class M33TargetReinsertionTests(unittest.TestCase):
         self.assertTrue(verification["receipt_match"])
         self.assertTrue(verification["original_stream_unchanged"])
         self.assertEqual(verification["unresolved_unit_count"], 0)
+
+    def test_m47_target_sequence_is_fixed_and_uses_blank_slot_assignments(self) -> None:
+        units = m47_target_units(M47_TARGET_TEXT)
+        self.assertEqual(len(units), len(M47_TARGET_TEXT) + 1)
+        self.assertEqual(units[-1], 0)
+        self.assertEqual(
+            {unit for unit in units[:-1]} & set(M47_TARGET_NEW_UNITS.values()),
+            set(M47_TARGET_NEW_UNITS.values()),
+        )
+        with self.assertRaises(ValueError):
+            m47_target_units("請選擇其他文字。")
 
 
 if __name__ == "__main__":
