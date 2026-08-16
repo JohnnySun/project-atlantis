@@ -86,6 +86,9 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 固定驗證 `0x08001414` 的 `0x20`-byte asset stride、parity transform 與
   `0x03001464` 的 2-bit lookup expansion shape；只升格為 static font-pipeline
   contract，保留 live glyph、完整 codepage、字寬與 VRAM edge 為 unknown
+- [x] 建立只針對 `0x08001414` 的 bounded font consumer harness；只保留
+  `r2→asset read→transform→scratch write` metadata，未把 harness 產物冒充
+  runtime hit
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構

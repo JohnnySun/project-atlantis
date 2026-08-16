@@ -285,6 +285,14 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   --out /private/tmp/tow-nd3-font-pipeline.json
 ```
 
+下一個 runtime slice 已固定為
+[`tools/font_consumer_probe.py`](tools/font_consumer_probe.py)：它只在
+`0x08001414` entry 命中後，依 `r2` 的 `0x080DDCC4 + r2*0x20` 設單一 asset
+read-watch，再 bounded 觀察 `0x080011A8`／`0x080012E0` 與 `0x03000560`。它
+不做 resolver／pointer scan、不讀出 bytes，也不把沒有 runtime hit 的 harness
+當成文字 source edge；界線與目前環境 negative 見
+[`research/m2-font-consumer-probe-20260816.md`](research/m2-font-consumer-probe-20260816.md)。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \
