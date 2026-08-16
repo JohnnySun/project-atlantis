@@ -214,11 +214,16 @@
 - [x] M35 將 M32/M34 固定 row 接回 `m21_source_decoder.py --known-ui-only`；兩列
   `terminated=2/2`、`complete_codepage=2/2`、`unresolved=0`、`control_candidates=0`，
   但輸出明確維持 `bounded-known-screen-only`，不外推成 general decoder。
+- [x] M36 完成兩條 known-screen 人名 row 的官方／獨立來源稽核；臺灣 Wikipedia／巴哈姆特
+  沒有直接對應條目，故保留官方 Latin 工作名並記錄 `terminology-pending`，不自行造漢字
+  音譯，也不把這個結果外推成完整術語表。詳見
+  [`research/terminology-audit-20260816.md`](research/terminology-audit-20260816.md)。
 
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
-- [ ] 先完成 Wikipedia zh-tw、Bahamut 與其他獨立社群來源的專有名詞核對；有分歧
-  時保留工作名並記錄分歧，不自行定案。
+- [x] 先完成目前已證實人名 row 的 Wikipedia zh-tw、Bahamut 可用性與其他獨立來源
+  稽核；沒有形成臺灣主流多數時保留官方 Latin 工作名並記錄分歧，不自行定案。
+  完整角色／地圖／技能術語仍待一般文字覆蓋率。
 - [ ] 建立人名、地名、角色、職業、技能、道具、戰鬥與地圖術語表。
 - [ ] 以 `restore_translations.rb` 產生本機工作記錄，逐條補上 `zh-TW` 譯文、
   `context`、寬度／行數預算與控制碼說明。

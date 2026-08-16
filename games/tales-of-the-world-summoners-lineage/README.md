@@ -22,6 +22,10 @@ source table／work ledger。M20 的 keyboard table 已另確認 row 0 首五個
 `0x005E=あ`、`0x0066=う` 有 runtime-backed identity，一般 text stream mapping 仍未完成。
 詳見
 [`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
+M36 完成目前兩條 known-screen 人名 row 的官方／獨立來源稽核；沒有找到臺灣 Wikipedia
+或巴哈姆特的直接角色條目，因此工作目標保留官方 Latin、狀態維持
+`terminology-pending`，不自行創造漢字音譯。完整稽核見
+[`research/terminology-audit-20260816.md`](research/terminology-audit-20260816.md)。
 M1.7 的完整 writer／DMA／BG1 negative receipt 見
 [`research/m17-font-record-to-vram-20260816.md`](research/m17-font-record-to-vram-20260816.md)。
 M1.8 從 reset 觀察 BG1CNT、BG1 tile 與 DMA control：證明一個 reset-stage BIOS copy
@@ -206,8 +210,8 @@ pristine dump；後續所有抽取與測試都必須固定這組基準。
   日版原文。
 
 zh-Wikipedia 的索引使用過「世界傳奇 召喚士的系譜」這個異名；目前未找到能在
-Bahamut 交叉確認的本作條目，因此 `zh-TW` 標題仍是工作名。專有名詞表會等到
-日文抽取可讀且完成多來源核對後才建立，不先自行造音譯。
+Bahamut 交叉確認的本作角色條目，因此已證實人名 row 的 `zh-TW` 工作名先保留
+官方 Latin，完整專有名詞表仍要等一般文字抽取與多來源核對後建立，不先自行造音譯。
 
 ## 帳本與本機流程
 
