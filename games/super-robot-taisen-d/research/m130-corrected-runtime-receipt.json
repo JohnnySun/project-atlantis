@@ -1,0 +1,329 @@
+{
+  "comparison": {
+    "adjacent_glyph_hashes_equal": true,
+    "adjacent_payload_sha256_equal": true,
+    "adjacent_render_hashes_equal": true,
+    "adjacent_runtime_untouched": true,
+    "font_slot_values_equal": true,
+    "runtime_glyph_render_changed": true,
+    "source_payload_changed": true
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "adjacent_layout_and_render_exact": true,
+    "adjacent_untouched_runtime_proven": true,
+    "font_base_nonzero": true,
+    "natural_screen_proven": false,
+    "release_ready": false,
+    "rom_hashes_match": true,
+    "source_confidence": "strict_source_hash_plus_controlled_consumer_and_live_glyph_path",
+    "target_glyphs_runtime_static_hash_match": true,
+    "target_layout_and_render_exact": true,
+    "target_nul_branch_proven": true,
+    "target_units_2_of_2": true,
+    "translation_status": "ai_draft"
+  },
+  "milestone": "M1.30",
+  "roms": {
+    "base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "bps_hash_match": true,
+    "bps_sha256": "4f694170e119fdf8a9f3113ddca9aec0850f07fdfd1adc75bfca46643a4e0f31",
+    "bps_size": 66,
+    "patched_sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce"
+  },
+  "runtime": {
+    "adjacent": {
+      "layout": {
+        "controlled_consumer_layout": true,
+        "exact_per_unit": true,
+        "height": 12,
+        "tile_columns": 2,
+        "width": 16
+      },
+      "nul_branch": null,
+      "nul_read_during_glyph_units": true,
+      "payload_length": 4,
+      "source_address": "0x08080860",
+      "source_ledger_sha256": null,
+      "source_raw_sha256": "b5635bbc6aff0e3cb4cb6a25838273e93da18ab965919b445df2f4246a621a90",
+      "string_id": 526432,
+      "unit_count_expected": 2,
+      "unit_count_observed": 2,
+      "units": [
+        {
+          "code_unit": "0xA082",
+          "consumer_event_counts": {
+            "codepage_lookup": 1,
+            "narrow_glyph_add": 1,
+            "tile_writer_callsites": 24
+          },
+          "controlled_renderer_palette_index": 1,
+          "glyph_offset": "0x0D44",
+          "glyph_pointer": "0x081503A8",
+          "glyph_sha256": "06f5f270d7e94c9c4feec75aae8fe9a045e44a6f8b5669ceff1c882149733083",
+          "glyph_slot": 283,
+          "render": {
+            "expected_pixel_nibble_sha256": "1d31cae76dfcf52fc10926df85d0bf7a82cd967ca10aed23b1da04bdb2f3f778",
+            "height": 12,
+            "pixel_nibble_nonzero": 34,
+            "pixel_nibble_sha256": "1d31cae76dfcf52fc10926df85d0bf7a82cd967ca10aed23b1da04bdb2f3f778",
+            "pixel_render_exact_expected": true,
+            "source": "live_consumer_callsite_arguments_to_0x08008670",
+            "tile_columns": 2,
+            "tile_rows": 2,
+            "width": 16
+          },
+          "runtime_static_glyph_match": true,
+          "source_pointer": "0x08080860",
+          "unit_index": 0,
+          "writer": {
+            "callsite_counts": {
+              "0x08008914": 12,
+              "0x08008926": 12
+            },
+            "destination_first": "0x0201B620",
+            "destination_last": "0x0201B66E",
+            "entry_pc": "0x08008650",
+            "pipeline_r1_matches_live_word": true,
+            "store_pc": "0x08008670",
+            "strh_byte_count": 48,
+            "tile_source_word_sha256_values": [
+              "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+              "2ed348343ad2d93bbbfc7316cde45c693a36a3d4fde8b39b1449067b1603b90d",
+              "3a393a862889fd2bcc4a2939b02eab350625a27342e6a8257769839cbd458e5b",
+              "430c0c4e4652189800774c572e360ae56f0245079e763c995751ba15ba25c454",
+              "707bf0b938f307b5c222e670598b865d5e1f8a8003df82c7abbf7c9f8fa4d720",
+              "8155675d252720b1ca30eca6e23468f76ea21dd9d1c7bbdba9d891315d8ec36a",
+              "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+              "af340aa58ea7d72c2f9a7405f3734167bb27dd2a520d216addef65f8362102b6",
+              "b413f47d13ee2fe6c845b2ee141af81de858df4ec549a58b7970bb96645bc8d2"
+            ]
+          }
+        },
+        {
+          "code_unit": "0xE882",
+          "consumer_event_counts": {
+            "codepage_lookup": 1,
+            "narrow_glyph_add": 1,
+            "tile_writer_callsites": 24
+          },
+          "controlled_renderer_palette_index": 1,
+          "glyph_offset": "0x10A4",
+          "glyph_pointer": "0x08150708",
+          "glyph_sha256": "07df2ba9132fb762e4e18d279acb1f75da782111c88fc9d3fa088b63fd06b294",
+          "glyph_slot": 355,
+          "render": {
+            "expected_pixel_nibble_sha256": "4497a8e5db0a7124e91f04e32bc0f2152007342cefb65fcea19d5d6b7bbbbade",
+            "height": 12,
+            "pixel_nibble_nonzero": 18,
+            "pixel_nibble_sha256": "4497a8e5db0a7124e91f04e32bc0f2152007342cefb65fcea19d5d6b7bbbbade",
+            "pixel_render_exact_expected": true,
+            "source": "live_consumer_callsite_arguments_to_0x08008670",
+            "tile_columns": 1,
+            "tile_rows": 2,
+            "width": 8
+          },
+          "runtime_static_glyph_match": true,
+          "source_pointer": "0x08080862",
+          "unit_index": 1,
+          "writer": {
+            "callsite_counts": {
+              "0x08008914": 12,
+              "0x08008926": 12
+            },
+            "destination_first": "0x0201B6B0",
+            "destination_last": "0x0201B6DE",
+            "entry_pc": "0x08008650",
+            "pipeline_r1_matches_live_word": true,
+            "store_pc": "0x08008670",
+            "strh_byte_count": 48,
+            "tile_source_word_sha256_values": [
+              "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+              "2ed348343ad2d93bbbfc7316cde45c693a36a3d4fde8b39b1449067b1603b90d",
+              "47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254",
+              "707bf0b938f307b5c222e670598b865d5e1f8a8003df82c7abbf7c9f8fa4d720",
+              "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+              "b413f47d13ee2fe6c845b2ee141af81de858df4ec549a58b7970bb96645bc8d2",
+              "d94e7f1e9bb1f8a9b90996ba12c461b84956f0e7f230145cc594c2f80b067aa0"
+            ]
+          }
+        }
+      ]
+    },
+    "controlled_method": "direct verified Thumb initializer caller plus one 0x08008724 call per two-byte unit",
+    "font_slots": {
+      "narrow": "0x0814F664",
+      "wide": "0x08120DBC"
+    },
+    "fresh_process_required": true,
+    "gdb_port": 2350,
+    "initializer": {
+      "entry": "0x08014E84",
+      "initializer": "0x080083A0",
+      "slot_nonzero": true,
+      "slot_write_events": [
+        {
+          "lr": "0x08008455",
+          "pc": "0x08008458",
+          "pointer": "0x0814F664",
+          "resource_hash_sha256": "9ea4cc823cda13f0bb5b717346a904eb822c641f998f88cf76a0b865d0ae0a09",
+          "slot": "0x020131D0",
+          "writer_pc": "0x08008456"
+        },
+        {
+          "lr": "0x08008463",
+          "pc": "0x08008464",
+          "pointer": "0x08120DBC",
+          "resource_hash_sha256": "f9f4665a91cef443dd7e61eb588abb05c50f87c48217c49b91236d01d6475e71",
+          "slot": "0x020103AC",
+          "writer_pc": "0x08008462"
+        }
+      ],
+      "verified_callsite": "0x08014E8C"
+    },
+    "natural_navigation": "not_attempted",
+    "pc_write_convention": "architectural instruction address; mGBA rebuilds prefetch",
+    "single_connection": true,
+    "target": {
+      "layout": {
+        "controlled_consumer_layout": true,
+        "exact_per_unit": true,
+        "height": 12,
+        "tile_columns": 2,
+        "width": 16
+      },
+      "nul_branch": {
+        "lr": "0x08008747",
+        "observed": true,
+        "pc": "0x08008770",
+        "terminator_address": "0x0808085C"
+      },
+      "nul_read_during_glyph_units": true,
+      "payload_length": 4,
+      "source_address": "0x08080858",
+      "source_ledger_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+      "source_raw_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+      "string_id": 526424,
+      "unit_count_expected": 2,
+      "unit_count_observed": 2,
+      "units": [
+        {
+          "code_unit": "0xE883",
+          "consumer_event_counts": {
+            "codepage_lookup": 1,
+            "narrow_glyph_add": 1,
+            "tile_writer_callsites": 24
+          },
+          "controlled_renderer_palette_index": 1,
+          "glyph_offset": "0x1974",
+          "glyph_pointer": "0x08150FD8",
+          "glyph_sha256": "fc802795e0a087b4a040a4aa021aec11f1ce171562606996e46720d81261b74c",
+          "glyph_slot": 543,
+          "render": {
+            "expected_pixel_nibble_sha256": "096bdf769ea16b98e67e5363de9d7e9ef57ffc236bcba9994796e68fec8178b4",
+            "height": 12,
+            "pixel_nibble_nonzero": 43,
+            "pixel_nibble_sha256": "096bdf769ea16b98e67e5363de9d7e9ef57ffc236bcba9994796e68fec8178b4",
+            "pixel_render_exact_expected": true,
+            "source": "live_consumer_callsite_arguments_to_0x08008670",
+            "tile_columns": 2,
+            "tile_rows": 2,
+            "width": 16
+          },
+          "runtime_static_glyph_match": true,
+          "source_pointer": "0x08080858",
+          "unit_index": 0,
+          "writer": {
+            "callsite_counts": {
+              "0x08008914": 12,
+              "0x08008926": 12
+            },
+            "destination_first": "0x0201B540",
+            "destination_last": "0x0201B58E",
+            "entry_pc": "0x08008650",
+            "pipeline_r1_matches_live_word": true,
+            "store_pc": "0x08008670",
+            "strh_byte_count": 48,
+            "tile_source_word_sha256_values": [
+              "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+              "27c24fcb8474773e2af799d0848495ff053272d33c432dc26277993df45c9276",
+              "3a393a862889fd2bcc4a2939b02eab350625a27342e6a8257769839cbd458e5b",
+              "430c0c4e4652189800774c572e360ae56f0245079e763c995751ba15ba25c454",
+              "47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254",
+              "5e2cfbf97b97eb5b62f35ad23a5a1ff2d13d79ce5374f02d2d1adcdf14529135",
+              "707bf0b938f307b5c222e670598b865d5e1f8a8003df82c7abbf7c9f8fa4d720",
+              "8155675d252720b1ca30eca6e23468f76ea21dd9d1c7bbdba9d891315d8ec36a",
+              "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+              "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2",
+              "af340aa58ea7d72c2f9a7405f3734167bb27dd2a520d216addef65f8362102b6",
+              "b413f47d13ee2fe6c845b2ee141af81de858df4ec549a58b7970bb96645bc8d2",
+              "d94e7f1e9bb1f8a9b90996ba12c461b84956f0e7f230145cc594c2f80b067aa0"
+            ]
+          }
+        },
+        {
+          "code_unit": "0xE783",
+          "consumer_event_counts": {
+            "codepage_lookup": 1,
+            "narrow_glyph_add": 1,
+            "tile_writer_callsites": 24
+          },
+          "controlled_renderer_palette_index": 1,
+          "glyph_offset": "0x1968",
+          "glyph_pointer": "0x08150FCC",
+          "glyph_sha256": "baec37d94010d471df77dae5d16aecd1d581178af6c0f65f1aabbfbde11ee01d",
+          "glyph_slot": 542,
+          "render": {
+            "expected_pixel_nibble_sha256": "cf64cc1ea252baa45604bb69648bcf57d9fe188abfb3afa3845293c144301c1b",
+            "height": 12,
+            "pixel_nibble_nonzero": 41,
+            "pixel_nibble_sha256": "cf64cc1ea252baa45604bb69648bcf57d9fe188abfb3afa3845293c144301c1b",
+            "pixel_render_exact_expected": true,
+            "source": "live_consumer_callsite_arguments_to_0x08008670",
+            "tile_columns": 1,
+            "tile_rows": 2,
+            "width": 8
+          },
+          "runtime_static_glyph_match": true,
+          "source_pointer": "0x0808085A",
+          "unit_index": 1,
+          "writer": {
+            "callsite_counts": {
+              "0x08008914": 12,
+              "0x08008926": 12
+            },
+            "destination_first": "0x0201B5D0",
+            "destination_last": "0x0201B5FE",
+            "entry_pc": "0x08008650",
+            "pipeline_r1_matches_live_word": true,
+            "store_pc": "0x08008670",
+            "strh_byte_count": 48,
+            "tile_source_word_sha256_values": [
+              "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+              "140ad0841b7999e39160d942527b215b312137061143e29095a2f7638bb8711a",
+              "26e7f98cfafee5b213726e22632923bf31bf3e988233235f8f5ca5466b3ac0ed",
+              "27c24fcb8474773e2af799d0848495ff053272d33c432dc26277993df45c9276",
+              "2ed348343ad2d93bbbfc7316cde45c693a36a3d4fde8b39b1449067b1603b90d",
+              "3a393a862889fd2bcc4a2939b02eab350625a27342e6a8257769839cbd458e5b",
+              "707bf0b938f307b5c222e670598b865d5e1f8a8003df82c7abbf7c9f8fa4d720",
+              "8155675d252720b1ca30eca6e23468f76ea21dd9d1c7bbdba9d891315d8ec36a",
+              "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+              "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2",
+              "b413f47d13ee2fe6c845b2ee141af81de858df4ec549a58b7970bb96645bc8d2",
+              "d94e7f1e9bb1f8a9b90996ba12c461b84956f0e7f230145cc594c2f80b067aa0"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "schema": "super-robot-taisen-d-m130-corrected-runtime-receipt-v1",
+  "source_policy": {
+    "controlled_only": true,
+    "natural_screenshot_emitted": false,
+    "pixels_emitted": false,
+    "raw_memory_emitted": false,
+    "source_text_emitted": false,
+    "target_text_emitted": false
+  }
+}
