@@ -16,6 +16,7 @@
 - [x] M1.6：建立 `index 3080..3095` 的 16 筆 opaque code-unit/control corpus；保存 stable ID、pointer provenance、source/output hash、長度與 marker offsets；16/16 decode→encode byte-identical，index 3087 與獨立 runtime receipt hash 相等。
 - [x] M1.7：由 `0x08098afc`／`0x08098b10` 的靜態 BL 與 runtime LR 收據證明高階 selector caller → `0x08013ad0`；修正 `0x08013b04` 為 ARM7TDMI 雙半字 Thumb BL 第二 halfword，實際 copy callsite 為 `0x08013b02`。Start 可達第二顯示狀態，但 bounded 觀察未命中同一 loader 或 `0x02029404` write-watchpoint，因此第二場景的內容分類與 table 歸屬維持 unknown。
 - [x] M1.8：全 ROM 靜態枚舉 163 個 `BL 0x08013ad0` direct callsites、104 個 bounded caller groups；確認非 selector 候選 `0x080985d8`／`0x080985ec` 的參數／stack index 來源，並以 natural 1 筆 + 明確 controlled 1 筆取得第二 caller 的 table/source→EWRAM receipt。自然導航未命中第二 caller，`0x06014000` 新 sink watchpoint 零命中，內容分類與 `0x01` 控制碼語義維持 unknown/opaque。
+- [x] M1.9：以三個 fresh mGBA／單一 GDB connection 完成 `start,a`、`start,a,a,a` 與 bounded menu/chapter 序列的 natural receipts；每條保存按鍵序列、時間窗、display I/O／VRAM hash、`0x080985ec`／`0x08098624`／`0x08098b10`／`0x08013ad0` hit counts。三條皆只重現 index 3087 的 selector caller，且在 `0x08098c24`／`0x08098c78` 觀察到 EWRAM consumer；第二 caller、`0x08099424`／`0x080995b0`／`0x080995a6` writer 與固定 sink 均為 0，留下 `0x080985d8`／`0x08098624` 上游 state/menu gate 作為下一個最小缺口。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。

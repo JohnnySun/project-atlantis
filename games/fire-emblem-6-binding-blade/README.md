@@ -14,6 +14,8 @@ M1.7 已往上確認高階 caller：`0x08098afc` 以 selector 經 ROM table `0x0
 
 M1.8 已靜態枚舉 AFEJ 全 ROM 163 個合法、對齊的 ARM7TDMI 雙半字 Thumb BL direct callsites，分成 104 個 bounded prologue/return caller group。不同於 selector table 的最佳候選是 `0x080985d8`–`0x08098620` 內的 `0x080985ec`：函式先把參數 `r0` 存入 stack，再載回作為 loader index。自然 `KEYINPUT` 導航仍只重現 `0x08098b10`／index 3087；因此另以真實 Thumb loader stop 為 state seed，對 `0x080985ec` 做明確標記為 controlled 的 index 3086 probe，取得 `lr=0x080985f1`、`0x080f9394` → `0x080f2241`、EWRAM hash `beef794a…f9376e11`、terminator 31、`0x01` offset 12。第二 caller 的內容類別與 renderer 消費仍 unknown；`0x06014000` sink 本輪新 watchpoint 零命中，`0x01` 仍 opaque。
 
+M1.9 已用三個 fresh mGBA／各自單一 GDB connection，僅透過 active-low `KEYINPUT` read-watchpoint 導航，完成三條 bounded natural route：`start,a`、`start,a,a,a`、`start,a,a,a,a,a,a,a,a,down,a,a,start,a`。三條都自然命中既有 selector `0x08098afc` → `0x08098b10` → index `3087`，沒有命中第二類 `0x080985ec` 或 `0x08098624`；每條都有 `0x08013ad0=1`、`0x08098b10=1`、第二 caller=0 的 hit-count、VRAM hash 與 display-register receipt。自然 consumer `0x08098c24` 實際讀取 `0x02029404`，`0x08098c78` 也命中控制分支；但本三條路徑均沒有命中 `0x08099424`、`0x080995b0`、實際 CPU `str r1,[r2]` 的 `0x080995a6` 或固定 sink watchpoint。這是精確 bounded negative，不把 M1.8 controlled probe 冒充自然 reachability；`0x01` 仍為 opaque，未建立 codepage 或語義分類。
+
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
 公開 FEBuilderGBA 與 `fireemblem6j` 資料只作為待驗證的逆向參考，不取代日版 ROM，也不把既有英譯或 `.tbl` 當作翻譯來源。已知外部參考與其限制見 `research/recon-20260816.md`。
@@ -96,6 +98,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m18_callers.py \
 ```
 
 M1.8 的完整 static JSON、runtime receipt 與任何 raw dump 都留在被忽略的 `work/`；提交只包含工具、測試與不含完整原文的研究方法／hash／位址摘要。
+
+要重跑 M1.9 的三條自然 caller／consumer／動態 writer receipt，使用 fresh mGBA 與單一 GDB connection。工具只寫入 KEYINPUT read-watchpoint 所需的 `r1` 輸入值；不寫 selector、index、PC 或 game state。完整 VRAM 只保存 hash，建議報告放在 `/private/tmp`：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m19_natural.py \
+  roms/base/AFEJ.gba --port 23901 --source-port 25019 \
+  --route-name menu-chapter-dialogue-long \
+  --sequence start,a,a,a,a,a,a,a,a,down,a,a,start,a \
+  --output /private/tmp/afej-m19-route3.json
+```
+
+`--source-port` 是本機 loopback transport workaround，可避免多次 GDB session 後 ephemeral source-port 分配異常；它不改變 ROM 或遊戲執行語義。M1.9 的完整 route JSON 僅留在本機 ignored `/private/tmp`／`work/`，提交只保留工具、測試與 hash／位址／negative 方法摘要。三條自然路徑的下一個最小觸發缺口是從 `0x080985d8` 的 10 個 direct callers 或 `0x08098624` 的 `0x0809837c` 上游 state/menu gate 找到真正可達的 chapter/dialogue/load path；在此之前不做批量翻譯。
 
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
