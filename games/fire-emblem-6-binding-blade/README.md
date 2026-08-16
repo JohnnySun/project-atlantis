@@ -149,6 +149,20 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
 
 工具保存 callback pointer read／entry hit counts、loader LR/table/source/output hash、marker offsets 與 display I/O；`--sequence` 只注入 KEYINPUT，不寫 state、index、PC 或 ROM。M1.12 的 callback 0-hit 是 bounded negative；自然 `0x08009252` receipt 是第二 caller 證據，仍不等於內容分類或 Unicode。
 
+M1.13 在同一工具加入 generic high-caller／renderer branch receipt：static scan 證明 `0x080117ba` 是 function `0x08011778` 內呼叫 `0x08009240` 的合法 Thumb BL，wrapper 內再於 `0x08009252` 呼叫 `0x08013ad0`。fresh route 實測 `0x08009240` 的 `LR=0x080117bf` → `0x080117ba`、loader 的 `LR=0x08009257` → `0x08009252`；renderer candidate breakpoints 全 0，只有既有 `0x08098c24` consumer 讀取。這完成 call-chain provenance，沒有替 `r0/r1/r2` 或 `0x01` 取語義名稱。
+
+要重跑 M1.13 call-chain／renderer negative receipt，可使用固定 source port 避免本機多 session 的 ephemeral port 問題：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
+  roms/base/AFEJ.gba --port 23901 --source-port 25031 \
+  --route-name m113-natural-callchain \
+  --sequence start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a \
+  --output /private/tmp/afej-m113-natural-callchain.json
+```
+
+M1.13 的 renderer 0-hit 是 bounded negative；不要把 `0x08009240` 的 wrapper 或 generic route 的畫面狀態命名成章節／支援／對話，也不開始翻譯。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：

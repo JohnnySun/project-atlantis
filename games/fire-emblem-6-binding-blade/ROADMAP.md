@@ -20,6 +20,7 @@
 - [x] M1.10：以既有 strict tree worker census 全部 3342 pointer entries；3203 筆 decode→encode 與 source-span byte-identical，139 筆明確記為 `decoder_buffer_limit_no_terminator`（首筆 index 17）。提交的 `research/m110-table-census.json` 僅存 hash／provenance／長度／marker counts；`0x01`／`0x04`／`0xff` 仍 opaque，139 筆 worker/格式缺口與內容分類不猜測。
 - [x] M1.11：建立可重跑的 static gate report：全 ROM 163 個 loader direct BL、`0x080985d8` 的 10 個 direct callers、`0x08098624` 的 1 個 direct caller、selector 對照的 8 個 direct callers；另以對齊 Thumb function-pointer 搜尋記錄 `0x08098341`（file `0x691230`）與 `0x080984a9`（file `0x691358`）的 dispatch-like 鄰接 word。這只證明 callback／資料表候選，不宣稱自然 reachability、場景分類或 codepage。
 - [x] M1.12：fresh mGBA／單一 GDB connection 的 bounded natural route 同時重現 selector index 3087 與另一個 direct caller `0x08009252` 的 index 2678、2679；三筆都經 `0x08013ad0` → pointer table → `0x02029404`，保存 source-window/output hash 與 marker offsets。`0x08691230`／`0x08691358` read-watchpoint 與 `0x08098340`／`0x080984a8` callback entry 均 0，第二 caller 已確認但場景分類與 callback dispatch 語義仍 unknown/opaque。
+- [x] M1.13：由 static BL census 證明 `0x080117ba` → `0x08009240` → `0x08009252` 的兩層 generic loader chain（wrapper target 共 6 個 direct callsites）；fresh route 的 `0x08009240` LR `0x080117bf` 可回推 `0x080117ba`，loader LR `0x08009257` 可回推 `0x08009252`。同一路徑 renderer branch `0x08098f68/0x08098f78/0x08099424/0x08099460/0x080995b0/0x08099580/0x080995a6` 全 0，維持 text-consumer-only negative，不提升 `0x01` 或內容分類。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。

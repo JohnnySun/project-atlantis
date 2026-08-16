@@ -39,6 +39,18 @@ class AfejM112DispatchTests(unittest.TestCase):
         self.assertEqual(candidate["function_start"], "0x08009240")
         self.assertEqual(candidate["function_return"], "0x0800926e")
 
+    def test_generic_call_chain_has_two_static_thumb_bl_boundaries(self) -> None:
+        if not ROM_PATH.is_file():
+            self.skipTest("local reviewed AFEJ ROM is not installed")
+        chain = dispatch._generic_call_chain_gate(ROM_PATH.read_bytes())
+        self.assertTrue(chain["wrapper_direct_callsite"])
+        self.assertEqual(chain["wrapper_callsite"], "0x080117ba")
+        self.assertEqual(chain["high_caller_function_start"], "0x08011778")
+        self.assertEqual(chain["high_caller_function_return"], "0x0801180a")
+        self.assertEqual(chain["wrapper_function_start"], "0x08009240")
+        self.assertEqual(chain["all_wrapper_direct_callsite_count"], 6)
+        self.assertEqual((0x080117BF & ~1) - 4, 0x080117BA)
+
     def test_stale_packet_filters_are_bounded(self) -> None:
         self.assertTrue(dispatch._packet_is_registers("0" * (len(dispatch.REG_NAMES) * 8)))
         self.assertFalse(dispatch._packet_is_registers("0e16"))

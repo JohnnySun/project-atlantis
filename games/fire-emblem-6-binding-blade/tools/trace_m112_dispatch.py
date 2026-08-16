@@ -84,6 +84,19 @@ CANDIDATE_DIRECT_CALL = 0x080985EC
 CANDIDATE_ALT_ENTRY = 0x08098624
 CANDIDATE_ALT_CALLS = (0x0809867A, 0x08098694)
 NATURAL_GENERIC_CALLSITE = 0x08009252
+GENERIC_WRAPPER_ENTRY = 0x08009240
+GENERIC_WRAPPER_CALLSITE = 0x080117BA
+GENERIC_HIGH_CALLER = 0x08011778
+
+RENDERER_BREAKPOINTS = (
+    0x08098F68,
+    0x08098F78,
+    0x08099424,
+    0x08099460,
+    0x080995B0,
+    0x08099580,
+    0x080995A6,
+)
 CONSUMER_ENTRY = 0x08098C00
 CONSUMER_BYTE_READ = 0x08098C24
 CONSUMER_CONTROL_BRANCH = 0x08098C78
@@ -251,6 +264,24 @@ def _generic_loader_gate(rom: bytes) -> dict[str, object]:
     }
 
 
+def _generic_call_chain_gate(rom: bytes) -> dict[str, object]:
+    prologues = prologue_addresses(rom)
+    returns = return_addresses(rom, ROM_BASE, ROM_BASE + len(rom))
+    wrapper_bounds = _function_for_call(GENERIC_WRAPPER_CALLSITE, prologues, returns)
+    high_bounds = _function_for_call(GENERIC_WRAPPER_CALLSITE, prologues, returns)
+    return {
+        "high_caller": hex32(GENERIC_HIGH_CALLER),
+        "high_caller_function_start": high_bounds["function_start"],
+        "high_caller_function_return": high_bounds["function_return"],
+        "wrapper_entry": hex32(GENERIC_WRAPPER_ENTRY),
+        "wrapper_callsite": hex32(GENERIC_WRAPPER_CALLSITE),
+        "wrapper_direct_callsite": GENERIC_WRAPPER_CALLSITE in scan_direct_calls(rom, GENERIC_WRAPPER_ENTRY),
+        "wrapper_function_start": _function_for_call(NATURAL_GENERIC_CALLSITE, prologues, returns)["function_start"],
+        "wrapper_function_return": _function_for_call(NATURAL_GENERIC_CALLSITE, prologues, returns)["function_return"],
+        "all_wrapper_direct_callsite_count": len(scan_direct_calls(rom, GENERIC_WRAPPER_ENTRY)),
+    }
+
+
 def _route_report(
     *,
     args: argparse.Namespace,
@@ -286,6 +317,7 @@ def _route_report(
                 for address, info in CALLBACKS.items()
             ],
             "generic_loader_candidate": _generic_loader_gate(rom),
+            "generic_call_chain_candidate": _generic_call_chain_gate(rom),
         },
         "runtime": {
             "single_gdb_connection": True,
@@ -294,6 +326,8 @@ def _route_report(
             "events": [],
             "callback_pointer_reads": [],
             "callback_entries": [],
+            "call_chain_receipts": [],
+            "renderer_events": [],
             "loader_records": [],
             "hit_counts": {},
             "display_io": {},
@@ -307,6 +341,10 @@ def _route_report(
         CANDIDATE_ALT_ENTRY,
         *CANDIDATE_ALT_CALLS,
         NATURAL_GENERIC_CALLSITE,
+        GENERIC_WRAPPER_ENTRY,
+        GENERIC_WRAPPER_CALLSITE,
+        GENERIC_HIGH_CALLER,
+        *RENDERER_BREAKPOINTS,
         HIGH_CALLER,
         HIGH_CALLSITE,
         LOADER_ENTRY,
@@ -361,6 +399,37 @@ def _route_report(
                 "pointer_word": hex32(info["pointer_word"]),
             })
             runtime["callback_entries"].append(event.copy())
+        elif pc == GENERIC_HIGH_CALLER:
+            event.update({
+                "kind": "generic_high_caller_entry",
+                "function": hex32(GENERIC_HIGH_CALLER),
+                "caller_lr": hex32(regs["lr"]),
+                "r0_at_entry": hex32(regs["r0"]),
+            })
+            runtime["call_chain_receipts"].append(event.copy())
+        elif pc == GENERIC_WRAPPER_CALLSITE:
+            event.update({
+                "kind": "generic_wrapper_direct_callsite",
+                "callsite": hex32(GENERIC_WRAPPER_CALLSITE),
+                "target": hex32(GENERIC_WRAPPER_ENTRY),
+                "caller_lr_before_bl": hex32(regs["lr"]),
+                "r0_before_bl": hex32(regs["r0"]),
+            })
+            runtime["call_chain_receipts"].append(event.copy())
+        elif pc == GENERIC_WRAPPER_ENTRY:
+            lr_callsite = (regs["lr"] & ~1) - 4
+            event.update({
+                "kind": "generic_wrapper_entry",
+                "function": hex32(GENERIC_WRAPPER_ENTRY),
+                "wrapper_lr": hex32(regs["lr"]),
+                "derived_callsite": hex32(lr_callsite),
+                "arguments": {
+                    "r0": hex32(regs["r0"]),
+                    "r1": hex32(regs["r1"]),
+                    "r2": hex32(regs["r2"]),
+                },
+            })
+            runtime["call_chain_receipts"].append(event.copy())
         elif pc in (CANDIDATE_DIRECT_CALL, *CANDIDATE_ALT_CALLS, HIGH_CALLSITE, NATURAL_GENERIC_CALLSITE):
             index = regs["r0"]
             event.update({
@@ -403,6 +472,17 @@ def _route_report(
             runtime["loader_records"].append(event.copy())
         elif pc in (CONSUMER_ENTRY, CONSUMER_BYTE_READ, CONSUMER_CONTROL_BRANCH):
             event["kind"] = "text_consumer"
+        elif pc in RENDERER_BREAKPOINTS:
+            event.update({
+                "kind": "renderer_branch",
+                "renderer_pc": hex32(pc),
+                "renderer_registers": {
+                    "r0": hex32(regs["r0"]),
+                    "r1": hex32(regs["r1"]),
+                    "r2": hex32(regs["r2"]),
+                },
+            })
+            runtime["renderer_events"].append(event.copy())
         else:
             event["kind"] = "other_breakpoint"
         runtime["events"].append(event)
