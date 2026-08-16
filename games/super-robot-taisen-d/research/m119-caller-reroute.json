@@ -1,0 +1,84 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "argument_setup_verified": true,
+    "font_base_nonzero": true,
+    "known_direct_callsite_static_match": true,
+    "natural_consumer_entry_observed": true,
+    "natural_screen_proven": false,
+    "ram_buffer_consumer_observed": true,
+    "rom_hash_match": true,
+    "target_pointer_match": false,
+    "target_render_proven": false,
+    "translation_status": "ai_draft"
+  },
+  "gdb": {
+    "fresh_process_required": true,
+    "port": 2346,
+    "single_connection": true,
+    "window_seconds": 3.0
+  },
+  "initializer": {
+    "nonzero_base_guard": true,
+    "slot_values": {
+      "narrow": "0x0814F664",
+      "wide": "0x08120DBC"
+    }
+  },
+  "next_condition": "capture target caller/index or the producer of the RAM buffer before any target render proof",
+  "rom": {
+    "expected_sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce",
+    "hash_match": true,
+    "sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce"
+  },
+  "runtime_caller": {
+    "caller_callsite": "0x08066050",
+    "consumer": "0x08008724",
+    "lr": "0x08066055",
+    "registers": {
+      "lr": "0x08066055",
+      "pc": "0x08008724",
+      "r0": "0x02018368",
+      "r1": "0x06008400",
+      "r2": "0x0000000D",
+      "r3": "0x00000005",
+      "r4": "0x00000001",
+      "r5": "0x06008000",
+      "sp": "0x03007E84"
+    },
+    "source_pointer": "0x02018368",
+    "source_pointer_region": "ram_or_io",
+    "status": "consumer_entry_observed",
+    "target_pointer": "0x08080858",
+    "target_pointer_match": false
+  },
+  "schema": "super-robot-taisen-d-m119-caller-reroute-v1",
+  "source_policy": {
+    "raw_memory_emitted": false,
+    "source_text_emitted": false
+  },
+  "static_callsite": {
+    "argument_origin": {
+      "r0": "r7",
+      "r1": "r5_plus_0x400",
+      "r2": "constant_0x0D",
+      "r3": "constant_0x05",
+      "stack_arg_0": "constant_0x01"
+    },
+    "argument_setup_status": "verified",
+    "candidate_count": 5,
+    "candidate_instruction_hash": "cd76a98e5a60c6ea4c39f9f48c931a38bc0bf0316c2aebccde914b04274a1fb0",
+    "instruction": "0x08066050",
+    "instruction_window": {
+      "end_exclusive": "0x08066054",
+      "instruction_count": 9,
+      "instruction_pcs_sha256": "9164c32ded82b9b987b79044274d209bda9505eb3386c115d9f25c5eb25d5abb",
+      "length": 20,
+      "sha256": "a3300b2934479b6b9d7abd30c984523a8fc6f53ed1099e8c039f06ebbe7c0e1a",
+      "start": "0x08066040"
+    },
+    "mismatches": [],
+    "status": "direct_consumer_candidate",
+    "target": "0x08008724"
+  }
+}

@@ -767,6 +767,36 @@ record 的 fail-closed 邊界。
 並優先覆蓋 newline／speaker／branch／最大寬度與 story／battle／unit 分類；在沒有新語意
 或畫面證據前不擴張 static UI 翻譯批次。
 
+## 2026-08-16：M1.19 patched natural caller reroute
+
+本輪先修正 M1.15 bounded known-target audit 的一個 under-scan：Capstone 從 ROM reset
+entry 連續反組譯時，在前段 undecodable gap 停止，舊 report 的 direct `0` 不是完整
+bounded range 結果。`tools/m115_consumer_callsite_audit.py` 現在只在原本相同的
+`0x08000000..0x08076000` 範圍啟用 skipdata 跨 gap，重抽取結果為 direct Thumb
+consumer candidate `5`、PC-relative literal `0`；這是 bounded candidate inventory，
+不把所有 candidate 自動命名成劇情語意。
+
+接著使用新鮮、自有的 headless mGBA PID `88376`、port `2346`、patched M1.8 ROM，
+只建立一條 GDB connection，執行既有 `m115_caller_probe.py`。ROM SHA-256 為
+`b58ef432…`，兩個 live font-base slot 都 nonzero；自然 window 在
+`0x08008724` 停下，保存的 runtime metadata 為：
+
+| 項目 | 結果 |
+| --- | --- |
+| LR／caller callsite | `0x08066055`／`0x08066050` |
+| r0 source pointer | `0x02018368`，`ram_or_io` |
+| target pointer | `0x08080858`，`target_pointer_match=false` |
+| consumer arguments | `r1=0x06008400`、`r2=0x0D`、`r3=0x05`、stack arg 0=`1` |
+| static setup | `r0<-r7`、`r1<-r5+0x400`、`r2=0x0D`、`r3=0x05`，bounded window hash verified |
+| target／screen | target render、tile writer、VRAM／screen hash `not_proven` |
+
+這條證據把「可達的自然 consumer caller」與「target source record」分開：已知 caller
+是 RAM-buffer UI path，不是 `0x08080858` 的 target entry。`m119_caller_reroute.py`
+只輸出 callsite／instruction hash、register/address metadata 與 gate；不保存 RAM
+buffer、完整 source 或畫面。下一個 runtime 條件是取得 target caller/index 或 buffer
+producer 的可審核來源，再進行一次受控 callee-entry／screen proof；在此之前不把
+自然 hit 外推成 patched glyph QA，也不擴大翻譯批次。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

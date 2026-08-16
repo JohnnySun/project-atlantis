@@ -59,9 +59,9 @@
   已驗證 callee-entry state。
 - [x] M1.15 完成已知 consumer 的 bounded static callsite audit：只在
   `0x08000000..0x08076000` 檢查 direct Thumb BL／BLX 與 PC-relative literal，結果
-  均為 `0`；register-indirect dispatch 未命名，`runtime_caller_required=true`。
-  `m115_caller_probe.py` 的 entry breakpoint 工具與測試已建立，但本輪執行前 approval
-  transport 被拒絕，沒有把它記成 runtime positive；摘要在
+  為 direct `5`、literal `0`；bounded disassembly 已跨越 undecodable gap，
+  register-indirect dispatch 仍未命名。`m115_caller_probe.py` 的 entry breakpoint
+  工具與測試已建立；摘要在
   `research/m115-consumer-callsite.json`。
 - [x] M1.16 建立 full-corpus layout-safe static contract：2325/2325 strict source／
   NUL／token no-op；624 筆進入 glyph-only narrow、單行、observed width `<=64px`，315
@@ -81,6 +81,11 @@
   但 newline／speaker／branch semantics 與 engine width limit 仍未確認；單行窄字
   `<=64px` 的 624 筆只是保守 static subset。摘要在
   `research/m118-control-layout-contract.json`。
+- [x] M1.19 以新鮮自有 mGBA／port `2346`、單一 GDB connection 對 patched ROM 做
+  bounded caller reroute：自然命中 `0x08008724` 的 LR／callsite=`0x08066055`／
+  `0x08066050`，font base nonzero；static callsite argument setup 已核對，但
+  `r0=0x02018368` 是 RAM buffer 而非 target `0x08080858`。target render／VRAM／screen
+  仍 `not_proven`，摘要在 `research/m119-caller-reroute.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

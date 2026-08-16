@@ -43,6 +43,10 @@ def direct_call_candidates(rom: bytes) -> List[Dict[str, Any]]:
         raise CallsiteAuditReject("bounded_executable_range_outside_rom")
     md = capstone.Cs(capstone.CS_ARCH_ARM, capstone.CS_MODE_THUMB)
     md.detail = True
+    # The bounded prefix contains non-code gaps before the known callsites.
+    # Keep the scan bounded, but continue across undecodable data instead of
+    # treating the first gap after the reset vector as end-of-range evidence.
+    md.skipdata = True
     candidates: List[Dict[str, Any]] = []
     for instruction in md.disasm(rom[:end], ROM_BASE):
         if instruction.mnemonic not in {"bl", "blx"} or not instruction.operands:
@@ -64,6 +68,7 @@ def pc_literal_candidates(rom: bytes) -> List[Dict[str, Any]]:
     end = EXECUTABLE_END_OFFSET
     md = capstone.Cs(capstone.CS_ARCH_ARM, capstone.CS_MODE_THUMB)
     md.detail = True
+    md.skipdata = True
     candidates: List[Dict[str, Any]] = []
     for instruction in md.disasm(rom[:end], ROM_BASE):
         if instruction.mnemonic != "ldr" or len(instruction.operands) < 2:

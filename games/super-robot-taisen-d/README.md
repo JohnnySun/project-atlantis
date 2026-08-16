@@ -399,11 +399,11 @@ queue 觸發尚未取代這條受控驗證。
   bounded stack／entry setup 與 argument-match 判定；target writer／tile／screen 仍
   `not_proven`／`not_observed`。摘要在 [`research/m114-runtime-boundary.json`](research/m114-runtime-boundary.json)。
 - [x] M1.15 對已知 `0x08008724` consumer 做 bounded executable callsite audit：在
-  `0x08000000..0x08076000` 只檢查 direct Thumb BL／BLX 與 PC-relative literal，結果
-  direct `0`、literal `0`；register-indirect dispatch 維持 unresolved，不能從靜態結果
-  虛構 caller。`m115_caller_probe.py` 已準備在 font-base guard 後捕捉第一個自然
-  entry 的 LR／callsite／r0，但本輪 invocation 在執行前遇 approval transport negative，
-  沒有新增 runtime evidence。摘要在 [`research/m115-consumer-callsite.json`](research/m115-consumer-callsite.json)。
+  `0x08000000..0x08076000` 只檢查 direct Thumb BL／BLX 與 PC-relative literal；修正
+  bounded disassembly 跨越前段 undecodable gap 後得到 direct `5`、literal `0`，
+  register-indirect dispatch 仍 unresolved。`m115_caller_probe.py` 先前 invocation
+  在執行前遇 approval transport negative，沒有把它誤記成 runtime positive；摘要在
+  [`research/m115-consumer-callsite.json`](research/m115-consumer-callsite.json)。
 - [x] M1.16 將 2325 筆 source 收斂成保守的 layout-safe static subset：NUL／strict
   token no-op 2325/2325；624 筆為 glyph-only narrow、單行、observed width `<=64px`，
   315 筆窄字但超過 cap、833 mixed、417 wide、136 opaque／unaligned 仍拒絕。64px
@@ -423,6 +423,12 @@ queue 觸發尚未取代這條受控驗證。
   branch 語意與 engine width limit 仍未證明；624 筆單行窄字 `<=64px` 只是保守
   static subset，不解除其他 partition 的拒絕。摘要在
   [`research/m118-control-layout-contract.json`](research/m118-control-layout-contract.json)。
+- [x] M1.19 以新鮮自有 mGBA PID／port `2346` 與單一 GDB connection 捕捉到 patched
+  ROM 的自然 consumer entry：font base nonzero、`0x08008724` 命中，LR／callsite 為
+  `0x08066055`／`0x08066050`；bounded Thumb setup 證明 `r0<-r7`、`r1<-r5+0x400`、
+  `r2=0x0D`、`r3=0x05`、stack arg `1`。runtime `r0=0x02018368` 是 RAM buffer，
+  與 target `0x08080858` 不匹配，因此 target glyph／tile／screen proof 仍拒絕；摘要在
+  [`research/m119-caller-reroute.json`](research/m119-caller-reroute.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

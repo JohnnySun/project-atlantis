@@ -5,15 +5,46 @@
     "sha256": "2e302689296f1b9d7dd8bc3845336ca745746b888eaea47e0b3956593a3cef85",
     "start": "0x08000000"
   },
-  "direct_call_candidates": [],
+  "direct_call_candidates": [
+    {
+      "instruction": "0x0800869E",
+      "kind": "direct_branch",
+      "mnemonic": "bl",
+      "target": "0x08008724"
+    },
+    {
+      "instruction": "0x08008E1C",
+      "kind": "direct_branch",
+      "mnemonic": "bl",
+      "target": "0x08008724"
+    },
+    {
+      "instruction": "0x08066050",
+      "kind": "direct_branch",
+      "mnemonic": "bl",
+      "target": "0x08008724"
+    },
+    {
+      "instruction": "0x08066062",
+      "kind": "direct_branch",
+      "mnemonic": "bl",
+      "target": "0x08008724"
+    },
+    {
+      "instruction": "0x0806E01C",
+      "kind": "direct_branch",
+      "mnemonic": "bl",
+      "target": "0x08008724"
+    }
+  ],
   "game_code": "A6SJ",
   "gate": {
-    "direct_call_candidate_count": 0,
+    "direct_call_candidate_count": 5,
     "indirect_register_dispatch": "unresolved",
-    "known_consumer_direct_reference_found": false,
+    "known_consumer_direct_reference_found": true,
     "pc_relative_literal_candidate_count": 0,
     "rom_hash_match": true,
-    "runtime_caller_required": true,
+    "runtime_caller_required": false,
     "translation_started": false
   },
   "next_condition": "runtime entry breakpoint must capture LR/callsite and r0 source pointer before semantic labels",
