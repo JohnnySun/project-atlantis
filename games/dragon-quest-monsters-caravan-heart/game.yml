@@ -18,4 +18,4 @@ source:
     provenance: "GameBrew ROM information; independently consistent with the public No-Intro dat entry"
 targets:
   - zh-TW
-status: research-blocked-clean-baseline
+status: research-clean-baseline

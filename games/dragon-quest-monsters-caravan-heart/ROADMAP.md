@@ -6,8 +6,8 @@
 - [x] 確認 GBA 標頭：`A9HJ`、Rev.00、`DQM-CARAVANH`、header complement。
 - [x] 審核公開 clean ROM 指紋與目前本機候選的差異。
 - [x] 建立不輸出完整原文的 `tools/recon_rom.py`。
-- [x] 以獨立 GDB 埠驗證 mGBA ROM 入口、VRAM watchpoint 與開機 BG0 live layout。
-- [ ] 取得／核准 clean 日版 ROM，重新建立基準指紋。
+- [x] 以獨立 GDB 埠在 clean A9HJ 驗證 mGBA ROM 入口、VRAM watchpoint 與開機 live layout；candidate 結果只作歷史對照。
+- [x] 取得／核准 clean 日版 ROM，重新建立基準指紋。
 
 ## M1：文字與字型系統
 
