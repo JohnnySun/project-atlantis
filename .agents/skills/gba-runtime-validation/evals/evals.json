@@ -29,14 +29,27 @@
     {
       "id": 3,
       "prompt": "Write a deterministic owned-process launch recipe for a headless mGBA build whose GDB port is fixed in source. The host is shared and another session may bind the port between your initial bind-probe and launch, and a terminated child PID may later be reused. The recipe must prove that the listener PID equals the PID just started, record and revalidate a child identity token (PID, PPID, start time, executable/command) before every signal, abort safely on a collision or identity mismatch, preserve the runner exit code, and clean up only its own process. Then explain why port availability and a numeric PID alone are insufficient evidence. Do not launch anything.",
-      "expected_output": "A bounded recipe with bind probe, exact child identity token, post-launch listener-to-identity verification, collision/PID-reuse-safe abort, scoped cleanup trap, runner exit propagation, and no pkill/foreign PID interaction.",
+      "expected_output": "A bounded recipe using scripts/gba-runtime-session.py, with bind probe, exact child identity token, post-launch listener-to-identity verification, collision/PID-reuse-safe abort, runner exit propagation, and no pkill/foreign PID interaction.",
       "files": [],
       "expectations": [
+        "Uses scripts/gba-runtime-session.py rather than inventing another per-game shell launcher.",
         "Performs an initial bind probe and a separate post-launch listener ownership check.",
         "Requires the listener PID to equal the exact child PID and revalidates PID, PPID, start time, and executable identity before the runner connects.",
         "On collision, timeout, or PID identity mismatch, signals only an identity-matching child and never the foreign or reused PID.",
         "Preserves the runner exit code and confirms cleanup of the exact child PID.",
         "Avoids broad pkill, shared-port attachment, and assumptions that bind-probe removes the race."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "A new GBA game agent is about to copy a gba_header_checksum function and SHA/CRC helpers from another game. Give the Project Atlantis replacement workflow. Use only a copyright-free synthetic 0x200-byte header fixture under /private/tmp, run the actual shared CLI once with matching expectations and once with a deliberately wrong game code, and also show the missing-ROM result. Report exact commands, exit codes, and statuses; identify the correct Nintendo header-complement formula and explain which fields remain game-specific. Do not edit any game directory.",
+      "expected_output": "Uses scripts/gba-rom-identity.py, demonstrates pass/0, fail/1, unknown/2 on synthetic or missing inputs, states the -sum-0x19 formula, and keeps reviewed expected identity values in game docs/manifests rather than core.",
+      "files": [],
+      "expectations": [
+        "Uses scripts/gba-rom-identity.py rather than copying a game-specific identity helper.",
+        "Reports matching identity as pass/exit 0, wrong game code as fail/exit 1, and missing ROM as unknown/exit 2.",
+        "States the header complement as -(sum(bytes 0xA0 through 0xBC) + 0x19) modulo 256.",
+        "Keeps expected size, hashes, game code, maker code, and revision in game documentation or manifests, not hard-coded in core."
       ]
     }
   ]

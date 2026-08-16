@@ -46,7 +46,7 @@ If glyph metrics are incomplete, omit guessed defaults so width becomes `unknown
 Use the repository runner rather than ad-hoc parsing:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-qa.py static CASE.json --rom GAME.gba --output /private/tmp/CASE-static.json
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-qa.py static CASE.json --base-rom GAME.gba --output /private/tmp/CASE-static.json
 ```
 
 Resolve every `fail` and understand every `unknown` before live execution. Preserve existing re-extract, translation-ledger, pointer, BPS, and repository-safety checks; this framework supplements them.
@@ -57,30 +57,29 @@ Probe an independent high local port before launch. Start one emulator instance,
 
 Treat the bind probe and launch as separate, raceable events. Before connecting the runner, verify that the listener PID on the selected port is exactly the PID just started. Record a child identity token immediately after launch (at least PID, parent PID, process start time, and executable/command), and revalidate that token before every signal; a numeric PID alone is vulnerable to PID reuse. If another PID wins the port, stop only your still-identity-matching child and choose another port or build; never let the runner connect based on port number alone.
 
-Use a trap around the exact PID:
+Use the shared owner rather than writing another per-game launcher. It performs
+the pre-launch bind probe, launches an absolute executable and ROM path,
+requires the sole listener PID to equal the child PID, records PID/PPID/start
+time/command, revalidates identity before cleanup, preserves runner exit
+`0/1/2`, and emits a separate session receipt:
 
 ```bash
-qa_mgba_pid=
-qa_mgba_identity=$(mktemp /private/tmp/CASE-mgba.identity.XXXXXX)
-cleanup() {
-  test -z "$qa_mgba_pid" && return
-  ps -p "$qa_mgba_pid" -o pid=,ppid=,lstart=,command= > "$qa_mgba_identity.current" 2>/dev/null || return
-  if cmp -s "$qa_mgba_identity" "$qa_mgba_identity.current"; then
-    kill "$qa_mgba_pid" 2>/dev/null || true
-  else
-    echo "refusing to signal PID whose identity changed: $qa_mgba_pid" >&2
-  fi
-}
-trap cleanup EXIT INT TERM
-mgba-headless -g GAME.gba >/private/tmp/CASE-mgba.log 2>&1 &
-qa_mgba_pid=$!
-ps -p "$qa_mgba_pid" -o pid=,ppid=,lstart=,command= > "$qa_mgba_identity"
-# Verify this identity still matches and the sole listener PID on PORT equals
-# $qa_mgba_pid before starting the runner.
-PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-qa.py runtime CASE.json --rom GAME.gba --host 127.0.0.1 --port PORT --output /private/tmp/CASE-runtime.json
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-session.py preflight \
+  --port PORT --session-report /private/tmp/CASE-preflight.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-session.py run CASE.json \
+  --rom GAME.gba --mgba /absolute/path/to/mgba-headless --port PORT \
+  --runtime-report /private/tmp/CASE-runtime.json \
+  --session-report /private/tmp/CASE-session.json \
+  --log /private/tmp/CASE-mgba.log
 ```
 
-Adapt the executable and verified port to the local build. Retain the PID and log until the runner exits, then confirm cleanup.
+Pass emulator-specific switches with repeated `--mgba-arg`; for example,
+`--mgba-arg=-C --mgba-arg=ports.qt.gdbPort=PORT`. These switches are not proof
+that the port moved: the post-launch listener check remains authoritative. For
+a source-fixed GDB port, use the port actually compiled into that executable.
+An ownership receipt with `status=pass` proves only process/listener ownership;
+the runtime report independently determines whether the game case passed.
 
 ## Exercise real runtime surfaces
 

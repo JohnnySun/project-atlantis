@@ -14,6 +14,11 @@ GDB remote、VRAM 與 OAM 工作流，再吸收其他遊戲 session 實際遇到
   VRAM/WRAM/OAM/palette 的 hash 與非零位元組數，也可把 raw dump 寫到 ignored 目錄。
 - `render_vram.py`：渲染 regular BG tilemap、raw tile grid 或 Mode 3 framebuffer。
 - `render_oam.py`：依 OAM 位置合成非 affine OBJ，支援 1D/2D mapping、4bpp/8bpp。
+- `rom_identity.py`／`scripts/gba-rom-identity.py`：統一計算 GBA header complement、
+  CRC32、SHA-256 與標頭欄位，並以明確 expectation fail closed；不輸出 ROM bytes。
+- `runtime_session.py`／`scripts/gba-runtime-session.py`：統一處理 port preflight、
+  child PID／PPID／start time／command identity、listener ownership、runtime runner
+  exit code與只清理自己 process 的生命週期。
 
 全部只使用 Python 標準函式庫，不需要安裝套件。
 
@@ -32,8 +37,33 @@ GDB remote、VRAM 與 OAM 工作流，再吸收其他遊戲 session 實際遇到
 
 ## 最短操作流程
 
+先確認 ROM 身分；expected values 放在本作文件或 manifest，不要在每個 probe 重寫
+header checksum 與 digest helper：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-rom-identity.py \
+  games/<game>/roms/base/GAME.gba \
+  --expect-size BYTES --expect-game-code CODE --expect-crc32 CRC32 \
+  --expect-sha256 SHA256 --output /private/tmp/GAME-identity.json
+```
+
 先啟動屬於本作、已分配獨立 port 的 mGBA GDB stub。以下以 `24387` 為例；不要照抄
 別人的 port。
+
+有 runtime case manifest 時，優先讓共用 session owner 啟動與清理 emulator，避免
+每款遊戲再複製 `lsof`／PID／trap 邏輯：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-session.py run CASE.json \
+  --rom games/<game>/roms/base/GAME.gba \
+  --mgba /absolute/path/to/mgba-headless --port 24387 \
+  --runtime-report /private/tmp/CASE-runtime.json \
+  --session-report /private/tmp/CASE-session.json \
+  --log /private/tmp/CASE-mgba.log
+```
+
+若 emulator 需要額外參數，重複使用 `--mgba-arg=VALUE`。工具仍會檢查實際 listener，
+不會因 CLI 宣告了某個 port 就假定設定成功。
 
 確認連線與 CPU 狀態：
 

@@ -1,6 +1,6 @@
 ---
 name: gba-localization
-description: Game-agnostic GBA fan-translation workflow for Project Atlantis. Use whenever work starts or continues localization for any GBA game OTHER than golden-sun-the-broken-seal or golden-sun-the-lost-age — text-system reverse engineering, codepage or OCR-based source recovery, translation batches, ROM building, or BPS QA for a new title (e.g. Shining Soul I/II), even when the request only says to continue a translation batch or "pick up where recon left off." Central to this skill: never let original game text reach a file that gets committed — every translation batch is produced through the source/working/ledger split in docs/TRANSLATION-LEDGER.md, using core/ledger/strip_translations.rb and core/ledger/restore_translations.rb.
+description: 'Game-agnostic GBA fan-translation workflow for Project Atlantis. Use whenever work starts or continues localization for any GBA game OTHER than golden-sun-the-broken-seal or golden-sun-the-lost-age — text-system reverse engineering, codepage or OCR-based source recovery, translation batches, ROM building, or BPS QA for a new title (e.g. Shining Soul I/II), even when the request only says to continue a translation batch or "pick up where recon left off." Central to this skill: never let original game text reach a file that gets committed — every translation batch is produced through the source/working/ledger split in docs/TRANSLATION-LEDGER.md, using core/ledger/strip_translations.rb and core/ledger/restore_translations.rb.'
 ---
 
 # GBA localization (ledger-based, game-agnostic)
@@ -21,6 +21,23 @@ A `translations/*.jsonl` file that embeds the original game script (`source.text
 2. Inspect `git status --short`. Preserve unrelated and user-owned changes.
 3. Treat ROMs, extracted/decoded text, rendered glyph images, OCR output, and build artifacts as local research data. `roms/` and `work/` are fully gitignored (`**/roms/`, `**/work/`), but `research/` is **not** blanket-ignored — only specific shapes inside it are (`*-decoded.jsonl`, `*-text-ids.tsv`, `*.pgm`/`.ppm`/`.png`, `vendor/`, `ocr-samples/`; see `.gitignore`). Committed analysis prose belongs in `research/` too (e.g. `games/golden-sun-the-lost-age/research/baseline-20260814.md` is tracked on purpose) — check each new file with `git check-ignore -v <path>` before assuming it's protected, and never assume a raw scan dump or decoded-text file is safe just because it lives under `research/`.
 4. Keep game-specific revisions, offsets, pointers, hashes, compression format, and terminology in the game's own `games/<game>/` documentation and tools, not in this skill or in `core/`.
+
+Before writing a game-specific ROM fingerprint helper, use the shared identity
+gate. It implements the GBA header complement once, emits only safe metadata,
+and rejects misspelled expectations instead of silently dropping a check:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-rom-identity.py GAME.gba \
+  --expect-size BYTES --expect-game-code CODE --expect-crc32 CRC32 \
+  --expect-sha256 SHA256 --output /private/tmp/GAME-identity.json
+```
+
+Keep the reviewed expected values in the game's documentation or manifest;
+keep the ROM path local. Do not copy header parsing, CRC/SHA helpers, GDB
+transport, mGBA ownership, rendering, ledger, or BPS code into each game. Add
+new game-agnostic behavior to `core/` only after a second independent game
+proves the same contract; offsets, codepages, compression, pointer formats,
+glyph identities, and script semantics remain game adapters.
 
 ## Recover source text locally
 
@@ -75,6 +92,13 @@ One more recurring, non-technical gotcha worth checking early: some ROM catalog 
 3. Write `zh-Hans` and `zh-TW` explicitly in the working file. Keep terminology consistent with the game's glossary (`games/<game>/translations/glossary.zh-TW.tsv` or equivalent); mark unreviewed work `ai_draft`.
 4. Preserve control codes and structural markers exactly as the game's format requires — define the game's own convention for this (Golden Sun's uppercase `{HH}` markers were specific to its engine; a new game may use something else entirely) and document it in the game's README before translating.
 5. Run `ruby core/ledger/strip_translations.rb games/<game>/work/BATCH.jsonl games/<game>/translations/BATCH.jsonl`. Only the output of this step is safe to `git add`.
+
+Do not keep adding equivalent short static batches merely because they are
+easy. Once one representative batch proves the same-length encoder,
+re-extraction, adjacent-record guard, and BPS round trip, switch effort to the
+next unproven release gate: natural or controlled consumer, layout/width,
+changed-glyph render path, terminology review, or full-corpus coverage. A
+larger row count does not compensate for a missing runtime or release contract.
 
 ## Build safely
 
