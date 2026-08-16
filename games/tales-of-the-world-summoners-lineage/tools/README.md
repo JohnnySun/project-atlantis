@@ -412,6 +412,31 @@ BG0 tilemap／10 個 tile hash 與 BG1 8/8 gate 同時成立；它只將此 row 
 `eligible_for_ledger=true`。`reader_breakpoint_hit`、general codepage、control schema
 與 `raw_byte_copy_confirmed` 仍分別維持 false／未確認。
 
+## M33 bounded target encoder／reinsertion POC
+
+`m20_keyboard_codepage_probe.py --row 2 --count 52` 讀取 static Latin row；只有
+`A`–`Y`、`a`–`y`、`Z`、`z` 的固定 table arithmetic 可供 bounded target POC 使用。
+`--target-text` 只輸出 target encoder metadata，不輸出日文 source。中點 `0x0006`
+在 M33 僅作 M32 row 的 preserved unit，不代表 punctuation codepage 已完成。
+
+`m33_target_reinsertion_poc.py` 只接受 M32 caller literal `0x081FA4B4`，把 bounded
+target stream append 到 image end，再將 file `0x52720` 的單一 literal 改為新 ROM bus
+pointer；它會重新讀取 terminator、檢查 unresolved unit 與輸出 source-free receipt。
+這是實際 byte-changing relocation POC，不是通用 encoder。target image／BPS 必須留在
+`/private/tmp` 或 ignored work；BPS 建置與套用使用 `core/patches/bps_create.rb`、
+`bps_apply.rb`。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-summoners-lineage/tools/m33_target_reinsertion_poc.py \
+  /private/tmp/project-atlantis-a9pj.gba --target-text '・Lester' \
+  --output /private/tmp/tow-a9pj-m33-reinsert/target.gba \
+  --receipt /private/tmp/tow-a9pj-m33-reinsert/receipt.json
+```
+
+M33 不會把 Latin static proof 外推成 CJK／一般 text stream codepage，也不會把沒有
+GDB listener 的 mGBA run 當成 runtime QA。
+
 ## M30 `0xFF70` control/render cross-check
 
 `m30_control_render_cross_probe.py` 只對既有 direct target 做 bounded control receipt：

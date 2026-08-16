@@ -184,6 +184,9 @@
 - [x] 為 M32 eligible row 產生 stable source checksum／record proof，讓
   restore／round-trip 能偵測 ROM、codepage、控制碼或 decoder drift；source text 仍
   只在 private／ignored local table，提交 ledger 不含 `source`。
+- [x] M33 以既有 keyboard row 2 與 16×12 MSB record raster 固定一個 Latin target
+  子集，並由既有 M20 probe 提供 source-free bounded encoder receipt；不外推成一般
+  日文／CJK codepage。
 
 ## 里程碑 2B：最小 zh-TW ledger／回插 POC
 
@@ -195,8 +198,9 @@
 - [x] 執行 `restore_translations.rb`／`strip_translations.rb` round-trip，提交檔不含
   `source.text`；M32 另完成 byte-identical no-op BPS apply／hash receipt，但沒有把
   no-op 宣稱成文字回插。
-- [ ] 取得 target codepage／encoder 與固定槽位或 relocation policy，完成一個有實際
-  文字變更、可重抽取且可產生 BPS 的 bounded reinsertion POC。
+- [x] 取得 bounded Latin target encoder 與 append relocation policy；M33 對 M32 caller
+  literal 完成一個有實際文字變更、可重新讀取 terminator／target hash 且可產生 BPS
+  的 bounded reinsertion POC。CJK／一般 codepage 與 patched runtime QA 仍未完成。
 
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 

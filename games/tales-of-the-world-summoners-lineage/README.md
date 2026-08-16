@@ -8,8 +8,9 @@
 ## 當前狀態
 
 目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8／M1.9 執行期切片；
-M32 已將一條已知 name-entry 畫面 row 提升到可進最小 ledger POC 的 gate，但尚未完成有限量
-翻譯或可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
+M32 已將一條已知 name-entry 畫面 row 提升到可進最小 ledger POC 的 gate，M33 再完成該 row
+的 bounded Latin target／append relocation／BPS POC；尚未完成一般日文／CJK codepage、
+批次翻譯或 patched runtime QA。M1.7 在不重做 startup baseline 的前提下，
 以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
 read 與 renderer CPU VRAM store；但目的位址是 `0x060020xx/0x060023xx`，不是 BG1
 `0x06004020/0x06004040`，所以 renderer transfer identity 仍是 provisional，沒有建立
@@ -128,6 +129,12 @@ semantic／glyph identity 尚未完成。
   row 的 5 個 glyph identity，`reader_breakpoint_hit=false`、`raw_byte_copy_confirmed=false`，
   不把 M1.7 font-record CPU renderer 與 BG1 asset 合併。詳見
   [`research/m32-known-screen-raster-row-20260816.md`](research/m32-known-screen-raster-row-20260816.md)。
+- M33 沿 row 2 的 52-entry Latin keyboard table 與 static 16×12 raster 建立固定 Latin
+  target encoder；以 `0x52720` 的單一 M32 caller literal 將 16-byte terminated target
+  stream append 到 ROM end，重新讀取得到 7 個 resolved target units，並以 BPS create/apply
+  驗證 target image equality。這只是一列的 bounded relocation POC，沒有宣稱 CJK／一般
+  codepage 或 mGBA runtime QA；詳見
+  [`research/m33-latin-target-reinsertion-20260816.md`](research/m33-latin-target-reinsertion-20260816.md)。
 
 ## ROM 基準
 
@@ -208,8 +215,9 @@ ruby core/ledger/strip_translations.rb \
   games/tales-of-the-world-summoners-lineage/translations/<batch>.jsonl
 ```
 
-在 codepage、控制碼與 `string_id` 穩定前，不建立翻譯 batch；目前沒有可提交的
-`translations/*.jsonl`。
+在一般 codepage、控制碼與 `string_id` 穩定前，不建立翻譯 batch；目前只有 M32 一列
+經 `strip_translations.rb` 產生、僅供 schema／source-hash POC 的
+`translations/m32-ui-row.jsonl`，不代表一般翻譯已開批。
 
 ## 工具
 

@@ -145,3 +145,26 @@ M29 v2 的 output 仍是 metadata-only；`source_text_emitted=false`。第一個
 row 必須仍由私有 A9PJ decoder／固定 offset 重建，使用 M32 的 source hash／record／
 screen proof 作 drift gate；提交的 `translations/*.jsonl` 只能由
 `strip_translations.rb` 產生，絕不帶 `source`。
+
+## M33 bounded target encoder／relocation gate（2026-08-16）
+
+M33 只為 M32 已 eligible 的一列建立目標側 POC。keyboard table row 2 的 52 筆
+selection order 以 record table `0x08089E00 + unit*0x18` 交叉檢查，固定 Latin 子集為
+`A`–`Y`、`a`–`y`、`Z`、`z`；其 code-unit arithmetic、raster hash 與 target encoder
+receipt 見 `research/m33-latin-target-reinsertion-20260816.md`。這是 target glyph
+mapping，不是 general Japanese source decoder，且沒有宣稱 row-2 runtime tilemap hit。
+
+M33 的 source／target separation gate 如下：
+
+```text
+clean source stream: preserved at original offset, source hash remains private
+target stream: bounded Latin encoding + 0x0000, appended at ROM end
+pointer: one known M32 caller literal rewritten
+ledger: source_hash-only file remains the only tracked translation artifact
+```
+
+`m33_target_reinsertion_poc.py` 重新讀 appended stream、檢查 terminator、unresolved
+unit count 與 encoded target hash；core BPS create/apply 再確認 target image equality。
+因此 M33 可標記「實際文字變更的 bounded relocation／BPS POC 已通過」，但以下 gate
+仍關閉：CJK／一般日文 codepage、控制碼 schema、全域 fixed-slot policy、clean source
+re-extract hash stability、patched mGBA runtime QA。

@@ -34,6 +34,9 @@ KEYBOARD_TABLE_READ_PC = 0x08052BB8
 KEYBOARD_BUFFER_WRITE_PC = 0x08052BBA
 
 KNOWN_ROW0_LABELS = ("あ", "い", "う", "え", "お")
+LATIN_ROW = 2
+LATIN_ROW_LABELS = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxyZz")
+PRESERVED_TARGET_CODE_UNITS = {"・": 0x0006}
 
 
 def sha256(data: bytes) -> str:
@@ -65,6 +68,66 @@ def read_row(data: bytes, row: int, count: int) -> list[int]:
     return result
 
 
+def latin_row2_expected_values() -> list[int]:
+    """Return the fixed table arithmetic expected for the 52 Latin slots."""
+
+    return [
+        *(0x002A + 2 * index for index in range(25)),
+        *(0x002B + 2 * index for index in range(25)),
+        0x005C,
+        0x005D,
+    ]
+
+
+def latin_row2_mapping(data: bytes) -> dict[str, int]:
+    """Read the bounded row-2 Latin mapping after checking its table shape."""
+
+    values = read_row(data, LATIN_ROW, len(LATIN_ROW_LABELS))
+    expected = latin_row2_expected_values()
+    if values != expected:
+        raise ValueError("A9PJ row-2 Latin table arithmetic mismatch")
+    return dict(zip(LATIN_ROW_LABELS, values))
+
+
+def encode_bounded_target(data: bytes, text: str) -> bytes:
+    """Encode the bounded target subset used by the M33 reinsertion POC.
+
+    Latin letters are read from the verified row-2 table.  The middle dot is
+    deliberately a preserved source code unit from the already eligible M32
+    row; this function is not a general Japanese or zh-TW encoder.
+    """
+
+    mapping = latin_row2_mapping(data)
+    units: list[int] = []
+    for character in text:
+        if character in PRESERVED_TARGET_CODE_UNITS:
+            units.append(PRESERVED_TARGET_CODE_UNITS[character])
+        elif character in mapping:
+            units.append(mapping[character])
+        else:
+            raise ValueError(f"target character outside bounded encoder: {character!r}")
+    return b"".join(unit.to_bytes(2, "little") for unit in units)
+
+
+def target_encoder_metadata(data: bytes, text: str) -> dict[str, object]:
+    """Return a source-free receipt for one bounded target encoding."""
+
+    encoded = encode_bounded_target(data, text)
+    return {
+        "status": "bounded-latin-row2-plus-preserved-middle-dot",
+        "table_row": LATIN_ROW,
+        "table_formula": "A-Y=0x002A+2*i; Z=0x005C; a-y=0x002B+2*i; z=0x005D",
+        "target_character_count": len(text),
+        "encoded_code_unit_count": len(encoded) // 2,
+        "encoded_byte_length": len(encoded),
+        "encoded_bytes_sha256": sha256(encoded),
+        "table_arithmetic_confirmed": True,
+        "general_codepage_confirmed": False,
+        "cjk_encoder_confirmed": False,
+        "source_text_emitted": False,
+    }
+
+
 def record_bitmap_metadata(data: bytes, code_unit: int) -> dict[str, object]:
     offset = FONT_RECORD_FILE_BASE + code_unit * FONT_RECORD_STRIDE
     record = data[offset:offset + FONT_RECORD_STRIDE]
@@ -89,7 +152,14 @@ def record_bitmap_metadata(data: bytes, code_unit: int) -> dict[str, object]:
 def probe(data: bytes, *, row: int = 0, count: int = 5) -> dict[str, object]:
     rom_hash = sha256(data)
     values = read_row(data, row, count)
-    labels = KNOWN_ROW0_LABELS if row == 0 and count == len(KNOWN_ROW0_LABELS) else ()
+    labels = ()
+    label_status = "table arithmetic only"
+    if row == 0 and count == len(KNOWN_ROW0_LABELS):
+        labels = KNOWN_ROW0_LABELS
+        label_status = "confirmed only for row0 first five system-order labels"
+    elif row == LATIN_ROW and count == len(LATIN_ROW_LABELS):
+        labels = LATIN_ROW_LABELS
+        label_status = "bounded static Latin row; raster-order proof is separate"
     mappings: list[dict[str, object]] = []
     for selection, code_unit in enumerate(values):
         item: dict[str, object] = {
@@ -102,7 +172,9 @@ def probe(data: bytes, *, row: int = 0, count: int = 5) -> dict[str, object]:
             "record": record_bitmap_metadata(data, code_unit),
             "identity_status": (
                 "confirmed-system-keyboard-row0"
-                if labels
+                if row == 0 and labels
+                else "static-latin-row2-table-raster-candidate"
+                if row == LATIN_ROW and labels
                 else "unclassified-keyboard-table-entry"
             ),
         }
@@ -132,16 +204,28 @@ def probe(data: bytes, *, row: int = 0, count: int = 5) -> dict[str, object]:
             "row": row,
             "count": count,
             "file_range": [f"0x{table_start:X}", f"0x{table_end:X}"],
-            "mapping_status": "confirmed only for row0 first five system-order labels"
-            if labels
-            else "table arithmetic only",
+            "mapping_status": label_status,
         },
         "mappings": mappings,
         "codepage": {
             "width_bits": 16,
-            "status": "confirmed-for-row0-first-five-only" if labels else "partial-table-only",
+            "status": (
+                "confirmed-for-row0-first-five-only"
+                if row == 0 and labels
+                else "bounded-static-latin-row2-only"
+                if row == LATIN_ROW and labels
+                else "partial-table-only"
+            ),
             "general_stream_mapping_confirmed": False,
             "control_code_semantics_confirmed": False,
+        },
+        "bounded_encoder": {
+            "latin_row": LATIN_ROW,
+            "latin_label_count": len(LATIN_ROW_LABELS),
+            "formula": "A-Y=0x002A+2*i; Z=0x005C; a-y=0x002B+2*i; z=0x005D",
+            "preserved_code_units": {key: f"0x{value:04X}" for key, value in PRESERVED_TARGET_CODE_UNITS.items()},
+            "status": "available-only-for-explicit-target-POC",
+            "general_zh_tw_encoder_confirmed": False,
         },
         "source_text_emitted": False,
     }
@@ -152,12 +236,20 @@ def main() -> None:
     parser.add_argument("rom", type=Path)
     parser.add_argument("--row", type=int, default=0)
     parser.add_argument("--count", type=int, default=5)
+    parser.add_argument(
+        "--target-text",
+        help="optional bounded target text for the Latin-row encoder receipt",
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.row < 0 or args.count < 0 or args.count > KEYBOARD_ROW_STRIDE_ENTRIES:
         parser.error("row/count outside keyboard table bounds")
+    data = args.rom.read_bytes()
+    result = probe(data, row=args.row, count=args.count)
+    if args.target_text is not None:
+        result["target_encoder"] = target_encoder_metadata(data, args.target_text)
     rendered = json.dumps(
-        probe(args.rom.read_bytes(), row=args.row, count=args.count),
+        result,
         ensure_ascii=False,
         indent=2,
     ) + "\n"
