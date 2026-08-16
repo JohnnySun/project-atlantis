@@ -1,0 +1,21 @@
+id: summon-night-craft-sword-3
+platform: gba
+titles:
+  ja: "サモンナイト クラフトソード物語 〜はじまりの石〜"
+  en: "Summon Night: Craft Sword Monogatari — Hajimari no Ishi"
+  zh-Hans: "召唤夜响曲 铸剑物语 ～起源之石～"
+  zh-TW: "召喚夜響曲 鑄劍物語 ～起源之石～"
+source:
+  region: JP
+  game_code: B3CJ
+  revision: 0
+  verified: false
+  external_reference:
+    size: 33554432
+    crc32: 12afae5d
+    header_checksum: 6b
+    sha1: 3f5253fcf57e07ce52472bd29a61d16b98a12376
+targets:
+  - zh-Hans
+  - zh-TW
+status: research
