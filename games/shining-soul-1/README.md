@@ -46,8 +46,10 @@
 遺留版本的實際缺陷）、再把 `0x080fa510` 這**一個**註冊表字組指過去。不動既有五類任何位元組、
 不改任何可執行碼。
 
-**容量**：每類 256 格（由 struct 前綴 `word[1]=0x9820` 宣告），category 5–15 共 11 類未用
-→ 最多 **2,805 格**（每類可定址 255 格：代碼低位元組 0x01–0xFF ⇒ 索引 0–254，0x00 是字串終止碼；struct 宣告的第 256 格存在於儲存空間但無法被指名）。詳見 `SESSION-LOG.md` 第二十輪。
+**容量**：struct 前綴的 `word[1]=0x9820` 宣告每類 256 格的像素空間，但代碼格式只能定址
+**255 格**——低位元組 0x01–0xFF ⇒ 索引 0–254，而 0x00 是字串終止碼，所以第 256 格存在於
+儲存空間卻無法被任何代碼指名。category 5–15 共 11 類未用 → 上限 **2,805 格**。
+詳見 `SESSION-LOG.md` 第二十輪。
 
 ### 通用編碼器：已可用（第二十輪，實機驗證通過）
 
@@ -62,10 +64,28 @@ python3 games/shining-soul-1/tools/build_translation_rom.py \
   --locale zh-TW --batch 'games/shining-soul-1/work/*.jsonl'
 ```
 
-目前實績：23 筆已翻譯記錄中 **21 筆成功寫入**（70 個相異字元，全部裝進 category 5，
-剩餘 2,735 格空間），mGBA 實機確認職業選擇畫面顯示「請選擇職業」、顏色選擇畫面顯示
-「請選擇顏色」。**fail-closed**：放不下的記錄一律跳過並列出原因，絕不溢出到下一個條目——
-本次 2 筆跳過（一筆 marker 宣告 2 行但譯文只有 1 行、一筆超出預算 2 bytes）。
+目前實績：23 筆已翻譯記錄 → **19 筆寫入**（2 筆主動排除、2 筆 fail-closed 跳過），
+66 個相異字元全部裝進 category 5，剩餘 2,739 格。
+
+**驗證狀態要分清楚，不要當成「19 筆都沒問題」**：
+
+| 層級 | 涵蓋範圍 |
+| --- | --- |
+| **實機渲染確認** | **只有 2 筆**——職業選擇「請選擇職業」、顏色選擇「請選擇顏色」 |
+| **結構往返確認** | 全部 19 筆。編碼器寫完會把 ROM 讀回來重新解碼，比對是否等於原譯文，不符即中止 |
+| **未驗證** | 其餘 17 筆**沒有任何人看過它在遊戲裡長什麼樣**，包含唯一一筆多行記錄（`0x49c854`）與所有含 `……`／`！`／`？` 的記錄。半形字形（Unifont 1 byte/row，置中補進 16px 格）也還沒有人實際看過渲染結果 |
+
+依 ROADMAP 里程碑 3「記錄未測試畫面而非假設成功」的既有規範如實記錄。下一步可用第十一輪的
+`hijack_and_capture_glyph_sources.py` 手法強制渲染任意字串位址，抽驗多行與標點這兩條沒有
+被任何已驗證畫面覆蓋的編碼路徑。
+
+**主動排除的 2 筆**：`0x49f524`／`0x49f540`（「を手に入れた」尾段模板）。這兩筆的批次
+`review_notes` 本來就註明「拼接順序尚未核對，要真正回插需先解出與變數道具名的組合機制」——
+直接插入會得到語序錯誤的「[道具名]獲得了」。編碼器的預算檢查只看位元組、看不出語意，
+所以改用 `--exclude` 明確排除，等模板問題解出再放行。
+
+**fail-closed 跳過的 2 筆**：`0x499ca8`（條目 `marker` 宣告 2 行、譯文只有 1 行）、
+`0x49aa9c`（需要 16 bytes、預算 14）。放不下一律跳過並列出原因，絕不溢出到下一個條目。
 
 **字寬**：本輪量測發現遊戲自己的漢字墨水寬度上限恰為 13px，與 sprite 前進距離 13px 相同；
 GNU Unifont 的 CJK 字形是 15px，直接插入會讓每個字與鄰字重疊 2px（第一次端到端渲染已實際
@@ -100,7 +120,7 @@ GNU Unifont 的 CJK 字形是 15px，直接插入會讓每個字與鄰字重疊 
 | MD5 | `0cb9989beb289f843cdb69bb0bd8c8be` |
 | SHA-1 | `5fe69468dc1ecd9fb40f0ab3ca361963006dbb02` |
 | SHA-256 | `7adebc47af58a7cb12c6e862482e3fd1b2cb82aab2dc3a556ac93f9e78df6b28` |
-| ROM 實際使用範圍 | `0x000000`–約 `0x660000`；`0x660000`–`0x800000` 全為 `0xFF` 填充（proof of concept 尚未使用這段空間） |
+| ROM 實際使用範圍 | `0x000000`–約 `0x660000`；`0x660000`–`0x800000` 原為 `0xFF` 填充。**第二十輪起這段空白區已被使用**：新的 type-8 資源標頭與新增 category 的 struct／字形表就蓋在 `0x660000` 之後（每類約 `0x9820` bytes，11 類全開也只用掉約 429 KiB，遠小於 1.7 MiB 的可用空白） |
 
 以上雜湊只是本機記錄，**未與任何 No-Intro／GoodGBA 等外部資料庫核對**。
 
@@ -110,7 +130,7 @@ GNU Unifont 的 CJK 字形是 15px，直接插入會讓每個字與鄰字重疊 
 
 需要背景啟動 `mgba -g games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba`（連線前先 `ps aux | grep mgba` 確認沒有殘留的孤兒行程）：`gdbstub_client.py`（GDB stub 用戶端函式庫）、`render_vram_tiles.py`、`navigate_and_dump.py`、`extract_bg_fonttable.py`、`navigate_to_char_create.py`、`extract_obj_kana_fonttable.py`、`trace_sentence_glyph_load.py`、`trace_glyph_source_array.py`、`trace_sentence_string_source.py`、`extract_kanji_fonttable.py`、`render_string_glyphs.py`、`dump_category_dispatch_table.py`、`hijack_and_capture_glyph_sources.py`、`render_oam_composite.py`、`trace_dispatch_table_init.py`（第十六輪，追 IWRAM 查表初始化）。
 
-**注意（第二十輪）**：`-g` 的 GDB 埠是編譯期常數，`-C ports.qt.gdbPort` 在 SDL／headless 路徑上無效；這台機器同時有其他遊戲的 agent 在跑 mGBA，必須自行編一份改埠的 mGBA、啟動帶 `-l 0`，且**不可 `pkill mgba`**。詳見 `SESSION-LOG.md` 第二十輪「環境教訓」。
+**注意（第二十輪）**：`-g` 的 GDB 埠是**編譯期常數**（`src/debugger/debugger.c:60`），`-C ports.qt.gdbPort` 只有 Qt 前端吃、在 SDL／headless 路徑上無效。這台機器同時有其他遊戲的 agent 在跑 mGBA，全部搶同一個預設埠，搶輸的一方 `-g` 會靜默失敗但行程照跑，看起來就像「卡住」。作法：自行編一份 mGBA，**建議把該行改成讀環境變數 `MGBA_GDB_PORT`（而非寫死某個埠）——一份 build 就能服務所有並行 agent**；`cmake` 需加 `-DCMAKE_POLICY_VERSION_MINIMUM=3.5`；啟動一律帶 `-l 0`（不帶會逐筆輸出 BIOS SWI，實測一分鐘 346 MB，慢到連開機都逾時）與 `SDL_VIDEODRIVER=dummy`。查埠用 `socket.bind()`，不要信 `lsof`。**不可 `pkill mgba`**，只終止自己啟動的 PID。詳見 `SESSION-LOG.md` 第二十輪「環境教訓」。
 
 每支工具的參數、方法論限制、已知陷阱都寫在自己的 docstring 裡；用法範例與各工具對應到哪一輪偵察，見 `SESSION-LOG.md`「已完成的唯讀掃描」一節（仍保留在歷史紀錄裡，因為那裡連著方法論脈絡，搬過來只留指令反而失去上下文）。
 

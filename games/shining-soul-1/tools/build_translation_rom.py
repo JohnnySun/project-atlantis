@@ -190,6 +190,11 @@ def main():
     ap.add_argument("--locale", default="zh-TW")
     ap.add_argument("--batch", action="append", required=True,
                     help="glob for ledger work batches; repeatable")
+    ap.add_argument("--exclude", action="append", default=[],
+                    help="string_id to leave untouched even if it has a translation; "
+                         "repeatable. Use for records whose batch notes say they are "
+                         "not yet safe to insert (e.g. suffix templates whose "
+                         "composition order with a variable item name is unsolved).")
     ap.add_argument("--ink-width", type=int, default=DEFAULT_INK_WIDTH,
                     help="condense glyph ink to this many columns (0 disables); "
                          "defaults to the 13px the game's own kanji use")
@@ -213,6 +218,11 @@ def main():
 
     print(f"\n=== batches ({args.locale}) ===")
     records = load_records(args.batch, args.locale)
+    if args.exclude:
+        excluded = [r for r in records if r["string_id"] in set(args.exclude)]
+        records = [r for r in records if r["string_id"] not in set(args.exclude)]
+        for r in excluded:
+            print(f"  excluded by request: {r['string_id']} {r['text'][:20]!r}")
     if not records:
         sys.exit("ABORT: no records with target text for this locale.")
     print(f"  {len(records)} translated records")
@@ -301,6 +311,18 @@ def main():
         body += b"\x00" * (rec["budget"] - len(body))
         rom[rec["line_start"]:rec["line_start"] + rec["budget"]] = body
     print(f"  {len(resolved)} strings rewritten in place (remainder zero-filled)")
+
+    # Read-back self-check: decode what we just wrote and compare against the
+    # intended text. Structural only - it proves the encoder round-trips, NOT
+    # that the string looks right on screen (that needs a render).
+    reverse = {(cat << 8) | (idx + 1): ch for ch, (cat, idx) in mapping.items()}
+    for rec in resolved:
+        entries, _ = walk_pool(rom, int(rec["string_id"].split(":")[1], 16), max_entries=1)
+        got = "\n".join("".join(reverse.get(c, "\uFFFD") for c in line) for line in entries[0][3])
+        if got != rec["text"]:
+            sys.exit(f"ABORT: read-back mismatch for {rec['string_id']}: "
+                     f"wrote {rec['text']!r}, read back {got!r}")
+    print(f"  read-back check: all {len(resolved)} strings decode back to their source text")
 
     with open(args.out, "wb") as f:
         f.write(rom)
