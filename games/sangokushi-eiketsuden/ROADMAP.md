@@ -24,7 +24,7 @@
 M2.2 再把 formatter 靜態接到 output writer、SJIS codepage、glyph cache、VRAM copy 和
 tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph identity 仍 pending。
 
-- [x] 靜態定位劇情／系統／戰役相關候選 Shift-JIS 區段與四組 pointer-table 候選；分類和範圍見 recon ledger。
+- [x] 靜態定位劇情／系統／戰役相關候選 Shift-JIS 區段、四組 bounded pointer-table 候選與獨立 story-event E table；分類和範圍見 recon ledger。
 - [x] 初步確認 `0x00` 終止、`0x0A` 換行、格式參數和候選控制序列；尚未確認完整字串結構。
 - [x] M2.1 固定 table B 邊界（44 entries、26 unique targets），驗證 table B record 的 Shift-JIS／NUL 結構，並記錄未知控制 bytes 為 opaque。
 - [x] M2.1 找到有效 Thumb static chain：`0x080262F8` literal → `0x080262FA–0x08026306` index／record load → `0x0800D8F0` wrapper → `0x0800D3FC` byte formatter／reader；glyph writer 尚未證實。
@@ -38,6 +38,7 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
 - [x] M2.4 以兩條 fresh-process、single-connection 的 bounded natural path 取得可重現負證據，並由 `tools/m2_4_static.py` 固定 initializer → state gate `r4+0x14` → event poll → descriptor function-pointer → `0x08026054` 的正常 caller chain；自然 cohort 仍明確為 0，controlled fixture 不併入。
 - [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
 - [x] 分別確認四組 bounded candidate pool 的完整 NUL／Shift-JIS／LF／控制碼統計；A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未把 noisy compression signature 當成文本壓縮。各池完整畫面語意與其餘 runtime glyph identity 仍分開 pending；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
+- [x] 建立 story-event E 的 bounded static boundary／consumer chain：`0x0CDB64/33`、33 unique targets、32/33 LF、33/33 strict Shift-JIS、0 opaque controls，並驗證 `0x080CDB64 → 0x08011904 → 0x080118C8 → 0x0800CAD8`；另以日文 GBA 攻略的夷陵／劉備生死結局流程建立 `provisional-known-screen-cross`，但 E 的 natural runtime、glyph receipt 和完整語意仍 pending，且不併入四池 custom-glyph source non-use。
 - [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。
 - [x] 寫出 `tools/extract_text_pools.py` 唯讀 decoder，輸出 ignored `research/sangokushi-eiketsuden-decoded.jsonl` 本機原文表與不含原文的 pool metadata；renderer 仍只使用共用 `core/gba` 工具。
 - [x] 以 B0–B5 的 fixed-slot bounded patch 做一次選定 record 的 extract→encode→patch→re-extract
@@ -48,20 +49,54 @@ M2.3 的 evidence ledger 與 hash-only runtime receipt 見
 
 ## 里程碑 3：有限量翻譯與 ledger
 
-- [x] 從一個結構完整、固定槽位可容納且已通過 codepage coverage 的短批次開始；目前為
-  Table B B0–B5 六筆 battle-effect label。自然畫面可達性仍是 runtime QA 缺口，不在此批次冒充完成。
+- [x] 從結構完整、固定槽位可容納且已通過 codepage coverage 的短批次開始；目前為
+  Table B B0–B5 六筆、batch 2 的 19 筆、custom batch 3 的 B20 battle-effect label，
+  以及 event-system D pool batch 1／2 的 15 個 non-empty unique menu／event labels。
+  pool A system-item/class batch 1–5 再加入 34 個 item／class／battle-effect description records。自然
+  畫面可達性仍是 runtime QA 缺口，不在此批次冒充完成。
 - [x] 以 `restore_translations.rb` 產生本機 `work/*.jsonl`，保留來源 hash、上下文、譯文狀態和術語引用；
-  restore input 與 work artifact 均 ignored。
-- [x] 以 `strip_translations.rb` 產生不含 `source` 的提交帳本；B0–B5 已通過 schema、byte-identical
-  restore→strip 比對和 repository safety。
-- [ ] 先完成劇情／戰役事件小批次，再擴充武將、地名、官職、策略和道具；每批次記錄 string ID 集合。
+  兩批 restore input 與 work artifact 均 ignored。
+- [x] 以 `strip_translations.rb` 產生不含 `source` 的提交帳本；十六批共 84 筆已通過 schema、
+  byte-identical restore→strip 比對和 repository safety。
+- [x] 建立 event-system pool D 的 bounded source-free ledger、strict font coverage、
+  fixed-slot patch／re-extract verifier 和 78-byte BPS；9/9 selected records 相符，
+  28-entry pointer table 不變。完整事件池與自然 menu QA 仍待完成。
+- [x] 建立明確授權 Unifont-T 的 custom glyph mapping、兩 plane encoder／verifier；
+  D batch 2 的 6 unique／12 alias entries 與 Table B B20 的 1 entry 均完成 custom
+  glyph plane match、fixed-slot re-extract 和 BPS round-trip。mapping 的 full-ROM raw
+  code-unit non-use 與自然 runtime 仍待證明。
+- [x] 以同一 custom-aware encoder 開始 pool A `system-item-class` batch 1；4 unique
+  descriptions／5 selected entries 通過 custom glyph plane match、fixed-slot re-extract
+  和 BPS round-trip。其餘 pool A records 仍待按語意／版面分批處理。
+- [x] 完成 pool A `system-item-class` batch 2 的 6 個 class-conversion descriptions；
+  5 custom glyph planes、6/6 selected entries re-extract／fixed-slot 和 BPS round-trip
+  通過。其餘 pool A records 仍待處理。
+- [x] 完成 pool A `system-item-class` batch 3 的 12 個 level-gated／class descriptions；
+  8 custom glyph planes、12/12 selected entries re-extract／fixed-slot 和 BPS round-trip
+  通過。`投石車` 等 wording 仍待臺灣術語與畫面審核。
+- [x] 完成 pool A `system-item-class` batch 4 的 6 個耐久恢復 descriptions；existing
+  codepage coverage `6/6`、selected alias 展開後 `31/31` re-extract／fixed-slot 和 BPS
+  round-trip 通過，沒有新增 custom glyph。恢復量 wording 與自然 item screen 仍待審核。
+- [x] 完成 pool A `system-item-class` batch 5 的 6 個通用戰鬥狀態效果 descriptions；
+  existing codepage coverage `6/6`、selected re-extract／fixed-slot `6/6` 和 BPS round-trip
+  通過，沒有新增 custom glyph；帶策略專名的戰鬥描述與自然戰役畫面仍待處理。
+- [x] 先完成 story-event E 的劇情小批次 `E:002`、`E:011`、`E:032`、`E:003`、`E:004`、`E:005`、`E:006`、`E:007`、`E:008`；
+  前三筆為 existing-codepage，後六筆使用 E-specific 292-record source-use gate，均為
+  source-safe ledger、control/LF invariant、fixed-slot re-extract 和 BPS apply round-trip。
+  已知流程交叉證據已記錄；仍須取得自然 E writer／畫面證據與人工終審，不以 pool A
+  固定池覆蓋率代替全遊戲進度。
 
 ## 里程碑 4：構建、BPS 與執行期 QA
 
 - [x] 建立受限於 Table B fixed-slot 的遊戲專用 encoder、codepage／字庫 coverage 和嚴格的
   Shift-JIS／payload 長度／控制碼檢查；全遊戲字庫子集與版面規則仍待完成。
-- [x] 從 clean ROM 建立 B0–B5 的 BPS，套用 BPS 後做 byte-for-byte equality，並由 bounded
-  verifier 重新抽取 6/6 相符；全池／全 ROM round-trip 仍待完成。
+- [x] 從 clean ROM 建立兩個 existing-codepage Table B、兩個 existing-codepage pool-A、
+  一個 existing-codepage event-system D，以及 custom Table B、custom event-system D、
+  custom pool-A 三個 bounded BPS，以及 story-event E 兩個 existing-codepage 加四個
+  E-specific custom bounded BPS；十六個 BPS 全部套用後 byte-for-byte equality，並由
+  bounded verifier 重新抽取 6/6、19/19、9/9、1/1、12/12、5/5、6/6、12/12、31/31、
+  6/6、story E existing 2/2、1/1、custom 2/2、1/1、1/1、2/2 相符；全池／全 ROM
+  round-trip 仍待完成。
 - [ ] 在 mGBA 驗證已翻譯的核心場景、戰役事件和選單；未測畫面必須明確列出。
 - [ ] 在所有必要 QA 通過前，維持 `status: research`，不發布 ROM，只發布可合法使用者套用的 patch。
 

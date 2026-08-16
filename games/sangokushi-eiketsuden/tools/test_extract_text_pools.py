@@ -30,6 +30,10 @@ def synthetic_pool_rom() -> bytes:
 
 
 class ExtractTextPoolsTest(unittest.TestCase):
+    def test_story_pool_is_explicit_opt_in(self) -> None:
+        self.assertNotIn(EXTRACT.STORY_POOL_SPEC, EXTRACT.POOL_SPECS)
+        self.assertEqual(EXTRACT.STORY_POOL_SPEC, ("story-event", 0x0CDB64, 33))
+
     def test_decoder_keeps_source_only_in_local_record_and_reports_metadata(self) -> None:
         records = EXTRACT.decode_pool(synthetic_pool_rom(), "synthetic", 0x100, 2)
         self.assertEqual(records[0]["text"], "一部")

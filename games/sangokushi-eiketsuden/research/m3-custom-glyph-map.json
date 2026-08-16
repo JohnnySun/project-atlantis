@@ -1,0 +1,29 @@
+{
+  "game": "sangokushi-eiketsuden",
+  "revision": "B3EJ",
+  "mapping_version": "b3ej-custom-glyph-v1",
+  "selection_scope": "bounded decoded source-pool non-use; not a full-ROM non-use proof",
+  "font_source": "vendor/fonts/unifont/unifont_t-17.0.05.hex.gz",
+  "font_source_sha256": "c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53",
+  "font_license": "SIL Open Font License 1.1 (see vendor/fonts/unifont/OFL-1.1.txt)",
+  "plane_policy": "Unifont-T 16x16 bitmap as primary 0x20-byte plane; secondary plane zero-filled",
+  "mappings": [
+    {"unicode": "U+7D93", "code_unit": "0x8FD5", "codepage_index": 1833},
+    {"unicode": "U+9A57", "code_unit": "0x8D5F", "codepage_index": 617},
+    {"unicode": "U+8A0A", "code_unit": "0x927E", "codepage_index": 1746},
+    {"unicode": "U+8B80", "code_unit": "0x9E6C", "codepage_index": 1786},
+    {"unicode": "U+5C07", "code_unit": "0x8F6E", "codepage_index": 791},
+    {"unicode": "U+6B77", "code_unit": "0x8F4B", "codepage_index": 1721},
+    {"unicode": "U+552E", "code_unit": "0x8EF5", "codepage_index": 1720},
+    {"unicode": "U+6280", "code_unit": "0x8FE5", "codepage_index": 1731},
+    {"unicode": "U+6548", "code_unit": "0x8141", "codepage_index": 1},
+    {"unicode": "U+8B8A", "code_unit": "0x8142", "codepage_index": 2},
+    {"unicode": "U+70BA", "code_unit": "0x8148", "codepage_index": 5},
+    {"unicode": "U+6A02", "code_unit": "0x8149", "codepage_index": 6},
+    {"unicode": "U+8F15", "code_unit": "0x8158", "codepage_index": 7},
+    {"unicode": "U+89AA", "code_unit": "0x815E", "codepage_index": 9},
+    {"unicode": "U+7378", "code_unit": "0x8160", "codepage_index": 10},
+    {"unicode": "U+7B49", "code_unit": "0x8163", "codepage_index": 11},
+    {"unicode": "U+7D1A", "code_unit": "0x8164", "codepage_index": 12}
+  ]
+}

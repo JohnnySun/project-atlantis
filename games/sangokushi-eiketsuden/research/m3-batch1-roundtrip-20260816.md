@@ -27,13 +27,28 @@
   `selected_fixed_slot_count=6`、`changed_byte_count=42`。未選取的 records byte-identical，
   selected records 的 bounded decode→re-encode／NUL span 皆相符；這是 record/table
   層 receipt，不是全 ROM insertion proof。
+- patched ROM 的一次 controlled runtime receipt 已完成：本 session 自有 mGBA process、
+  PID `83841`、native GDB port `2346` readiness 均通過，使用單一 connection；harness
+  以 `--allow-fixed-slot-variant` 明確核對 B0 payload 仍在 clean fixed span 內。自然
+  8-event title slice 的 builder／consumer／formatter／writer hits 都是 `0`；之後
+  明確標記 `controlled-consumer` 的 fixture 取得 consumer index setup `1` 筆，actual
+  index `0`、event byte `0x00`、event-array index `0`、local length `1`、caller LR
+  `0x0800C735`，且 `index_less_than_table_b_count=true`。
+- controlled patched receipt 的 static addressing 與 runtime hash 分欄：formatter／
+  writer／codepage lookup／glyph expand 均命中；3 組 128-byte glyph cache 均從
+  `0x02000000` 複製到 `0x0600C000`、`0x0600C080`、`0x0600C100`，並在 tilemap base
+  `0x02013050` 取得 3 組 hash-only write receipts。runtime code unit `0x9594` 的
+  codepage index `1301` 對應 U+90E8；本次其他 code units 僅記為未收錄的 identity，
+  不由 addressing 或 glyph hash 推測 Unicode。
 - BPS 使用共用 `core/patches/bps_create.rb`／`bps_apply.rb`：patch size `109` bytes，
   source CRC32 `a4a1c956`、target CRC32 `83398341`、patch CRC32 `e65c22d2`；BPS
   SHA-256 為 `9a9d5ed9af847dbdf9dcaa48785be76eb5a107d41f3928711faabf2d7c20726e`。
   clean ROM 套用 BPS 後與 encoder 產生的 patched ROM `cmp` 相等；patched SHA-256 為
   `d19e90027f086833be5edeaea5ffbefe59d8e17be27a59a9e9a5dde26718749a`。
-- 目前本作新增的 ROM-independent unit tests（decoder、font coverage、patcher、patch
-  verifier）共 `9` 個通過；完整本作／core／repository safety QA 仍需在提交前重跑。
+- 目前本作完整 unittest suite 為 `42` 個通過，core/gba suite 為 `6` 個通過；其中
+  decoder、font coverage、patcher、patch verifier 與 fixed-slot runtime contract 均有
+  ROM-independent coverage。repository safety 已通過；ROM strict identity 仍保留
+  header complement mismatch。
 
 ## provisional
 
@@ -51,9 +66,10 @@
 - M2.4 的兩條 fresh-process natural path 仍是 `0` consumer cohort：都停在 title
   input-read loop，沒有 builder、consumer、formatter 或 writer hit。這批沒有新增自然
   event index `<44` 證據；controlled `actual index=0` 仍單獨標示為 controlled。
-- 截至本研究紀錄，尚未在 mGBA 中完成 patched B0–B5 的自然選單／戰役畫面 QA；因此不
-  宣稱 B0–B5 已通過 runtime glyph、tilemap、版面或可玩流程驗收。未測畫面包括 title
-  以外的選單、戰役事件、劇情、武將／地名／官職與 pool A/C/D consumers。
+- patched B0–B5 尚未取得自然選單／戰役畫面 QA；本次 mGBA receipt 是 controlled
+  consumer only，不能宣稱 B0–B5 已通過自然 runtime glyph、tilemap、版面或可玩流程
+  驗收。未測畫面包括 title 以外的選單、戰役事件、劇情、武將／地名／官職與 pool
+  A/C/D consumers。
 - header complement mismatch（stored `0xe1`、calculated `0x13`）仍原樣保留；clean
   ROM identity 不因 BPS target receipt 而被改寫成標準 clean header。
 

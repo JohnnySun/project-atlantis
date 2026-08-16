@@ -135,8 +135,10 @@ def candidate_addresses() -> dict[str, object]:
     }
 
 
-def static_candidate_metadata(rom_path: Path) -> dict[str, object]:
-    """Verify the reviewed pointer/record metadata without emitting bytes."""
+def static_candidate_metadata(
+    rom_path: Path, *, allow_fixed_slot_variant: bool = False
+) -> dict[str, object]:
+    """Verify clean metadata, or an explicitly enabled fixed-slot variant."""
 
     data = rom_path.read_bytes()
     game_code = data[0xAC:0xB0].decode("ascii", errors="replace")
@@ -145,9 +147,11 @@ def static_candidate_metadata(rom_path: Path) -> dict[str, object]:
     pointer_offset = table_offset + entry * 4
     pointer = int.from_bytes(data[pointer_offset:pointer_offset + 4], "little")
     record_offset = pointer - ROM_BASE
-    terminator = data.find(b"\0", record_offset)
+    clean_length = int(CANDIDATE["record_payload_length"])
+    clean_span_end = record_offset + clean_length
+    terminator = data.find(b"\0", record_offset, clean_span_end + 1)
     if terminator < 0:
-        terminator = len(data)
+        raise ValueError("reviewed record has no NUL within its fixed span")
     payload = data[record_offset:terminator]
     metadata = {
         "game_code": game_code,
@@ -158,16 +162,26 @@ def static_candidate_metadata(rom_path: Path) -> dict[str, object]:
         "record_payload_length": len(payload),
         "record_payload_sha256": hashlib.sha256(payload).hexdigest(),
         "sjis_decodable": _sjis_decodable(payload),
+        "reviewed_clean_record_payload_length": clean_length,
+        "reviewed_clean_record_payload_sha256": CANDIDATE["record_payload_sha256"],
     }
     expected = candidate_addresses()
     if game_code != EXPECTED_GAME_CODE:
         raise ValueError(f"unexpected game code: {metadata}")
     if pointer != ROM_BASE + int(expected["record_file_offset"]):
         raise ValueError(f"reviewed pointer changed: {metadata}")
-    if metadata["record_payload_length"] != CANDIDATE["record_payload_length"]:
-        raise ValueError(f"reviewed record length changed: {metadata}")
-    if metadata["record_payload_sha256"] != CANDIDATE["record_payload_sha256"]:
+    clean_variant = (
+        metadata["record_payload_length"] == CANDIDATE["record_payload_length"]
+        and metadata["record_payload_sha256"] == CANDIDATE["record_payload_sha256"]
+    )
+    if not clean_variant and not allow_fixed_slot_variant:
+        if metadata["record_payload_length"] != CANDIDATE["record_payload_length"]:
+            raise ValueError(f"reviewed record length changed: {metadata}")
         raise ValueError(f"reviewed record hash changed: {metadata}")
+    if metadata["record_payload_length"] > clean_length:
+        raise ValueError(f"reviewed record length changed: {metadata}")
+    metadata["record_variant"] = "clean" if clean_variant else "fixed-slot-variant"
+    metadata["fixed_slot_within_reviewed_span"] = True
     return metadata
 
 
@@ -668,6 +682,7 @@ def run_pipeline_trace(
     settle_seconds: float,
     controlled_record: bool,
     controlled_consumer: bool = False,
+    allow_fixed_slot_variant: bool = False,
     path_label: str = "natural-path",
 ) -> dict[str, object]:
     """Trace natural reachability, then optionally inject B[0] at the wrapper.
@@ -682,7 +697,9 @@ def run_pipeline_trace(
     if not 1 <= controlled_events <= M23_MAX_COHORT_HITS:
         raise ValueError(f"controlled_events must be between 1 and {M23_MAX_COHORT_HITS}")
 
-    static = static_candidate_metadata(rom_path)
+    static = static_candidate_metadata(
+        rom_path, allow_fixed_slot_variant=allow_fixed_slot_variant
+    )
     started = time.monotonic()
     report: dict[str, object] = {
         "read_only": True,
@@ -1082,6 +1099,11 @@ def main() -> int:
         action="store_true",
         help="install a disposable RAM-only r6/event fixture and call dispatch case 20 (controlled only)",
     )
+    parser.add_argument(
+        "--allow-fixed-slot-variant",
+        action="store_true",
+        help="accept a patched B[0] payload only when its NUL stays within the reviewed clean span",
+    )
     parser.add_argument("--natural-events", type=int, default=24)
     parser.add_argument("--controlled-events", type=int, default=32)
     parser.add_argument("--path-label", default="natural-path")
@@ -1106,6 +1128,8 @@ def main() -> int:
         parser.error("--controlled-record requires --pipeline")
     if args.controlled_consumer and not args.pipeline:
         parser.error("--controlled-consumer requires --pipeline")
+    if args.allow_fixed_slot_variant and not args.pipeline:
+        parser.error("--allow-fixed-slot-variant requires --pipeline")
     try:
         sequence = expand_sequence(parse_sequence(args.sequence))
         if args.pipeline:
@@ -1120,6 +1144,7 @@ def main() -> int:
                 settle_seconds=args.settle_seconds,
                 controlled_record=args.controlled_record,
                 controlled_consumer=args.controlled_consumer,
+                allow_fixed_slot_variant=args.allow_fixed_slot_variant,
                 path_label=args.path_label,
             )
         else:

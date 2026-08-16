@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Decode the bounded B3EJ text-pool candidates to an ignored source table.
 
-The four ranges are candidates established by the static pointer scan.  This
+The four default ranges are candidates established by the static pointer scan.
+An additional statically confirmed story/event pool can be requested with
+``--include-story``.  This
 tool decodes only NUL-terminated, standard Shift-JIS records and reports
 metadata to stdout.  The JSONL output may contain Japanese source text and is
 therefore intended for the ignored ``research/*-decoded.jsonl`` path only.
@@ -34,6 +36,7 @@ POOL_SPECS = (
     ("table-c", 0x0D20D8, 4),
     ("event-system", 0x0D4D00, 28),
 )
+STORY_POOL_SPEC = ("story-event", 0x0CDB64, 33)
 
 
 def _hex(value: int) -> str:
@@ -148,8 +151,14 @@ def main() -> int:
         type=Path,
         default=Path("games/sangokushi-eiketsuden/research/sangokushi-eiketsuden-decoded.jsonl"),
     )
+    parser.add_argument(
+        "--include-story",
+        action="store_true",
+        help="also decode the statically confirmed 33-entry story/event pool",
+    )
     args = parser.parse_args()
-    records, metadata = extract_all(args.rom.read_bytes())
+    specs = POOL_SPECS + (STORY_POOL_SPEC,) if args.include_story else POOL_SPECS
+    records, metadata = extract_all(args.rom.read_bytes(), specs=specs)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8", newline="\n") as handle:
         for record in records:

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import pathlib
+import tempfile
 import unittest
 
 
@@ -29,6 +30,23 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertEqual(candidate["record_gba_address"], 0x08078528)
         self.assertEqual(candidate["record_payload_length"], 14)
         self.assertNotIn("text", candidate)
+
+    def test_fixed_slot_variant_requires_an_explicit_contract(self) -> None:
+        data = bytearray(0x0D2000)
+        data[0xAC:0xB0] = b"B3EJ"
+        data[0x0D1FFC:0x0D2000] = (0x08078528).to_bytes(4, "little")
+        data[0x078528:0x07852C] = b"abc\0"
+        with tempfile.NamedTemporaryFile() as handle:
+            handle.write(data)
+            handle.flush()
+            with self.assertRaises(ValueError):
+                TRACE.static_candidate_metadata(pathlib.Path(handle.name))
+            metadata = TRACE.static_candidate_metadata(
+                pathlib.Path(handle.name), allow_fixed_slot_variant=True
+            )
+        self.assertEqual(metadata["record_variant"], "fixed-slot-variant")
+        self.assertTrue(metadata["fixed_slot_within_reviewed_span"])
+        self.assertEqual(metadata["reviewed_clean_record_payload_length"], 14)
 
     def test_vram_summary_reports_delta_not_bytes(self) -> None:
         before = bytes(64)
