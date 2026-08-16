@@ -15,6 +15,12 @@
     "font_asset_stride": 32
   },
   "strict_record_count": 8938,
+  "source_injection": {
+    "cli_option": "--inject-record-offset",
+    "requires_exact_strict_record_start": true,
+    "provenance": "runtime-argument-injected",
+    "natural_text_consumer_proof": false
+  },
   "sequence": [
     {"key": "start", "events": 1},
     {"key": "none", "events": 63}

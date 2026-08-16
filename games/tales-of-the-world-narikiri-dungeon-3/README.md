@@ -324,6 +324,13 @@ permitted`，一次外部重試仍無 loader stop。詳情見
 與 [`research/m2-font-record-runtime-metadata.json`](research/m2-font-record-runtime-metadata.json)。
 因此 M2 live renderer／decoder 項目仍未完成，不能開始翻譯或回插。
 
+若自然流程難以觸發 loader，可用同一 probe 的
+`--inject-record-offset 0x146EE0` 模式，只在 loader entry 已命中後把 `r1` 暫時
+改成一個**已確認 strict record 起點**。此模式只驗證
+`injected source→loader→asset` pipeline，報告會標成
+`injected-source-pipeline-only`，不能當作自然遊戲 text-consumer 或正常 navigation
+證據；CLI 會拒絕非 strict offset 或任意 RAM 位址注入。
+
 同一 loader 的固定輸出幾何另由
 [`tools/font_loader_layout_probe.py`](tools/font_loader_layout_probe.py) 驗證：
 單一 `0x20`-byte asset slot 的 `+0x00/+0x10` half 經

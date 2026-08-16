@@ -192,10 +192,37 @@ def trace_loader_hit(
     desired_key: int,
     stage_timeout: float,
     max_stage_stops: int,
+    injected_source_address: int | None = None,
 ) -> dict[str, object]:
     """Trace one loader invocation with at most two dynamic read watches."""
 
-    source_pointer = entry_registers.get("r1", 0)
+    original_source_pointer = entry_registers.get("r1", 0)
+    source_pointer = original_source_pointer
+    observed_registers = entry_registers
+    source_injection: dict[str, object] | None = None
+    if injected_source_address is not None:
+        try:
+            client.write_register(1, injected_source_address)
+            observed_registers = client.read_registers()
+        except (RuntimeError, TimeoutError, OSError, ConnectionError) as exc:
+            return {
+                "entry": _stop_row(
+                    entry_stop, "breakpoint", FONT_LOADER_ENTRY, entry_registers
+                ),
+                "source_injection": {
+                    "status": "write-error",
+                    "error_type": type(exc).__name__,
+                },
+                "pipeline_status": "source-injection-error",
+            }
+        source_pointer = observed_registers.get("r1", injected_source_address)
+        source_injection = {
+            "status": "register-write-ok",
+            "register": "r1",
+            "original_pointer": _hex(original_source_pointer),
+            "injected_pointer": _hex(source_pointer),
+            "provenance": "runtime-argument-injected",
+        }
     source_class = classify_source_pointer(source_pointer, records)
     result: dict[str, object] = {
         "entry": _stop_row(
@@ -207,13 +234,18 @@ def trace_loader_hit(
             if callsite_from_lr(entry_registers.get("lr", 0)) is None
             else _hex(FONT_LOADER_CALLSITE, 6)
         ),
+        "source_injection": source_injection,
         "source": source_class,
         "source_watch": None,
         "asset_ready": None,
         "asset_watch": None,
         "stage_stops": [],
-        "destination_candidates_at_entry": destination_candidates(entry_registers),
+        "destination_candidates_at_entry": destination_candidates(observed_registers),
     }
+    if injected_source_address is not None:
+        result["entry_after_source_injection"] = _stop_row(
+            entry_stop, "breakpoint", FONT_LOADER_ENTRY, observed_registers
+        )
     source_watch = False
     asset_ready_breakpoint = False
     asset_watch = False
@@ -276,11 +308,14 @@ def trace_loader_hit(
                 source_pointer <= stop_address < source_pointer + 2
             ):
                 row["stage"] = "source-read"
-                result["source_read_status"] = (
-                    "confirmed-runtime-strict-record-source-read"
-                    if source_class.get("status") == "strict-record-start"
-                    else "confirmed-runtime-nonstrict-input-read"
-                )
+                if source_class.get("status") == "strict-record-start":
+                    result["source_read_status"] = (
+                        "confirmed-runtime-injected-strict-record-source-read"
+                        if injected_source_address is not None
+                        else "confirmed-runtime-strict-record-source-read"
+                    )
+                else:
+                    result["source_read_status"] = "confirmed-runtime-nonstrict-input-read"
                 result["source_read_pc"] = _hex(pc)
                 result["source_read_lr"] = _hex(registers.get("lr", 0))
                 result["source_destination_candidates"] = destination_candidates(
@@ -366,12 +401,20 @@ def run_probe(
     max_events: int,
     max_loader_hits: int,
     max_stage_stops: int,
+    injected_record_offset: int | None = None,
 ) -> dict[str, object]:
     """Run one bounded loader-entry session and return metadata only."""
 
     rom = rom_path.read_bytes()
     identity = b3tj_identity(rom)
     records = strict_record_metadata(rom)
+    injected_source_address: int | None = None
+    if injected_record_offset is not None:
+        if injected_record_offset not in records:
+            raise ValueError(
+                "--inject-record-offset must name an exact strict record start"
+            )
+        injected_source_address = ROM_BASE + injected_record_offset
     bounded_sequence: list[tuple[str, int]] = []
     remaining = max_events
     for name, count in sequence:
@@ -393,6 +436,15 @@ def run_probe(
             "font_asset_base": _hex(FONT_ASSET_BASE),
             "font_asset_stride": FONT_ASSET_STRIDE,
         },
+        "source_injection": (
+            {
+                "status": "requested-strict-record-start",
+                "file_offset": _hex(injected_record_offset, 6),
+                "gba_address": _hex(injected_source_address),
+            }
+            if injected_record_offset is not None
+            else {"status": "disabled"}
+        ),
         "limits": {
             "max_events": max_events,
             "max_loader_hits": max_loader_hits,
@@ -405,7 +457,11 @@ def run_probe(
         "key_events": [],
         "classification": {
             "loader_entry": "unconfirmed-until-runtime-breakpoint-hit",
-            "strict_record_source_read": "unconfirmed-until-exact-watch-hit",
+            "strict_record_source_read": (
+                "injected-source-pipeline-only"
+                if injected_source_address is not None
+                else "unconfirmed-until-exact-watch-hit"
+            ),
             "asset_read": "unconfirmed-until-exact-watch-hit",
             "glyph_identity": "unconfirmed",
             "decoder_output_or_vram": "unconfirmed",
@@ -467,6 +523,7 @@ def run_probe(
                         desired_key=desired_key,
                         stage_timeout=stage_timeout,
                         max_stage_stops=max_stage_stops,
+                        injected_source_address=injected_source_address,
                     )
                     hit["index"] = len(report["loader_hits"])
                     report["loader_hits"].append(hit)
@@ -523,6 +580,11 @@ def main() -> None:
     parser.add_argument("--max-events", type=int, default=602)
     parser.add_argument("--max-loader-hits", type=int, default=1)
     parser.add_argument("--max-stage-stops", type=int, default=12)
+    parser.add_argument(
+        "--inject-record-offset",
+        type=lambda value: int(value, 0),
+        help="optional exact strict record offset; labels the run as injected-source only",
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.max_events < 1 or args.max_loader_hits < 1 or args.max_stage_stops < 1:
@@ -531,17 +593,21 @@ def main() -> None:
         sequence = parse_sequence(args.sequence)
     except ValueError as exc:
         parser.error(str(exc))
-    result = run_probe(
-        args.rom,
-        host=args.host,
-        port=args.port,
-        sequence=sequence,
-        per_event_timeout=args.per_event_timeout,
-        stage_timeout=args.stage_timeout,
-        max_events=args.max_events,
-        max_loader_hits=args.max_loader_hits,
-        max_stage_stops=args.max_stage_stops,
-    )
+    try:
+        result = run_probe(
+            args.rom,
+            host=args.host,
+            port=args.port,
+            sequence=sequence,
+            per_event_timeout=args.per_event_timeout,
+            stage_timeout=args.stage_timeout,
+            max_events=args.max_events,
+            max_loader_hits=args.max_loader_hits,
+            max_stage_stops=args.max_stage_stops,
+            injected_record_offset=args.inject_record_offset,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
     text = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.output is None:
         print(text, end="")

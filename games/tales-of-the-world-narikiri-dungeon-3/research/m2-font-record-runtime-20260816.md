@@ -59,3 +59,8 @@ source-shaped loader harness 為 **confirmed tooling contract**；以下工程�
 第一個 loader hit 的 source watch 往下一個 decoder/output stop；在此之前 M2 的
 live renderer 項目保持未完成，M3 不得開始填入譯文。
 
+若自然流程仍難以觸發 loader，可加 `--inject-record-offset 0x146EE0`。此模式只在
+loader entry 已命中後寫入 `r1`，且 CLI 會拒絕非 strict record 起點；所有 receipt
+會標為 `runtime-argument-injected`／`injected-source-pipeline-only`。它可補足
+loader→asset→decoder 的 runtime pipeline，但不等同自然流程的 text consumer，
+也不會改寫 state、object 或 save。
