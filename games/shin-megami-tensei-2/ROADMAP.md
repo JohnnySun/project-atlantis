@@ -379,6 +379,21 @@
   對 `0x0819cb74` skill accessor 建立獨立 anchor family；不得把 item、skill、demon
   或劇情資料混成一張翻譯表。
 
+## M1.29：item equipment subcategory boundary anchors
+
+- [x] 只審核 shared table `0x08198b74` 的 ordinal `0x58`、`0x80`、`0xc0` 三個
+  sparse record；以公開日文 item sequence 對照槍械、頭部防具、腳部防具段落，
+  三個 field 均 identity match，不輸出 anchor text 或 unit values。
+- [x] 固定三個 boundary 的 address/field hash/length/count/reference metadata，
+  共 42 個 bounded custom unit identity；`m29-item-record-{ordinal:04d}` namespace
+  與 M1.28 分開，沒有製作翻譯 ledger。
+- [~] sparse edges 支持 item equipment family，但中間 subcategory spans、特殊
+  field（例如未 anchor 的 `0x70`）與整個 208-record category 仍 provisional；
+  `0x08198eb4` secondary path 不納入 item claim。
+- [ ] 補完 item table 剩餘 subcategory boundary 後，切換至獨立
+  `0x0819cb74` skill accessor（stride `0x60`、field `+0x22`）建立少量日文 skill
+  anchors；item、skill、demon、劇情與 system source 必須維持不同 family/namespace。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

@@ -125,32 +125,6 @@
   consumer 的 RAM buffer mismatch 與 M1.22 GDB transport negative 分欄記錄。story／
   branch／battle／unit／UI／speaker／newline 語意仍 unconfirmed，不把 12 筆 static
   ledger 或 pointer 命中當成 scene coverage。摘要在 `research/m124-corpus-caller-coverage.json`。
-- [x] M1.25 針對 M1.22 的 port mismatch 做一次 corrected-port fresh mGBA attempt：
-  只讀確認本機 2348 build 的 source literal 為 `GDBStubListen(..., 2348, ...)`，
-  以 patched M1.8 ROM、單一 GDB connection probe 執行；process 沒有 TCP 2348
-  listener／ROM descriptor，probe `connection_refused`，並已乾淨停止自己的 process。
-  這仍是 transport negative，不是 ROM／譯文失敗；font-base、consumer、writer、
-  cache／VRAM、screen 均未觀察。摘要在 `research/m125-runtime-transport-receipt.json`，
-  不再重複無效 boot-window。
-- [x] M1.26 重算 M1.13 encoder、M1.21 wide-capacity 與 M4 full-corpus／round-trip
-  contract，逐筆核對目前 12 筆 source-safe ledger；2325/2325 source／token no-op、
-  ledger 12/12 accepted／same-length、target 12/12、untouched 2313/2313 與
-  outside-allowed-ranges equality 均重現。2313 筆其餘 record 仍依 narrow-untranslated
-  927、mixed 833、wide 417、opaque 136 fail-closed；743 個 wide identity 中 742
-  個 static-only，wide new-slot capacity 仍為 0。這是 coverage audit，不是完整語意
-  encoder 或完整翻譯；摘要在 `research/m126-full-encoder-ledger-audit.json`，工具／
-  測試在 `tools/m126_full_encoder_ledger_audit.py`／
-  `tools/test_m126_full_encoder_ledger_audit.py`。
-- [x] M1.27 以自有 process／專用 port 依序驗證 runtime transport 候選：mGBA 0.11
-  headless `39123` 與既有 mGBA 0.10.5 SDL `2349` 都成功 bind／local connect，但
-  既有 bounded m19 GDB continue/stop 在 initializer／consumer event 前 timeout；
-  0.11 SDL 無 display、另一 headless literal candidate bind negative。font-base、
-  `0x08008724` consumer、glyph、writer、cache／VRAM／screen 均維持 `not_observed`，
-  不把 listener success 當 runtime positive；所有自有 process 已停止，ROM／譯文失敗
-  明確為 false。摘要在 `research/m127-runtime-transport-boundary.json`，工具／測試
-  在 `tools/m127_runtime_transport_boundary.py`／
-  `tools/test_m127_runtime_transport_boundary.py`；外部 blocker 是 stop protocol，
-  不是 source／encoder gate。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
