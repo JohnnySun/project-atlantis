@@ -36,6 +36,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
 confirmed glyph identity 增量 `0`、`eligible_for_ledger=false`。這條 row 的 mapping 仍含
 provisional keyboard／punctuation evidence，不能直接建立翻譯 ledger。
 
+M32 已在同一 candidate 上補做固定 known-screen record-raster／BG0 tilemap cross；
+請以 [`m32-known-screen-raster-row-20260816.md`](m32-known-screen-raster-row-20260816.md)
+為 row-level 最新判定。M29 的 `0` 是當時 probe 自己的增量，不被改寫成 reader hit：
+M32 仍保留 `reader_breakpoint_hit=false`，只是以獨立畫面 raster 證據將該 row 的
+五個 glyph identity 提升並打開 bounded ledger eligibility。
+
 ## 下一個最小缺口
 
 用可用 fresh listener 對 `0x080526FE` 或 `0x080063E0` 做單一 breakpoint，取得同一

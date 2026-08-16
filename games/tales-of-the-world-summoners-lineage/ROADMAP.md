@@ -175,18 +175,28 @@
 - [x] 以既有 headless BIOS trace 盤點 39 組 `SWI 0x12` source→VRAM tuples（M31）；
   沒有任何解壓輸出匹配 keyboard tile-1/2，`0x1EB044→0x06004020` 只對應 reset-stage
   hash，故仍是獨立 ROM→VRAM negative，不冒充 keyboard provenance。
-- [ ] 為每個可進 ledger 的穩定 row 產生 source checksum，讓 restore／round-trip 能
-  偵測 ROM、codepage、控制碼或 decoder drift；M21 只有 local candidate text，尚未有
-  stable translation row。
+- [x] M32 沿 M29 candidate 建立固定 known-screen record-raster／BG0 tilemap cross：
+  五個 code unit 的 record hash 與 final image mask `5/5`、BG0 tile entry／tile hash
+  `10/10`、BG1 keyboard gate `8/8`；reader breakpoint 與 raw byte-copy 仍分欄為
+  false。這只把一條 `ui-name-entry` row 提升為 `glyph_identity_confirmed=5`、
+  `eligible_for_ledger=true`，不提升 general codepage 或其他 scene rows。詳見
+  [`research/m32-known-screen-raster-row-20260816.md`](research/m32-known-screen-raster-row-20260816.md)。
+- [x] 為 M32 eligible row 產生 stable source checksum／record proof，讓
+  restore／round-trip 能偵測 ROM、codepage、控制碼或 decoder drift；source text 仍
+  只在 private／ignored local table，提交 ledger 不含 `source`。
 
 ## 里程碑 2B：最小 zh-TW ledger／回插 POC
 
-- [ ] 只在 codepage／control／string_id 穩定後，建立 1–2 條 UI／短句 private source row，
-  通過 `source_hash`／width／control schema gate。
+- [x] 只在 row-level glyph identity／control／string_id gate 通過後，建立一條 bounded
+  `ui-name-entry` private source／working row；M32 已通過 `source_hash`／width／
+  control schema，其他候選仍禁止進入 ledger。
 - [ ] 以 Wikipedia zh-tw、Bahamut 與其他獨立社群來源核對專有名詞；有分歧時保留
   分歧，不自行造音譯。
-- [ ] 執行 `restore_translations.rb`／`strip_translations.rb` round-trip，提交檔不含
-  `source.text`；以最小可逆 patch／BPS POC 驗證未修改區與重新抽取 hash。
+- [x] 執行 `restore_translations.rb`／`strip_translations.rb` round-trip，提交檔不含
+  `source.text`；M32 另完成 byte-identical no-op BPS apply／hash receipt，但沒有把
+  no-op 宣稱成文字回插。
+- [ ] 取得 target codepage／encoder 與固定槽位或 relocation policy，完成一個有實際
+  文字變更、可重抽取且可產生 BPS 的 bounded reinsertion POC。
 
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 

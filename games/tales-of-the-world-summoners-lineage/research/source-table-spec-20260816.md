@@ -122,3 +122,26 @@ M30 只確認一個獨立 control semantic：`0x1FA616` 在 `0x0000` terminator 
 `0xFF70`，對應 M20 的 compare／skip／horizontal-reset／vertical-add branch，且與 M23
 private 640×96、兩行 layout receipt 一致。這是 parser-and-render cross-check，不是 live
 reader breakpoint，也不授權 variable/name/item controls、general codepage 或 ledger。
+
+## M32 row-level gate（2026-08-16）
+
+M32 沿用 M29 的單一 `0x080526FE → 0x1FA4B4` name-entry UI candidate，新增的是
+固定 known-screen raster cross，不是新的 provisional overlay。對同一 A9PJ ROM，五個
+bounded code unit 都滿足：`0x08089E00 + unit*0x18` record hash、16×12 MSB-first
+record ink-mask、M19/M17 最終 BG0 image component mask，以及 BG0 screenbase 的
+tilemap entry／final tile hash；結果為 record mask `5/5`、tile receipt `10/10`，並且
+BG1 keyboard gate `8/8`。`0x0000` terminator 與 row 內無 `0xFF70`／其他 control
+candidate 也固定記錄。
+
+因此這一條 row 的 `glyph_identity_confirmed=5`、`scene_role=ui-name-entry`、
+`eligible_for_ledger=true`，可進入第一個少量 source／ledger POC。這個 eligibility
+只涵蓋該 row 的已知畫面語境，不代表 general codepage、事件／地圖／角色／戰鬥 rows
+已解碼。M32 同時保留 `reader_breakpoint_hit=false` 與
+`raw_byte_copy_confirmed=false`；M17 的 bounded CPU-store／final-tile audit 只有
+`2/12` raw hash equality，且兩筆都是 blank tile hash，所以不能把 raster cross 寫成
+ROM→VRAM byte-identical transfer。
+
+M29 v2 的 output 仍是 metadata-only；`source_text_emitted=false`。第一個 local source
+row 必須仍由私有 A9PJ decoder／固定 offset 重建，使用 M32 的 source hash／record／
+screen proof 作 drift gate；提交的 `translations/*.jsonl` 只能由
+`strip_translations.rb` 產生，絕不帶 `source`。

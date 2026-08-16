@@ -7,8 +7,9 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8／M1.9 執行期切片；尚未
-開始有限量翻譯，也沒有可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
+目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8／M1.9 執行期切片；
+M32 已將一條已知 name-entry 畫面 row 提升到可進最小 ledger POC 的 gate，但尚未完成有限量
+翻譯或可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
 以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
 read 與 renderer CPU VRAM store；但目的位址是 `0x060020xx/0x060023xx`，不是 BG1
 `0x06004020/0x06004040`，所以 renderer transfer identity 仍是 provisional，沒有建立
@@ -121,6 +122,12 @@ semantic／glyph identity 尚未完成。
   解壓輸出都沒有 keyboard tile-1/2 exact hash，`0x1EB044→0x06004020` 僅重現
   reset-stage `02d449…`。沒有 listener 或 live reader，故不打開 source／ledger gate。
   詳見 [`research/m31-bios-trace-rom-vram-20260816.md`](research/m31-bios-trace-rom-vram-20260816.md)。
+- M32 重用 M29 工具加入固定 known-screen raster cross：同一 A9PJ ROM 的五個 bounded
+  record mask 與 M19/M17 BG0 final image component `5/5` 相等，BG0 tilemap／final tile
+  hash `10/10`，並與 BG1 keyboard gate `8/8` 同時成立。這只確認該 `ui-name-entry`
+  row 的 5 個 glyph identity，`reader_breakpoint_hit=false`、`raw_byte_copy_confirmed=false`，
+  不把 M1.7 font-record CPU renderer 與 BG1 asset 合併。詳見
+  [`research/m32-known-screen-raster-row-20260816.md`](research/m32-known-screen-raster-row-20260816.md)。
 
 ## ROM 基準
 
@@ -160,8 +167,9 @@ pristine dump；後續所有抽取與測試都必須固定這組基準。
   未知；不會用英文 patch 反推日文並直接寫入翻譯。
 - 換行、變數、姓名／道具插值、結束碼與其他控制碼。
 - ROM → working source table → ledger → 目標 ROM 的完整可逆回插路徑。
-- 已有 name-entry 畫面自己的 mGBA／VRAM 圖層證據；但 glyph byte match 仍不是
-  codepage／source row 證據，靜態候選與 renderer 圖層不能互相冒充文字 consumer。
+- M32 已有 name-entry 畫面的 BG0／BG1／VRAM metadata 與 fixed record-to-raster
+  cross；這只授權一條已知 UI row 的 source checksum／ledger POC，不能外推成一般
+  codepage、事件文字或 live reader／byte-copy consumer。
 
 ## 外部工程參考
 

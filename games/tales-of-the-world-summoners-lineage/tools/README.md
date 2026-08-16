@@ -374,8 +374,8 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
 
 `m29_ui_row_cross_probe.py` 將 M27 direct row `caller=0x080526FE,
 stream=0x1FA4B4` 與 M19 clean name-entry screen 的 BG0/BG1 hashes、`DISPCNT/BGxCNT`、
-8/8 keyboard positions 及 private BG0 image hash 對照。它只輸出 metadata，並明確保留
-`reader_breakpoint_hit=false`、`glyph_identity_confirmed_by_this_probe=0`、
+8/8 keyboard positions 及 private BG0 image hash 對照。基本模式只輸出 metadata，並明確
+保留 `reader_breakpoint_hit=false`、`glyph_identity_confirmed_by_this_probe=0`、
 `eligible_for_ledger=false`。
 
 ```sh
@@ -386,6 +386,31 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
   --bg0-image /private/tmp/tow-a9pj-m19-gate-seq-1/bg0-gate.png \
   --output /private/tmp/tow-a9pj-m29-ui/summary.json
 ```
+
+M32 可在同一工具加入固定 known-screen receipt：`--rom` 讀 clean A9PJ 的 record／
+bounded stream，`--bg0-vram` 只輸出五個 BG0 tilemap cell 的 entry／tile hash，
+`--bg0-image` 只比較五個固定 component 的 1bpp mask，`--m17-summary` 只核對同畫面
+screen／ROM metadata。它不寫出 source、glyph bytes、raw VRAM 或圖片；只有 ROM hash、
+record hash、mask hash、tile hash、counts 與 gate fields 進 output。完整 M32 receipt 見
+[`../research/m32-known-screen-raster-row-20260816.md`](../research/m32-known-screen-raster-row-20260816.md)。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-summoners-lineage/tools/m29_ui_row_cross_probe.py \
+  /private/tmp/tow-a9pj-m27-provisional/direct-decoded.jsonl \
+  /private/tmp/tow-a9pj-m19-gate-seq-1/summary.json \
+  --rom /private/tmp/project-atlantis-a9pj.gba \
+  --bg0-vram /private/tmp/tow-a9pj-m19-gate-seq-1/dump/vram.bin \
+  --bg0-image /private/tmp/tow-a9pj-m19-gate-seq-1/bg0-gate.png \
+  --m17-summary /private/tmp/tow-a9pj-m17-runtime-final/summary.json \
+  --output /private/tmp/tow-a9pj-m32-known-screen/summary.json
+```
+
+M32 通過條件是 A9PJ／stream／terminator、5 筆 record hash、5/5 record-to-image mask、
+BG0 tilemap／10 個 tile hash 與 BG1 8/8 gate 同時成立；它只將此 row 標為
+`known-screen-record-raster-and-tilemap-correlated`、`glyph_identity_confirmed=5`、
+`eligible_for_ledger=true`。`reader_breakpoint_hit`、general codepage、control schema
+與 `raw_byte_copy_confirmed` 仍分別維持 false／未確認。
 
 ## M30 `0xFF70` control/render cross-check
 
