@@ -91,6 +91,24 @@
 - [~] 本回合 runtime listener 在 GDB attach 前受 socket／port 環境阻擋，沒有自然 hit 或 runtime negative；不得把 static source edge 升格成 glyph chain。
 - [ ] 在 listener 可用時重跑同一 bounded probe，取得 source PC/LR/register、DMA edge 與畫面 hash；沿命中 caller 向上最多三層至 ROM pointer／RAM table／code-unit。
 
+## M1.13：staging writer 與 resource record shape
+
+- [x] 完整解析 `0x0813ef64` 的 Thumb boundary、34-byte window hash、incoming
+  `r1`／`r2` data flow 與 `0x0815cafc` Huff → `0x0200afc8` → `0x0815cb00`
+  LZ77-WRAM transform；未把輸入命名成文字。
+- [x] 以精確 Thumb pointer `0x0813ef65` 建立 bounded record map：128 次
+  occurrence、16 組、每組 8 筆、stride `0x18`、每筆 callback＋source pointer＋
+  三個 bounded scalar fields；只輸出 hash、length、count 與 region metadata。
+- [x] 交叉 `0x080bd0e0` resource initializer、`0x0813efb4` callback initializer、
+  `0x080a9c40` registration target 與既知 `0x02001000 → 0x06010000` helper；
+  記錄 ROM source pointer candidates 與 source marker `0x24`，不視為標準壓縮
+  header 或 source table。
+- [~] 尚未找到這 16×8 candidates 的自然 indirect reader／BLX dispatch，也沒有
+  source/index/code-unit、glyph identity 或 runtime hit；listener blocker 仍與
+  遊戲 negative 分開記錄於 `research/m1.13-staging-resource-map-20260816.md`。
+- [ ] 取得 reader 的實際參數並交叉 staging → OBJ VRAM → OAM；在此之前維持
+  codepage、stable string ID、翻譯 ledger 與回插封鎖。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

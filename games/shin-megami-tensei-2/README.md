@@ -34,6 +34,7 @@
 - M1.10 已將兩個 ROM provenance 分開：`0x08198a98` 是含 sentinel 的 variable word stream；`0x087df54c` 是 125 筆、stride `0x8` 的 key＋ROM pointer 區段。reader 只在 `0x080bee40`／`0x081534ae` 將它們送入 selector swap，前八個有限 target window 沒有 LZ77 header 命中；仍未得到 glyph/source table。證據見 `research/m1.10-rom-table-shape-20260816.md`。
 - M1.11 已把 OAM metadata consumer 與 OBJ VRAM destination family 分開：`0x030033f0 → DMA3 → 0x07000000` 的參數與 caller chain 已驗證；`0x06010000` 有 12 個 bounded literal consumers，8 個 `0x06013000` fixed-DMA pattern 仍有效。這些是 OAM／destination 證據，不是文字 source；證據見 `research/m1.11-obj-consumer-20260816.md`。
 - M1.12 static fallback 已在 12 個 OBJ-VRAM reference 中辨識 7 個 DMA3 source edges，其中 `0x02001000 → 0x06010000` 出現兩次；另 5 個因 arithmetic/shared control 保持 unresolved。自然 runtime probe 已建立，但本回合 GDB listener 在 attach 前受本機 socket／port 環境阻擋，沒有把它記成 runtime negative；證據見 `research/m1.12-obj-source-map-20260816.md`。
+- M1.13 已沿 `0x02001000` staging edge 完成 bounded static resource map：`0x0813ef64` 是 Huff→LZ77-WRAM transform，`0x0813ef65` callback pointer 形成 16×8、stride `0x18` 的 record candidates；每筆 `+4` 欄位是 ROM-pointer-shaped source。這仍不是文字表，尚未取得自然 source/index/code-unit argument；證據見 `research/m1.13-staging-resource-map-20260816.md`。
 
 ## 可重現入口
 
@@ -156,6 +157,19 @@ static tool 只辨識已知 `0x06010000` reference 周圍的 DMA3 fields；runti
 只裝同一批 breakpoint、DMA3 SAD/DAD/CNT 與 KEYINPUT watch，輸出 metadata，
 不把 attach 前的 socket failure 當成遊戲陰性。
 
+M1.13 staging writer／resource record static map：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m113_staging_resource_map.py \
+  --rom /path/to/A5TJ.gba --output /private/tmp/smt2-m113-static.json
+```
+
+工具只追 `0x0813ef64` 的 bounded Huff→LZ77 transform、`0x0813ef65` 的
+16×8 callback record candidates、resource initializer 與 callback registration；
+輸出 address／hash／length／count／region metadata，不輸出 raw record、解壓
+payload、glyph、完整原文或 source table。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -165,9 +179,9 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.11 的 12 個 `0x06010000` destination consumers，選一條可由自然 resource
-transition 觸發、並能在 source register 取得 ROM pointer／RAM table／code-unit
-的 bounded edge；若仍無 source provenance，轉向下一個已命名的 text/code-unit
-consumer。仍不得把 OAM 或 OBJ destination 當成文字 source；只有 decoder 能穩定
-重新抽出同一批資料、且回插後能 byte-for-byte 驗證，才進入有限量翻譯與 patch
-工程。
+沿 M1.13 的 16×8 record candidates 找 bounded indirect reader／BLX dispatch，
+取得 callback 的實際 source pointer、RAM table、index 或 code-unit argument；
+不要再做全 ROM glyph scan，也不要把 `0x24` marker 或 record shape 當成文字表。
+若 reader 仍無法接通，轉向下一個已命名 text/code-unit consumer；在 decoder 能
+穩定重新抽出同一批資料、並以回插後 byte-for-byte round-trip 驗證前，維持
+source table、codepage、ledger、翻譯與 patch 工程封鎖。
