@@ -211,6 +211,19 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
   --output /private/tmp/afej-m118-natural-long-consumer-compare.json
 ```
 
+M1.19 新增 `tools/trace_m19_glyph_sink.py`，只在按鍵注入期間安裝 `KEYINPUT` read-watchpoint；收滿 bounded glyph-field cohort 後移除 map／consumer detail breakpoints，讓自然 render worker 繼續執行。static gate 固定 map lookup `0x080992dc`／map base `0x08691644`、glyph-field writer `0x08098c62`（object layout offset `0x4a`）、真正的 composer `BL` `0x08099462 → 0x080995b0`、kernel `0x08099580` 與 CPU writer `0x080995a6: str r1,[r2]`。這些 label 只描述資料流，不命名 Unicode、font pool 或控制碼。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m19_glyph_sink.py \
+  roms/base/AFEJ.gba --port 23901 --source-port 25056 \
+  --route-name m119-natural-start-a-detail-released --sequence start,a \
+  --initial-seconds 2 --step-seconds 1 --final-seconds 4 \
+  --event-timeout 1.2 --max-records 8 \
+  --output /private/tmp/afej-m119-natural-start-a-detail-released.json
+```
+
+本次 fresh `start,a` receipt 保存 loader `1`、map lookup `8`、glyph-field write `8`；長 natural route `start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a` 保存 loader `3`，但 `0x08098f68`／composer／kernel／writer 均為 0。這是 bounded scene/instrumentation negative；M0/M1 既有 `0x08099424`／`0x080995b0`／`0x06014000` 正向 baseline 另存，不能與本次 0-hit 合併成同一份 receipt。完整 JSON 僅留 ignored `/private/tmp`，不提交 ROM、RAM 或完整原文。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
