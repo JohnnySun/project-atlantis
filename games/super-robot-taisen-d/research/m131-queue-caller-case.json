@@ -1,0 +1,69 @@
+{
+  "$schema": "project-atlantis/gba-runtime-case-v1",
+  "format_version": 1,
+  "case_id": "m131-queue-caller-boundary",
+  "description": "One bounded natural caller probe for the verified queue-entry drain callsite; no scene label is inferred.",
+  "rom": {
+    "sha256": "6723931d0ba65b1645ab6a46f017ef30845f187f3e82e16c73479db14bf54b4f",
+    "size": 8388608,
+    "game_code_hex": "4136534a"
+  },
+  "runtime": {
+    "required_capabilities": [
+      "gdb-remote",
+      "register-read",
+      "memory-read",
+      "breakpoint"
+    ],
+    "gdb_timeout_seconds": 8,
+    "connect_timeout_seconds": 8,
+    "actions": [
+      {
+        "id": "queue-entry-drain-callsite",
+        "op": "breakpoint",
+        "address": "0x08008E1C",
+        "timeout_seconds": 20,
+        "register_regions": [
+          {
+            "id": "queue-source-buffer",
+            "register": "r0",
+            "offset": 0,
+            "length": 16
+          },
+          {
+            "id": "queue-entry-structure",
+            "register": "r5",
+            "offset": 0,
+            "length": 8
+          }
+        ]
+      },
+      {
+        "id": "font-base-after-caller-hit",
+        "op": "capture",
+        "regions": [
+          {
+            "id": "narrow-font-base",
+            "address": "0x020131D0",
+            "length": 4
+          },
+          {
+            "id": "wide-font-base",
+            "address": "0x020103AC",
+            "length": 4
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "milestone": "M1.31",
+    "consumer": "0x08008724",
+    "callsite": "0x08008E1C",
+    "structural_class": "queue_entry_drain_loop",
+    "semantic_scene_label": "unconfirmed",
+    "source_text_emitted": false,
+    "raw_memory_emitted": false,
+    "natural_navigation_attempts": 1
+  }
+}

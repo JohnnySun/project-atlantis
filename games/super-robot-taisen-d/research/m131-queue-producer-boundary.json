@@ -1,0 +1,121 @@
+{
+  "control_layout_boundary": {
+    "branch": "unconfirmed; queue entry fields do not identify branch semantics",
+    "glyph_unit": "two-byte glyph loop proven by inherited M1.28 contract",
+    "line_count": "unconfirmed; no producer/layout screen state observed",
+    "maximum_width": "unconfirmed; observed width is not an engine limit",
+    "newline": "unconfirmed; queue entry fields do not identify newline semantics",
+    "opaque_field_policy": "preserve opaque; reject translation until semantic identity is proven",
+    "source_terminator": "NUL proven by inherited M1.28 contract",
+    "speaker": "unconfirmed; queue entry fields do not identify speaker semantics"
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "base_rom_hash_match": true,
+    "branch_semantics_proven": false,
+    "common_manifest_validated": true,
+    "common_rom_identity_exit_0": true,
+    "common_session_owned_cleanup": true,
+    "consumer_callsite_verified": true,
+    "engine_width_limit_proven": false,
+    "natural_queue_callsite_observed": false,
+    "newline_semantics_proven": false,
+    "post_consumer_clear_verified": true,
+    "queue_table_literal_verified": true,
+    "queue_window_disassembly_verified": true,
+    "release_ready": false,
+    "source_no_op_2325": true,
+    "source_records_2325": true,
+    "speaker_semantics_proven": false,
+    "translation_started": false
+  },
+  "inherited_layout_contract": {
+    "opaque_unit_count": 1120,
+    "record_count": 2325,
+    "semantic_status": {
+      "branch": "{'meaning': 'unconfirmed', 'mode_field_origin': 'proven', 'status': 'opaque; do not name'}",
+      "engine_width": "{'engine_limit_proven': False, 'observed_maximum': 240, 'observed_minimum': 0, 'status': 'unconfirmed'}",
+      "newline": "{'dedicated_consumer_byte_compare_count': 0, 'opaque_source_candidate_count': 0, 'status': 'unconfirmed; do not infer absence globally'}",
+      "speaker": "{'meaning': 'unconfirmed', 'mode_field_origin': 'proven', 'status': 'opaque; do not name'}"
+    },
+    "source_no_op_count": 2325,
+    "target_encoder_admissible_count": 12,
+    "translation_started": false
+  },
+  "milestone": "M1.31",
+  "next_condition": "bind a queue entry payload to a verified source record and layout/screen state before naming scene or control semantics",
+  "queue_context": {
+    "argument_layout": {
+      "field_semantics": "opaque",
+      "r0": "entry+0x08",
+      "r1": "[entry+0x04]",
+      "r2": "byte[entry+0x46]",
+      "r3": "[entry+0x00]",
+      "source_payload_identity": "unproven; r0 is a queue-entry-derived pointer, not assumed static text",
+      "stack_0": 1
+    },
+    "guard_and_call": {
+      "cleanup": "0x0800536C",
+      "cleanup_callsite": "0x08008E22",
+      "consumer": "0x08008724",
+      "consumer_callsite": "0x08008E1C",
+      "empty_entry_branch_pc": "0x08008E08",
+      "empty_entry_target": "0x08008E2A",
+      "entry_clear_after_consumer": true,
+      "entry_clear_pc": "0x08008E28",
+      "entry_pointer_load": "[r7]",
+      "entry_pointer_register": "r5",
+      "loop_back_pc": "0x08008E30",
+      "loop_index_register": "r6",
+      "loop_index_upper_inclusive": 59,
+      "nonzero_compare_pc": "0x08008E06"
+    },
+    "queue_table": {
+      "entry_count": 60,
+      "entry_index_max_inclusive": 59,
+      "entry_stride_bytes": 4,
+      "literal_address": "0x08008E7C",
+      "runtime_address": "0x02011E20",
+      "table_span_bytes": 240
+    },
+    "window": {
+      "bytes_sha256": "bc2c610d19902ad9d6f599983becd05144fc2ec648775d59c7b91d15267860ec",
+      "end_exclusive": "0x08008E32",
+      "instruction_count": 22,
+      "instruction_index_sha256": "75d32408dfd81e81b95951d9072511713607b15d994d4a18149e2289e450a1a0",
+      "length": 48,
+      "start": "0x08008E02"
+    }
+  },
+  "rom": {
+    "base_hash_match": true,
+    "base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "expected_base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_manifest_sha256": "6723931d0ba65b1645ab6a46f017ef30845f187f3e82e16c73479db14bf54b4f"
+  },
+  "runtime_boundary": {
+    "cleanup_status": "killed_after_timeout",
+    "identity_changed": false,
+    "listener_matches_exact_pid": false,
+    "listener_ready": false,
+    "manifest_case_id": "m131-queue-caller-boundary",
+    "natural_caller_status": "not_observed",
+    "negative_reason": "listener_readiness_negative_before_manifest_runner",
+    "owned_process_cleanup_verified": true,
+    "preflight_status": "free",
+    "process_matches_manifest_rom": true,
+    "queue_callsite_observed": false,
+    "runtime_runner_started": false,
+    "session_status": "unknown",
+    "tool": "scripts/gba-runtime-session.py"
+  },
+  "schema": "super-robot-taisen-d-m131-queue-producer-boundary-v1",
+  "source_policy": {
+    "pixels_emitted": false,
+    "pointer_report_rescanned": false,
+    "raw_memory_emitted": false,
+    "semantic_labels_inferred": false,
+    "source_text_emitted": false,
+    "translation_started": false
+  }
+}
