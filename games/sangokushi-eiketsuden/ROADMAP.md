@@ -35,6 +35,7 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
 - [x] M2.3 由 `0x080264A4` → `0x0801929C` static chain 證實 `r6+0x02` 是 builder count、`r6+0x1C` 是 event buffer；empty path 為 44，normal path的 runtime table bound 保持未證明。
 - [x] M2.3 以明確標記的 controlled consumer fixture 觀察一筆 actual index `0 < 44`，並取得 B[0] → formatter → writer → glyph cache → 128-byte VRAM copy → tilemap 的 runtime receipts；自然 reachability 不冒充 confirmed。
 - [x] M2.3 補上 listener／process／port readiness check、原生 mGBA direct 對照與 transport negative 記錄；只保存 metadata／hash，不提交 runtime artifacts。
+- [x] M2.4 以兩條 fresh-process、single-connection 的 bounded natural path 取得可重現負證據，並由 `tools/m2_4_static.py` 固定 initializer → state gate `r4+0x14` → event poll → descriptor function-pointer → `0x08026054` 的正常 caller chain；自然 cohort 仍明確為 0，controlled fixture 不併入。
 - [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
 - [ ] 分別確認完整字串結構、指標／池、壓縮、控制碼、換行和其餘 runtime glyph identity；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。

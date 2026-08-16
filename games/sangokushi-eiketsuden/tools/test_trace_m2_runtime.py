@@ -79,6 +79,29 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertTrue(metadata["index_less_than_table_b_count"])
         self.assertEqual(metadata["bound_status"], "runtime-observed-only; not-static-proof")
 
+    def test_m24_index_metadata_separates_local_count_and_table_bound(self) -> None:
+        class FakeClient:
+            def read_memory(self, address: int, length: int) -> bytes:
+                fields = {
+                    0x02000100: (2).to_bytes(2, "little"),
+                    0x02000102: (6).to_bytes(2, "little"),
+                    0x02000104: (1).to_bytes(2, "little"),
+                    0x02000106: (1).to_bytes(2, "little"),
+                    0x02000108: (1).to_bytes(2, "little"),
+                    0x02000124: (0).to_bytes(2, "little"),
+                    0x0200011C: (0x03000200).to_bytes(4, "little"),
+                    0x03000205: bytes([0x85]),
+                }
+                return fields[address][:length]
+
+        metadata = TRACE._r6_metadata(
+            FakeClient(),
+            {"r6": 0x02000100, "r7": 0x03000205, "r0": 0, "lr": 0x08026040},
+            entry_pc=False,
+        )
+        self.assertTrue(metadata["actual_index_less_than_local_count"])
+        self.assertTrue(metadata["index_less_than_table_b_count"])
+
     def test_m23_breakpoints_include_builder_and_pipeline_receipt_edges(self) -> None:
         self.assertEqual(TRACE.M23_MAX_COHORT_HITS, 32)
         self.assertEqual(TRACE.M23_BREAKPOINTS["event_builder_call"], 0x08026510)
@@ -88,6 +111,21 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertEqual(TRACE._pipeline_breakpoint_name(0x080656E3), "vram_copy_call")
         self.assertEqual(TRACE._pipeline_breakpoint_name(0x080656E7), "vram_copy_exit")
         self.assertEqual(TRACE._pipeline_breakpoint_name(0x08008963), "tilemap_writer_exit")
+
+    def test_m24_runtime_table_receipt_is_bounded_and_hash_only(self) -> None:
+        class FakeClient:
+            def read_memory(self, address: int, length: int) -> bytes:
+                self.request = (address, length)
+                return bytes([1, 43, 0xFF, 0x99])
+
+        client = FakeClient()
+        receipt = TRACE._bounded_runtime_table_receipt(client, scan_limit=4)
+        self.assertEqual(client.request, (TRACE.M24_RUNTIME_TABLE_ADDRESS, 4))
+        self.assertEqual(receipt["status"], "sentinel-found")
+        self.assertEqual(receipt["count_before_sentinel"], 2)
+        self.assertEqual(receipt["scanned_length"], 3)
+        self.assertNotIn("data", receipt)
+        self.assertNotIn("bytes", receipt)
 
     def test_m23_memory_receipt_hashes_without_retaining_bytes(self) -> None:
         class FakeClient:

@@ -12,7 +12,8 @@ port.  It keeps one client connection, intercepts active-low KEYINPUT reads to
 send a bounded START sequence, watches the selected pointer-table entry and
 record, then summarizes the post-sequence VRAM change.  Use the shared
 ``core/gba/render_vram.py`` separately on ignored captures when a visual
-check is required.  M2.3 additionally records the reviewed formatter,
+check is required.  M2.4 additionally records per-path natural navigation,
+the bounded runtime event-table sentinel/count and the reviewed formatter,
 codepage, glyph-cache, VRAM-copy and tilemap breakpoints.  A consumer-fixture
 run is explicitly marked controlled and never counts as natural reachability.
 """
@@ -23,6 +24,7 @@ import argparse
 import hashlib
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Iterable
 
@@ -71,6 +73,8 @@ M22_RAM_RANGES = (
     (0x03000000, 0x03008000),
 )
 M23_MAX_COHORT_HITS = 32
+M24_RUNTIME_TABLE_ADDRESS = 0x02014E78
+M24_RUNTIME_TABLE_SCAN_LIMIT = 0x100
 CONTROLLED_CONSUMER_STRUCT = 0x0203F000
 CONTROLLED_CONSUMER_EVENT_ARRAY = 0x0203F100
 CONTROLLED_CONSUMER_DISPATCH_INDEX = 20
@@ -253,6 +257,44 @@ def _memory_receipt(client: GdbClient, address: int, length: int) -> dict[str, o
     }
 
 
+def _bounded_runtime_table_receipt(
+    client: GdbClient,
+    address: int = M24_RUNTIME_TABLE_ADDRESS,
+    scan_limit: int = M24_RUNTIME_TABLE_SCAN_LIMIT,
+) -> dict[str, object]:
+    """Summarize the runtime event table without retaining its bytes."""
+
+    try:
+        data = client.read_memory(address, scan_limit)
+    except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+        return {
+            "address": f"0x{address:08X}",
+            "scan_limit": scan_limit,
+            "status": "read-failed",
+        }
+    sentinel_offset = data.find(b"\xFF")
+    if sentinel_offset >= 0:
+        scanned = data[:sentinel_offset + 1]
+        values = data[:sentinel_offset]
+    else:
+        scanned = data
+        values = data
+    return {
+        "address": f"0x{address:08X}",
+        "scan_limit": scan_limit,
+        "scanned_length": len(scanned),
+        "status": "sentinel-found" if sentinel_offset >= 0 else "sentinel-not-found-within-bound",
+        "sentinel_byte": "0xFF" if sentinel_offset >= 0 else None,
+        "sentinel_offset": sentinel_offset,
+        "count_before_sentinel": sentinel_offset if sentinel_offset >= 0 else None,
+        "table_sha256": hashlib.sha256(scanned).hexdigest(),
+        "value_min": min(values) if values else None,
+        "value_max": max(values) if values else None,
+        "values_below_44": sum(value < 44 for value in values),
+        "values_at_least_44": sum(value >= 44 for value in values),
+    }
+
+
 def controlled_consumer_metadata() -> dict[str, object]:
     """Describe the isolated r6/event fixture without exposing its bytes."""
 
@@ -328,6 +370,9 @@ def _r6_metadata(client: GdbClient, registers: dict[str, int], *, entry_pc: bool
             table_index = event_byte_value & 0x7F
             result["actual_index"] = table_index
             result["masked_table_index"] = table_index
+            result["actual_index_less_than_local_count"] = (
+                isinstance(length, int) and 0 <= table_index < length
+            )
             result["index_less_than_table_b_count"] = 0 <= table_index < 44
     result["bound_status"] = "runtime-observed-only; not-static-proof"
     return result
@@ -369,6 +414,12 @@ def _pipeline_hit_metadata(
         result["input_structure"] = f"0x{registers['r0']:08X}"
         result["event_buffer_argument"] = f"0x{registers['r1']:08X}"
         result["builder_flag"] = registers["r2"] & 0xFFFFFFFF
+        result["input_provenance"] = {
+            "pointer": f"0x{registers['r0']:08X}",
+            "pointer_is_runtime_ram": _in_runtime_ram(registers["r0"]),
+            "output_buffer": f"0x{registers['r1']:08X}",
+            "caller_lr": f"0x{registers['lr']:08X}",
+        }
     elif name == "event_builder_exit":
         result["event_array_count"] = registers["r0"]
     elif name == "record_wrapper":
@@ -442,16 +493,37 @@ def _collect_pipeline_events(
         if hit is not None:
             event.update(_pipeline_hit_metadata(client, hit, registers))
             if hit == "event_builder_call":
+                runtime_table = _bounded_runtime_table_receipt(client)
                 runtime_state["event_builder"] = {
                     "event_buffer": registers["r1"],
                     "input_structure": registers["r0"],
                     "caller_lr": registers["lr"],
+                    "runtime_table": runtime_table,
                 }
+                event["runtime_table"] = runtime_table
             elif hit == "event_builder_exit":
                 builder = runtime_state.get("event_builder", {})
                 count = registers["r0"]
                 event["event_array_count"] = count
                 event["event_array_count_le_table_b_count"] = count <= 44
+                if isinstance(builder, dict):
+                    event["input_provenance"] = {
+                        "pointer": f"0x{int(builder['input_structure']):08X}"
+                        if isinstance(builder.get("input_structure"), int) else None,
+                        "output_buffer": f"0x{int(builder['event_buffer']):08X}"
+                        if isinstance(builder.get("event_buffer"), int) else None,
+                        "caller_lr": f"0x{int(builder['caller_lr']):08X}"
+                        if isinstance(builder.get("caller_lr"), int) else None,
+                    }
+                    event["runtime_table"] = builder.get("runtime_table")
+                    runtime_table = builder.get("runtime_table")
+                    runtime_count = (
+                        runtime_table.get("count_before_sentinel")
+                        if isinstance(runtime_table, dict) else None
+                    )
+                    event["event_array_count_matches_runtime_table"] = (
+                        isinstance(runtime_count, int) and count == runtime_count
+                    )
                 if isinstance(builder, dict) and isinstance(builder.get("event_buffer"), int):
                     buffer_address = int(builder["event_buffer"])
                     event["event_array_base"] = f"0x{buffer_address:08X}"
@@ -557,6 +629,9 @@ def _collect_pipeline_events(
                         "r6_base": metadata.get("r6_base"),
                         "caller_lr": metadata.get("caller_lr"),
                         "local_length": fields.get("0x02") if isinstance(fields, dict) else None,
+                        "actual_index_less_than_local_count": metadata.get(
+                            "actual_index_less_than_local_count"
+                        ),
                         "index_less_than_table_b_count": metadata.get("index_less_than_table_b_count"),
                     })
             # GDB stops before the breakpoint instruction. Single-step exactly
@@ -593,6 +668,7 @@ def run_pipeline_trace(
     settle_seconds: float,
     controlled_record: bool,
     controlled_consumer: bool = False,
+    path_label: str = "natural-path",
 ) -> dict[str, object]:
     """Trace natural reachability, then optionally inject B[0] at the wrapper.
 
@@ -607,9 +683,18 @@ def run_pipeline_trace(
         raise ValueError(f"controlled_events must be between 1 and {M23_MAX_COHORT_HITS}")
 
     static = static_candidate_metadata(rom_path)
+    started = time.monotonic()
     report: dict[str, object] = {
         "read_only": True,
-        "harness": "M2.3-pipeline",
+        "harness": "M2.4-pipeline",
+        "navigation_path": {
+            "label": path_label,
+            "sequence": sequence,
+            "sequence_length": len(sequence),
+            "natural_event_limit": natural_events,
+            "event_timeout_seconds": event_timeout,
+            "settle_seconds": settle_seconds,
+        },
         "candidate": candidate_addresses(),
         "static_candidate": static,
         "breakpoints": {name: f"0x{address:08X}" for name, address in M23_BREAKPOINTS.items()},
@@ -634,6 +719,7 @@ def run_pipeline_trace(
         report["initial_registers"] = register_snapshot(client.read_registers())
         report["settle_stop"] = client.continue_and_interrupt(settle_seconds)
         target_stopped = True
+        report["settled_io"] = io_values(client)
         before_vram = client.read_memory(0x06000000, 0x18000)
         for name, address in M23_BREAKPOINTS.items():
             client.set_breakpoint(address)
@@ -731,6 +817,12 @@ def run_pipeline_trace(
             target_stopped = True
         after_vram = client.read_memory(0x06000000, 0x18000)
         report["vram_delta"] = vram_summary(before_vram, after_vram)
+        report["screen_hash"] = {
+            "settled_io": report.get("settled_io"),
+            "final_io": io_values(client),
+            "vram_before_sha256": report["vram_delta"]["before_sha256"],
+            "vram_after_sha256": report["vram_delta"]["after_sha256"],
+        }
         report["natural_index_evidence"] = [
             event["index_metadata"]
             for event in report["events"]
@@ -754,10 +846,63 @@ def run_pipeline_trace(
             )
         else:
             report["index_gate_status"] = "not-observed"
+        natural_cohort = [
+            row for row in cohort
+            if row.get("provenance", "").startswith("natural-")
+        ]
+        if natural_cohort:
+            natural_unknown = [
+                row for row in natural_cohort
+                if row.get("actual_index_less_than_local_count") is not True
+                or row.get("index_less_than_table_b_count") is not True
+            ]
+            report["natural_index_gate_status"] = (
+                "bounded-natural-cohort-has-unknown-or-out-of-range"
+                if natural_unknown
+                else "bounded-natural-cohort-all-indexes-less-than-local-count-and-44"
+            )
+        else:
+            report["natural_index_gate_status"] = "not-observed"
         report["index_gate_scope"] = (
             "bounded natural/controlled-consumer consumer_index_setup cohort only; "
             "controlled rows do not prove natural reachability or all future event bytes"
         )
+        natural_events_seen = [
+            event for event in report["events"] if event.get("mode") == "natural"
+        ]
+        report["natural_hit_counts"] = {
+            hit: sum(event.get("hit") == hit for event in natural_events_seen)
+            for hit in M23_BREAKPOINTS
+        }
+        report["natural_builder_evidence"] = [
+            {
+                key: event[key]
+                for key in (
+                    "index", "hit", "pc", "lr", "input_structure", "event_buffer_argument",
+                    "input_provenance", "event_array_count", "event_array_count_le_table_b_count",
+                    "event_array_count_matches_runtime_table", "runtime_table",
+                )
+                if key in event
+            }
+            for event in report["events"]
+            if event.get("mode") == "natural" and event.get("hit") in {
+                "event_builder_call", "event_builder_exit"
+            }
+        ]
+        report["natural_consumer_evidence"] = [
+            {
+                key: event[key]
+                for key in ("index", "hit", "pc", "lr", "index_metadata", "record_pointer")
+                if key in event
+            }
+            for event in report["events"]
+            if event.get("mode") == "natural" and event.get("hit") in {
+                "consumer_entry", "consumer_index_setup", "record_wrapper", "formatter",
+            }
+        ]
+        report["time_window"] = {
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+        }
     finally:
         if watch_set:
             try:
@@ -925,7 +1070,7 @@ def main() -> int:
     parser.add_argument(
         "--pipeline",
         action="store_true",
-        help="trace the M2.3 formatter/codepage/glyph pipeline breakpoints",
+        help="trace the M2.4 formatter/codepage/glyph pipeline breakpoints",
     )
     parser.add_argument(
         "--controlled-record",
@@ -939,6 +1084,7 @@ def main() -> int:
     )
     parser.add_argument("--natural-events", type=int, default=24)
     parser.add_argument("--controlled-events", type=int, default=32)
+    parser.add_argument("--path-label", default="natural-path")
     parser.add_argument(
         "--disable-wrapper-breakpoint",
         action="store_true",
@@ -974,6 +1120,7 @@ def main() -> int:
                 settle_seconds=args.settle_seconds,
                 controlled_record=args.controlled_record,
                 controlled_consumer=args.controlled_consumer,
+                path_label=args.path_label,
             )
         else:
             report = run_trace(
