@@ -83,6 +83,14 @@
 - [~] OAM 與 OBJ destination 仍只有 consumer/source-class 證據，沒有 source pointer → code-unit → glyph writer；不得建立 codepage、stable string ID 或翻譯 ledger。
 - [ ] 從 12 個 OBJ-VRAM consumer 選一條自然可觸發 edge，取得 source register／ROM pointer／RAM table／code-unit provenance；若失敗，轉向下一個已命名 text/code-unit consumer。
 
+## M1.12：OBJ source-class 與自然 runtime transition
+
+- [x] 對 12 個 `0x06010000` literal-load PC 做 bounded Thumb DMA3 field decode；7 個 source/destination/control sequence confirmed，5 個 arithmetic/shared-control case 保持 unresolved。
+- [x] 確認 static `0x02001000 → 0x06010000` 兩條 edge（`0x080bd136`、`0x0813efce`），並保留 `0x0200f874`、`0x02006000`、`0x081b13b8` 的 source class／control／length metadata。
+- [x] 建立只讀自然 transition runtime probe：fresh process、單一 GDB connection、12 breakpoint、DMA3 SAD/DAD/CNT 與 KEYINPUT watch；不寫 selector/state/RAM payload。
+- [~] 本回合 runtime listener 在 GDB attach 前受 socket／port 環境阻擋，沒有自然 hit 或 runtime negative；不得把 static source edge 升格成 glyph chain。
+- [ ] 在 listener 可用時重跑同一 bounded probe，取得 source PC/LR/register、DMA edge 與畫面 hash；沿命中 caller 向上最多三層至 ROM pointer／RAM table／code-unit。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

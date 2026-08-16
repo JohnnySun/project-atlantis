@@ -33,6 +33,7 @@
 - M1.9 已完成四個 priority writer 的 bounded Thumb static mapping 與 caller 1–3 層：`0x0813e428` 以 incoming `r0` 替換 selector pointer、`0x0813e574` 從 RAM `0x030068c0` 還原，`0x0812f2b4` 的明確分支則寫入 ROM `0x08036666`；`0x080bee40`／`0x081534ae` 的 caller argument 只得到 provisional ROM-table provenance，尚未連到 glyph source。證據見 `research/m1.9-selector-state-mapping-20260816.md`。
 - M1.10 已將兩個 ROM provenance 分開：`0x08198a98` 是含 sentinel 的 variable word stream；`0x087df54c` 是 125 筆、stride `0x8` 的 key＋ROM pointer 區段。reader 只在 `0x080bee40`／`0x081534ae` 將它們送入 selector swap，前八個有限 target window 沒有 LZ77 header 命中；仍未得到 glyph/source table。證據見 `research/m1.10-rom-table-shape-20260816.md`。
 - M1.11 已把 OAM metadata consumer 與 OBJ VRAM destination family 分開：`0x030033f0 → DMA3 → 0x07000000` 的參數與 caller chain 已驗證；`0x06010000` 有 12 個 bounded literal consumers，8 個 `0x06013000` fixed-DMA pattern 仍有效。這些是 OAM／destination 證據，不是文字 source；證據見 `research/m1.11-obj-consumer-20260816.md`。
+- M1.12 static fallback 已在 12 個 OBJ-VRAM reference 中辨識 7 個 DMA3 source edges，其中 `0x02001000 → 0x06010000` 出現兩次；另 5 個因 arithmetic/shared control 保持 unresolved。自然 runtime probe 已建立，但本回合 GDB listener 在 attach 前受本機 socket／port 環境阻擋，沒有把它記成 runtime negative；證據見 `research/m1.12-obj-source-map-20260816.md`。
 
 ## 可重現入口
 
@@ -136,6 +137,24 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B \
 `0x06010000` 的 12 個 literal consumers 與八個已知 `0x06013000` fixed-DMA
 site 的 address／boundary／hash／count metadata；不輸出 raw tile、instruction
 bytes、完整原文或 source table。
+
+M1.12 source-class static mapping 與 runtime probe：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m112_obj_source_map.py \
+  --rom /path/to/A5TJ.gba --output /private/tmp/smt2-m112-static-source.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m112_obj_runtime.py \
+  --port 2367 --rom /path/to/A5TJ.gba \
+  --key-sequence a,start,a,b,down,a,right,a \
+  --output /private/tmp/smt2-m112-runtime.json
+```
+
+static tool 只辨識已知 `0x06010000` reference 周圍的 DMA3 fields；runtime tool
+只裝同一批 breakpoint、DMA3 SAD/DAD/CNT 與 KEYINPUT watch，輸出 metadata，
+不把 attach 前的 socket failure 當成遊戲陰性。
 
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
