@@ -8,6 +8,7 @@
 - [x] 建立不輸出完整原文的 `tools/recon_rom.py`。
 - [x] 以獨立 GDB 埠在 clean A9HJ 驗證 mGBA ROM 入口、VRAM watchpoint 與開機 live layout；candidate 結果只作歷史對照。
 - [x] 取得／核准 clean 日版 ROM，重新建立基準指紋。
+- [x] 導入共用 `scripts/gba-rom-identity.py`：clean A9HJ identity gate exit `0`／`status=pass`；被排除的 32 MiB candidate 以相同 expected contract exit `1`／`status=fail`，不作正式基底。
 
 ## M1：文字與字型系統
 
@@ -27,6 +28,7 @@
 - [x] 固定 `DF..FF` handler 的 source-parameter 消費形狀與 state-dependent read signatures（`tools/audit_control_consumption.py`；控制碼名稱、終止／換頁語義仍未完成）。
 - [x] 以 clean code signatures 固定 parser outer-loop continuation、`F9` 兩分支匯合到固定一 byte read，以及 `FF` 的 state-dependent flag clearing；不把它們升格為 terminator／控制碼語義（`research/control-consumption-20260816.md`）。
 - [x] 以 source-free aggregate receipt 盤點 clean code-unit 類別、pair 解出比例、alternate-glyph 使用 slots 與 control candidate 數量（`tools/audit_codepage_inventory.py`；未解 glyph identity 與控制碼語義仍未完成）。
+- [x] 以 clean code signatures 固定有限 parser source cursor（`state+0x18`／alternate `state+0x1C`）與 pair second-byte dispatch，並與獨立 output slot `state+0x16` 分離；receipt 位於 `research/text-cursor-contract-20260817.md`，不升格為 record boundary 或 VWF 寬度證明。
 
 ## M2：帳本與有限翻譯
 
