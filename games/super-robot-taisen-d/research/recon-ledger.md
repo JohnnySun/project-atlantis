@@ -622,6 +622,37 @@ multi-line layout、分支腳本與實際 newline semantics 仍未完成，也�
 speaker、mode branch meaning、完整 multi-line、script branch 與自然 runtime layout
 仍未證明；unknown token 仍 fail-closed opaque，翻譯範圍沒有擴大。
 
+## 2026-08-16：M2 bounded zh-TW glossary provenance
+
+本輪只建立術語準備資料，不開始第二筆或批量翻譯。追蹤檔
+[`../translations/glossary.zh-TW.tsv`](../translations/glossary.zh-TW.tsv) 不保存日文
+原文；每列只保存 semantic `term_key`、zh-TW 候選、分類、狀態、source record ID、
+Shift-JIS raw SHA-256、公開來源 URL 與決策說明。`tools/m2_glossary_audit.py` 從本機
+ignored `research/super-robot-taisen-d-decoded.jsonl` 讀取 source text 並只比較 hash，
+不把 text 寫入 report 或 stdout。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| glossary entries | 16；accepted 12、deferred conflict 4 |
+| categories | character 4、unit 5、ship 1、spirit 5、system 1 |
+| source table | 2325 records；17 個 distinct referenced records |
+| source provenance | 17/17 raw Shift-JIS hash matches；source text emitted `false` |
+| fail-closed | deferred entries 不帶 `zh_tw`；accepted／provisional 至少兩個 HTTPS sources |
+| test coverage | real glossary、hash mismatch、kana leak、single source、deferred target gate |
+
+機體名稱以臺灣維基與 RoboInfo D／機體頁的共同用法為優先；格拉基耶斯另有巴哈姆特
+D 討論佐證；精神指令以兩個巴哈姆特資料頁交叉。約修／莉姆在短名／全名之間、阿姆羅
+在臺灣維基／巴哈姆特用法之間、拉・凱拉姆在中點字元之間仍有差異，4 列維持
+`deferred_conflict`，不得被後續翻譯工具當成已批准 target。相關來源 URL 與逐列
+採用理由保存在 TSV；摘要與衝突 key 只在 [`m2-glossary-audit.json`](m2-glossary-audit.json)。
+
+這個 slice 證明的是「術語資料可追溯且 source-safe」，不是字寬、Unicode glyph capacity、
+控制碼安全、翻譯品質或 ROM 回插已完成。下一輪仍須先選擇可達且 glyph-only 的小批次，
+以 restore／working／strip 做 ledger，並在每筆 target 建立 width、slot collision、
+control token 與 no-op／round-trip gate。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |

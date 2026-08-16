@@ -139,6 +139,13 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   但不替 branch mode、speaker 或 newline 猜語意。完整結果在
   [`research/m111-layout-contract.json`](research/m111-layout-contract.json)，目前
   corpus 觀察最大 width 240／30 columns 不是引擎上限證明。
+- M2 glossary slice 已建立 [`translations/glossary.zh-TW.tsv`](translations/glossary.zh-TW.tsv)：
+  16 個 source-safe term entries 只保存 `string_id`、Shift-JIS raw hash、zh-TW
+  候選、來源 URL 與決策記錄；12 個術語通過至少兩個社群來源，約修／莉姆、阿姆羅、
+  拉・凱拉姆的 4 個用法衝突明確維持 deferred。`tools/m2_glossary_audit.py` 在
+  ignored local source table 上驗證 17/17 hash matches、禁止 kana/source-text
+  外洩；摘要在 [`research/m2-glossary-audit.json`](research/m2-glossary-audit.json)。
+  這只是術語準備，不是翻譯批次或回插批准。
 - 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -183,6 +190,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
   games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
   games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
   --output games/super-robot-taisen-d/work/m17-poc-report.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m2_glossary_audit.py \
+  games/super-robot-taisen-d/translations/glossary.zh-TW.tsv \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --output games/super-robot-taisen-d/work/m2-glossary-audit.json
 
 PYTHONDONTWRITEBYTECODE=1 python3 \
   games/super-robot-taisen-d/tools/m18_narrow_allocator.py seed-ledger \
@@ -275,6 +288,9 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M1.11 完成 `0x08008724..0x08008A0C` 的 bounded layout instruction gate，固定
   NUL／two-byte／8-or-12px／tile allocation 公式與 mode branch 邊界；speaker、
   newline、完整多行與 branch mode 語意仍是 opaque。
+- [x] M2 glossary slice 完成 16 筆 source-safe zh-TW 詞彙 provenance：12 筆雙來源
+  通過、4 筆衝突 fail-closed deferred；工具測試涵蓋 source hash mismatch、kana
+  外洩、來源不足與 deferred 無 target，未開始批量翻譯。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
@@ -282,6 +298,6 @@ queue 觸發尚未取代這條受控驗證。
 - [ ] 建立嚴格拒絕 source mismatch、缺字與控制碼不一致的編碼／回插器。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始批量翻譯；M1.8 的一筆 static `ai_draft` 只證明窄字 allocator、同長
+目前尚未開始批量翻譯；M1.8 的一筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
 glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼語意、zh-TW
 字型美術品質、自然畫面 runtime 或完整可逆回插已證明。

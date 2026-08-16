@@ -63,8 +63,11 @@
 - [x] 以 `restore_translations.rb` → ignored working record → `strip_translations.rb`
   完成一筆 source-safe、同長度的 M1.8 static `ai_draft` ledger POC；這不是批量
   翻譯，也不代表術語或完整 layout 已定稿。
-- [ ] 建立 `translations/glossary.zh-TW.tsv`，專有名詞先核對 Wikipedia zh-tw、
-  巴哈姆特等多個社群來源，記錄分歧與採用理由。
+- [x] 建立 `translations/glossary.zh-TW.tsv`，以 Wikipedia zh-tw、RoboInfo、
+  巴哈姆特與日文攻略頁交叉核對 16 個 bounded terms；12 個術語通過雙來源 hash
+  provenance，4 個短名／標點衝突維持 `deferred_conflict`，不先回插。可重跑
+  `tools/m2_glossary_audit.py`，摘要在 `research/m2-glossary-audit.json`；TSV
+  不保存完整日文原文。
 - [ ] 先做一個可達且邊界明確的小批次：例如 UI／精神指令／一個完整對話群，
   不是整部作品一次翻譯。
 - [ ] 用 `restore_translations.rb` 產生本機工作檔；完成後只用

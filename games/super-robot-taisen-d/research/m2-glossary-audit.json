@@ -1,0 +1,43 @@
+{
+  "schema": "super-robot-taisen-d-m2-glossary-audit-v1",
+  "glossary_entries": 16,
+  "status_counts": {
+    "accepted": 12,
+    "deferred_conflict": 4
+  },
+  "category_counts": {
+    "character": 4,
+    "ship": 1,
+    "spirit": 5,
+    "system": 1,
+    "unit": 5
+  },
+  "source_table_records": 2325,
+  "source_records_referenced": 17,
+  "source_hash_matches": 17,
+  "source_text_emitted": false,
+  "deferred_terms_fail_closed": true,
+  "provenance_sources": [
+    "https://zh.wikipedia.org/wiki/超級機器人大戰D",
+    "https://srw.wingzero.tw/zh-TW/srw/games/34",
+    "https://srw.wingzero.tw/srw/unit/zh-TW/57",
+    "https://srw.wingzero.tw/srw/unit/zh-TW/59",
+    "https://forum.gamer.com.tw/G2.php?bsn=430&sn=2257",
+    "https://forum.gamer.com.tw/G2.php?bsn=430&sn=238",
+    "https://forum.gamer.com.tw/G2.php?bsn=430&sn=1788",
+    "https://forum.gamer.com.tw/G2.php?bsn=430&lorder=4&parent=2107&sn=1109",
+    "https://suparobo-d.gorillawiki.jp/"
+  ],
+  "conflicts_deferred": [
+    "character.joshua",
+    "character.lim",
+    "character.amuro",
+    "ship.ra_cailum"
+  ],
+  "notes": [
+    "The audit joins only source record IDs and Shift-JIS raw hashes; it never emits source text.",
+    "Accepted and provisional entries require at least two HTTPS provenance URLs.",
+    "Glossary status is terminology readiness, not translation approval or ROM insertion readiness.",
+    "No batch translation was started in this slice."
+  ]
+}
