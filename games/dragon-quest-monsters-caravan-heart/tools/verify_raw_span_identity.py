@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Verify clean A9HJ pointer-span raw identity without decoding source text.
 
-This closes only the byte-preservation portion of the clean-ROM rebuild gate:
+This closes the token-preserving byte portion of the clean-ROM rebuild gate:
 each ignored extractor row must describe the exact bytes at its pointer span,
-and replaying those raw bytes into a clean copy must leave the ROM unchanged.
-It does not prove record boundaries, control semantics, glyph identity, or a
-semantic translation encoder.
+and the explicit pair/alternate/single/control token stream must re-encode to
+those bytes before a rebuilt copy is hashed.  It does not prove record
+boundaries, control semantics, glyph identity, or a semantic translation
+encoder.
 """
 
 from __future__ import annotations
@@ -48,6 +49,45 @@ def _offset(value: object, field: str) -> int:
     return result
 
 
+def _byte(value: object, field: str) -> int:
+    if not isinstance(value, int) or not 0 <= value <= 0xFF:
+        raise ValueError(f"{field} must be an 8-bit integer")
+    return value
+
+
+def encode_tokens(tokens: object) -> bytes:
+    """Re-encode the extractor's lossless token vocabulary to bytes."""
+
+    if not isinstance(tokens, list):
+        raise ValueError("decoded record is missing token list")
+    output = bytearray()
+    for index, token in enumerate(tokens):
+        if not isinstance(token, dict):
+            raise ValueError(f"token {index} is not an object")
+        kind = token.get("kind")
+        if kind in {"single-byte-candidate", "control-candidate"}:
+            output.append(_byte(token.get("value"), f"token {index} value"))
+        elif kind == "pair":
+            output.extend(
+                (
+                    _byte(token.get("lead"), f"token {index} lead"),
+                    _byte(token.get("trail"), f"token {index} trail"),
+                )
+            )
+        elif kind == "alt-glyph":
+            output.extend(
+                (
+                    _byte(token.get("lead"), f"token {index} lead"),
+                    _byte(token.get("value"), f"token {index} value"),
+                )
+            )
+        elif kind in {"pair-truncated", "alt-glyph-truncated"}:
+            output.append(_byte(token.get("lead"), f"token {index} lead"))
+        else:
+            raise ValueError(f"unknown token kind: {kind!r}")
+    return bytes(output)
+
+
 def verify_records(data: bytes, records: list[dict[str, object]]) -> dict[str, object]:
     rebuilt = bytearray(data)
     seen_pointers: set[int] = set()
@@ -55,6 +95,9 @@ def verify_records(data: bytes, records: list[dict[str, object]]) -> dict[str, o
     mismatches = 0
     overlap_bytes = 0
     covered: set[int] = set()
+    token_records = 0
+    token_reencode_mismatches = 0
+    token_reencode_bytes = 0
     for record in records:
         start = _offset(record.get("pointer_file"), "pointer_file")
         end = _offset(record.get("span_end_file"), "span_end_file")
@@ -71,11 +114,23 @@ def verify_records(data: bytes, records: list[dict[str, object]]) -> dict[str, o
             raise ValueError(f"span exceeds ROM at 0x{start:06X}")
         if data[start:end] != raw:
             mismatches += 1
+        tokens = record.get("tokens")
+        if tokens is not None:
+            token_records += 1
+            reencoded = encode_tokens(tokens)
+            token_reencode_bytes += len(reencoded)
+            if reencoded != raw:
+                token_reencode_mismatches += 1
+            replay = reencoded
+        else:
+            # Small unit-test fixtures may exercise the raw-span layer alone;
+            # clean extractor output is required to carry tokens.
+            replay = raw
         for offset, value in enumerate(raw, start):
             if offset in covered:
                 overlap_bytes += 1
             covered.add(offset)
-            rebuilt[offset] = value
+            rebuilt[offset] = replay[offset - start]
         seen_pointers.add(start)
         span_digest.update(start.to_bytes(4, "little"))
         span_digest.update(end.to_bytes(4, "little"))
@@ -86,6 +141,8 @@ def verify_records(data: bytes, records: list[dict[str, object]]) -> dict[str, o
     clean_sha256 = hashlib.sha256(data).hexdigest()
     if rebuilt_sha256 != clean_sha256:
         raise ValueError("raw-span rebuild changed the clean ROM")
+    if token_reencode_mismatches:
+        raise ValueError(f"token re-encode mismatches: {token_reencode_mismatches}")
     return {
         "record_count": len(records),
         "unique_pointer_count": len(seen_pointers),
@@ -93,10 +150,14 @@ def verify_records(data: bytes, records: list[dict[str, object]]) -> dict[str, o
         "overlap_byte_count": overlap_bytes,
         "raw_span_mismatches": 0,
         "raw_span_digest": span_digest.hexdigest(),
+        "token_record_count": token_records,
+        "token_reencode_bytes": token_reencode_bytes,
+        "token_reencode_mismatches": token_reencode_mismatches,
+        "token_encoder": "proven" if token_records == len(records) else "not-run",
         "clean_sha256": clean_sha256,
         "rebuilt_sha256": rebuilt_sha256,
         "changed_byte_count": 0,
-        "semantic_encoder": "not-proven",
+        "semantic_encoder": "not-proven; token-preserving only",
         "runtime_qa": "not-run",
     }
 

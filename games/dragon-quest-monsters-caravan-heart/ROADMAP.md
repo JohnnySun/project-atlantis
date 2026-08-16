@@ -54,6 +54,7 @@
 - [x] 對 `message-batch-8` 完成 clean→patched bounded re-extraction 與 BPS apply round-trip；receipt 位於 `research/message-batch-8-roundtrip-20260817.md`。
 - [x] 將八個 bounded batch 以 disjoint-range merge 建立 cumulative ROM／BPS proof；receipt 位於 `research/bounded-batches-roundtrip-v8-20260817.md`，全遊戲 encoder／BPS 仍待完成。
 - [x] 完成 clean extractor raw-span identity replay；receipt 位於 `research/raw-span-roundtrip-20260816.md`，只證明 byte-preserving replay，不替代 semantic encoder／完整 record boundary。
+- [x] 以 pair／alternate／single／control token 重建 clean ROM bytes，完成 token-preserving encoder round-trip；receipt 位於 `research/token-encoder-roundtrip-20260817.md`，semantic encoder／完整 record boundary 仍待完成。
 - [x] 對七批 cumulative patched ROM 完成有界 mGBA／GDB smoke trace；receipt 位於 `research/runtime-smoke-partial-20260816.md`，完整目標畫面／glyph／layout／全場景 QA 仍待完成。
 - [ ] clean ROM → 重建 ROM → 重新抽取，確認未修改內容一致。
 - [ ] 產生並套用 BPS，完成逐位元組 round-trip。
