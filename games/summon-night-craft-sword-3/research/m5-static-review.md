@@ -19,18 +19,17 @@ copied into this tracked report.
 | `b3cj:t2:022:0x004e` | `956b323686afadc76cb837332e29e5a92db3d88a746c54f25a23d9a19b1d4f2c` | `劈柴新手　　` | Rank/label reading is semantically plausible; explicit padding is layout-only. | `劈柴` remains provisional generic action term. |
 | `b3cj:t2:016:0x001e` | `0c7840a194483b36af7414a8e8624c93d3a3ae62e6167eb1040daaae317e33d8` | `警告！　　` | Generic warning label is a direct Taiwan Traditional UI rendering. | `警告` remains provisional generic UI term. |
 | `b3cj:t2:025:0x0b6e` | `edfe7b0a4cfae39281960bcfeb2592b66bbd47136d6b29c1bc2082dc5cf8e2c9` | `嗯…　　` | Intent is a hesitation/ellipsis utterance; `嗯…` is readable but `呃…`/`那個…` may be more idiomatic, so language approval is still required. | `dialogue.ellipsis_ack` remains provisional. |
-| `b3cj:t2:024:0x0078` | `cd5eb4f2833b81100caa4feb0ddd9a3a1d9ffeefa6f60fdf1a2a18ce3f33b329` | `特獎　重金礦` | Award label is plausible; the ore name may be an in-game item term and is not externally verified. | `特獎` provisional; `重金礦` is `blocked_external_lookup` in the glossary. |
+| `b3cj:t2:024:0x0078` | `cd5eb4f2833b81100caa4feb0ddd9a3a1d9ffeefa6f60fdf1a2a18ce3f33b329` | `特獎　重金礦` | Award label and ore-name boundary remain semantically plausible; Taiwan-community sources independently preserve the source item name `重金鉱`. | `特獎` and direct zh-TW conversion `重金礦` are provisional; human terminology approval is still pending. |
 | `b3cj:t2:024:0x012c` | `c10caff6b389dc1506d1879cdac4e21111ead7eb8b41e05eca6aed3d73873ddc` | `這次的獎品是…` | Matches the first and third occurrences exactly; consistency pass at static language level. | Reuses provisional `獎品`. |
 | `b3cj:t2:024:0x0886` | `0d5a78457208e290171e1080982d81302880952077c85746ab7ca5003d098976` | `要抽獎嗎？　　` | Generic yes/no lottery question is natural zh-TW; explicit padding is layout-only. | `抽獎` provisional generic activity term; new `嗎` glyph is statically proven. |
 | `b3cj:t2:024:0x01f0` | `c10caff6b389dc1506d1879cdac4e21111ead7eb8b41e05eca6aed3d73873ddc` | `這次的獎品是…` | Matches the first and second occurrences exactly; consistency pass at static language level. | Reuses provisional `獎品`. |
 
 The bounded external terminology review is recorded in
 [`research/m5.5-terminology-review.md`](m5.5-terminology-review.md). The
-Japanese item table uses `重金鉱`; an independent Chinese reference uses
-`重金矿石`; Wikipedia zh-tw confirms the game but has no item rendering, and
-the checked Bahamut攻略串 has no occurrence of this item. There is therefore
-no Taiwan-community majority. The existing `重金礦` spelling remains
-provisional and `blocked_external_lookup`; human terminology approval is
+Japanese item table and two independent Taiwan-community references use
+`重金鉱`; mainland Chinese references use `重金矿`／`重金矿石`, but do not set
+the zh-TW form. The existing direct conversion `重金礦` is therefore supported
+as provisional; human terminology approval and ledger status promotion are
 still required.
 
 ## Session manual source-to-target pass
@@ -51,9 +50,10 @@ stable ID and source hash, then checked semantic scope against its current
 - The lottery question preserves the yes/no question force and uses the
   Taiwan Traditional `嗎` allocation already guarded by the static encoder.
 
-Result: seven rows pass this bounded semantic pass, and one row remains
-term-blocked. This is a reproducible session review, not a claim of external
-human approval; all eight ledger statuses therefore remain `ai_draft`.
+Result: all eight rows pass this bounded semantic pass, with the ore term now
+externally source-supported but still provisional. This is a reproducible
+session review, not a claim of external human approval; all eight ledger
+statuses therefore remain `ai_draft`.
 
 ## Font and layout review
 
@@ -76,7 +76,8 @@ human approval; all eight ledger statuses therefore remain `ai_draft`.
 
 ## Gate result
 
-Session manual semantic review: `7 provisional-pass`, `1 blocked-term`.
+Session manual semantic review: `8 provisional-pass`; `重金礦` has external
+source support but still requires human terminology approval.
 
 Static font/layout review: `8 pass` under the current bounded contracts.
 

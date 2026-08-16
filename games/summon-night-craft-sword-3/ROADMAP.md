@@ -165,8 +165,8 @@ M4.3 的 source hash、glyph allocation、cell／capacity、cumulative re-extrac
 ## M4：有限量翻譯與術語
 
 - [~] 已建立四筆 M4 cumulative static target；M5.2／M5.3／M5.4／M5.5 另加入第五至第八筆 resource-24 static slices；停止新增同型短句，下一階段改做既有八筆的人工／術語／字型／版面與 runtime／發布 gate。
-- [ ] 專有名詞以 Wikipedia zh-tw、巴哈姆特及其他獨立社群資料交叉核對；不把單一 patch 的譯名視為定論。
-- [~] 建立 `translations/glossary.zh-TW.tsv`（目前收七個 bounded target term，其中六個 generic provisional UI／語氣詞；`重金礦` 因外部多來源查證不可達而維持 blocked，不放完整原文段落）。
+- [~] 專有名詞以 Wikipedia zh-tw、巴哈姆特及其他獨立社群資料交叉核對；目前 `重金礦` 已由兩個臺灣社群來源的 `重金鉱` 交叉支持，但不把單一 patch 的譯名視為定論，仍待人工核准。
+- [~] 建立 `translations/glossary.zh-TW.tsv`（目前收七個 bounded target term，其中六個 generic provisional UI／語氣詞；`重金礦` 已由外部來源支持為 provisional，八筆 ledger 仍為 `ai_draft`）。
 - [x] 對目前四筆 M4 bounded batch 做字寬、行數、缺字、控制碼、簡繁漏入與 target metadata QA；M5.2 另由 relocation builder 做同等 fail-closed target contract；完整用語一致性與人工翻譯 review 仍待進行。
 
 M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](research/m4-batch-qa.md)。
@@ -242,7 +242,7 @@ M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS recei
 - [x] 以 `tools/audit_static_text_oam.py` 補足文字 renderer 的 static object path：`sub_0800D81C → sub_0800B730` per-glyph `0x28` descriptor、`sub_08001C00 → sub_0800901C` pack 至 `gOamBuffer=0x030038B0`，再接既有 `0x07000000` OAM DMA；tilemap、live OAM／VRAM 與 screen readability 仍 unknown。
 - [x] 以 `tools/rebuild_container.py` 完成 13 resources／11 payload groups 的 semantic PSI3／LZ77 no-op rebuild；directory byte-identical、361/361 source re-encode、capacity guard 與 BPS apply byte-identical，僅關閉 no-op container 層，不等於 translated release insertion。
 - [ ] 在不同 fresh process 上成功完成一次文字 consumer/writer hit（自然導航或明確標記的 controlled call），並讀出 changed／adjacent live VRAM；一次 controlled connection `Errno 49` negative 不算 ROM／譯文失敗。
-- [~] 完成本 session 逐筆 source-to-target 語意／字型／版面 review：7 筆 provisional-pass、`重金礦` 1 筆 term-blocked；外部人工作業／術語核准與 ledger `ai_review`／`approved` 狀態仍未完成。
+- [~] 完成本 session 逐筆 source-to-target 語意／字型／版面 review：8 筆 provisional-pass；`重金礦` 已有兩個臺灣社群來源支持但仍需人工術語核准，ledger `ai_review`／`approved` 狀態仍未完成。
 - [ ] 在已確認的 localhost runtime transport 上以不同於已失敗 IWRAM injection 的路徑完成文字 consumer/writer／changed glyph coverage，或取得足以替代的完整 static tilemap／layout／release encoder evidence；2348 的一次 qSupported 與 `E06`／`Errno 49` 不算完成，未達成前不宣稱可發布。
 
 本節是 M5.5 後的 gate 收斂，不是 M5.6，也不允許再增加同長度、重複通用短句。

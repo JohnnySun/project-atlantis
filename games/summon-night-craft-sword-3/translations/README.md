@@ -49,7 +49,7 @@ M5.2，再在同一 relocated resource 改寫一筆 14-byte record，沿用 `ec6
 mapping，不新增 slot。source adapter、working copy、ROM 與 BPS 仍只在 ignored `work/`。
 
 `glossary.zh-TW.tsv` 目前收七個 bounded target term，其中六個是通用 UI／語氣詞，
-另有一個因外部多來源查證不可達而維持 `blocked_external_lookup`；沒有角色、地名或
+另有一個已有外部社群來源支持但仍維持 `provisional`；沒有角色、地名或
 其他需要自行音譯的專有名詞，也沒有把完整日文 source 寫入 glossary。未來出現專有
 名詞時，必須先補 Wikipedia zh-tw、巴哈姆特等多來源證據，再把決定寫入此檔。
 
