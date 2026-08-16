@@ -118,6 +118,14 @@
   都是 2/2 layout／control／fixed-slot round-trip，沿用 `等`／`亂` 的 E-specific bounded slots，
   沒有新增 map slot。269-byte fixed-slot patch 與 342-byte BPS 套用逐 byte 相同；自然 E
   writer／VRAM receipt 與人工終審仍 pending，詳見 `research/m3-story-event-batch15-roundtrip-20260816.md`。
+- **story-event E batch 16 已建立**：E:028／E:029 處理宮廷腐敗、董卓類比與劉備節約政策；兩筆
+  都是 2/2 layout／control／fixed-slot round-trip，existing B3EJ codepage coverage `2/2`，
+  沒有新增 map slot。203-byte fixed-slot patch 與 242-byte BPS 套用逐 byte 相同；自然 E
+  writer／VRAM receipt 與人工終審仍 pending，詳見 `research/m3-story-event-batch16-roundtrip-20260816.md`。
+- **story-event E batch 17 已建立**：E:030／E:031 處理獻帝離宮、劉備失國與漢王朝恢復威勢；兩筆
+  都是 2/2 layout／control／fixed-slot round-trip，新增 `權` 的 E-specific bounded slot，
+  custom plane `4/4`。380-byte fixed-slot patch 與 480-byte BPS 套用逐 byte 相同；自然 E
+  writer／VRAM receipt 與人工終審仍 pending，詳見 `research/m3-story-event-batch17-roundtrip-20260816.md`。
 - **glyph format 已交叉核對**：`font_glyph_format.py` 依有效 Thumb expander 重現兩組
   `0x20`-byte source plane → `0x80`-byte cache；clean ROM codepage index `1301`／
   `0x9594`／selector `0` 的靜態 cache hash 與 controlled runtime cache hash 相同。
@@ -127,8 +135,8 @@
   mapping 已固定於 `research/m3-custom-glyph-map.json`；`custom_glyph_patch.py` 和
   `verify_custom_glyph_patch.py` 以 source-pool non-use、existing codepage slot、兩組
   glyph plane、fixed record span 和 hash-only re-extract 驗證 D batch 2 與 Table B batch 3。
-  E batch 3–6／8／9／10／11／12／13／14／15 另使用 `research/m3-story-custom-glyph-map.json` 與 292-record source-use
-  gate，現有 E-specific map 共 11 個 bounded slots。這不是全 ROM raw-code-unit non-use、自然 runtime、全字庫或發布 patch 的完成證明；
+  E batch 3–6／8／9／10／11／12／13／14／15／17 另使用 `research/m3-story-custom-glyph-map.json` 與 292-record source-use
+  gate，現有 E-specific map 共 12 個 bounded slots。這不是全 ROM raw-code-unit non-use、自然 runtime、全字庫或發布 patch 的完成證明；
   詳見 `research/m3-custom-glyph-format-20260816.md`、`research/m3-batch3-roundtrip-20260816.md`
   、`research/m3-event-system-batch2-roundtrip-20260816.md` 和
   `research/m3-story-event-batch3-roundtrip-20260816.md`、

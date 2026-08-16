@@ -147,6 +147,18 @@ ja	zh-TW	category	status	notes
 大意	大意	scenario	provisional	普通敘事用語；E batch 15 待 ROM 結局畫面核對
 防備	防備	scenario	provisional	普通敘事用語；E batch 15 待 ROM 結局畫面核對
 信念	信念	scenario	provisional	普通敘事用語；E batch 15 待 ROM 結局畫面核對
+董卓	董卓	character	provisional	臺灣三國志人物慣用字形；E batch 16 待 ROM 結局畫面核對
+貪欲	貪欲	scenario	provisional	普通歷史敘事用語；E batch 16 待 ROM 結局畫面核對
+官員	官員	scenario	provisional	普通政治敘事用語；E batch 16 待 ROM 結局畫面核對
+交易	交易	scenario	provisional	普通政治敘事用語；E batch 16 待 ROM 結局畫面核對
+財利	財利	scenario	provisional	普通歷史敘事用語；E batch 16 待 ROM 結局畫面核對
+重課	重課	scenario	provisional	普通政治敘事用語；E batch 16 待 ROM 結局畫面核對
+節約	節約	scenario	provisional	普通政策敘事用語；E batch 16 待 ROM 結局畫面核對
+浪費	浪費	scenario	provisional	普通政策敘事用語；E batch 16 待 ROM 結局畫面核對
+孫權	孫權	character	provisional	臺灣三國志人物慣用字形；E batch 17 待 ROM 結局畫面核對
+皇叔	皇叔	character	provisional	三國志人物稱號；E batch 17 待 ROM 結局畫面核對
+威勢	威勢	scenario	provisional	普通歷史敘事用語；E batch 17 待 ROM 結局畫面核對
+尊貴	尊貴	scenario	provisional	普通歷史敘事用語；E batch 17 待 ROM 結局畫面核對
 援軍	援軍	event	provisional	臺灣三國志慣用事件用語；待 ROM 事件核對
 増援	增援	event	provisional	臺灣繁體字形；待 ROM 事件核對
 説得	說服	event	provisional	事件選項候選；是否為勸降語境待 ROM 核對
