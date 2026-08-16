@@ -38,6 +38,20 @@ class StoryLayoutAuditTest(unittest.TestCase):
             self.assertEqual(row["context"]["max_width"], 12)
             self.assertIn(row["context"]["max_lines"], (4, 5))
 
+    def test_batch8_ledger_and_story_map_are_bounded(self) -> None:
+        root = pathlib.Path(__file__).parents[1]
+        ledger_path = root / "translations" / "story-event-batch-8.jsonl"
+        rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertEqual(
+            [row["string_id"] for row in rows],
+            ["b3ej:story-event:012", "b3ej:story-event:013"],
+        )
+        self.assertTrue(all("source" not in row and row["status"] == "ai_review" for row in rows))
+        mapping = json.loads((root / "research" / "m3-story-custom-glyph-map.json").read_text(encoding="utf-8"))
+        by_unicode = {entry["unicode"]: entry for entry in mapping["mappings"]}
+        self.assertEqual(by_unicode["U+737B"]["codepage_index"], 34)
+        self.assertEqual(by_unicode["U+4E82"]["codepage_index"], 35)
+
 
 if __name__ == "__main__":
     unittest.main()

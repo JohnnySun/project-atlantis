@@ -37,21 +37,22 @@ records，並以 source hash 綁定。已提交的 `table-b-batch-1.jsonl` 有 B
 [`story-event-batch-4.jsonl`](story-event-batch-4.jsonl) 和
 [`story-event-batch-5.jsonl`](story-event-batch-5.jsonl) 和
 [`story-event-batch-6.jsonl`](story-event-batch-6.jsonl) 和
-[`story-event-batch-7.jsonl`](story-event-batch-7.jsonl)。前者保存公開資料研究得到的
-術語候選；十七個 ledger 保存 Table B／event-system／system-item-class／story-event E 的 `zh-TW`／schema
+[`story-event-batch-7.jsonl`](story-event-batch-7.jsonl) 和
+[`story-event-batch-8.jsonl`](story-event-batch-8.jsonl)。前者保存公開資料研究得到的
+術語候選；十八個 ledger 保存 Table B／event-system／system-item-class／story-event E 的 `zh-TW`／schema
 目標、source hash、上下文與 `ai_review` 狀態，不含 ROM 原文。Table B 的 26 個 unique
 records 已有 ledger；pool A 先建立 34 筆 bounded rows，story-event E batch 1／2 先建立
 E:002／E:011／E:032 的 existing-codepage rows。E source 使用的 raw code units 與既有
-custom map 重疊，所以 E batch 1／2 維持 E-specific guard；batch 3–6 另以完整 292-record
-source-use cohort 建立九個 custom glyph slots，不能直接沿用四池 custom-glyph patch。
-E 目前共 11 個 source-free rows，仍有 22 個 unique records 待處理；公開攻略只提供
+custom map 重疊，所以 E batch 1／2 維持 E-specific guard；batch 3–6／8 另以完整 292-record
+source-use cohort 建立十一個 custom glyph slots，不能直接沿用四池 custom-glyph patch。
+E 目前共 13 個 source-free rows，仍有 20 個 unique records 待處理；公開攻略只提供
 `provisional-known-screen-cross`，自然 runtime QA 和人工終審仍未完成。
 
 ## 第一批的可重現邊界
 
 `restore_translations.rb` 只在本機把 ignored decoded source table 合併成 `work/*.jsonl`；
-`strip_translations.rb` 再產生可提交 ledger。目前十七批的 restore→strip 輸出均與 tracked
-ledger 逐 byte 相同，合計 86 筆均沒有 `source` 欄位；existing-codepage rows
+`strip_translations.rb` 再產生可提交 ledger。目前十八批的 restore→strip 輸出均與 tracked
+ledger 逐 byte 相同，合計 88 筆均沒有 `source` 欄位；existing-codepage rows
 由 `font_coverage.py` 驗證，其餘 custom-glyph／custom-aware rows 由
 `custom_glyph_patch.py`／`verify_custom_glyph_patch.py` 驗證，均未超過各自原始固定槽位。
 
@@ -90,3 +91,5 @@ story-event E batch 6 的 E:007／E:008 另見
 [`research/m3-story-event-batch6-roundtrip-20260816.md`](../research/m3-story-event-batch6-roundtrip-20260816.md)。
 story-event E batch 7 的 E:009／E:010 另見
 [`research/m3-story-event-batch7-roundtrip-20260816.md`](../research/m3-story-event-batch7-roundtrip-20260816.md)。
+story-event E batch 8 的 E:012／E:013 另見
+[`research/m3-story-event-batch8-roundtrip-20260816.md`](../research/m3-story-event-batch8-roundtrip-20260816.md)。

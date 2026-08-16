@@ -21,6 +21,7 @@
 11. [中文 Wikipedia：蜀漢](https://zh.wikipedia.org/wiki/%E8%9C%80%E6%B1%89) 與 [諸葛亮](https://zh.wikipedia.org/wiki/%E8%AF%B8%E8%91%9B%E4%BA%AE)：確認 `蜀`、`漢朝`、`劉備`、`諸葛亮／孔明` 的臺灣歷史／三國志字形；仍與巴哈姆特／GBA Wiki 交叉使用。
 
 12. [中文 Wikipedia：桃園三結義](https://zh.wikipedia.org/wiki/%E6%A1%83%E5%9C%92%E4%B8%89%E7%B5%90%E7%BE%A9) 與 [巴哈姆特：桃園三結義](https://forum.gamer.com.tw/C.php?bsn=36815&snA=1925)：交叉確認 `桃園`、`桃園三結義`／`桃園結義` 為臺灣三國題材常用字形；只作 E:009／E:010 的專有名詞決策，不作日版 ROM 原文來源。
+13. [中文 Wikipedia：漢獻帝](https://zh.wikipedia.org/wiki/%E6%B1%89%E7%8C%AE%E5%B8%9D) 與 [巴哈姆特：獻帝相關三國志討論](https://forum.gamer.com.tw/G2.php?bsn=6331&lorder=5&parent=1584&sn=600)：交叉確認日文 `献帝` 對應臺灣慣用 `獻帝`；只作 E:012 的人物術語決策，不作日版 ROM 原文來源。
 
 ## 暫定決策
 
@@ -33,6 +34,7 @@
 - story-event E batch 5 延續同一結局分支的 `吳`／`蜀`／`魏`／`漢朝` 用字；`從此`、`只能臣服`、`復興`、`夢想` 是普通敘事語，不新增專有名詞。四個新增字形使用 E-specific licensed glyph map，ledger 仍保持 `ai_review`，待自然結局畫面與人工終審。
 - story-event E batch 6 延續 `劉備`、`孔明`、`張飛`、`關羽`、`蜀`、`魏`、`吳` 的既有臺灣三國志字形；`關` 的 raw-unit slot 是 E-specific 字型工程決策，不由 addressing 推導 Unicode identity。兩筆 ledger 維持 `ai_review`，待自然結局畫面與人工終審。
 - story-event E batch 7 的 `桃園`／`桃園結義` 沿用臺灣三國題材的主流字形；Wikipedia 與巴哈姆特交叉支持，且只把日文 `桃園の誓い` 對應為術語候選，不把典故來源當成 B3EJ 逐句翻譯證據。E:009／E:010 維持 `ai_review`，待自然結局畫面與人工終審。
+- story-event E batch 8 的 `献帝` 採臺灣慣用 `獻帝`；Wikipedia 與巴哈姆特交叉支持。`亂世` 是普通敘事語，不新增自造專有名詞；E:012／E:013 維持 `ai_review`，待自然結局畫面與人工終審。
 - 日文 `策略` 保留為遊戲系統類別，不先改成泛稱「技能」；各策略名稱另在 glossary 以效果／類別記錄，待 ROM 選單上下文確認。
 - 日文 `兵種` 在研究文件中譯為「兵種」；`短兵`、`長兵`、`弓兵`、`輕騎兵`、`重騎兵`、`武道家`、`軍樂隊`、`猛獸師`、`妖術使`、`輸送隊` 等候選保留其三國題材慣用語感。
 - `汜水關`、`雒`、`葭萌關`、`瓦口關`、`天蕩山`、`麥城`、`西陵`、`夷陵` 等地名先採社群常見繁體字；若 ROM 畫面或多個獨立來源出現分歧，保留爭議並不自行創造音譯。

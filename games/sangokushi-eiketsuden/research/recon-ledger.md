@@ -383,7 +383,7 @@ Story-event E 的完整 bounded 結論見
 | E record structure | `confirmed-static` | 33/33 strict Shift-JIS、32/33 LF、0 opaque controls、payload length `18–124` bytes；hash-only manifest 已記錄 | 跨 record LF fragment 的翻譯語境需逐批核對；不是 full script |
 | E static consumer | `confirmed-static / natural-runtime-pending` | `0x080cdb64 → 0x08011904 → 0x080118c8 → 0x0800cad8`；27 個 literal slots 通過 entry range／alignment；有效 Thumb callsites 經 analyzer 驗證 | 尚無 E 自然 formatter→glyph cache→VRAM／tilemap receipt |
 | E decoder scope | `confirmed-static / explicit-opt-in` | 預設四池仍是 259 records；`--include-story` 才產生 292-record ignored source table；known-screen-cross 文件分開記錄公開結局流程 | 原文仍只留 ignored；外部流程不替代自然 runtime glyph receipt |
-| E custom unit safety | `confirmed-static / bounded` | E source 使用 `0x8141`、`0x8142`、`0x8148`、`0x8158`，與既有 17-map unit 重疊；E-specific map 以 292-record source-use cohort 選 index 15／16／23／24／25／26／27／28／32，batch 3／4／5／6 custom plane `3/3`／`4/4`／`5/5`／`5/5` | raw-unit non-use 仍不是 full-ROM proof；secondary plane／自然 runtime 可讀性仍 pending |
+| E custom unit safety | `confirmed-static / bounded` | E source 使用 `0x8141`、`0x8142`、`0x8148`、`0x8158`，與既有 17-map unit 重疊；E-specific map 以 292-record source-use cohort 選 index 15／16／23／24／25／26／27／28／32／34／35，batch 3／4／5／6／8 custom plane `3/3`／`4/4`／`5/5`／`5/5`／`4/4` | raw-unit non-use 仍不是 full-ROM proof；secondary plane／自然 runtime 可讀性仍 pending |
 
 ## M3 story-event E batch 1／existing-codepage round-trip（2026-08-16）
 
@@ -475,6 +475,19 @@ Story-event E 的完整 bounded 結論見
 | existing-codepage gate | `confirmed-static / bounded` | target codepage membership `2/2`；無新增 E custom glyph；5 行／4 行保留、max width `12`；E-specific source-use gate 未被擴大 | conservative line budget 不等於 pixel-width proof；自然 writer／tilemap 仍 pending |
 | fixed-slot re-extract | `confirmed-static / bounded` | story E 33-entry pointer table unchanged；changed `215` bytes；selected re-extract／fixed-slot `2/2`；unselected records byte-identical；relocation disabled | 只覆蓋 E:009、E:010 |
 | BPS build/apply | `confirmed-static / bounded` | BPS `252` bytes；source CRC32 `a4a1c956`、target CRC32 `20c92a7f`、BPS CRC32 `eb43ac96`；BPS SHA-256 `d56325c661f22197c39fc2a1ea476d6429afea2b01cbc567f18bbb16ca3fb907`；apply 與 patched ROM `cmp` 相等，patched SHA-256 `ba894053ccaf6bb2d1c722822174b3bfb6252da2f6d928e44b7b839066bed7ac` | 產物留 ignored／暫存；E 自然 formatter→cache→VRAM receipt 仍 pending |
+
+## M3 story-event E batch 8／E-specific custom glyph round-trip（2026-08-16）
+
+完整欄位、命令和限制見
+[`research/m3-story-event-batch8-roundtrip-20260816.md`](m3-story-event-batch8-roundtrip-20260816.md)。
+本帳只補充 hash／計數，不保存 E pool 日文 source、work 或 generated glyph bytes。
+
+| 項目 | 狀態 | 已有證據 | 尚未證實／限制 |
+|---|---|---|---|
+| story ledger／layout | `confirmed-static / ai-review` | `translations/story-event-batch-8.jsonl` 有 E:012、E:013 兩筆 source-free rows；restore／strip 逐 byte 相同，source fields `0`；`audit_story_layout.py` line budget／control／fit `2/2`；另一條結局敘事分支 | 仍待自然 ending 畫面與人工 zh-TW 終審；不是完整 E pool 翻譯 |
+| E custom encoder／plane gate | `confirmed-static / bounded` | E-specific map 新增 U+737B／U+4E82 對 indices 34／35，並重用 U+95DC／U+570B indices 32／23；292-record bounded source-use non-use；custom plane `4/4`；target codepage membership `2/2` | raw-unit non-use 不是 full-ROM proof；secondary plane、版面和自然 writer 仍 pending |
+| fixed-slot re-extract | `confirmed-static / bounded` | story E 33-entry pointer table unchanged；changed `393` bytes；selected re-extract／fixed-slot `2/2`；unselected records byte-identical；relocation disabled | 只覆蓋 E:012、E:013 |
+| BPS build/apply | `confirmed-static / bounded` | BPS `490` bytes；source CRC32 `a4a1c956`、target CRC32 `d5b570ef`、BPS CRC32 `8c35c5ab`；BPS SHA-256 `08d34403808810eb6dea9bdf10de5c54d146bb211c0dffd959dea5f7be0b1a6b`；apply 與 patched ROM `cmp` 相等，patched SHA-256 `5187703988e1fd843223244b72087c381e823364b3fe51d7febb71e00eba997c` | 產物留 ignored／暫存；E 自然 formatter→cache→VRAM receipt 仍 pending |
 
 ## 後續證據邊界
 

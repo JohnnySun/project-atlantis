@@ -7,7 +7,7 @@
   "font_source_sha256": "c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53",
   "font_license": "SIL Open Font License 1.1 (see vendor/fonts/unifont/OFL-1.1.txt)",
   "plane_policy": "Unifont-T 16x16 bitmap as primary 0x20-byte plane; secondary plane zero-filled",
-  "mapping_scope": "E003/E004/E005/E006/E007/E008 story-event batches only; every raw unit is absent from the 292-record bounded source-use cohort",
+  "mapping_scope": "E003/E004/E005/E006/E007/E008/E012/E013 story-event batches; every raw unit is absent from the 292-record bounded source-use cohort",
   "mappings": [
     {"unicode": "U+7B49", "code_unit": "0x8173", "codepage_index": 15},
     {"unicode": "U+537B", "code_unit": "0x8174", "codepage_index": 16},
@@ -17,6 +17,8 @@
     {"unicode": "U+6B64", "code_unit": "0x819B", "codepage_index": 26},
     {"unicode": "U+53EA", "code_unit": "0x81A6", "codepage_index": 27},
     {"unicode": "U+65BC", "code_unit": "0x81A8", "codepage_index": 28},
-    {"unicode": "U+95DC", "code_unit": "0x8252", "codepage_index": 32}
+    {"unicode": "U+95DC", "code_unit": "0x8252", "codepage_index": 32},
+    {"unicode": "U+737B", "code_unit": "0x8254", "codepage_index": 34},
+    {"unicode": "U+4E82", "code_unit": "0x8255", "codepage_index": 35}
   ]
 }

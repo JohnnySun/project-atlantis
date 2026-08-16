@@ -90,19 +90,20 @@
 - **glyph format 已交叉核對**：`font_glyph_format.py` 依有效 Thumb expander 重現兩組
   `0x20`-byte source plane → `0x80`-byte cache；clean ROM codepage index `1301`／
   `0x9594`／selector `0` 的靜態 cache hash 與 controlled runtime cache hash 相同。
-  這只建立未來外部授權字型輸入的格式 gate，尚未建立 custom Unicode mapping 或提交
-  字型 bytes；詳見 `research/m3-font-format-20260816.md`。
+  這只建立未來外部授權字型輸入的格式 gate；custom Unicode mapping 僅在下一項所列的
+  bounded story／fixed-pool scope 使用，未提交字型 bytes；詳見 `research/m3-font-format-20260816.md`。
 - **custom zh-TW glyph bounded gate 已建立**：既有授權 Unifont-T 17.0.05 的 17 個缺字
   mapping 已固定於 `research/m3-custom-glyph-map.json`；`custom_glyph_patch.py` 和
   `verify_custom_glyph_patch.py` 以 source-pool non-use、existing codepage slot、兩組
   glyph plane、fixed record span 和 hash-only re-extract 驗證 D batch 2 與 Table B batch 3。
-  E batch 3–6 另使用 `research/m3-story-custom-glyph-map.json` 與 292-record source-use
-  gate。這不是全 ROM raw-code-unit non-use、自然 runtime、全字庫或發布 patch 的完成證明；
+  E batch 3–6／8 另使用 `research/m3-story-custom-glyph-map.json` 與 292-record source-use
+  gate，現有 E-specific map 共 11 個 bounded slots。這不是全 ROM raw-code-unit non-use、自然 runtime、全字庫或發布 patch 的完成證明；
   詳見 `research/m3-custom-glyph-format-20260816.md`、`research/m3-batch3-roundtrip-20260816.md`
   、`research/m3-event-system-batch2-roundtrip-20260816.md` 和
   `research/m3-story-event-batch3-roundtrip-20260816.md`、
   `research/m3-story-event-batch5-roundtrip-20260816.md`、
-  `research/m3-story-event-batch6-roundtrip-20260816.md`。
+  `research/m3-story-event-batch6-roundtrip-20260816.md`、
+  `research/m3-story-event-batch8-roundtrip-20260816.md`。
 
 ## 可重現的唯讀工具
 
