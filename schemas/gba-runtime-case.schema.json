@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-atlantis.invalid/schemas/gba-runtime-case.schema.json",
+  "title": "Project Atlantis GBA runtime validation case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format_version", "case_id", "rom"],
+  "anyOf": [
+    {"required": ["static"]},
+    {"required": ["runtime"]}
+  ],
+  "properties": {
+    "$schema": {"type": "string"},
+    "format_version": {"const": 1},
+    "case_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,79}$"},
+    "description": {"type": "string"},
+    "provenance": {"type": "object"},
+    "rom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256"],
+      "properties": {
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size": {"type": ["integer", "string"]},
+        "game_code_hex": {"type": "string", "pattern": "^[0-9a-f]{8}$"}
+      }
+    },
+    "static": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "change_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "allowed_changed_ranges": {"$ref": "#/$defs/ranges"},
+            "allow_size_change": {"type": "boolean"},
+            "require_change": {"type": "boolean"}
+          }
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "offset", "length", "policy"],
+            "properties": {
+              "id": {"type": "string"},
+              "offset": {"$ref": "#/$defs/integer"},
+              "length": {"$ref": "#/$defs/integer"},
+              "policy": {"enum": ["observe", "changed", "unchanged"]}
+            }
+          }
+        },
+        "pointers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "offset", "target_ranges"],
+            "properties": {
+              "id": {"type": "string"},
+              "offset": {"$ref": "#/$defs/integer"},
+              "encoding": {"const": "gba32le"},
+              "target_ranges": {"$ref": "#/$defs/ranges"},
+              "alignment": {"$ref": "#/$defs/integer"},
+              "alias_group": {"type": "string"}
+            }
+          }
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "offset", "allocated_length", "allowed_values"],
+            "properties": {
+              "id": {"type": "string"},
+              "offset": {"$ref": "#/$defs/integer"},
+              "allocated_length": {"$ref": "#/$defs/integer"},
+              "unit_bytes": {"enum": [1, 2, 4]},
+              "terminator": {"$ref": "#/$defs/integer"},
+              "allowed_values": {"$ref": "#/$defs/ranges"},
+              "control_values": {"type": "array", "items": {"$ref": "#/$defs/integer"}},
+              "newline_values": {"type": "array", "items": {"$ref": "#/$defs/integer"}},
+              "preserve_controls": {"type": "boolean"},
+              "layout": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["max_width", "max_lines"],
+                "properties": {
+                  "glyph_widths": {"type": "object", "additionalProperties": {"$ref": "#/$defs/integer"}},
+                  "default_width": {"$ref": "#/$defs/integer"},
+                  "max_width": {"$ref": "#/$defs/integer"},
+                  "max_lines": {"$ref": "#/$defs/integer"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required_capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "gdb_timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "connect_timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "controlled_write_ranges": {"$ref": "#/$defs/ranges"},
+        "actions": {"type": "array", "items": {"$ref": "#/$defs/runtimeAction"}},
+        "assertions": {"type": "array", "items": {"$ref": "#/$defs/runtimeAssertion"}}
+      }
+    }
+  },
+  "$defs": {
+    "integer": {"type": ["integer", "string"]},
+    "range": {
+      "type": "array",
+      "prefixItems": [{"$ref": "#/$defs/integer"}, {"$ref": "#/$defs/integer"}],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "ranges": {"type": "array", "items": {"$ref": "#/$defs/range"}},
+    "runtimeAction": {
+      "type": "object",
+      "required": ["op"],
+      "properties": {
+        "id": {"type": "string"},
+        "op": {"enum": ["wait_until", "run", "keys", "capture", "breakpoint", "watchpoint", "step", "write_register", "write_memory"]},
+        "seconds": {"type": "number"},
+        "timeout_seconds": {"type": "number"},
+        "slice_seconds": {"type": "number"},
+        "per_read_timeout_seconds": {"type": "number"},
+        "condition": {"type": "object"},
+        "keys": {"type": "array", "items": {"enum": ["A", "B", "SELECT", "START", "RIGHT", "LEFT", "UP", "DOWN", "R", "L"]}},
+        "destination_register": {"type": "string", "pattern": "^(r([0-9]|1[0-2])|sp|lr|pc|cpsr)$"},
+        "hold_reads": {"$ref": "#/$defs/integer"},
+        "release_reads": {"$ref": "#/$defs/integer"},
+        "regions": {"type": "array", "items": {"type": "object"}},
+        "renders": {"type": "array", "items": {"type": "object"}},
+        "register_regions": {"type": "array", "items": {"type": "object"}},
+        "address": {"$ref": "#/$defs/integer"},
+        "length": {"$ref": "#/$defs/integer"},
+        "watch_type": {"enum": [2, 3, 4]},
+        "controlled": {"type": "boolean"},
+        "register": {"type": "string"},
+        "value": {"$ref": "#/$defs/integer"},
+        "data_hex": {"type": "string", "pattern": "^(?:[0-9a-fA-F]{2})+$"}
+      },
+      "additionalProperties": false
+    },
+    "runtimeAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "path"],
+      "properties": {
+        "kind": {"enum": ["changed", "unchanged", "equals", "positive"]},
+        "id": {"type": "string"},
+        "before": {"type": "string"},
+        "after": {"type": "string"},
+        "snapshot": {"type": "string"},
+        "path": {"type": "string"},
+        "value": {}
+      }
+    }
+  }
+}
