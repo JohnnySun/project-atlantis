@@ -50,7 +50,7 @@
   個 selected entries re-extract／fixed-slot 全部相符，五個 BPS 套用後逐 byte 相同。
   這只覆蓋 pool A 的 34 個 unique records，其餘 115 個 unique records、item／battle 畫面版面
   和自然 runtime 仍 pending；batch 4／5 沒有新增 custom glyph。
-- **story-event E 第一個劇情小批次已建立**：`translations/story-event-batch-1.jsonl` 覆蓋
+- **story-event E 劇情小批次已建立**：`translations/story-event-batch-1.jsonl` 覆蓋
   E:002、E:011 兩筆獨立雙行問題句；兩筆 strict codepage coverage／fixed-slot
   re-extract 都是 2/2，保留 LF／control invariant，custom raw-unit guard overlap 為 0，
   並產生 132-byte BPS apply receipt。這是 E 的 record-level research gate，不是自然
@@ -82,6 +82,11 @@
   為 `2/2`，custom plane `5/5`、selected re-extract／fixed-slot `2/2`，508-byte BPS
   套用逐 byte 相同。自然 E writer／VRAM receipt 與人工終審仍 pending；詳見
   `research/m3-story-event-batch6-roundtrip-20260816.md`。
+- **story-event E batch 7 已建立**：`translations/story-event-batch-7.jsonl` 覆蓋同一分支的
+  E:009／E:010；既有 codepage coverage、`audit_story_layout.py` line budget／control／fit
+  為 `2/2`，無新增 custom glyph，215-byte fixed-slot patch 與 252-byte BPS 套用逐 byte
+  相同。自然 E writer／VRAM receipt 與人工終審仍 pending；詳見
+  `research/m3-story-event-batch7-roundtrip-20260816.md`。
 - **glyph format 已交叉核對**：`font_glyph_format.py` 依有效 Thumb expander 重現兩組
   `0x20`-byte source plane → `0x80`-byte cache；clean ROM codepage index `1301`／
   `0x9594`／selector `0` 的靜態 cache hash 與 controlled runtime cache hash 相同。

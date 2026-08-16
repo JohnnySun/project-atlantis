@@ -463,6 +463,19 @@ Story-event E 的完整 bounded 結論見
 | fixed-slot re-extract | `confirmed-static / bounded` | story E 33-entry pointer table unchanged；changed `408` bytes；selected re-extract／fixed-slot `2/2`；unselected records byte-identical；relocation disabled | 只覆蓋 E:007、E:008 |
 | BPS build/apply | `confirmed-static / bounded` | BPS `508` bytes；source CRC32 `a4a1c956`、target CRC32 `04ffcd87`、BPS CRC32 `8945c99b`；BPS SHA-256 `f9c8890024ac425c04879538c37f896c1ea6adfddde49474915152e185434d30`；apply 與 patched ROM `cmp` 相等，patched SHA-256 `cea14476b02ee25b7a9c81de9260047a07e1901f36873aa90994f64389a376f3` | 產物留 ignored／暫存；E 自然 formatter→cache→VRAM receipt 仍 pending |
 
+## M3 story-event E batch 7／existing-codepage round-trip（2026-08-16）
+
+完整欄位、命令和限制見
+[`research/m3-story-event-batch7-roundtrip-20260816.md`](m3-story-event-batch7-roundtrip-20260816.md)。
+本帳只補充 hash／計數，不保存 E pool 日文 source、work 或 patched ROM。
+
+| 項目 | 狀態 | 已有證據 | 尚未證實／限制 |
+|---|---|---|---|
+| story ledger／layout | `confirmed-static / ai-review` | `translations/story-event-batch-7.jsonl` 有 E:009、E:010 兩筆 source-free rows；restore／strip 逐 byte 相同，source fields `0`；`audit_story_layout.py` line budget／control／fit `2/2`；與 batch 3–6 同一已知結局流程分組 | 仍待自然 ending 畫面與人工 zh-TW 終審；不是完整 E pool 翻譯 |
+| existing-codepage gate | `confirmed-static / bounded` | target codepage membership `2/2`；無新增 E custom glyph；5 行／4 行保留、max width `12`；E-specific source-use gate 未被擴大 | conservative line budget 不等於 pixel-width proof；自然 writer／tilemap 仍 pending |
+| fixed-slot re-extract | `confirmed-static / bounded` | story E 33-entry pointer table unchanged；changed `215` bytes；selected re-extract／fixed-slot `2/2`；unselected records byte-identical；relocation disabled | 只覆蓋 E:009、E:010 |
+| BPS build/apply | `confirmed-static / bounded` | BPS `252` bytes；source CRC32 `a4a1c956`、target CRC32 `20c92a7f`、BPS CRC32 `eb43ac96`；BPS SHA-256 `d56325c661f22197c39fc2a1ea476d6429afea2b01cbc567f18bbb16ca3fb907`；apply 與 patched ROM `cmp` 相等，patched SHA-256 `ba894053ccaf6bb2d1c722822174b3bfb6252da2f6d928e44b7b839066bed7ac` | 產物留 ignored／暫存；E 自然 formatter→cache→VRAM receipt 仍 pending |
+
 ## 後續證據邊界
 
 1. 用 ROM-independent tests 保持 identity／pointer summary 工具可重跑。

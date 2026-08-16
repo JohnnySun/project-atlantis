@@ -86,3 +86,13 @@ index identity。consumer 仍只保證 local `u16(r6+0x02)` 與 `event_byte & 0x
 下一個安全 runtime 路徑應以 state field `r4+0x14` 的自然初始化／menu 或 battle
 mode gate 為入口；若沒有新的可重現導航證據，應先從其上游 initializer/state owner
 追蹤，而不是延長 title KEYINPUT loop 或擴大 controlled call。
+
+## 後續 transport negative（同日 bounded retry）
+
+在完成本批次 static／record gate 後，另以本 session 自行啟動的 headless mGBA
+與 B3EJ ROM 做一次乾淨對照；程序在 Ctrl-C 前輸出 `Debugger: Couldn't open socket`
+（該 build 僅嘗試預設 GDB port `2345`），沒有建立可用 listener 或 GDB connection。
+只停止這次由本 session 啟動的程序；未連線、未讀寫 ROM／save，也沒有把它算成新的
+natural path。這筆 negative 只表示該 headless build 的本次 transport readiness
+失敗，不能否定既有 static chain、已完成的 E fixed-slot round-trip，或把自然 runtime
+缺口宣稱為永久外部阻塞。
