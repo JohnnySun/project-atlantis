@@ -7,7 +7,7 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8 執行期切片；尚未
+目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8／M1.9 執行期切片；尚未
 開始有限量翻譯，也沒有可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
 以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
 read 與 renderer CPU VRAM store；但目的位址是 `0x060020xx/0x060023xx`，不是 BG1
@@ -22,6 +22,12 @@ packet 限制未通過，沒有把它冒充 keyboard source。完整 receipt 見
 [`research/m18-bg1-asset-20260816.md`](research/m18-bg1-asset-20260816.md)。
 M1.5 的圖層與 VRAM negative receipt 仍見
 [`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
+
+M1.9 以 strict serialized GDB 在三個 fresh process 重現 keyboard gate；單一
+`0x06004020` write watch 為零命中，單一 DMA3 setup/control watch 則得到非 GBA 可讀
+source/destination，兩者都沒有形成可信 source→VRAM receipt。完整 metadata 與
+negative boundary 見
+[`research/m19-gate-transfer-20260816.md`](research/m19-gate-transfer-20260816.md)。
 下一個安全技術關卡是把 font-record／runtime tile 的關係、控制碼與劇情／地圖／事件、
 角色／戰鬥資料分離，再確認可逆回插規則。
 

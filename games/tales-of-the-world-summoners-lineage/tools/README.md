@@ -37,6 +37,14 @@ ROM、patch、解壓資源或完整原文放入工作區的可提交路徑。
   RAM／VRAM 只寫 caller 指定的 ignored／`/private/tmp` dump。
 - `test_m16_keyboard_metadata.py`：測試 tilemap 欄位／座標、diff／append filter 與
   0x18 font-record address arithmetic。
+- `m19_gate_transfer_probe.py`：M1.9 嚴格序列化的 keyboard gate 與單一 transfer probe。
+  `--mode gate` 只掛 KEYINPUT；`--mode transfer --asset-watch tile1` 只掛一個
+  `0x06004020` 32-byte write watch，`--asset-watch dma3` 只掛 DMA3
+  `0x040000DE` setup/control watch。回報只保存 BG1 metadata、hash、PC/LR、DMA
+  source/destination/count/control 與精確 negative；不把 queued／非 GBA 位址當成
+  source receipt。
+- `test_m19_gate_transfer_probe.py`：測試 strict response 分類、gate hash gate、RAM/ROM
+  region、reset hash 分離與 DMA3 destination window arithmetic。
 
 ## 重現基準掃描
 
@@ -142,6 +150,24 @@ stub 不支援則退回 `0x20`）。輸出只含 hashes／counts／offset／PC/L
 metadata；ROM、raw RAM／VRAM、rendered image 與完整原文必須留在 caller 的 ignored
 或 `/private/tmp` 路徑。參考 negative receipt 與 M1.7 path comparison 見
 [`../research/m18-bg1-asset-20260816.md`](../research/m18-bg1-asset-20260816.md)。
+
+## M1.9 strict gate／single-transfer slice
+
+M1.9 使用新 mGBA process 與單一 GDB connection；固定 packet delay `0.12 s`、timeout
+`8 s`、一次 timeout retry，memory/register response 若長度或格式不符即 abort。導航
+上限是既有 `START, START, A`，但以 BG1 keyboard signature 提前停止。gate 必須同時
+符合 `DISPCNT=0x1B40`、`BG1CNT=0x0106`、八個位置 `8/8` 與 tile-1/tile-2 已知 hash。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/tools/m19_gate_transfer_probe.py \
+  /private/tmp/project-atlantis-a9pj.gba --mode gate --port 39123 \
+  --sequence start,start,a --max-steps 3 \
+  --dump-dir /private/tmp/tow-a9pj-m19-gate --output /private/tmp/tow-a9pj-m19-gate/summary.json
+```
+
+transfer mode 只能選一條狹窄 asset cohort；`tile1` 的 hit `0` 與 `dma3` 的 setup stop
+均沒有可信 source→VRAM receipt。完整 hash／PC/LR／非 GBA DMA 欄位 negative 見
+[`../research/m19-gate-transfer-20260816.md`](../research/m19-gate-transfer-20260816.md)。
 
 ## 後續 decoder 約束
 

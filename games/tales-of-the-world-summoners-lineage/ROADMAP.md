@@ -108,6 +108,43 @@
   slice 重新取得可信 source/destination，完成 source bytes/hash／copy transform 與
   BG1 tilemap 位置三方交叉；source table、控制碼、ledger 與翻譯維持關閉。
 
+## 里程碑 1.9：strict gate／single-transfer provenance boundary
+
+- [x] 以 fresh mGBA／獨立 `39123` listener／單一 GDB connection，將 ACK、delay、
+  timeout/retry 與 response shape 檢查固定化；不沿用 M1.8 queued packet 欄位。
+- [x] 以既有 `START, START, A` 上限導航，三個 clean process 重現
+  `DISPCNT=0x1B40`、`BG1CNT=0x0106`、八格 `8/8` 與 tile-1/tile-2 hash gate。
+- [x] 先做單一 `0x06004020` 32-byte write watch；keyboard gate 成立但 hit `0`，
+  留下「不是 CPU／BIOS 可見 tile write」的精確 negative，不把它解讀成無 consumer。
+- [x] 再做單一 DMA3 `CNT_H` setup/control watch；保留 observed `0x040000DC`、PC/LR、
+  `CNT_H=0x8400` 與 source/destination/count metadata，但非 GBA source／destination
+  與零 source match 使這筆維持 unknown，不宣稱 transfer receipt。
+- [x] 更新 `m19_gate_transfer_probe.py`、strict response／DMA window tests 與研究
+  receipt；ROM、raw、圖片、work/source 均未進 Git。
+- [ ] 取得可信 DMA／CPU source bytes→VRAM byte-identical 或明確 transform receipt；
+  這是後續獨立 runtime 缺口，不阻塞先從已確認 font-record consumer 開始建立私有
+  metadata extractor。
+
+## 里程碑 2A：文字 record／codepage／控制碼研究（持續清單）
+
+- [ ] 從 `0x02004014` code-unit consumer 與 `0x08089E00 + unit*0x18` arithmetic
+  建立只輸出 metadata 的日版 record extractor；區分劇情、地圖／事件、角色、戰鬥、
+  UI／字型資源，不把候選壓縮表當文字。
+- [ ] 以 runtime reader／consumer 的 code-unit 序列與 clean-ROM hash 交叉確認 record
+  邊界、終止、換行、變數／姓名／道具插值與 control code；glyph addressing、glyph
+  identity、codepage、control code 分欄保存。
+- [ ] 建立可重跑 `research/summoners-lineage-decoded.jsonl` 本機輸出與 source hash／
+  decoder version；完整 source 與 raw 仍 ignored，不在此階段翻譯。
+
+## 里程碑 2B：最小 zh-TW ledger／回插 POC
+
+- [ ] 只在 codepage／control／string_id 穩定後，建立 1–2 條 UI／短句 private source row，
+  通過 `source_hash`／width／control schema gate。
+- [ ] 以 Wikipedia zh-tw、Bahamut 與其他獨立社群來源核對專有名詞；有分歧時保留
+  分歧，不自行造音譯。
+- [ ] 執行 `restore_translations.rb`／`strip_translations.rb` round-trip，提交檔不含
+  `source.text`；以最小可逆 patch／BPS POC 驗證未修改區與重新抽取 hash。
+
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
 - [ ] 先完成 Wikipedia zh-tw、Bahamut 與其他獨立社群來源的專有名詞核對；有分歧
@@ -125,4 +162,6 @@
 - [ ] 完成地圖／事件／角色／戰鬥資料的文字覆蓋率盤點。
 - [ ] 用 mGBA 完成標題、序章、地圖事件、戰鬥、存檔與結局等核心場景回歸；未測畫面
   明確列出，不假設成功。
+- [ ] 完成 clean-ROM re-extract、round-trip、BPS／patch hash、core/game tests、
+  repository safety；每個穩定里程碑只用 path-limited commit 提交本作。
 - [ ] 只發布 patch／ledger／工具與研究結論，不發布 ROM、完整原文或未授權字型。
