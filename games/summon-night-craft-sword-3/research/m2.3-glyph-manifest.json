@@ -1,0 +1,61 @@
+{
+  "manifest_version": 1,
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "rom": {
+    "crc32": "12afae5d",
+    "sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+    "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3"
+  },
+  "font": {
+    "resource_type": 3,
+    "resource_id": 2,
+    "cell_size": 24,
+    "allowed_slot_first": "0x845",
+    "allowed_slot_last": "0x85f",
+    "source_font_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be"
+  },
+  "allocations": [
+    {
+      "code_unit": "ec48",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "的",
+      "codepoint": "U+7684",
+      "glyph_id": "0x845",
+      "status": "static_poc"
+    },
+    {
+      "code_unit": "ec49",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "你",
+      "codepoint": "U+4F60",
+      "glyph_id": "0x846",
+      "status": "static_poc"
+    }
+  ],
+  "records": [
+    {
+      "string_id": "b3cj:t2:022:0x011a",
+      "locale": "zh-TW",
+      "resource_id": 22,
+      "decompressed_offset": "0x011a",
+      "source_raw_sha256": "1eaf77deb206c3162d6029bb3dbf2d0fdff394960458a7804688536bc6ccfdd3",
+      "source_record_sha256": "55d0f85f453fa6574e002f61f075917f6520e8c0870c9b1f504d92d969407497",
+      "target_code_units": ["ec48", "ec49"],
+      "target_byte_length": 4,
+      "status": "static_poc"
+    },
+    {
+      "string_id": "b3cj:t2:025:0x1270",
+      "locale": "zh-TW",
+      "resource_id": 25,
+      "decompressed_offset": "0x1270",
+      "source_raw_sha256": "2600e793a148cc2f0df4d5702f6719493c629f0bfa929fc02719804a9c8d8855",
+      "source_record_sha256": "be5b1a8e43ed176b58937ffdd25017dc1760cfa5883a8ee55ea284acaaaaa42c",
+      "target_code_units": ["ec49"],
+      "target_byte_length": 2,
+      "status": "static_poc"
+    }
+  ],
+  "scope": "M2.3 bounded static POC only; not a translation release or ROM patch"
+}

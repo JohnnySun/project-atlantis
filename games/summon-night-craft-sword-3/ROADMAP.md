@@ -16,7 +16,7 @@
 - [x] 用 `tools/scan_static.py` 對 halfword-aligned Shift-JIS-shaped run、指標 run 與有界 LZ77／RLE decoder candidate 做掃描。
 - [~] 壓縮／指標候選仍只有靜態證據；mGBA scripting/headless 路徑受 CLI 能力限制，未把候選升格為文本或資料表結論。
 
-本里程碑的靜態報告只保留 offset、長度、計數、引用與 hash。共用 `core/gba` client／capture／renderer 的 6 項測試已通過；一次性的 mGBA boot snapshot 已記在研究帳本，但 B3CJ capture 仍受其他 session 的 2345 與 alternate-port listener 阻塞，不再重試 port shim，也不把 runtime 實驗工具納入本作工具集。
+本里程碑的靜態報告只保留 offset、長度、計數、引用與 hash。共用 `core/gba` client／capture／renderer 的 6 項測試已通過；M2.3 另做過一次高位 `24387` 空閒檢查與本作自有 mGBA process 嘗試，但 mGBA 0.10.5 CLI 仍落在該 process 的 `2345`，core capture 在 `qSupported` timeout。程序已停止，runtime 不升格，且不把 runtime 實驗工具納入本作工具集。
 
 ## M1.5：csm3 導向的靜態文本工程
 
@@ -51,6 +51,16 @@ M2.1 的完整 opcode／round-trip／length-contract 收據見 [`research/m2.1-c
 - [ ] 證實 palette、writer 的實際 VRAM/OAM layout、fallback 語意、out-of-resource targets、font/resource encoder 與 ROM-level insertion；RUNTIME-003 仍為獨立 live evidence blocker。
 
 M2.2 的完整字型、slot、source/license 與 POC 收據見 [`research/m2.2-font.md`](research/m2.2-font.md) 與 [`research/font-sources.md`](research/font-sources.md)。
+
+## M2.3：fail-closed glyph allocation 與 bounded record POC
+
+- [x] 固定 `research/m2.3-glyph-manifest.json`：只允許 `0x845..0x85f`，保留既有 mapping，拒絕範圍外、重複 code unit／slot、strict Shift-JIS collision、source／ROM／font hash mismatch 與容量超限。
+- [x] 以 `ec48`／`ec49` 兩個 opaque static POC glyph 及兩筆 4／2-byte 短 record 實作 deterministic encoder；不把 static POC code unit 當成日文翻譯或最終 codepage 決策。
+- [x] 驗證 font mapping／cell、record、PSI3 stream byte-identical；兩個 LZ77 output 分別為 `485 <= 496` 與 `1652 <= 1664`，只在原 resource span 內重建，不宣稱完整 pointer／header／BPS 回插。
+- [x] 測試 fail-closed rejection：slot／code-unit duplicate、strict collision、hash mismatch、既有 fallback／out-of-resource 狀態與 resource capacity overrun。
+- [~] 執行一次獨立 runtime QA：`24387` preflight 空閒，但 `-C ports.qt.gdbPort=24387` 未改變 CLI stub；自有 PID `26484` 的 `2345` 對 core `qSupported` timeout。palette、writer destination、VRAM/OAM layout 與畫面可讀性維持 blocked。
+
+M2.3 完整 static／runtime 收據見 [`research/m2.3-poc.md`](research/m2.3-poc.md)。下一個最小缺口是可重現的 renderer runtime evidence（或等價 static writer／VRAM destination 證據），再評估第一筆經術語審核的同長度 zh-TW 翻譯；本切片不開始批量翻譯。
 
 ## M2：文本與字型格式
 

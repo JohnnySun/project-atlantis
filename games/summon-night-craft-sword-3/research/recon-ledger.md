@@ -32,9 +32,11 @@
 | `RUNTIME-001` | mGBA boot snapshot 是否能直接證實文本渲染路徑 | `blocked` | 一次性 mGBA 0.10.5 GDB snapshot 讀到 `PC=0x03003652`、`DISPCNT=0x1140`、`BG0CNT=0x0088`、`KEYINPUT=0x03ff`；沒有文字 ROM-to-VRAM match | 不再嘗試 port shim；待有可重現 scripting/headless 路徑或明確 debug 入口再開 runtime |
 | `RUNTIME-002` | mGBA scripting/headless 文本偵察 | `blocked` | 已安裝 CLI 不接受 `--script`；未保留未驗證的 GUI／GDB 實驗工具 | 先解決工具能力與可重現入口，否則維持靜態候選狀態 |
 | `RUNTIME-003` | 共用 `core/gba` 標準 capture 是否能取得 B3CJ live RAM／VRAM／OAM | `blocked` | `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s core/gba/test -v` 的 6 項測試通過；B3CJ 自有 mGBA process 的 `-C ports.qt.gdbPort=25352` 未建立 listener，2345 已由其他 session 使用；一次重用 `/private/tmp` redirect dylib 也未建立 25351。沒有產生新的 raw dump | 待有不碰其他 session 的可用 GDB port 或明確 debug 入口，再用 `core/gba/capture_runtime.py`；不重寫遊戲專屬 client |
+| `RUNTIME-004` | M2.3 以獨立高位 port 取得 live palette／writer／VRAM/OAM 證據 | `blocked` | 先以 bind preflight 證實 `24387` 空閒；只載入本作 POC ROM 的 PID `26484` 執行 `-g -C ports.qt.gdbPort=24387`，`lsof -p 26484` 證實實際 listener 是該 PID 的 `*:2345`，`24387` refused；透過自有 `2345` 執行 core capture，但 `qSupported:multiprocess+` retry 後 timeout。已停止 PID，兩 port 事後均無 listener，沒有 runtime summary／raw dump | 不再把 `ports.qt.gdbPort` 當 CLI port shim；待有可重現、互不干擾的 runtime 入口，才補 palette、writer destination、VRAM/OAM layout 與畫面 glyph 可讀性證據 |
 | `FONT-001` | 字型 resource、cell 格式、code-unit lookup 與 bounded identity | `confirmed`（static） | 本機 type-3 id 2 `BIT` payload file `0x14d5c6c`、glyph base `0x14d5c88`、2144×24-byte cells；`sub_0800348C` function/literal hash、table A/B、fallback 與 `gUnk_03002984 + glyph_id*0x18` 公式均重跑吻合；8 個 source Shift-JIS identity/addressing samples 分開記錄 | 以 fail-closed allocation manifest 接到最小回插 slice；palette／VRAM 仍由 RUNTIME-003 獨立處理 |
 | `FONT-002` | 實際 code format 的 physical slot 掃描 | `confirmed`（static） | 11280 formula candidates、6879 strict Shift-JIS pairs、2087 mapped physical slots；全零 physical cells 28，其中未引用安全空槽 `0x845..0x85f` 共 27；非空不可尋址槽 `0x141..0x15e` 共 30，未分配 | 只允許 27 個明確空槽；zero table fallback 與 out-of-resource target 維持 blocked |
 | `FONT-003` | glyph cell encoder／靜態 POC | `confirmed`（static POC） | 既有 GNU Unifont 17.0.05、固定 SHA／授權；`ec48`／`ec49` → slots `0x845`／`0x846`，table/cell 修改區域 52 bytes、實際非零 byte diff 43，static render 含 adjacent untouched `0x844`；patched ROM／PGM hash 收據見 `research/m2.2-font.md` | 未更新 ROM checksum、script container 或 runtime QA；不能稱翻譯或發布 patch |
+| `FONT-004` | fail-closed glyph allocation manifest／record encoder | `confirmed`（bounded static POC） | `research/m2.3-glyph-manifest.json` 固定 B3CJ／source／font hash 與唯一 `0x845..0x85f` 範圍；`tools/encode_m2_3_poc.py` 對 `ec48`／`ec49`、兩筆 4／2-byte record 重抽 mapping／cell、record／PSI3 stream 與原 resource span 內 LZ77；summary 收到 patched ROM SHA-256 `ce99a443cfab8f84cc7f7a0319b9271ce3173dc64c488ca138696ae938460a07`，所有差異均在 manifest regions；測試另拒絕 duplicate、strict collision、hash mismatch、fallback／out-of-resource 與 capacity overrun | 仍只證實 static POC；未知 VM／排版、palette／VRAM/OAM、pointer／header／BPS rebuild 與 runtime 可讀性不升格 |
 | `SOURCE-001` | 可供帳本使用的 bounded 日文原文表 | `confirmed`（M1.5 範圍） | `tools/extract_static.py` 對固定 ROM 可重抽 361 筆 `string_id／locale／source_text／provenance`；ignored JSONL 不 stage，tracked 文件只留 hash／offset／control token | 完成 font／VM／回插契約後，才建立可翻譯的工作帳本；目前不宣稱全遊戲 source coverage |
 | `TRANSLATION-001` | 劇情、支線、夥伴、鍛造、戰鬥、道具的有限量翻譯 | `blocked` | 雖已有 bounded 本機原文表與 M2.1 round-trip，但尚無完整 VM／字型／回插契約與可提交翻譯 ledger | 先選 1–2 筆、保持相同 Shift-JIS byte length、控制資料不變的短批次；本里程碑不宣稱已開始翻譯 |
 
@@ -56,6 +58,14 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/inspect
   games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba \
   --source-jsonl games/summon-night-craft-sword-3/research/summon-night-craft-sword-3-decoded.jsonl \
   --summary-output games/summon-night-craft-sword-3/work/m2.2-font-summary.json
+PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/encode_m2_3_poc.py \
+  games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba \
+  --source-jsonl games/summon-night-craft-sword-3/research/summon-night-craft-sword-3-decoded.jsonl \
+  --manifest games/summon-night-craft-sword-3/research/m2.3-glyph-manifest.json \
+  --font-source vendor/fonts/unifont/unifont-17.0.05.hex.gz \
+  --output games/summon-night-craft-sword-3/work/m2.3-poc.gba \
+  --summary-output games/summon-night-craft-sword-3/work/m2.3-poc-summary.json \
+  --render-output games/summon-night-craft-sword-3/work/m2.3-poc.pgm
 ```
 
 `--strict` 會把 game code、header checksum、size、CRC32 與公開 reference SHA-1 一起作門檻。這次本機 readback 的 SHA-256 是 `39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d`；若其他 clean dump 不同，先保留完整 hash 與差異，不修改 ROM 或用補丁檔冒充來源 ROM。`static-report.json` 是 ignored 產物，只提交工具與本帳本的摘要。
@@ -72,6 +82,11 @@ safe blank unreferenced slots `27`（`0x845..0x85f`），以及 source corpus
 `records=361`／`unique_double_byte_units=382`。它也會拒絕未吻合 B3CJ identity、
 reviewed csm3 function hash 或 lookup literal 的輸入；完整 samples、POC 與未知項目見
 [`research/m2.2-font.md`](m2.2-font.md)。
+
+M2.3 encoder 的固定收據是 `allocations=2`、`records=2`、`changed_bytes=1753`、
+resource compressed sizes `485/496` 與 `1652/1664`，font mapping／cell、record／
+PSI3 stream 均 byte-identical；manifest／測試／runtime 收據見
+[`research/m2.3-poc.md`](m2.3-poc.md)。
 
 ## 外部資料索引
 
