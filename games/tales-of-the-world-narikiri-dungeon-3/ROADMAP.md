@@ -109,9 +109,10 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 建立 `gba-runtime-validation` native clean-ROM case；manifest、static
   identity/record/adjacent preflight 與 fail-closed report check 通過，runtime
   case 仍保留為 unproven，未把 listener approval/socket failure 當遊戲 negative
-- [x] 建立 state7→selected-record native consumer case；固定 state7/parser/
-  `0x08146EE0` read-watch 順序，manifest/static preflight 通過，runtime 仍保留
-  為 unknown，未把 case contract 當作 live source read
+- [x] 建立 state7→selected-record native consumer case；固定 state7、parser
+  callsite `0x08001D92`、parser `0x080025CC` 與 `0x08146EE0` read-watch 順序，
+  manifest/static preflight 通過，runtime 仍保留為 unknown，未把 case contract
+  當作 live source read
 - [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
   edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
   仍保留為 unknown

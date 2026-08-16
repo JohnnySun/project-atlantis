@@ -245,9 +245,9 @@ manifest／static／report-safety 已通過；framework runtime actions 尚未�
 把它或既有 game-specific receipt 當作完成的 localized text QA。
 下一個窄 consumer contract 是
 [`research/b3tj-state7-selected-record-runtime-case.json`](research/b3tj-state7-selected-record-runtime-case.json)：
-它按正常 state4→state7 順序設置 parser `0x080025CC` 與 selected record
-`0x08146EE0` read-watch；manifest/static 已通過，但 runtime/source read 仍是
-unknown。
+它按正常 state4→state7 順序先停 parser callsite `0x08001D92`，再設置 parser
+`0x080025CC` 與 selected record `0x08146EE0` read-watch；manifest/static 已通過，
+但 runtime/source read 仍是 unknown。
 
 M2 前置的 source-separated ledger 與控制標記 metadata 由
 [`tools/ledger_metadata.py`](tools/ledger_metadata.py) 產生；提交的
