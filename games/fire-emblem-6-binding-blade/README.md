@@ -20,6 +20,8 @@ M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-o
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
 
+M1.12 以 fresh mGBA、單一 GDB connection 與只供應 active-low `KEYINPUT` 的 bounded route 重跑同一份 loader：selector `0x08098b10` → index 3087，接著自然命中另一個合法 direct callsite `0x08009252` 兩次 → index 2678、2679。兩筆的 LR 都由 `0x08013ad0` 回推為 `0x08009252`，並分別將 `0x080ecfd7`／`0x080ed003` 寫到 `0x02029404`；source-window hash 為 `2d410429…9965199`／`8fa20870…321d40d`，output buffer hash 為 `a93417f8…150df2`／`55cfb376…f0144df`，terminator 在 80／66，`0x01` 在 `[20,48]`／`[28]`。這確認同一 3342-entry domain 的第二自然 caller family，但不把 route 命名為章節、對話或資料表。M1.11 的 callback word read-watchpoint `0x08691230`／`0x08691358` 與 callback entry `0x08098340`／`0x080984a8` 都是 0；`0x01` 仍 opaque，Unicode/codepage、字型身分、ledger、回插與 BPS 未完成。
+
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
 公開 FEBuilderGBA 與 `fireemblem6j` 資料只作為待驗證的逆向參考，不取代日版 ROM，也不把既有英譯或 `.tbl` 當作翻譯來源。已知外部參考與其限制見 `research/recon-20260816.md`。
@@ -134,6 +136,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m111_gates.py \
 ```
 
 報告只保存 direct-call 數量、bounded function disassembly 摘要、index-source class 與 callback pointer 的位址／鄰接 word class；不輸出 ROM bytes、完整原文或 scene/category 命名。M1.11 的 callback pointer 只可作下一個 runtime gate 候選，不能把 controlled probe 當 natural reachability。
+
+要重跑 M1.12 的 callback／第二 caller natural receipt，需先啟動本次專屬 mGBA GDB port，然後執行：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
+  roms/base/AFEJ.gba --port 23901 \
+  --route-name m112-natural-generic-caller \
+  --sequence start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a \
+  --output /private/tmp/afej-m112-natural-generic-caller.json
+```
+
+工具保存 callback pointer read／entry hit counts、loader LR/table/source/output hash、marker offsets 與 display I/O；`--sequence` 只注入 KEYINPUT，不寫 state、index、PC 或 ROM。M1.12 的 callback 0-hit 是 bounded negative；自然 `0x08009252` receipt 是第二 caller 證據，仍不等於內容分類或 Unicode。
 
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
