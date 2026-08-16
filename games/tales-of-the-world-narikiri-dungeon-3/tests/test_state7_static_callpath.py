@@ -3,6 +3,7 @@
 
 import sys
 import unittest
+import json
 from pathlib import Path
 
 
@@ -12,6 +13,13 @@ import state7_static_callpath  # noqa: E402
 
 
 class State7StaticCallpathTests(unittest.TestCase):
+    def test_native_case_stops_at_parser_callsite_before_entry(self):
+        manifest = json.loads(
+            (Path(__file__).parents[1] / "research" / "b3tj-state7-selected-record-runtime-case.json").read_text()
+        )
+        action_ids = [row["id"] for row in manifest["runtime"]["actions"]]
+        self.assertLess(action_ids.index("parser-callsite"), action_ids.index("parser-entry"))
+
     def test_thumb_bl_decoder_rejects_non_call(self):
         self.assertIsNone(state7_static_callpath.decode_thumb_bl(b"\0" * 4, 0))
 

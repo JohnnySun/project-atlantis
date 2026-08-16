@@ -63,6 +63,7 @@
       {"id": "a1ac-entry", "op": "breakpoint", "address": "0x0800A1AC", "timeout_seconds": 30},
       {"id": "normal-a", "op": "keys", "keys": ["A"], "destination_register": "r1", "hold_reads": 1, "release_reads": 3, "per_read_timeout_seconds": 30},
       {"id": "state7-entry", "op": "breakpoint", "address": "0x080A85D8", "timeout_seconds": 30},
+      {"id": "parser-callsite", "op": "breakpoint", "address": "0x08001D92", "timeout_seconds": 30},
       {"id": "parser-entry", "op": "breakpoint", "address": "0x080025CC", "timeout_seconds": 30, "register_regions": [{"id": "r1-source-candidate", "register": "r1", "offset": 0, "length": 2}]},
       {"id": "selected-record-read", "op": "watchpoint", "address": "0x08146EE0", "length": 2, "watch_type": 3, "timeout_seconds": 30},
       {

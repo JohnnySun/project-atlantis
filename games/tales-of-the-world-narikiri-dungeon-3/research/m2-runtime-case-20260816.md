@@ -62,10 +62,10 @@ re-extraction/BPS/runtime consistency.
 The next narrow consumer contract is
 [`b3tj-state7-selected-record-runtime-case.json`](b3tj-state7-selected-record-runtime-case.json).
 It sequences the already confirmed normal state-4 input path, a state-7 entry stop,
-the fixed parser entry `0x080025CC`, and a read watch on the selected strict boundary
-`0x08146EE0`. This contract has not been exercised; until it produces a real parser
-stop followed by a classified source read, the consumer, decoder, glyph, and VRAM
-fields remain unknown.
+the fixed parser callsite `0x08001D92`, parser entry `0x080025CC`, and a read watch on
+the selected strict boundary `0x08146EE0`. This contract has not been exercised; until
+it produces the callsite and parser stops followed by a classified source read, the
+consumer, decoder, glyph, and VRAM fields remain unknown.
 
 ## Reproducible commands
 
