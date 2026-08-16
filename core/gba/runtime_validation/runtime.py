@@ -390,13 +390,38 @@ def _assertions(report: Report, snapshots: dict[str, Any], rows: list[dict[str, 
             report.add("unknown", "runtime.assertion.missing_evidence", f"assertion {assertion_id} could not be evaluated", error=str(exc))
 
 
+def _finalize_runtime_evidence(
+    report: Report,
+    required: list[str],
+    exercised: set[str],
+    unknown_capabilities: list[str],
+    actions_evidence: list[dict[str, Any]],
+    snapshots: dict[str, Any],
+) -> None:
+    for capability in sorted(set(required) - exercised - set(unknown_capabilities)):
+        report.add(
+            "unknown",
+            "runtime.capability.unproven",
+            f"required capability was not exercised: {capability}",
+        )
+    report.evidence["capabilities"] = {
+        "required": required,
+        "exercised": sorted(exercised),
+        "unproven": sorted(set(required) - exercised),
+    }
+    report.evidence["actions"] = actions_evidence
+    report.evidence["snapshots"] = snapshots
+
+
 def run_runtime(
     manifest: dict[str, Any],
     host: str,
     port: int,
     rom_path: Path | None = None,
+    savestate_path: Path | None = None,
 ) -> Report:
     report = Report("runtime")
+    report.evidence["case_id"] = manifest["case_id"]
     runtime = manifest.get("runtime", {})
     required = runtime.get("required_capabilities", [])
     unknown_capabilities = sorted(set(required) - KNOWN_CAPABILITIES)
@@ -406,6 +431,7 @@ def run_runtime(
     actions_evidence: list[dict[str, Any]] = []
     exercised = set()
     target_stopped = True
+    savestate_identity_ok = False
     try:
         if rom_path is not None:
             rom_data = rom_path.read_bytes()
@@ -430,8 +456,40 @@ def run_runtime(
                 )
                 report.evidence["actions"] = []
                 report.evidence["snapshots"] = {}
+                _finalize_runtime_evidence(report, required, exercised, unknown_capabilities, actions_evidence, snapshots)
                 return report
             report.add("pass", "runtime.rom.identity", "runtime ROM identity matches manifest")
+        savestate_spec = runtime.get("savestate")
+        if savestate_spec is not None:
+            if savestate_path is None:
+                report.add("unknown", "runtime.savestate.missing", "manifest requires a local --savestate file")
+            else:
+                state_data = savestate_path.read_bytes()
+                state_hash = _sha(state_data)
+                expected_state_hash = savestate_spec["sha256"]
+                expected_state_size = savestate_spec.get("size")
+                state_size_ok = expected_state_size is None or len(state_data) == integer(expected_state_size, "runtime.savestate.size")
+                report.evidence["savestate"] = {
+                    "path": str(savestate_path),
+                    "sha256": state_hash,
+                    "size": len(state_data),
+                    "identity_matches": state_hash == expected_state_hash and state_size_ok,
+                    "raw_content_in_report": False,
+                }
+                savestate_identity_ok = state_hash == expected_state_hash and state_size_ok
+                report.add(
+                    "pass" if savestate_identity_ok else "fail",
+                    "runtime.savestate.identity",
+                    "local save state identity matches manifest" if savestate_identity_ok else "local save state identity mismatch",
+                    expected_sha256=expected_state_hash,
+                    actual_sha256=state_hash,
+                    size_matches=state_size_ok,
+                )
+                if not savestate_identity_ok:
+                    report.evidence["actions"] = []
+                    report.evidence["snapshots"] = {}
+                    _finalize_runtime_evidence(report, required, exercised, unknown_capabilities, actions_evidence, snapshots)
+                    return report
         ranges = _write_ranges(runtime)
         with RetryingGdbClient(
             host=host,
@@ -458,6 +516,30 @@ def run_runtime(
                 "dispcnt_hex": initial_dispcnt.hex(),
             }
             exercised.update({"register-read", "memory-read"})
+            if savestate_spec is not None and savestate_identity_ok:
+                predicate_rows = []
+                all_state_predicates_match = True
+                for predicate_index, predicate in enumerate(savestate_spec.get("state_predicates", [])):
+                    predicate_field = f"runtime.savestate.state_predicates[{predicate_index}]"
+                    actual, expected, mask = _condition_value(client, predicate, predicate_field)
+                    matched = actual & mask == expected & mask
+                    all_state_predicates_match &= matched
+                    predicate_rows.append({
+                        "id": str(predicate.get("id", f"state-predicate-{predicate_index}")),
+                        "address": f"0x{integer(predicate.get('address'), predicate_field + '.address'):08X}",
+                        "actual": f"0x{actual:X}",
+                        "expected": f"0x{expected:X}",
+                        "mask": f"0x{mask:X}",
+                        "matched": matched,
+                    })
+                report.evidence["savestate"]["state_predicates"] = predicate_rows
+                report.add(
+                    "pass" if all_state_predicates_match else "fail",
+                    "runtime.savestate.live_predicates",
+                    "live state matches declared launch predicates" if all_state_predicates_match else "live state does not match declared launch predicates",
+                )
+                if all_state_predicates_match:
+                    exercised.add("savestate-load-at-launch")
             for index, action in enumerate(runtime.get("actions", [])):
                 if not isinstance(action, dict):
                     raise ManifestError(f"runtime.actions[{index}] must be an object")
@@ -498,9 +580,16 @@ def run_runtime(
                         registers = {name: f"0x{value:08X}" for name, value in register_values.items()}
                     finally:
                         client.remove_breakpoint(address)
-                    row.update({"address": f"0x{address:08X}", "stop": stop, "registers": registers})
+                    pc = register_values.get("pc")
+                    breakpoint_matched = pc is not None and (pc & ~1) == (address & ~1)
+                    row.update({
+                        "address": f"0x{address:08X}",
+                        "stop": stop,
+                        "registers": registers,
+                        "pc_matched": breakpoint_matched,
+                    })
                     register_regions = []
-                    for region_index, region in enumerate(action.get("register_regions", [])):
+                    for region_index, region in enumerate(action.get("register_regions", []) if breakpoint_matched else []):
                         region_field = f"{field}.register_regions[{region_index}]"
                         if not isinstance(region, dict):
                             raise ManifestError(f"{region_field} must be an object")
@@ -519,8 +608,15 @@ def run_runtime(
                         })
                     if register_regions:
                         row["register_regions"] = register_regions
-                    report.add("pass", "runtime.breakpoint.hit", f"breakpoint {action_id} was observed")
-                    exercised.add("breakpoint")
+                    report.add(
+                        "pass" if breakpoint_matched else "unknown",
+                        "runtime.breakpoint.hit",
+                        f"breakpoint {action_id} was observed" if breakpoint_matched else f"breakpoint {action_id} stopped at an unexpected PC",
+                        requested=f"0x{address:08X}",
+                        actual=None if pc is None else f"0x{pc:08X}",
+                    )
+                    if breakpoint_matched:
+                        exercised.add("breakpoint")
                 elif op == "watchpoint":
                     address = integer(action.get("address"), f"{field}.address")
                     length = integer(action.get("length", 1), f"{field}.length")
@@ -532,19 +628,25 @@ def run_runtime(
                         registers = _register_snapshot(client)
                     finally:
                         client.remove_watchpoint(address, kind=length, watch_type=watch_type)
+                    watchpoint_matched = stop_address is not None and address <= stop_address < address + length
                     row.update({
                         "requested_address": f"0x{address:08X}",
                         "stop": stop,
                         "stop_kind": watch_kind,
                         "stop_address": None if stop_address is None else f"0x{stop_address:08X}",
+                        "address_matched": watchpoint_matched,
                         "registers": registers,
                     })
                     report.add(
-                        "pass" if stop_address is not None else "unknown",
+                        "pass" if watchpoint_matched else "unknown",
                         "runtime.watchpoint.hit",
-                        f"watchpoint {action_id} was observed" if stop_address is not None else f"watchpoint {action_id} stop was not classifiable",
+                        f"watchpoint {action_id} was observed" if watchpoint_matched else f"watchpoint {action_id} stopped outside the requested range",
+                        requested_start=f"0x{address:08X}",
+                        requested_length=length,
+                        actual=None if stop_address is None else f"0x{stop_address:08X}",
                     )
-                    exercised.add("watchpoint")
+                    if watchpoint_matched:
+                        exercised.add("watchpoint")
                 elif op == "step":
                     row["stop"] = client.request("s")
                 elif op == "write_register":
@@ -591,17 +693,5 @@ def run_runtime(
             _assertions(report, snapshots, runtime.get("assertions", []))
     except (OSError, TimeoutError, ConnectionError, RuntimeError, ManifestError, ValueError) as exc:
         report.add("unknown", "runtime.execution", str(exc), target_stopped=target_stopped)
-    for capability in sorted(set(required) - exercised - set(unknown_capabilities)):
-        report.add(
-            "unknown",
-            "runtime.capability.unproven",
-            f"required capability was not exercised: {capability}",
-        )
-    report.evidence["capabilities"] = {
-        "required": required,
-        "exercised": sorted(exercised),
-        "unproven": sorted(set(required) - exercised),
-    }
-    report.evidence["actions"] = actions_evidence
-    report.evidence["snapshots"] = snapshots
+    _finalize_runtime_evidence(report, required, exercised, unknown_capabilities, actions_evidence, snapshots)
     return report

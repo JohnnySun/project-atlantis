@@ -1,0 +1,43 @@
+{
+  "skill_name": "gba-runtime-validation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In the current Project Atlantis checkout, use the copyright-free fixture builder and the actual gba-runtime-qa CLI to prove the FE control-arity gate. Build one fault=none fixture and one fault=control-arity fixture under /private/tmp, run validate-manifest and static for both, and report the exact commands, exit codes, and top-level statuses. Also identify the concrete manifest fields that make FE consume one following unit, give target and adjacent explicit roles, and lock an exact pointer relocation. Do not edit the framework or include fixture bytes in your answer.",
+      "expected_output": "Executed framework-native evidence: both manifests validate, the clean fixture passes static with exit 0, control-arity fails with exit 1, and the answer cites control_codes.argument_units, role target/adjacent, and expected_target.",
+      "files": [],
+      "expectations": [
+        "Runs the repository fixture builder and actual validate-manifest/static CLI for both cases.",
+        "Reports clean status pass with exit 0 and control-arity status fail with exit 1.",
+        "Identifies control_codes.argument_units as the machine-readable FE arity contract.",
+        "Identifies explicit target/adjacent roles and pointer expected_target as strict contracts."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Audit the following proposed runtime receipt without launching an emulator: it says status=pass, required capabilities are gdb-remote, breakpoint, render-bg, and savestate-load-at-launch; exercised contains only gdb-remote and render-bg; the breakpoint stop PC is 0x08012342 although the requested address is 0x08012340; a save-state hash matches but there is no live state predicate; target is hashed but there is no adjacent region. Use the Skill's actual check_report.py contract where applicable, give the correct tri-state/exit code, and list the minimum manifest/report changes required before pass. Do not weaken required capabilities.",
+      "expected_output": "A fail-closed unknown/exit 2 audit that uses the checker contract, computes unproven capabilities, rejects the mismatched PC, requires state live predicates and adjacent evidence, and does not turn missing evidence into a definite corruption failure.",
+      "files": [],
+      "expectations": [
+        "Returns unknown with exit 2 rather than pass or definite corruption fail.",
+        "Computes breakpoint and savestate-load-at-launch as unproven and does not delete requirements.",
+        "Rejects breakpoint evidence whose normalized PC does not equal the requested address.",
+        "Requires both save-state file identity and a matching live state predicate.",
+        "Requires explicit adjacent bounded evidence alongside the target."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write a deterministic owned-process launch recipe for a headless mGBA build whose GDB port is fixed in source. The host is shared and another session may bind the port between your initial bind-probe and launch, and a terminated child PID may later be reused. The recipe must prove that the listener PID equals the PID just started, record and revalidate a child identity token (PID, PPID, start time, executable/command) before every signal, abort safely on a collision or identity mismatch, preserve the runner exit code, and clean up only its own process. Then explain why port availability and a numeric PID alone are insufficient evidence. Do not launch anything.",
+      "expected_output": "A bounded recipe with bind probe, exact child identity token, post-launch listener-to-identity verification, collision/PID-reuse-safe abort, scoped cleanup trap, runner exit propagation, and no pkill/foreign PID interaction.",
+      "files": [],
+      "expectations": [
+        "Performs an initial bind probe and a separate post-launch listener ownership check.",
+        "Requires the listener PID to equal the exact child PID and revalidates PID, PPID, start time, and executable identity before the runner connects.",
+        "On collision, timeout, or PID identity mismatch, signals only an identity-matching child and never the foreign or reused PID.",
+        "Preserves the runner exit code and confirms cleanup of the exact child PID.",
+        "Avoids broad pkill, shared-port attachment, and assumptions that bind-probe removes the race."
+      ]
+    }
+  ]
+}

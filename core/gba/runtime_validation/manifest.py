@@ -22,17 +22,20 @@ TOP_LEVEL_KEYS = {
 ROM_KEYS = {"sha256", "size", "game_code_hex"}
 STATIC_KEYS = {"change_policy", "regions", "pointers", "records"}
 CHANGE_POLICY_KEYS = {"allowed_changed_ranges", "allow_size_change", "require_change"}
-REGION_KEYS = {"id", "offset", "length", "policy"}
-POINTER_KEYS = {"id", "offset", "encoding", "target_ranges", "alignment", "alias_group"}
+REGION_KEYS = {"id", "offset", "length", "policy", "role"}
+POINTER_KEYS = {"id", "offset", "encoding", "target_ranges", "alignment", "expected_target", "alias_group"}
 RECORD_KEYS = {
     "id", "offset", "allocated_length", "unit_bytes", "terminator",
-    "allowed_values", "control_values", "newline_values", "preserve_controls", "layout",
+    "allowed_values", "control_values", "control_codes", "newline_values", "preserve_controls", "layout",
 }
+CONTROL_CODE_KEYS = {"value", "argument_units", "argument_values"}
 LAYOUT_KEYS = {"glyph_widths", "default_width", "max_width", "max_lines"}
 RUNTIME_KEYS = {
     "required_capabilities", "gdb_timeout_seconds", "connect_timeout_seconds",
-    "controlled_write_ranges", "actions", "assertions",
+    "controlled_write_ranges", "savestate", "actions", "assertions",
 }
+SAVESTATE_KEYS = {"sha256", "size", "state_predicates"}
+STATE_PREDICATE_KEYS = {"id", "kind", "address", "length", "value", "mask"}
 ACTION_KEYS = {
     "id", "op", "seconds", "timeout_seconds", "slice_seconds",
     "per_read_timeout_seconds", "condition", "keys", "destination_register",
@@ -108,6 +111,24 @@ def _validate_static(spec: dict[str, Any]) -> None:
                 layout = _require_object(row["layout"], f"{field}.layout")
                 _reject_extra(layout, LAYOUT_KEYS, f"{field}.layout")
                 _require_fields(layout, {"max_width", "max_lines"}, f"{field}.layout")
+            if name == "records":
+                seen_control_values: set[int] = set()
+                for control_index, control in enumerate(_object_list(row.get("control_codes", []), f"{field}.control_codes")):
+                    control_field = f"{field}.control_codes[{control_index}]"
+                    _reject_extra(control, CONTROL_CODE_KEYS, control_field)
+                    _require_fields(control, {"value", "argument_units"}, control_field)
+                    control_value = integer(control["value"], f"{control_field}.value")
+                    if control_value in seen_control_values:
+                        raise ManifestError(f"{control_field}.value duplicates an earlier control code")
+                    seen_control_values.add(control_value)
+                    if integer(control["argument_units"], f"{control_field}.argument_units") < 0:
+                        raise ManifestError(f"{control_field}.argument_units must be non-negative")
+    region_roles = {row.get("role", "other") for row in _object_list(spec.get("regions", []), "static.regions")}
+    unknown_roles = sorted(region_roles - {"target", "adjacent", "guard", "other"})
+    if unknown_roles:
+        raise ManifestError(f"static.regions contains unknown roles: {', '.join(unknown_roles)}")
+    if ("target" in region_roles) != ("adjacent" in region_roles):
+        raise ManifestError("static.regions must declare target and adjacent roles together")
 
 
 def _validate_runtime(spec: dict[str, Any]) -> None:
@@ -115,6 +136,37 @@ def _validate_runtime(spec: dict[str, Any]) -> None:
     capabilities = spec.get("required_capabilities", [])
     if not isinstance(capabilities, list) or any(not isinstance(item, str) for item in capabilities):
         raise ManifestError("runtime.required_capabilities must be an array of strings")
+    if "savestate-load-at-launch" in capabilities and "savestate" not in spec:
+        raise ManifestError("runtime.savestate is required for savestate-load-at-launch")
+    if "savestate" in spec:
+        if "savestate-load-at-launch" not in capabilities:
+            raise ManifestError("runtime.savestate requires savestate-load-at-launch capability")
+        savestate = _require_object(spec["savestate"], "runtime.savestate")
+        _reject_extra(savestate, SAVESTATE_KEYS, "runtime.savestate")
+        _require_fields(savestate, {"sha256", "state_predicates"}, "runtime.savestate")
+        sha256 = savestate["sha256"]
+        if not isinstance(sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", sha256):
+            raise ManifestError("runtime.savestate.sha256 must be 64 lowercase hex characters")
+        if "size" in savestate and integer(savestate["size"], "runtime.savestate.size") <= 0:
+            raise ManifestError("runtime.savestate.size must be positive")
+        predicates = _object_list(savestate["state_predicates"], "runtime.savestate.state_predicates")
+        if not predicates:
+            raise ManifestError("runtime.savestate.state_predicates must not be empty")
+        for predicate_index, predicate in enumerate(predicates):
+            predicate_field = f"runtime.savestate.state_predicates[{predicate_index}]"
+            _reject_extra(predicate, STATE_PREDICATE_KEYS, predicate_field)
+            _require_fields(predicate, {"id", "address", "value"}, predicate_field)
+            if not isinstance(predicate["id"], str) or not predicate["id"]:
+                raise ManifestError(f"{predicate_field}.id must be a non-empty string")
+            if predicate.get("kind", "memory-equals") != "memory-equals":
+                raise ManifestError(f"{predicate_field}.kind only supports memory-equals")
+            integer(predicate["address"], f"{predicate_field}.address")
+            integer(predicate["value"], f"{predicate_field}.value")
+            length = integer(predicate.get("length", 2), f"{predicate_field}.length")
+            if length not in (1, 2, 4):
+                raise ManifestError(f"{predicate_field}.length must be 1, 2, or 4")
+            if "mask" in predicate:
+                integer(predicate["mask"], f"{predicate_field}.mask")
     for index, row in enumerate(_object_list(spec.get("actions", []), "runtime.actions")):
         field = f"runtime.actions[{index}]"
         _reject_extra(row, ACTION_KEYS, field)

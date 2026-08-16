@@ -17,10 +17,11 @@ def build(fault: str) -> tuple[bytes, bytes, dict[str, object]]:
     base[0x84:0x88] = (0x08000100).to_bytes(4, "little")
     base[0x100:0x108] = bytes([1, 2, 0xFE, 3, 0, 0xA5, 0xA5, 0xA5])
     candidate = bytearray(base)
-    candidate[0x100:0x105] = bytes([4, 5, 0xFE, 6, 0])
+    candidate[0x100:0x105] = bytes([4, 5, 0xFE, 3, 0])
     allowed_changes = [["0x100", "0x104"]]
     default_width: int | None = 8
     glyph_widths: dict[str, int] = {}
+    allocated_length = 8
     if fault == "adjacent":
         candidate[0x106] ^= 0xFF
     elif fault == "pointer":
@@ -30,6 +31,11 @@ def build(fault: str) -> tuple[bytes, bytes, dict[str, object]]:
         candidate[0x104] = 4
     elif fault == "control":
         candidate[0x102] = 5
+    elif fault == "control-arity":
+        candidate[0x100:0x105] = bytes([4, 5, 6, 0xFE, 0])
+        allocated_length = 4
+    elif fault == "encoding":
+        candidate[0x101] = 0x90
     elif fault == "overflow":
         default_width = 16
     elif fault == "unknown-width":
@@ -46,6 +52,7 @@ def build(fault: str) -> tuple[bytes, bytes, dict[str, object]]:
         "encoding": "gba32le",
         "target_ranges": [["0x08000100", "0x08000107"]],
         "alignment": 4,
+        "expected_target": "0x08000100",
         "alias_group": "shared-target" if fault == "alias" else None,
     }]
     if pointers[0]["alias_group"] is None:
@@ -81,18 +88,19 @@ def build(fault: str) -> tuple[bytes, bytes, dict[str, object]]:
                 "require_change": True,
             },
             "regions": [
-                {"id": "target", "offset": "0x100", "length": 5, "policy": "changed"},
-                {"id": "adjacent", "offset": "0x105", "length": 3, "policy": "unchanged"},
+                {"id": "target", "offset": "0x100", "length": 5, "policy": "changed", "role": "target"},
+                {"id": "adjacent", "offset": "0x105", "length": 3, "policy": "unchanged", "role": "adjacent"},
             ],
             "pointers": pointers,
             "records": [{
                 "id": "target-record",
                 "offset": "0x100",
-                "allocated_length": 8,
+                "allocated_length": allocated_length,
                 "unit_bytes": 1,
                 "terminator": 0,
                 "allowed_values": [[1, 6]],
                 "control_values": ["0xFE"],
+                "control_codes": [{"value": "0xFE", "argument_units": 1, "argument_values": [[1, 6]]}],
                 "preserve_controls": True,
                 "layout": layout,
             }],
@@ -111,7 +119,7 @@ def main() -> int:
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument(
         "--fault",
-        choices=("none", "adjacent", "pointer", "unterminated", "control", "overflow", "unknown-width", "alias"),
+        choices=("none", "adjacent", "pointer", "unterminated", "control", "control-arity", "encoding", "overflow", "unknown-width", "alias"),
         default="none",
     )
     parser.add_argument("--force", action="store_true")

@@ -10,8 +10,9 @@ PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-qa.py --help
 模組：
 
 - `manifest.py`：strict built-in manifest loader；
-- `static_checks.py`：ROM、change range、target/adjacent、pointer/alias、record/layout；
+- `static_checks.py`：ROM、change range、target/adjacent、pointer/alias、record control arity/layout；
 - `runtime.py`：bounded GDB actions、KEYINPUT hook、memory/register injection、render receipt；
+- state-assisted case：本機 save-state hash/size + live memory predicates，無 raw payload；
 - `result.py`：`pass`／`fail`／`unknown` reduction 與 exit code；
 - `cli.py`：`validate-manifest`、`static`、`runtime`。
 

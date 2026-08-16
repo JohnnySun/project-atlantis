@@ -12,6 +12,6 @@ PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-runtime-qa.py static \
   --candidate-rom "$fixture_dir/candidate.gba"
 ```
 
-`--fault adjacent|pointer|unterminated|control|overflow|unknown-width|alias`
+`--fault adjacent|pointer|unterminated|control|control-arity|encoding|overflow|unknown-width|alias`
 可產生預期 fail 或 fail-closed unknown 的負例。每次使用新的 `/private/tmp` 目錄，
 避免把生成物加入 Git。

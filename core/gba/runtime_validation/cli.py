@@ -46,6 +46,7 @@ def main() -> int:
     runtime.add_argument("--host", default="127.0.0.1")
     runtime.add_argument("--port", required=True, type=int)
     runtime.add_argument("--rom", required=True, type=Path)
+    runtime.add_argument("--savestate", type=Path, help="local state file pinned by runtime.savestate")
     runtime.add_argument("--output", type=Path)
     args = parser.parse_args()
     try:
@@ -61,7 +62,7 @@ def main() -> int:
     elif args.command == "static":
         report = run_static(manifest, args.base_rom, args.candidate_rom)
     else:
-        report = run_runtime(manifest, args.host, args.port, args.rom)
+        report = run_runtime(manifest, args.host, args.port, args.rom, args.savestate)
     _write(report.to_dict(), args.output)
     return report.exit_code
 
