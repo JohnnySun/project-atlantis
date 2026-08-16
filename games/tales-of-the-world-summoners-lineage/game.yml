@@ -1,0 +1,25 @@
+id: tales-of-the-world-summoners-lineage
+platform: gba
+titles:
+  ja: "テイルズ オブ ザ ワールド ～サモナーズ リネージ～"
+  en: "Tales of the World: Summoner's Lineage"
+  zh-TW: "世界傳說：召喚者的血統"
+source:
+  region: JP
+  game_code: A9PJ
+  maker_code: "AF"
+  revision: 0
+  verified: true
+  expected_clean:
+    size: 8388608
+    crc32: 9c534023
+    md5: 7bbd6798acfbe798d1e458938afc7a1a
+    sha1: c7bda17313fdef597ccec98502e71c7e61281c9b
+    sha256: b41c293fc0ed6111b7a37d960d9cd0c685e5d521a4739e0e2eaa7ff6186cfdd3
+    header_checksum: 32
+    calculated_header_checksum: 64
+    header_checksum_valid: false
+    provenance: "本機唯讀標頭解析與雜湊；原 ROM 僅留在本機，不進 Git"
+targets:
+  - zh-TW
+status: research-technical-recon
