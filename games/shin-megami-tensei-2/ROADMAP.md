@@ -361,6 +361,24 @@
   沿同一 caller 向上最多三層確認 RAM object/table initializer，再進行 category
   mapping、codepage/glyph identity 與 width/control contract。
 
+## M1.28：item family 的 code-unit identity cross-map
+
+- [x] 只比較 `0x08198b74` caller-bounded shared table 的前 8 筆 `+0x14` field；
+  以公開日文 item sequence 作為外部 anchor，8/8 個連續 record field 精確 match，
+  不輸出 anchor text、unit values 或完整原文。
+- [x] 將 31 個 anchor 內 custom unit identity 留在工具內比對，固定
+  `m28-item-record-{ordinal:04d}` table-local ID formula；報告只輸出 field hash、
+  unit count、termination、reference ID 與 match boolean。
+- [~] 這是第一條 code-unit→公開日文 item category 的非 OCR edge；前 8 筆 category
+  已 confirmed，但完整 208-record table、武器／彈丸／防具／消耗品 subcategory
+  boundary 與 `0x08198eb4` secondary relation 仍 provisional。
+- [~] 外部資料包含原版／社群 item sequence，僅作 identity/order cross-check，不直接
+  取代 A5TJ source；完整 codepage、Unicode、glyph、width/control 與 runtime live
+  selector 仍未知，M2 ledger gate 維持 blocked。
+- [ ] 對前 8 筆之後的第一個 item subcategory boundary 做 bounded cross-check，並
+  對 `0x0819cb74` skill accessor 建立獨立 anchor family；不得把 item、skill、demon
+  或劇情資料混成一張翻譯表。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

@@ -403,6 +403,24 @@ literal、stride、field offset、hash、termination count 與 contract，不輸
 Unicode、codepage、width 與自然 selector 仍保持 provisional/unknown。詳見
 `research/m1.27-name-accessor-20260816.md`。
 
+M1.28 item-family code-unit identity cross-map（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m128_item_crossmap.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m128-item-crossmap.json
+```
+
+工具只比較 `0x08198b74` shared table 的前 8 筆 `+0x14` fixed field，使用公開日文
+item sequence 作為外部 anchor；8/8 field identity match，有限 custom unit map 只
+留在工具內比對。輸出只有 record address、field hash、length/count、reference ID 與
+match boolean，不輸出 anchor text、unit values、decoded text 或完整 codepage。這是
+第一條 code-unit→公開日文 item category 的非 OCR edge；完整 208-record category、
+subcategories、Unicode/codepage、width/control、runtime 與 translation ledger 仍
+保持 provisional/blocked。外部參考與證據分層見
+`research/m1.28-item-crossmap-20260816.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -412,12 +430,12 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.27 固定的 object selector→ROM record accessor→fixed field→stack staging→
-16-bit reader path，取得一次自然 transition 的 live selector、record address、field
-copy 與 reader argument；若 runtime listener 仍 blocked，最多沿同一 wrapper/direct
-caller 三層追 RAM object/table initializer。不能把 command pointer、font-bank shape
-或人工 OCR 當成完整文字來源。接著以可重抽取的 pointer/index contract 分開主劇情、
-事件、惡魔、技能、道具與系統 data families；runtime 與 static evidence 必須分層記錄。
+沿 M1.28 固定的 item selector→`0x08198b74` record→fixed field→stack staging→
+16-bit reader path，先完成武器／彈丸／防具／消耗品的 bounded subcategory boundary；
+另對 `0x0819cb74` skill accessor 建立獨立 anchor family。若 runtime listener 仍
+blocked，最多沿同一 wrapper/direct caller 三層追 RAM object/table initializer。不能把
+command pointer、font-bank shape 或人工 OCR 當成完整文字來源；item、skill、demon、
+劇情與系統 data families 必須分開記錄。
 
 不得再擴張 M1.15 resource set、重做同一 OBJ hash 分類或全 ROM glyph scan；
 `0x08163444` 的 bounded ASCII/padding prefix 與 M1.18 的 28 筆 candidate 都
