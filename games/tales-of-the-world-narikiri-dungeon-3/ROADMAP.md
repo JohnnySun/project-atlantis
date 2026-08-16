@@ -95,6 +95,10 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 將 M1.8 正常 state 4→7 與 formatter trace 合併到同一 GDB connection；
   state 7 的 bounded `none:64,a:8,none:56` sequence 為 format/source/lookup/asset
   全 0，仍保留 parser/caller live edge 為未完成
+- [x] 建立固定 `0x080025CC` parser／caller bounded runtime probe：只對 exact
+  strict `r1` 安裝 source read-watch，對 RAM `r0` 保留 output candidate，並以
+  `0x08001DBC` 作 writer breakpoint；本次 socket setup negative 不升格成 live
+  consumer hit
 - [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
   edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
   仍保留為 unknown

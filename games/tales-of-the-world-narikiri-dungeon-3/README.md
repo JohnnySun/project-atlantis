@@ -360,6 +360,17 @@ mGBA 0.10 對第二個 GDB client 的 `qSupported` timeout。兩者都不能當�
 `none:64,a:8,none:56`／128-event bounded sequence 仍是 format hit 0。下一個最小
 切片是固定 `0x080025CC` parser/caller，不再增加 formatter geometry。
 
+目前 parser slice 已收斂為 [`tools/parser_record_runtime_probe.py`](tools/parser_record_runtime_probe.py)。
+它只在固定 `0x080025CC` entry 觀察 direct-caller LR、`r0`／`r1` 分類與
+`0x03001588` cursor；只有 `r1` 是五窗內 exact strict record start 才安裝 source
+read-watch，RAM `r0` 只作 output-write candidate，並以 `0x08001DBC` 作 IWRAM
+writer breakpoint。`m18_a1ac_probe.py --trace-parser-after-return` 會沿正常 state
+4→7 return 在同一 GDB connection 執行 bounded sequence；本次 fresh invocation
+在 socket setup 得到 `PermissionError: [Errno 1] Operation not permitted`，所以
+沒有 parser／source／output／writer hit。這是 setup boundary，不是 parser 或遊戲
+沒有文字的證據；詳情見
+[`research/m2-parser-runtime-20260816.md`](research/m2-parser-runtime-20260816.md)。
+
 2026-08-16 的 port `24387` setup receipt 仍是 runtime negative：ROM identity／strict
 count `8938` 通過，但 sandbox 回報 `PermissionError: [Errno 1] Operation not
 permitted`，一次外部重試仍無 loader stop。詳情見

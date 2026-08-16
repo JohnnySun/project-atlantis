@@ -40,6 +40,9 @@ from consumer_probe import (  # noqa: E402
     strict_record_metadata,
 )
 from format_record_runtime_probe import trace_after_navigation  # noqa: E402
+from parser_record_runtime_probe import (  # noqa: E402
+    trace_after_navigation as trace_parser_after_navigation,
+)
 from state_probe import state_metadata  # noqa: E402
 
 
@@ -272,10 +275,20 @@ def run_probe(
     format_max_events: int = 128,
     format_max_hits: int = 8,
     format_max_stage_stops: int = 12,
+    trace_parser_after_return: bool = False,
+    parser_sequence: list[tuple[str, int]] | None = None,
+    parser_max_events: int = 128,
+    parser_max_stops: int = 64,
+    parser_max_hits: int = 8,
+    parser_per_event_timeout: float = 5.0,
 ) -> dict[str, object]:
     rom = rom_path.read_bytes()
     identity = b3tj_identity(rom)
-    strict_records = strict_record_metadata(rom) if trace_format_after_return else None
+    strict_records = (
+        strict_record_metadata(rom)
+        if trace_format_after_return or trace_parser_after_return
+        else None
+    )
     client = GdbClient(host, port, timeout=8.0, packet_delay=0.05, retry_delay=0.25)
     breakpoints = {
         "dispatcher": False,
@@ -802,6 +815,52 @@ def run_probe(
                         "post-state7-format-"
                         + str(post_trace.get("termination", "unknown"))
                     )
+                elif trace_parser_after_return:
+                    for name, address in (
+                        ("a2c0_caller_after", A2C0_CALLER_AFTER),
+                        ("a2c0", A2C0_ENTRY),
+                        ("post_slot_store", POST_SLOT_STORE),
+                        ("edge_check", EDGE_CHECK),
+                        ("state4_a388", STATE4_A388),
+                        ("state4_a58c", STATE4_A58C),
+                        ("state4_a030", STATE4_A030),
+                        ("state4_a050", STATE4_A050),
+                        ("a1ac_callsite", A1AC_CALLSITE),
+                        ("a1ac", A1AC_ENTRY),
+                        ("state_return", STATE_RETURN),
+                        ("dispatcher", STATE_DISPATCHER),
+                    ):
+                        if breakpoints[name]:
+                            try:
+                                client.remove_breakpoint(address, kind=2)
+                            except (RuntimeError, TimeoutError, OSError, ConnectionError):
+                                pass
+                            breakpoints[name] = False
+                    if key_watch:
+                        try:
+                            client.remove_watchpoint(
+                                KEYINPUT_ADDRESS, kind=2, watch_type=3
+                            )
+                        except (RuntimeError, TimeoutError, OSError, ConnectionError):
+                            pass
+                        key_watch = False
+                    post_sequence = parser_sequence or parse_sequence(
+                        "none:64,a:8,none:56"
+                    )
+                    post_trace = trace_parser_after_navigation(
+                        client,
+                        strict_records or {},
+                        sequence=post_sequence,
+                        max_events=parser_max_events,
+                        max_stops=parser_max_stops,
+                        max_parser_hits=parser_max_hits,
+                        per_event_timeout=parser_per_event_timeout,
+                    )
+                    report["post_state7_parser"] = post_trace
+                    stop_reason = (
+                        "post-state7-parser-"
+                        + str(post_trace.get("termination", "unknown"))
+                    )
                 break
 
             report["unexpected_stop"] = {
@@ -923,8 +982,24 @@ def main() -> None:
     parser.add_argument("--format-max-events", type=int, default=128)
     parser.add_argument("--format-max-hits", type=int, default=8)
     parser.add_argument("--format-max-stage-stops", type=int, default=12)
+    parser.add_argument(
+        "--trace-parser-after-return",
+        action="store_true",
+        help="after normal state 4->7 return, trace the fixed parser and writer on the same GDB connection",
+    )
+    parser.add_argument(
+        "--parser-sequence", default="none:64,a:8,none:56"
+    )
+    parser.add_argument("--parser-max-events", type=int, default=128)
+    parser.add_argument("--parser-max-stops", type=int, default=64)
+    parser.add_argument("--parser-max-hits", type=int, default=8)
+    parser.add_argument("--parser-per-event-timeout", type=float, default=5.0)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    if args.trace_format_after_return and args.trace_parser_after_return:
+        parser.error(
+            "--trace-format-after-return and --trace-parser-after-return are mutually exclusive"
+        )
     for name in (
         "max_stops",
         "max_edge_checks",
@@ -933,12 +1008,20 @@ def main() -> None:
         "format_max_events",
         "format_max_hits",
         "format_max_stage_stops",
+        "parser_max_events",
+        "parser_max_stops",
+        "parser_max_hits",
     ):
         if getattr(args, name) < 1:
             parser.error(f"--{name.replace('_', '-')} must be positive")
     format_sequence = (
         parse_sequence(args.format_sequence)
         if args.trace_format_after_return
+        else None
+    )
+    parser_sequence = (
+        parse_sequence(args.parser_sequence)
+        if args.trace_parser_after_return
         else None
     )
     result = run_probe(
@@ -957,6 +1040,12 @@ def main() -> None:
         format_max_events=args.format_max_events,
         format_max_hits=args.format_max_hits,
         format_max_stage_stops=args.format_max_stage_stops,
+        trace_parser_after_return=args.trace_parser_after_return,
+        parser_sequence=parser_sequence,
+        parser_max_events=args.parser_max_events,
+        parser_max_stops=args.parser_max_stops,
+        parser_max_hits=args.parser_max_hits,
+        parser_per_event_timeout=args.parser_per_event_timeout,
     )
     output = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.output is None:
