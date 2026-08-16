@@ -411,6 +411,22 @@
   selector／record index／reader argument provenance；完成前維持 source table、
   ledger、翻譯與 patch gate blocked，不再擴張 graphics/resource 分類。
 
+## M1.31：skill record prefix 的 code-unit identity cross-map
+
+- [x] 完整驗證 `0x080bf5c0..0x080bf5d2` leaf accessor、
+  `0x080bf5d8..0x080bf648` caller、`0x080bf5cc` literal target `0x0819b9f4`，
+  以及 `0x080bf606` accessor BL、`0x080bf620`→`0x080ac218` renderer BL；固定
+  `index*0x1c`、field `+0x06`、最多八個 halfword 與 zero/eight-unit termination。
+- [x] 以三個獨立日文資料層作 bounded identity/order cross-check，ordinal `0..31`
+  連續 skill record 32/32 match；建立 `m31-skill-record-{ordinal:04d}` namespace。
+  工具只輸出 metadata/hash/count，沒有提交 raw record、完整原文或 translation ledger。
+- [~] `0x0819b9f4` skill prefix identity 已 confirmed，但完整 table extent、其餘
+  category spans、自然 runtime selection、complete codepage、glyph/width/control
+  與回插仍 provisional/unknown。
+- [ ] 沿同一個 named reader/font builder，對少量已知 skill/demon unit 建立
+  record field→font-bank block→renderer 的可重抽取 provenance；完成前維持 M2
+  ledger、翻譯與 patch gate blocked，不再擴張 graphics/resource 分類。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
