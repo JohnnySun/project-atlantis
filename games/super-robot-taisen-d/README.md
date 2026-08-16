@@ -528,3 +528,13 @@ glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼
   工具／測試在 `tools/m130_runtime_target.py`、`tools/m130_runtime_receipt.py` 與
   對應 tests；這是 controlled consumer／glyph proof，不是自然 menu／queue screen QA，
   `natural_screen_proven=false`、`release_ready=false`，維持 `ai_draft`。
+
+- [x] M1.31 採用共用 gba-rom-identity 與 gba-runtime-session：以一個已驗證 queue-entry
+  drain callsite 0x08008E1C 做 bounded runtime case；patched batch-5 ROM identity
+  exit=0/status=pass，manifest strict validation pass。
+  authorized preflight exit=0/status=pass；session run 的 listener readiness 為
+  negative，runner 未啟動，自己的 process 已由 owner cleanup，沒有接管其他 listener。
+  靜態 queue window 驗證 60-entry／4-byte table、entry+0x08 consumer payload、
+  consumer 後 cleanup／clear；natural queue hit、scene classification 與 screen QA 仍 pending。
+  newline／speaker／branch／最大寬度保持 fail-closed，不增加翻譯筆數。摘要在
+  research/m131-queue-producer-boundary.json，case manifest 在 research/m131-queue-caller-case.json。

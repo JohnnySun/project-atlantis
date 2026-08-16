@@ -1354,3 +1354,25 @@ The tracked receipt is generated from ignored captures by `tools/m130_runtime_re
 rejects source text, raw/pixel output, hash drift, wrong slot/base, wrong unit count, and
 non-exact layout. M1.30 does not prove natural menu／queue navigation, complete newline／
 speaker／branch semantics, maximum width／line count, full reinsert coverage, or release.
+
+## 2026-08-17：M1.31 queue producer／common runtime boundary
+
+本輪依共用工具導入指南，不重寫本作 GDB／decoder，也不做廣泛 boot-window 測試。只選一個既有 structural class 的 queue-entry drain callsite 0x08008E1C，並把 common tool 的 exit/status 與本作 adapter 證據分欄保存。
+
+### 共用工具命令與 transport 結果
+
+1. scripts/gba-rom-identity.py 對 ignored patched batch-5 ROM 執行 expected size、SHA、game code guard：exit 0、status pass；header complement 亦 pass。
+2. scripts/gba-runtime-qa.py validate-manifest 對 m131-queue-caller-case.json：exit 0、manifest.valid pass。
+3. scripts/gba-runtime-session.py preflight --port 2350：sandbox 首次 exit 2／unknown（Operation not permitted）；authorized retry exit 0／status pass。
+4. scripts/gba-runtime-session.py run 同一 manifest：fresh own process、single owner；第一次與一次 skipBios=1 修正均在 listener readiness 前 status unknown，runtime runner未啟動。第二次 session 的 process_matches_rom=true、identity_changed=false、listener_matches_exact_pid=false、cleanup=killed_after_timeout；只清理自己的 PID。
+
+| evidence | result |
+| --- | --- |
+| common session ownership | process command 符合 patched ROM；listener 未 ready；未接管其他 process |
+| queue runtime hit | not_observed；沒有 manifest runner、GDB breakpoint 或 source payload event |
+| static queue table | literal 0x08008E7C -> runtime 0x02011E20；60 entries、stride 4、span 240 bytes |
+| consumer arguments | r0=entry+0x08、r1=[entry+0x04]、r2=byte[entry+0x46]、r3=[entry]、stack[0]=1；field semantics opaque |
+| lifecycle | nonzero entry guard；consumer 0x08008724；cleanup 0x0800536C；consumer 後清 entry 並迴圈至 index 0x3B |
+| semantic boundary | newline、speaker、branch、line count、engine max width 全 unconfirmed；release_ready=false |
+
+此 window 只證明 queue caller 的資料流與生命週期，不證明 entry+0x08 是 static source record，也不把任何欄位命名成話數、分支、戰鬥、機體或 UI。下一個解除條件是在可用 owner/runtime transport 下，將一個 queue payload 綁定到已知 source record、mode field 與 screen／layout state；在此前維持 opaque／reject，不增加 ai_draft。

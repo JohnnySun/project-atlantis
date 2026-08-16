@@ -246,3 +246,11 @@
   16px／8px render hash；adjacent `526432` base／patched hashes 不變。這只解除
   controlled glyph/layout 因果鏈，不解除自然 menu／queue screen、newline／speaker／
   branch semantics 或 release；摘要在 `research/m130-corrected-runtime-receipt.json`。
+
+- [x] M1.31 採用共用 ROM identity／runtime session owner，對已驗證 queue-entry drain
+  callsite 0x08008E1C 做一次 bounded case；patched ROM identity 與 manifest pass，
+  authorized preflight pass，但 listener readiness negative 使 runner 未啟動，own process
+  cleanup verified。static window 證明 0x02011E20 的 60-entry／4-byte table、entry+0x08
+  consumer payload、consumer 後 cleanup／clear；不把 queue fields 命名為 story、speaker、
+  newline 或 branch。natural caller、screen、最大寬度與完整 layout 仍未證明；不擴大翻譯。
+  摘要在 research/m131-queue-producer-boundary.json，manifest 在 research/m131-queue-caller-case.json。
