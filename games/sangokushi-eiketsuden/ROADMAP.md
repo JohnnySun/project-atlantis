@@ -47,6 +47,12 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
   32/32 stops 仍在 `0x0805CF5E` title poll，未命中 `0x0800C61C`、state gate、builder、
   B/D/E consumer 或 glyph pipeline；下一步轉 static 追 `0x0805D10C` menu owner，不再
   重複 title-only runtime path。詳見 `research/m2-7-menu-selection-negative-20260816.md`。
+- [x] M2.8 完成 title/menu state static boundary：`0x0805D2EC` 的 state byte
+  `0x030042D1`、`1..12` range/fallback、`0x0805D318/12` pointer table、10 個 unique
+  Thumb handler entry probes、`0x0805E07C`／`0x0805FB06` direct callers，以及
+  `0x0805CA94 → 0x0805D10C` title/menu owner edge 均已驗證；state-12 reset write
+  也已固定。這仍不證明自然 Table-B `<44`、normal event-ready gate 或任何 handler
+  的具體畫面語意。詳見 `research/m2-8-title-menu-state-static-20260817.md`。
 - [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
 - [x] 分別確認四組 bounded candidate pool 的完整 NUL／Shift-JIS／LF／控制碼統計；A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未把 noisy compression signature 當成文本壓縮。各池完整畫面語意與其餘 runtime glyph identity 仍分開 pending；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [x] 建立 story-event E 的 bounded static boundary／consumer chain：`0x0CDB64/33`、33 unique targets、32/33 LF、33/33 strict Shift-JIS、0 opaque controls，並驗證 `0x080CDB64 → 0x08011904 → 0x080118C8 → 0x0800CAD8`；另以日文 GBA 攻略的夷陵／劉備生死結局流程建立 `provisional-known-screen-cross`，但 E 的 natural runtime、glyph receipt 和完整語意仍 pending，且不併入四池 custom-glyph source non-use。
