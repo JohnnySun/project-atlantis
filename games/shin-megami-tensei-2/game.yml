@@ -1,0 +1,27 @@
+id: shin-megami-tensei-2
+platform: gba
+titles:
+  ja: "真・女神転生II"
+  en: "Shin Megami Tensei II"
+  zh-Hans: "真·女神转生 II"
+  zh-TW: "真・女神轉生 II"
+source:
+  region: JP
+  product_code: A5TJ
+  header_game_code: A5TJ
+  maker_code: "EB"
+  revision: 0
+  size: 8388608
+  crc32: af40cc99
+  md5: 57af4ca36d8036a483ae0d98c27bf544
+  sha256: 819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e
+  header_complement:
+    stored: 4a
+    calculated: 7c
+    matches: false
+  verified: true
+  provenance: "本機日版 GBA ZIP 成員的唯讀 header、CRC32 與雜湊；ROM 不進 Git"
+targets:
+  - zh-Hans
+  - zh-TW
+status: research
