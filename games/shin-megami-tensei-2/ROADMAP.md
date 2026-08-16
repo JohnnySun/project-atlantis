@@ -74,6 +74,15 @@
 - [~] 兩個 table 都是 ROM-resident state/resource provenance，尚未建立 source writer、code-unit 或 glyph edge；不得建立翻譯 ledger。
 - [ ] 追 `0x08198a98` variable consumer 與 `0x087df54c` data targets 的下一個可命名 source/class edge，再決定是否需要新的自然 runtime watch。
 
+## M1.11：OAM／OBJ consumer 與 destination source-class mapping
+
+- [x] 建立只追已知 OAM buffer、固定 `0x06013000` DMA 與 `0x06010000` literal references 的 bounded analyzer；不重跑同一 reset→Start negative、全 ROM glyph scan 或 source dump。
+- [x] 以 Thumb boundary、literal pool、function window hash 與 direct BL caller 交叉驗證 `0x080a9af4` 的 DMA3 setup：`0x030033f0 → 0x07000000`、`0x84000100`、`0x080a9b26 → 0x080aabc8`。
+- [x] 將 `0x080a9dd0`、`0x080a9e38`、`0x080a9ea8`、`0x080a9f04` 分層為 OAM table-fill、inline/fall-through、record append 與 object builder，保留 caller／RAM buffer 類別與 hash/count metadata。
+- [x] 取得 `0x06010000` 的 12 個 bounded literal consumers，並交叉既有 8 個 `0x06013000` fixed-DMA patterns；報告不含 raw bytes、圖片、完整原文或 source table。
+- [~] OAM 與 OBJ destination 仍只有 consumer/source-class 證據，沒有 source pointer → code-unit → glyph writer；不得建立 codepage、stable string ID 或翻譯 ledger。
+- [ ] 從 12 個 OBJ-VRAM consumer 選一條自然可觸發 edge，取得 source register／ROM pointer／RAM table／code-unit provenance；若失敗，轉向下一個已命名 text/code-unit consumer。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
