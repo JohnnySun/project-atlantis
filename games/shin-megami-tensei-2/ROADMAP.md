@@ -57,6 +57,14 @@
 - [~] initializer 尚未自然命名；`0x0812f2b4`、`0x0813e428`、`0x0813e574` 只列為 static priority candidates，下一步做 caller/source/state argument mapping，不再延長相同 reset→Start navigation。
 - [ ] 取得自然 selector／descriptor consumer 與第一個 source/index/code-unit edge；未完成前維持 glyph source chain、source table、codepage、ledger、翻譯與回插封鎖。
 
+## M1.9：selector state argument mapping
+
+- [x] 以 metadata-only static tool 追 `0x0812f2b4`、`0x0813e184`、`0x0813e428`、`0x0813e574` 四個 priority Thumb functions；各自保留 prologue、bounded return candidates、256-byte function hash 與 direct BL caller count。
+- [x] 對 `0x03006950`、`0x030068c0`、`0x030066b0`、`0x03005ca8`、`0x0203db40` 做 literal/store edge 解碼；確認 `0x0813e428` 的 selector swap、`0x0813e574` 的 RAM restore 與 `0x0812f2b4` 的 ROM literal branches。
+- [x] 沿 direct caller 向上最多三層，記錄 callsite、Thumb boundary、caller hash/length 與 r0–r3 linear-provisional provenance；`0x080bee40`／`0x081534ae` 分別指向 provisional ROM table-derived arguments。
+- [~] static provenance 尚非自然 runtime selector hit，也不是 glyph/source table；M1.8 的三組自然 negative window 保持不變，未新增 synthetic state。
+- [ ] bounded map `0x08198a98`／`0x087df54c` table shape 及其 source writer，再取得可重抽取的 code-unit/glyph edge；未完成前維持 source table、codepage、ledger、翻譯與回插封鎖。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
