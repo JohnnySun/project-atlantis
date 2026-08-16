@@ -28,6 +28,19 @@
 - [ ] 建立日文來源的 checksum／decoder version，讓 ledger restore 能偵測漂移。
 - [ ] 建立只含少量 UI／短句的回插試驗，重新抽取逐 byte 驗證未修改區。
 
+## 里程碑 1.5：第一個互動文字圖層切片
+
+- [x] 以 A9PJ 已證實的 KEYINPUT read path 注入 `START, START, A`，抵達第一個
+  name-entry／kana 互動畫面；不重做 startup logo baseline。
+- [x] 使用共用 `core/gba` capture、BG tilemap 與 OBJ renderer，確認 BG0／BG1／BG3
+  的實際圖層與 `DISPCNT`／`BGxCNT` 對應。
+- [x] 把 glyph addressing（BG0 tile `0x125`、VRAM `0x060024A0`）與 glyph identity、
+  codepage、控制碼分欄記錄；ROM exact match 僅保留為 byte／圖形候選。
+- [x] 對 transition 與初始 boot 各做一次有界 1-byte VRAM write watchpoint；兩次均
+  留下 `tile_hit_count=0` 的可重現陰性 receipt，沒有把人工 interrupt 當成 hit。
+- [ ] 取得實際 source buffer／DMA 邊界或控制流上的文字 consumer／caller，確認至少一組
+  code unit→glyph 關係與控制碼；在此之前 source table／work ledger 維持空白。
+
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
 - [ ] 先完成 Wikipedia zh-tw、Bahamut 與其他獨立社群來源的專有名詞核對；有分歧

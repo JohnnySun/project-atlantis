@@ -7,12 +7,14 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」里程碑，並完成一次有界 M1 GDB 擷取；尚未
-開始有限量翻譯，也沒有可回插的文字 patch。M1 的 read watchpoint 被 stub 接受但在
-12 秒內沒有 stop packet，因此沒有把候選區宣稱成事件／選單文字。已證實遊戲不是可
-直接套用其他作品格式的 Shift-JIS 腳本；下一個安全技術關卡仍是以獨立證據把候選指標
-分成劇情、地圖／事件、角色／戰鬥資料與圖像／字型資料，再確認自訂碼頁、控制碼和可逆
-回插規則。
+目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5 執行期切片；尚未開始
+有限量翻譯，也沒有可回插的文字 patch。M1.5 已用 KEYINPUT 導航到第一個互動的
+name-entry／kana 畫面，並以共用 BG／OAM renderer 分離出 BG0、BG1、BG3；選定的 BG0
+glyph cell 在 transition 與從 reset 開始的 bounded write watchpoint 都沒有 CPU hit，
+所以沒有把候選 tile 宣稱成文字 consumer、codepage 或控制碼。詳見
+[`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
+下一個安全技術關卡仍是以 source buffer／DMA 邊界或控制流證據分離劇情、地圖／事件、
+角色／戰鬥資料與圖像／字型資料，再確認自訂碼頁、控制碼和可逆回插規則。
 
 - ROM 身分、大小與雜湊已記錄；標頭補數校驗不一致，這個異常必須保留在基準資料中。
 - 全 ROM 未找到常見日文 UI 詞的 literal Shift-JIS 命中，不能把一般 Shift-JIS 當成
@@ -28,6 +30,8 @@
 - 共用 `core/gba` baseline 已確認實際 BG1／BG2／BG3 tilemap 與 startup／演出圖層可
   重建；這是 graphics path 證據，不是事件／選單文字或 codepage 證據，詳見
   [`research/runtime-baseline-core-20260816.md`](research/runtime-baseline-core-20260816.md)。
+- M1.5 的互動畫面、glyph addressing、renderer 判定與兩段 bounded negative watchpoint
+  receipt 見 [`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
 
 ## ROM 基準
 
@@ -67,8 +71,8 @@ pristine dump；後續所有抽取與測試都必須固定這組基準。
   未知；不會用英文 patch 反推日文並直接寫入翻譯。
 - 換行、變數、姓名／道具插值、結束碼與其他控制碼。
 - ROM → working source table → ledger → 目標 ROM 的完整可逆回插路徑。
-- 本遊戲自己的 mGBA 畫面／VRAM 證據尚未納入這個里程碑，因此靜態候選不被寫成
-  runtime proof。
+- 已有 name-entry 畫面自己的 mGBA／VRAM 圖層證據；但 glyph byte match 仍不是
+  codepage／source row 證據，靜態候選與 renderer 圖層不能互相冒充文字 consumer。
 
 ## 外部工程參考
 

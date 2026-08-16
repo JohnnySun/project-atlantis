@@ -52,7 +52,9 @@ trip 完成前，不建立 `translations/*.jsonl` 記錄，不從英文／中文
 
 ## 目前狀態
 
-截至本次 M1 bounded capture，尚未有任何 row 通過必要證據：23901 read watchpoint 沒有
-取得 stop packet，故沒有 runtime consumer、實際 code unit 序列或 glyph 搬移可供 source
-table 使用。source table 目前只有本規格，尚未生成 `*-decoded.jsonl`；work ledger 維持
-空白是刻意的安全狀態，不代表翻譯已開始。
+截至 M1.5，renderer 已確認第一個互動畫面的 BG0／BG1／BG3 圖層，並定位一個 BG0
+glyph cell；但 transition 與從初始 GDB stop 開始的 VRAM write watchpoint 都沒有
+取得 tile write stop，仍沒有 runtime consumer、實際 code unit 序列或控制碼可供 source
+table 使用。`0x163184` 的 ROM byte exact match 只是圖形／byte 候選，不足以建立 row。
+source table 目前只有本規格，尚未生成 `*-decoded.jsonl`；work ledger 維持空白是刻意的
+安全狀態，不代表翻譯已開始。
