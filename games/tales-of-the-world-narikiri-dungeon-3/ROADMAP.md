@@ -15,6 +15,15 @@
 - [x] 完成一個有界 mGBA GDB runtime 回合，確認部分 BIOS 解壓縮 wrapper 的實際呼叫
 - [x] 把 runtime 證據、輸入導覽失敗界線與假設寫入研究報告
 
+## M1.5：文字消費者 bounded proof
+
+- [x] 對五個資料窗做 absolute／relative pointer cross-classification，區分 confirmed 與 provisional
+- [x] 選定有 direct pointer table 引用的 concrete record `sjis:0x146EE0`
+- [x] 以共用 GDB client 建立可重跑的 KEYINPUT read-watchpoint navigation harness
+- [x] 在 bounded early-UI sequence 中驗證 input caller；選定 record read watchpoint 明確記錄為 negative
+- [x] 對 baseline BG charbase 做 ROM→VRAM exact byte match，並保留重複 tile／未歸因 glyph 的限制
+- [ ] 命中 selected record 的 live consumer，沿 caller 連到 decoder／codepage／glyph VRAM destination
+
 ## M2：尚未開始的必要證明
 
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
