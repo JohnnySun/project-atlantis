@@ -476,6 +476,41 @@ queue 觸發尚未取代這條受控驗證。
   [`research/m124-corpus-caller-coverage.json`](research/m124-corpus-caller-coverage.json)，
   工具／測試在 [`tools/m124_corpus_caller_coverage.py`](tools/m124_corpus_caller_coverage.py)
   與 [`tools/test_m124_corpus_caller_coverage.py`](tools/test_m124_corpus_caller_coverage.py)。
+- [x] M1.25 修正 M1.22 的 GDB port 假設後，以本機 2348 build 做一次 fresh patched
+  runtime attempt：只讀 source evidence 確認 `GDBStubListen(..., 2348, ...)`，但 process
+  沒有 TCP 2348 listener／ROM descriptor，唯一 probe `connection_refused`；自己的
+  process 已停止。font-base、consumer、glyph、writer、cache／VRAM、screen 都是
+  `not_observed`，`rom_or_translation_failure=false`。source-safe receipt 在
+  [`research/m125-runtime-transport-receipt.json`](research/m125-runtime-transport-receipt.json)，
+  工具／測試在 [`tools/m125_runtime_transport_receipt.py`](tools/m125_runtime_transport_receipt.py)
+  與 [`tools/test_m125_runtime_transport_receipt.py`](tools/test_m125_runtime_transport_receipt.py)。
+- [x] M1.26 重跑既有 M1.13／M1.21／M4 contracts 並核對全部 12 筆 tracked ledger：
+  source／token no-op `2325/2325`、ledger encoder `12/12`、same-length `12/12`、
+  static reinsert target `12/12`、untouched `2313/2313` 均一致。coverage 仍是
+  fail-closed subset：未翻譯 narrow `927`、mixed `833`、wide `417`、opaque `136`；
+  wide static-only identity `742`、new-slot capacity `0`。報告只保存 hash/count/partition
+  metadata，`full_semantic_translation=false`、`release_ready=false`；摘要在
+  [`research/m126-full-encoder-ledger-audit.json`](research/m126-full-encoder-ledger-audit.json)，
+  工具／測試在 [`tools/m126_full_encoder_ledger_audit.py`](tools/m126_full_encoder_ledger_audit.py)
+  與 [`tools/test_m126_full_encoder_ledger_audit.py`](tools/test_m126_full_encoder_ledger_audit.py)。
+- [x] M1.27 完成自有 mGBA/GDB transport boundary：0.11 headless `39123` 與既有
+  0.10.5 SDL `2349` 均有 listener／authorized local connect，但 m19 bounded
+  continue/stop 在任何 verified initializer／consumer event 前 timeout；0.11 SDL
+  no-display 與另一 headless bind-negative 也已分欄。沒有 font-base、target source
+  read、glyph、writer、cache／VRAM 或 screen evidence，`rom_or_translation_failure=false`，
+  process 已清理。摘要在
+  [`research/m127-runtime-transport-boundary.json`](research/m127-runtime-transport-boundary.json)，
+  工具／測試在 [`tools/m127_runtime_transport_boundary.py`](tools/m127_runtime_transport_boundary.py)
+  與 [`tools/test_m127_runtime_transport_boundary.py`](tools/test_m127_runtime_transport_boundary.py)。
+- [x] M1.28 完成 source-safe control/layout fail-closed contract：NUL、2-byte glyph
+  loop、cursor `+2` 與 opaque mode-field origin 為 proven；dedicated newline byte
+  compare `0`、opaque newline candidate `0`，但 newline／speaker／branch semantics
+  與 engine width limit 仍未證明。全 corpus narrow-only shape `939`、target-admissible
+  `12`、opaque units `1120`、observed width `0..240`、static POC cap `64px` 均留在
+  明確欄位；`translation_started=false`、`release_ready=false`。摘要在
+  [`research/m128-control-layout-contract.json`](research/m128-control-layout-contract.json)，
+  工具／測試在 [`tools/m128_control_layout_contract.py`](tools/m128_control_layout_contract.py)
+  與 [`tools/test_m128_control_layout_contract.py`](tools/test_m128_control_layout_contract.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
