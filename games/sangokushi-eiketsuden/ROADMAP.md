@@ -31,11 +31,18 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
 - [x] M2.1 建立 bounded analyzer、ignored decoded JSONL extractor、反組譯／邊界／結構測試；兩次乾淨 runtime retry 未取得 consumer hit，runtime edge 保留 pending。
 - [x] M2.2 以有效 Thumb span、literal pool 和 callsite 驗證 `0x0800D3FC` stack output buffer → `0x0800CAD8` writer → `0x08008D18` SJIS renderer → `0x080650A4` codepage lookup → `0x080650DC` glyph expand → `0x080656D4` VRAM copy／`0x08008914` tilemap writer。
 - [x] M2.2 建立 source-safe static analyzer、44-record decode→encode no-op verifier、三個 strict SJIS sentinel 的 codepage index／static glyph hash 交叉證據；不把 raw source、dump 或圖片寫入 Git。
-- [x] M2.2 擴充 pipeline breakpoint harness，natural／controlled 事件分欄並記錄 r6 base、欄位、caller LR 與 actual index；本次 runtime listener 未產生可用 report，故維持 pending。
-- [ ] 分別確認完整字串結構、指標／池、壓縮、控制碼、換行和 runtime glyph identity；M2.2 的 addressing 結論只限已驗證的 static path。
+- [x] M2.2 擴充 pipeline breakpoint harness，natural／controlled 事件分欄並記錄 r6 base、欄位、caller LR 與 actual index；M2.3 沿用並加入 builder、cache、VRAM、tilemap receipts。
+- [x] M2.3 由 `0x080264A4` → `0x0801929C` static chain 證實 `r6+0x02` 是 builder count、`r6+0x1C` 是 event buffer；empty path 為 44，normal path的 runtime table bound 保持未證明。
+- [x] M2.3 以明確標記的 controlled consumer fixture 觀察一筆 actual index `0 < 44`，並取得 B[0] → formatter → writer → glyph cache → 128-byte VRAM copy → tilemap 的 runtime receipts；自然 reachability 不冒充 confirmed。
+- [x] M2.3 補上 listener／process／port readiness check、原生 mGBA direct 對照與 transport negative 記錄；只保存 metadata／hash，不提交 runtime artifacts。
+- [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
+- [ ] 分別確認完整字串結構、指標／池、壓縮、控制碼、換行和其餘 runtime glyph identity；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。
 - [ ] 寫出 `games/sangokushi-eiketsuden/tools/` 下的唯讀 decoder／renderer，輸出本機原文表。
 - [ ] 只有在未修改內容可抽出再回插後逐 byte 一致，才宣稱回插路徑可行。
+
+M2.3 的 evidence ledger 與 hash-only runtime receipt 見
+[`research/m2-3-runtime-gate-20260816.md`](research/m2-3-runtime-gate-20260816.md)。
 
 ## 里程碑 3：有限量翻譯與 ledger
 

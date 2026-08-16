@@ -38,6 +38,16 @@
 - [~] 尚未建立 glyph source/staging → transform → OBJ VRAM → OAM 的因果鏈；`0x080baef0` 仍是 staging candidate，附近 `0x081869c8` descriptor table（含 `0x080baef1` Thumb pointer）是下一個最小 indirect-dispatch 追蹤點。不得以 queue resource pointers 或畫面 OCR 代替 source table。
 - [ ] 取得實際 glyph writer 的 ROM pointer／RAM table／code-unit argument；確認 1–3 個重複 glyph 的 source hash、transform 與 OBJ tile hash 後，才可開始建立 stable string ID、codepage 或翻譯批次。
 
+## M1.7：descriptor selector／indirect dispatch 有界追蹤
+
+- [x] 解析 `0x080ba8d8` selector 的 ARM7TDMI Thumb boundary、embedded literal pools、三個 direct BL callers 與 group/index 參數；確認 `0x08182b70` 是 `0x08182b54[7]`，value 為 `0x081869c8`。
+- [x] 解析 callback table `0x0815eeec` 的 25×8 dispatch、`opcode << 3` 選擇與 `0x0815cccc` trampoline；descriptor bounded window 為 620 bytes／155 words、6 sentinel、variable-length command stream，不宣稱 fixed record stride。
+- [x] 記錄 descriptor function-pointer refs：`0x080baef1` 1 次、`0x080bafb9` 4 次；callback payload advance 只採用由 cursor/progress 反組譯交叉得到的欄位，沒有把未解 state/header 猜成 source table。
+- [x] natural A/Start/方向鍵 transition（60 秒／38 KEYINPUT reads）有界陰性：三個 selector caller、selector entry、`0x080baef0`、`0x080bafb8`、`0x02001000` writer 均 0 hit；generic queue/LZ77 仍落在既有 resource path。
+- [x] synthetic group=1/index=7 fallback 以 fail-closed PC/register override 驗證 `0x081869c8 → 0x080ad0fc(r0=descriptor,r1=0xffff)`；return guard 停止，不把 synthetic selection 當自然場景，不繼續 force-drain。
+- [~] selector/descriptor 到真正 glyph writer 尚未接通；fresh boot `0x03006950` pointer 與 `0x0203db40` counter 都為 0，下一步應設 reset 前 write watch 找到 RAM selector-table initializer／state dispatcher，再以自然已初始化 table 觸發 caller。
+- [ ] 取得 `0x080baef0`／`0x080bafb8` 的實際 source/index/code-unit argument，並交叉到 staging→OBJ VRAM→OAM；未完成前維持 source table、stable string ID、codepage 與翻譯封鎖。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

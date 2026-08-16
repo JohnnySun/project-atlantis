@@ -12,9 +12,9 @@ port.  It keeps one client connection, intercepts active-low KEYINPUT reads to
 send a bounded START sequence, watches the selected pointer-table entry and
 record, then summarizes the post-sequence VRAM change.  Use the shared
 ``core/gba/render_vram.py`` separately on ignored captures when a visual
-check is required.  When enabled, the static-chain wrapper breakpoint at
-``0x0800D8F0`` records the actual ``r0`` source pointer before the byte reader;
-it does not claim that the downstream glyph writer has been found.
+check is required.  M2.3 additionally records the reviewed formatter,
+codepage, glyph-cache, VRAM-copy and tilemap breakpoints.  A consumer-fixture
+run is explicitly marked controlled and never counts as natural reachability.
 """
 
 from __future__ import annotations
@@ -70,6 +70,22 @@ M22_RAM_RANGES = (
     (0x02000000, 0x02040000),
     (0x03000000, 0x03008000),
 )
+M23_MAX_COHORT_HITS = 32
+CONTROLLED_CONSUMER_STRUCT = 0x0203F000
+CONTROLLED_CONSUMER_EVENT_ARRAY = 0x0203F100
+CONTROLLED_CONSUMER_DISPATCH_INDEX = 20
+CONTROLLED_CONSUMER_EVENT_BYTE = 0x00
+M23_BREAKPOINTS = {
+    **M22_BREAKPOINTS,
+    "event_builder_call": 0x08026510,
+    # 0x08019374 computes the return value (adds r0, r5); stop at the next
+    # instruction so r0 is the completed builder count.
+    "event_builder_exit": 0x08019376,
+    "glyph_expand_exit": 0x08065244,
+    "vram_copy_call": 0x080656E2,
+    "vram_copy_exit": 0x080656E6,
+    "tilemap_writer_exit": 0x08008962,
+}
 
 
 def parse_sequence(spec: str) -> list[tuple[str, int]]:
@@ -217,6 +233,63 @@ def _u16_any(client: GdbClient, address: int) -> int | None:
         return None
 
 
+def _memory_receipt(client: GdbClient, address: int, length: int) -> dict[str, object]:
+    """Return a hash/count receipt without retaining the memory bytes."""
+
+    try:
+        data = client.read_memory(address, length)
+    except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+        return {
+            "address": f"0x{address:08X}",
+            "length": length,
+            "status": "read-failed",
+        }
+    return {
+        "address": f"0x{address:08X}",
+        "length": length,
+        "status": "read",
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "nonzero_byte_count": sum(value != 0 for value in data),
+    }
+
+
+def controlled_consumer_metadata() -> dict[str, object]:
+    """Describe the isolated r6/event fixture without exposing its bytes."""
+
+    return {
+        "provenance": "controlled-consumer-call-hijack",
+        "r6_base": f"0x{CONTROLLED_CONSUMER_STRUCT:08X}",
+        "event_array_base": f"0x{CONTROLLED_CONSUMER_EVENT_ARRAY:08X}",
+        "dispatch_index": CONTROLLED_CONSUMER_DISPATCH_INDEX,
+        "event_byte_value": CONTROLLED_CONSUMER_EVENT_BYTE,
+        "event_byte_masked_index": CONTROLLED_CONSUMER_EVENT_BYTE & 0x7F,
+        "r6_fields": {
+            "0x00": 0,
+            "0x02": 1,
+            "0x04": 0,
+            "0x06": 0,
+            "0x08": 1,
+            "0x1C": f"0x{CONTROLLED_CONSUMER_EVENT_ARRAY:08X}",
+            "0x24": 0,
+        },
+        "index_formula_result": 0,
+        "index_less_than_table_b_count": True,
+        "natural_reachability": "not-claimed",
+    }
+
+
+def write_controlled_consumer_fixture(client: GdbClient) -> dict[str, object]:
+    """Install a disposable RAM-only r6/event fixture for a controlled call."""
+
+    fixture = bytearray(0x28)
+    fixture[0x02:0x04] = (1).to_bytes(2, "little")
+    fixture[0x08:0x0A] = (1).to_bytes(2, "little")
+    fixture[0x1C:0x20] = CONTROLLED_CONSUMER_EVENT_ARRAY.to_bytes(4, "little")
+    client.write_memory(CONTROLLED_CONSUMER_STRUCT, bytes(fixture))
+    client.write_memory(CONTROLLED_CONSUMER_EVENT_ARRAY, bytes([CONTROLLED_CONSUMER_EVENT_BYTE]))
+    return controlled_consumer_metadata()
+
+
 def _r6_metadata(client: GdbClient, registers: dict[str, int], *, entry_pc: bool) -> dict[str, object]:
     """Record structure fields and index evidence without dumping source bytes."""
 
@@ -290,6 +363,14 @@ def _pipeline_hit_metadata(
             result["unicode_identity"] = M22_SENTINEL_CODES.get(code, "unmapped")
         else:
             result["unicode_identity"] = "unmapped"
+    elif name == "glyph_expand_exit":
+        result["glyph_cache"] = _memory_receipt(client, 0x02000000, 0x80)
+    elif name == "event_builder_call":
+        result["input_structure"] = f"0x{registers['r0']:08X}"
+        result["event_buffer_argument"] = f"0x{registers['r1']:08X}"
+        result["builder_flag"] = registers["r2"] & 0xFFFFFFFF
+    elif name == "event_builder_exit":
+        result["event_array_count"] = registers["r0"]
     elif name == "record_wrapper":
         result["record_pointer"] = f"0x{registers['r0']:08X}"
         result["record_pointer_is_B0"] = registers["r0"] == ROM_BASE + CANDIDATE["record_file_offset"]
@@ -298,11 +379,10 @@ def _pipeline_hit_metadata(
         result["formatter_output_arg"] = f"0x{registers['r2']:08X}"
     elif name == "output_writer":
         result["formatted_buffer_pointer"] = f"0x{registers['r0']:08X}"
-    elif name == "vram_copy":
+    elif name == "vram_copy_call":
         result["destination"] = f"0x{registers['r0']:08X}"
         result["source"] = f"0x{registers['r1']:08X}"
-        result["copy_length_units"] = registers["r2"]
-        result["copy_length_bytes"] = registers["r2"] * 0x20
+        result["copy_length_bytes"] = registers["r2"]
     elif name == "tilemap_writer":
         result["tilemap_x"] = registers["r0"] & 0xFFFF
         result["tilemap_y"] = registers["r1"] & 0xFFFF
@@ -312,7 +392,7 @@ def _pipeline_hit_metadata(
 
 def _pipeline_breakpoint_name(pc: int) -> str | None:
     normalized = pc & ~1
-    for name, address in M22_BREAKPOINTS.items():
+    for name, address in M23_BREAKPOINTS.items():
         if normalized == address:
             return name
     return None
@@ -331,6 +411,7 @@ def _collect_pipeline_events(
 
     target_stopped = True
     events = report["events"]
+    runtime_state = report.setdefault("_runtime_state", {})
     for index in range(max_events):
         desired = sequence[index] if index < len(sequence) else "none"
         target_stopped = False
@@ -360,10 +441,127 @@ def _collect_pipeline_events(
         }
         if hit is not None:
             event.update(_pipeline_hit_metadata(client, hit, registers))
+            if hit == "event_builder_call":
+                runtime_state["event_builder"] = {
+                    "event_buffer": registers["r1"],
+                    "input_structure": registers["r0"],
+                    "caller_lr": registers["lr"],
+                }
+            elif hit == "event_builder_exit":
+                builder = runtime_state.get("event_builder", {})
+                count = registers["r0"]
+                event["event_array_count"] = count
+                event["event_array_count_le_table_b_count"] = count <= 44
+                if isinstance(builder, dict) and isinstance(builder.get("event_buffer"), int):
+                    buffer_address = int(builder["event_buffer"])
+                    event["event_array_base"] = f"0x{buffer_address:08X}"
+                    if 0 <= count <= 44:
+                        values = client.read_memory(buffer_address, count + 1)
+                        masked = bytes(value & 0x7F for value in values[:count])
+                        event["event_array_summary"] = {
+                            "count": count,
+                            "terminator_byte": values[count],
+                            "masked_sha256": hashlib.sha256(masked).hexdigest(),
+                            "masked_min": min(masked) if masked else None,
+                            "masked_max": max(masked) if masked else None,
+                            "masked_values_below_44": sum(value < 44 for value in masked),
+                            "masked_values_at_least_44": sum(value >= 44 for value in masked),
+                        }
+                        report["pipeline_receipts"].append({
+                            "mode": mode,
+                            "kind": "event-array-builder",
+                            "count": count,
+                            "array_base": f"0x{buffer_address:08X}",
+                            "masked_sha256": hashlib.sha256(masked).hexdigest(),
+                            "masked_values_at_least_44": sum(value >= 44 for value in masked),
+                        })
+            elif hit == "glyph_expand":
+                runtime_state["glyph_expand"] = {
+                    key: event[key]
+                    for key in ("codepage_index", "codepage_table_address", "code_unit", "unicode_identity")
+                    if key in event
+                }
+            elif hit == "glyph_expand_exit":
+                glyph_context = runtime_state.get("glyph_expand")
+                if isinstance(glyph_context, dict):
+                    event["glyph_context"] = glyph_context
+                report["pipeline_receipts"].append({
+                    "mode": mode,
+                    "kind": "glyph-cache",
+                    **event.get("glyph_cache", {}),
+                    "glyph_context": glyph_context if isinstance(glyph_context, dict) else None,
+                })
+            elif hit == "vram_copy_call":
+                # 0x08000214 consumes r2 as a byte count and subtracts 0x20
+                # per 32-byte transfer.  The setup routine has already
+                # converted the renderer's four tile units to 0x80 bytes.
+                copy_length = registers["r2"]
+                runtime_state["vram_copy"] = {
+                    "destination": registers["r0"],
+                    "source": registers["r1"],
+                    "length": copy_length,
+                    "before": _memory_receipt(client, registers["r0"], copy_length),
+                }
+            elif hit == "vram_copy_exit":
+                pending = runtime_state.pop("vram_copy", None)
+                if isinstance(pending, dict):
+                    destination = int(pending["destination"])
+                    length = int(pending["length"])
+                    event["vram_copy_receipt"] = {
+                        "destination": f"0x{destination:08X}",
+                        "source": f"0x{int(pending['source']):08X}",
+                        "length": length,
+                        "before": pending["before"],
+                        "after": _memory_receipt(client, destination, length),
+                    }
+                    report["pipeline_receipts"].append({
+                        "mode": mode,
+                        "kind": "glyph-cache-to-vram",
+                        **event["vram_copy_receipt"],
+                    })
+            elif hit == "tilemap_writer":
+                runtime_state["tilemap"] = {
+                    "x": registers["r0"] & 0xFFFF,
+                    "y": registers["r1"] & 0xFFFF,
+                    "value_base": registers["r2"] & 0xFFFF,
+                    "before": _memory_receipt(client, 0x02013050, 0x80),
+                }
+            elif hit == "tilemap_writer_exit":
+                pending = runtime_state.pop("tilemap", None)
+                if isinstance(pending, dict):
+                    event["tilemap_receipt"] = {
+                        "base": "0x02013050",
+                        "x": pending["x"],
+                        "y": pending["y"],
+                        "value_base": pending["value_base"],
+                        "before": pending["before"],
+                        "after": _memory_receipt(client, 0x02013050, 0x80),
+                    }
+                    report["pipeline_receipts"].append({
+                        "mode": mode,
+                        "kind": "tilemap-writes",
+                        **event["tilemap_receipt"],
+                    })
             events.append(event)
+            if hit == "consumer_index_setup" and mode in {"natural", "controlled-consumer"}:
+                metadata = event.get("index_metadata")
+                cohort = report["index_cohort"]
+                if isinstance(metadata, dict) and len(cohort) < M23_MAX_COHORT_HITS:
+                    fields = metadata.get("r6_fields_u16_or_pointer", {})
+                    cohort.append({
+                        "provenance": f"{mode}-consumer-index-setup",
+                        "event_number": index,
+                        "actual_index": metadata.get("actual_index"),
+                        "event_array_index": metadata.get("event_array_index"),
+                        "event_byte_value": metadata.get("event_byte_value"),
+                        "r6_base": metadata.get("r6_base"),
+                        "caller_lr": metadata.get("caller_lr"),
+                        "local_length": fields.get("0x02") if isinstance(fields, dict) else None,
+                        "index_less_than_table_b_count": metadata.get("index_less_than_table_b_count"),
+                    })
             # GDB stops before the breakpoint instruction. Single-step exactly
             # that instruction so the next continue cannot retrigger it.
-            if (registers["pc"] & ~1) == M22_BREAKPOINTS[hit]:
+            if (registers["pc"] & ~1) == M23_BREAKPOINTS[hit]:
                 report.setdefault("breakpoint_steps", []).append({
                     "mode": mode,
                     "hit": hit,
@@ -394,6 +592,7 @@ def run_pipeline_trace(
     event_timeout: float,
     settle_seconds: float,
     controlled_record: bool,
+    controlled_consumer: bool = False,
 ) -> dict[str, object]:
     """Trace natural reachability, then optionally inject B[0] at the wrapper.
 
@@ -402,15 +601,23 @@ def run_pipeline_trace(
     table-B entry 0.
     """
 
+    if not 1 <= natural_events <= M23_MAX_COHORT_HITS:
+        raise ValueError(f"natural_events must be between 1 and {M23_MAX_COHORT_HITS}")
+    if not 1 <= controlled_events <= M23_MAX_COHORT_HITS:
+        raise ValueError(f"controlled_events must be between 1 and {M23_MAX_COHORT_HITS}")
+
     static = static_candidate_metadata(rom_path)
     report: dict[str, object] = {
         "read_only": True,
-        "harness": "M2.2-pipeline",
+        "harness": "M2.3-pipeline",
         "candidate": candidate_addresses(),
         "static_candidate": static,
-        "breakpoints": {name: f"0x{address:08X}" for name, address in M22_BREAKPOINTS.items()},
+        "breakpoints": {name: f"0x{address:08X}" for name, address in M23_BREAKPOINTS.items()},
         "events": [],
         "breakpoint_steps": [],
+        "pipeline_receipts": [],
+        "index_cohort_limit": M23_MAX_COHORT_HITS,
+        "index_cohort": [],
         "negative": [],
         "natural_reachability": "not-observed",
         "controlled_reachability": "not-requested",
@@ -428,7 +635,7 @@ def run_pipeline_trace(
         report["settle_stop"] = client.continue_and_interrupt(settle_seconds)
         target_stopped = True
         before_vram = client.read_memory(0x06000000, 0x18000)
-        for name, address in M22_BREAKPOINTS.items():
+        for name, address in M23_BREAKPOINTS.items():
             client.set_breakpoint(address)
             breakpoint_set.append((name, address))
         client.set_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
@@ -450,38 +657,71 @@ def run_pipeline_trace(
         ]
         report["natural_reachability"] = "observed" if natural_hits else "not-observed"
 
-        if controlled_record and not natural_hits:
+        controlled_hits: list[dict[str, object]] = []
+        if (controlled_consumer or controlled_record) and not natural_hits:
             report["controlled_reachability"] = "requested"
             if not target_stopped:
                 report["interrupt_before_controlled"] = client.interrupt(timeout=2.0)
                 target_stopped = True
-            current = client.read_registers()
-            record_address = ROM_BASE + CANDIDATE["record_file_offset"]
-            client.write_register(0, record_address)
-            client.write_register(15, STATIC_RECORD_WRAPPER_ADDRESS)
-            report["controlled_injection"] = {
-                "mode": "controlled-consumer-call-hijack",
-                "entry": f"0x{STATIC_RECORD_WRAPPER_ADDRESS:08X}",
-                "r0_record_pointer": f"0x{record_address:08X}",
-                "previous_pc": f"0x{current['pc']:08X}",
-                "previous_lr": f"0x{current['lr']:08X}",
-                "natural_reachability_preserved": True,
-            }
-            target_stopped = _collect_pipeline_events(
-                client,
-                report,
-                sequence=[],
-                max_events=controlled_events,
-                event_timeout=event_timeout,
-                mode="controlled",
-            )
-            controlled_hits = [
-                event for event in report["events"]
-                if event.get("mode") == "controlled" and event.get("hit") in {
-                    "record_wrapper", "formatter", "output_writer", "sjis_renderer",
-                    "codepage_lookup", "glyph_expand", "vram_copy", "tilemap_writer",
+            if controlled_consumer:
+                current = client.read_registers()
+                fixture = write_controlled_consumer_fixture(client)
+                client.write_register(0, CONTROLLED_CONSUMER_STRUCT)
+                client.write_register(1, CONTROLLED_CONSUMER_DISPATCH_INDEX)
+                client.write_register(15, M23_BREAKPOINTS["consumer_entry"])
+                report["controlled_consumer_injection"] = {
+                    **fixture,
+                    "entry": f"0x{M23_BREAKPOINTS['consumer_entry']:08X}",
+                    "previous_pc": f"0x{current['pc']:08X}",
+                    "previous_lr": f"0x{current['lr']:08X}",
                 }
-            ]
+                target_stopped = _collect_pipeline_events(
+                    client,
+                    report,
+                    sequence=[],
+                    max_events=controlled_events,
+                    event_timeout=event_timeout,
+                    mode="controlled-consumer",
+                )
+                controlled_hits = [
+                    event for event in report["events"]
+                    if event.get("mode") == "controlled-consumer" and event.get("hit") in {
+                        "record_wrapper", "formatter", "output_writer", "sjis_renderer",
+                        "codepage_lookup", "glyph_expand", "glyph_expand_exit",
+                        "vram_copy", "vram_copy_call", "vram_copy_exit",
+                        "tilemap_writer", "tilemap_writer_exit",
+                    }
+                ]
+            if controlled_record and not controlled_hits:
+                current = client.read_registers()
+                record_address = ROM_BASE + CANDIDATE["record_file_offset"]
+                client.write_register(0, record_address)
+                client.write_register(15, STATIC_RECORD_WRAPPER_ADDRESS)
+                report["controlled_injection"] = {
+                    "mode": "controlled-wrapper-call-hijack",
+                    "entry": f"0x{STATIC_RECORD_WRAPPER_ADDRESS:08X}",
+                    "r0_record_pointer": f"0x{record_address:08X}",
+                    "previous_pc": f"0x{current['pc']:08X}",
+                    "previous_lr": f"0x{current['lr']:08X}",
+                    "natural_reachability_preserved": True,
+                }
+                target_stopped = _collect_pipeline_events(
+                    client,
+                    report,
+                    sequence=[],
+                    max_events=controlled_events,
+                    event_timeout=event_timeout,
+                    mode="controlled",
+                )
+                controlled_hits = [
+                    event for event in report["events"]
+                    if event.get("mode") == "controlled" and event.get("hit") in {
+                        "record_wrapper", "formatter", "output_writer", "sjis_renderer",
+                        "codepage_lookup", "glyph_expand", "glyph_expand_exit",
+                        "vram_copy", "vram_copy_call", "vram_copy_exit",
+                        "tilemap_writer", "tilemap_writer_exit",
+                    }
+                ]
             report["controlled_reachability"] = "observed" if controlled_hits else "not-observed"
         elif controlled_record:
             report["controlled_reachability"] = "skipped-natural-hit"
@@ -496,6 +736,28 @@ def run_pipeline_trace(
             for event in report["events"]
             if event.get("mode") == "natural" and "index_metadata" in event
         ]
+        report["controlled_index_evidence"] = [
+            event["index_metadata"]
+            for event in report["events"]
+            if event.get("mode") == "controlled-consumer" and "index_metadata" in event
+        ]
+        cohort = report["index_cohort"]
+        if cohort:
+            unknown_or_out_of_range = [
+                row for row in cohort
+                if row.get("index_less_than_table_b_count") is not True
+            ]
+            report["index_gate_status"] = (
+                "bounded-cohort-has-unknown-or-out-of-range"
+                if unknown_or_out_of_range
+                else "bounded-cohort-all-observed-indexes-less-than-44"
+            )
+        else:
+            report["index_gate_status"] = "not-observed"
+        report["index_gate_scope"] = (
+            "bounded natural/controlled-consumer consumer_index_setup cohort only; "
+            "controlled rows do not prove natural reachability or all future event bytes"
+        )
     finally:
         if watch_set:
             try:
@@ -507,6 +769,7 @@ def run_pipeline_trace(
                 client.remove_breakpoint(address)
             except (ConnectionError, OSError, RuntimeError, TimeoutError):
                 pass
+        report.pop("_runtime_state", None)
         client.close()
     return report
 
@@ -662,15 +925,20 @@ def main() -> int:
     parser.add_argument(
         "--pipeline",
         action="store_true",
-        help="trace the M2.2 formatter/codepage/glyph pipeline breakpoints",
+        help="trace the M2.3 formatter/codepage/glyph pipeline breakpoints",
     )
     parser.add_argument(
         "--controlled-record",
         action="store_true",
         help="after natural tracing, inject the reviewed B[0] pointer at the wrapper (controlled only)",
     )
+    parser.add_argument(
+        "--controlled-consumer",
+        action="store_true",
+        help="install a disposable RAM-only r6/event fixture and call dispatch case 20 (controlled only)",
+    )
     parser.add_argument("--natural-events", type=int, default=24)
-    parser.add_argument("--controlled-events", type=int, default=96)
+    parser.add_argument("--controlled-events", type=int, default=32)
     parser.add_argument(
         "--disable-wrapper-breakpoint",
         action="store_true",
@@ -682,10 +950,16 @@ def main() -> int:
         parser.error("--max-events must be positive")
     if args.natural_events < 1:
         parser.error("--natural-events must be positive")
+    if args.natural_events > M23_MAX_COHORT_HITS:
+        parser.error(f"--natural-events must be <= {M23_MAX_COHORT_HITS}")
     if args.controlled_events < 1:
         parser.error("--controlled-events must be positive")
+    if args.controlled_events > M23_MAX_COHORT_HITS:
+        parser.error(f"--controlled-events must be <= {M23_MAX_COHORT_HITS}")
     if args.controlled_record and not args.pipeline:
         parser.error("--controlled-record requires --pipeline")
+    if args.controlled_consumer and not args.pipeline:
+        parser.error("--controlled-consumer requires --pipeline")
     try:
         sequence = expand_sequence(parse_sequence(args.sequence))
         if args.pipeline:
@@ -699,6 +973,7 @@ def main() -> int:
                 event_timeout=args.event_timeout,
                 settle_seconds=args.settle_seconds,
                 controlled_record=args.controlled_record,
+                controlled_consumer=args.controlled_consumer,
             )
         else:
             report = run_trace(

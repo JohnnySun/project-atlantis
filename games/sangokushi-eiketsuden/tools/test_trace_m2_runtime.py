@@ -79,6 +79,66 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertTrue(metadata["index_less_than_table_b_count"])
         self.assertEqual(metadata["bound_status"], "runtime-observed-only; not-static-proof")
 
+    def test_m23_breakpoints_include_builder_and_pipeline_receipt_edges(self) -> None:
+        self.assertEqual(TRACE.M23_MAX_COHORT_HITS, 32)
+        self.assertEqual(TRACE.M23_BREAKPOINTS["event_builder_call"], 0x08026510)
+        self.assertEqual(TRACE.M23_BREAKPOINTS["event_builder_exit"], 0x08019376)
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x08019377), "event_builder_exit")
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x08065245), "glyph_expand_exit")
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x080656E3), "vram_copy_call")
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x080656E7), "vram_copy_exit")
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x08008963), "tilemap_writer_exit")
+
+    def test_m23_memory_receipt_hashes_without_retaining_bytes(self) -> None:
+        class FakeClient:
+            def read_memory(self, address: int, length: int) -> bytes:
+                self.request = (address, length)
+                return bytes(range(length))
+
+        client = FakeClient()
+        receipt = TRACE._memory_receipt(client, 0x02000000, 4)
+        self.assertEqual(client.request, (0x02000000, 4))
+        self.assertEqual(receipt["status"], "read")
+        self.assertEqual(receipt["nonzero_byte_count"], 3)
+        self.assertNotIn("data", receipt)
+        self.assertNotIn("bytes", receipt)
+
+    def test_m23_vram_copy_length_is_already_a_byte_count(self) -> None:
+        class FakeClient:
+            def read_memory(self, _address: int, length: int) -> bytes:
+                return bytes(length)
+
+        metadata = TRACE._pipeline_hit_metadata(
+            FakeClient(),
+            "vram_copy_call",
+            {"pc": 0x080656E2, "lr": 0, "r0": 0x0600C000, "r1": 0x02000000, "r2": 0x80},
+        )
+        self.assertEqual(metadata["copy_length_bytes"], 0x80)
+        self.assertNotIn("copy_length_units", metadata)
+
+    def test_m23_pipeline_event_budget_is_bounded(self) -> None:
+        with self.assertRaises(ValueError):
+            TRACE.run_pipeline_trace(
+                pathlib.Path("/not-used.gba"),
+                host="127.0.0.1",
+                port=24567,
+                sequence=[],
+                natural_events=33,
+                controlled_events=1,
+                event_timeout=0.1,
+                settle_seconds=0.0,
+                controlled_record=False,
+            )
+
+    def test_m23_controlled_consumer_fixture_is_explicit_and_bounded(self) -> None:
+        metadata = TRACE.controlled_consumer_metadata()
+        self.assertEqual(metadata["provenance"], "controlled-consumer-call-hijack")
+        self.assertEqual(metadata["dispatch_index"], 20)
+        self.assertEqual(metadata["event_byte_masked_index"], 0)
+        self.assertTrue(metadata["index_less_than_table_b_count"])
+        self.assertEqual(metadata["natural_reachability"], "not-claimed")
+        self.assertNotIn("raw_bytes", metadata)
+
 
 if __name__ == "__main__":
     unittest.main()

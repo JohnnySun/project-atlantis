@@ -498,7 +498,7 @@ def analyze_m2_2(data: bytes) -> dict[str, object]:
             "copy": {**vram_copy, "helper": {**copy_helper}},
             "destination_formula": "0x06000000 + (r1 << 5) + (3 << 14) from 0x08065058",
             "copy_source": _hex(GLYPH_CACHE_BASE),
-            "copy_length_formula": "r2 << 5; SJIS renderer supplies r2=4, so 0x80 bytes",
+            "copy_length_formula": "r2 bytes at copy helper; setup stores renderer tile units (4) << 5 = 0x80",
             "tilemap_writer": {**tilemap_writer, "literal_refs": tilemap_literals, "base": _hex(TILEMAP_BASE)},
         },
         "sentinels": sentinel_report,
