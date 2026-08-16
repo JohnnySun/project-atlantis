@@ -1,0 +1,46 @@
+{
+  "$schema": "https://project-atlantis.invalid/schemas/gba-runtime-case.schema.json",
+  "format_version": 1,
+  "case_id": "b3cj.m5.5.palette-queue",
+  "description": "B3CJ M5.5 applied-ROM clean boot and natural palette DMA queue receipt; this case does not claim a target text consumer or readable screen.",
+  "provenance": {
+    "evidence_level": "natural-anchor-only",
+    "rom_revision": "B3CJ M5.5 applied target",
+    "game_specific_probe": "tools/runtime_m5_handler_probe.py",
+    "text_consumer_status": "unproven",
+    "source_separation": "ROM and runtime reports stay ignored or in /private/tmp; this manifest contains metadata only.",
+    "shared_tools": "scripts/gba-rom-identity.py; scripts/gba-runtime-session.py; core/gba/gdbstub_client.py"
+  },
+  "rom": {
+    "sha256": "acfb3587a8217bf4ea444daf25f32c0947998a9203ee874db5006d7b6b016db6",
+    "size": 33554432,
+    "game_code_hex": "4233434a"
+  },
+  "runtime": {
+    "required_capabilities": [
+      "gdb-remote",
+      "register-read",
+      "memory-read",
+      "breakpoint"
+    ],
+    "gdb_timeout_seconds": 8,
+    "connect_timeout_seconds": 8,
+    "actions": [
+      {
+        "id": "natural-palette-dma-queue",
+        "op": "breakpoint",
+        "address": "0x08006BA4",
+        "timeout_seconds": 8
+      },
+      {
+        "id": "natural-palette-font-state",
+        "op": "capture",
+        "regions": [
+          {"id": "font-base-pointer", "address": "0x03002984", "length": 4},
+          {"id": "palette-shadow", "address": "0x03005D60", "length": 1024},
+          {"id": "script-state-pointer", "address": "0x03006574", "length": 4}
+        ]
+      }
+    ]
+  }
+}
