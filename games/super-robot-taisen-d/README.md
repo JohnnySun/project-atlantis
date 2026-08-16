@@ -466,6 +466,16 @@ queue 觸發尚未取代這條受控驗證。
   [`research/m123-control-semantic-boundary.json`](research/m123-control-semantic-boundary.json)，
   工具／測試在 [`tools/m123_control_semantic_boundary.py`](tools/m123_control_semantic_boundary.py)
   與 [`tools/test_m123_control_semantic_boundary.py`](tools/test_m123_control_semantic_boundary.py)。
+- [x] M1.24 重用既有 pointer/callsite reports（不重掃 ROM）建立 source-safe caller／
+  corpus coverage reconciliation：609 exact pointer candidates／370 records／123
+  cohorts、5 個 verified direct consumer callsites；12 筆 tracked ledger 全部落在
+  exact pointer records。各 structural partition 的 uncovered count、M1.19 RAM-buffer
+  mismatch、M1.22 transport negative 與 natural caller `not_observed` 分欄保存；story／
+  branch／battle／unit／UI／speaker／newline 仍 `unconfirmed`，不將 pointer 或 static
+  ledger 命中外推成 scene coverage。摘要在
+  [`research/m124-corpus-caller-coverage.json`](research/m124-corpus-caller-coverage.json)，
+  工具／測試在 [`tools/m124_corpus_caller_coverage.py`](tools/m124_corpus_caller_coverage.py)
+  與 [`tools/test_m124_corpus_caller_coverage.py`](tools/test_m124_corpus_caller_coverage.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

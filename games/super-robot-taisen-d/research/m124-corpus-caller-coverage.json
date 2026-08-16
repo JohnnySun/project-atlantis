@@ -1,0 +1,191 @@
+{
+  "consumer_callsite_inventory": {
+    "candidate_count": 5,
+    "candidate_instruction_index_sha256": "cd76a98e5a60c6ea4c39f9f48c931a38bc0bf0316c2aebccde914b04274a1fb0",
+    "consumer": "0x08008724",
+    "semantic_label": "unconfirmed",
+    "structural_class_counts": {
+      "dual_buffer_ui": 2,
+      "indexed_object_buffer": 1,
+      "queue_entry_drain_loop": 1,
+      "wrapper_fallback_zero_stack_arg": 1
+    },
+    "verified_entries": [
+      {
+        "callsite": "0x0800869E",
+        "consumer": "0x08008724",
+        "instruction_pcs_sha256": "0f7c65f3ffb0aa13a6b1c71b5e2e736397c092e03cecdbcb3c5bc524dcb634fe",
+        "instruction_window_sha256": "c64a6e42773eaccf6f8fd491a461bc60673c6b132fe07a798f889b39f0665432",
+        "semantic_label": "unconfirmed",
+        "structural_class": "wrapper_fallback_zero_stack_arg",
+        "trigger_condition": "wrapper_zero_test_falls_through_to_consumer;stack_arg_0=0"
+      },
+      {
+        "callsite": "0x08008E1C",
+        "consumer": "0x08008724",
+        "instruction_pcs_sha256": "2101593358be7ff6e89d4af3554cabb141faad8dbc3e069a59de319e836bc39b",
+        "instruction_window_sha256": "d7babb6f93e9a76151df5f1958c4acc974a2b74a897c5ceaa4b7cd30ac8dd659",
+        "semantic_label": "unconfirmed",
+        "structural_class": "queue_entry_drain_loop",
+        "trigger_condition": "entry_pointer_[r7]_nonzero;index_0..0x3b;clear_after_consumer"
+      },
+      {
+        "callsite": "0x08066050",
+        "consumer": "0x08008724",
+        "instruction_pcs_sha256": "9164c32ded82b9b987b79044274d209bda9505eb3386c115d9f25c5eb25d5abb",
+        "instruction_window_sha256": "a3300b2934479b6b9d7abd30c984523a8fc6f53ed1099e8c039f06ebbe7c0e1a",
+        "semantic_label": "unconfirmed",
+        "structural_class": "dual_buffer_ui",
+        "trigger_condition": "dual_buffer_setup;r0_from_r7;stack_arg_0=1"
+      },
+      {
+        "callsite": "0x08066062",
+        "consumer": "0x08008724",
+        "instruction_pcs_sha256": "8860e145b17e276e0aab8afec1eebdc7b3ad68d5df553a7a835497740671f278",
+        "instruction_window_sha256": "6f007256f32193029035328de3d52bb313ce7d1e5f37bd766c171149fc4ad1b6",
+        "semantic_label": "unconfirmed",
+        "structural_class": "dual_buffer_ui",
+        "trigger_condition": "dual_buffer_setup;r0_from_r8;stack_arg_0=1"
+      },
+      {
+        "callsite": "0x0806E01C",
+        "consumer": "0x08008724",
+        "instruction_pcs_sha256": "1f9dd972fbd4dcc2e69a10563d54e59b854dc4d997fa2af6c2a34573cc706839",
+        "instruction_window_sha256": "783c19c22d8fdd1f1bf803ca5a1f567470f6c01b6abc641a3b68d40f8948c8dc",
+        "semantic_label": "unconfirmed",
+        "structural_class": "indexed_object_buffer",
+        "trigger_condition": "indexed_object_buffer_[r6]_nonzero;stack_arg_0=1"
+      }
+    ]
+  },
+  "full_corpus": {
+    "anchored_candidate_count": 309,
+    "caller_cohort_count": 123,
+    "exact_pointer_candidate_count": 609,
+    "exact_pointer_record_count": 370,
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "partition_coverage": {
+      "glyph_only_mixed": {
+        "exact_pointer_occurrence_count": 160,
+        "exact_pointer_record_count": 126,
+        "exact_record_id_index_sha256": "c4c95dfe05bd0662e3aa77c9deb1d2b162502afb5fc06b88762eef4e8b0e97dd",
+        "total_record_count": 833,
+        "uncovered_record_count": 707
+      },
+      "glyph_only_narrow": {
+        "exact_pointer_occurrence_count": 180,
+        "exact_pointer_record_count": 83,
+        "exact_record_id_index_sha256": "3db5fe56c80e4d829e19169d246bc7b6e4c1b4d2fd5f50f93895e00d0d49416e",
+        "total_record_count": 939,
+        "uncovered_record_count": 856
+      },
+      "glyph_only_wide": {
+        "exact_pointer_occurrence_count": 206,
+        "exact_pointer_record_count": 101,
+        "exact_record_id_index_sha256": "707f8fed940ec3948a19956110d75f7677051acb9b166e550729da80cab350c5",
+        "total_record_count": 417,
+        "uncovered_record_count": 316
+      },
+      "opaque_or_unaligned": {
+        "exact_pointer_occurrence_count": 63,
+        "exact_pointer_record_count": 60,
+        "exact_record_id_index_sha256": "3308ac459650fe32764a23f54ad698faf4291e1a212be3c37fadd18b76652486",
+        "total_record_count": 136,
+        "uncovered_record_count": 76
+      }
+    },
+    "record_count": 2325,
+    "unanchored_candidate_count": 300
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "caller_cohorts_123": true,
+    "direct_consumer_callsites_5": true,
+    "exact_pointer_candidates_609": true,
+    "exact_pointer_records_370": true,
+    "ledger_pointer_overlap_12": true,
+    "ledger_records_12": true,
+    "natural_caller_coverage_proven": false,
+    "pointer_report_reused_without_rescan": true,
+    "rom_hash_match": true,
+    "semantic_scene_labels_proven": false,
+    "source_records_2325": true,
+    "source_text_emitted": false,
+    "translation_complete": false
+  },
+  "milestone": "M1.24",
+  "next_condition": "capture a producer/queue context that binds one exact source record to a verified consumer callsite and screen/layout state; do not treat the 12 static ledger records or 609 pointer candidates as scene coverage",
+  "rom": {
+    "expected_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "hash_match": true,
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84"
+  },
+  "runtime_coverage": {
+    "m119_natural_consumer": {
+      "caller_callsite": "0x08066050",
+      "consumer": "0x08008724",
+      "consumer_entry_observed": true,
+      "fresh_process": true,
+      "lr": "0x08066055",
+      "natural_screen_proven": false,
+      "port": 2346,
+      "single_connection": true,
+      "source_pointer": "0x02018368",
+      "source_pointer_region": "ram_or_io",
+      "target_pointer_match": false,
+      "target_render_proven": false
+    },
+    "m122_transport": {
+      "connection_established": false,
+      "controlled_consumer_attempted": false,
+      "coverage": {
+        "cache_or_vram": "not_observed",
+        "consumer": "not_observed",
+        "glyph_lookup": "not_observed",
+        "initializer": "not_observed",
+        "screen": "not_observed",
+        "tile_writer": "not_observed"
+      },
+      "fresh_process": true,
+      "listener_observed": false,
+      "natural_paths_attempted": [],
+      "port": 24568,
+      "result": "transport_negative",
+      "rom_or_translation_failure": false,
+      "single_connection_attempt": true,
+      "target_screen": "not_observed"
+    },
+    "natural_caller_coverage": "not_observed",
+    "semantic_scene_coverage": "unconfirmed"
+  },
+  "schema": "super-robot-taisen-d-m124-corpus-caller-coverage-v1",
+  "semantic_scene_partition": {
+    "battle_dialogue": "unconfirmed",
+    "branch": "unconfirmed",
+    "newline": "unconfirmed",
+    "reason": "source-pointer provenance and structural callsites do not prove scene semantics",
+    "speaker": "unconfirmed",
+    "story": "unconfirmed",
+    "ui": "unconfirmed",
+    "unit_pilot_weapon_spirit": "unconfirmed"
+  },
+  "source_policy": {
+    "pointer_report_reused_without_rescan": true,
+    "raw_memory_emitted": false,
+    "semantic_labels_inferred": false,
+    "source_text_emitted": false
+  },
+  "translated_ledger_overlap": {
+    "all_ledger_records_have_exact_pointer_candidate": true,
+    "exact_pointer_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+    "exact_pointer_record_count": 12,
+    "ledger_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+    "ledger_record_count": 12,
+    "structural_translation_boundary": "narrow_only_static_subset; semantic scene unconfirmed"
+  }
+}

@@ -118,6 +118,13 @@
   只是 static POC cap，engine width、newline、speaker、branch semantics 仍未證明。
   摘要在 `research/m123-control-semantic-boundary.json`，工具與測試在
   `tools/m123_control_semantic_boundary.py`／`tools/test_m123_control_semantic_boundary.py`。
+- [x] M1.24 重用既有 pointer/callsite reports（不重掃 ROM）建立 source-safe caller／
+  corpus coverage reconciliation：609 exact pointer candidates、370 records、123
+  cohorts、5 個 verified direct consumer callsites；12 筆 tracked ledger 全部與 exact
+  pointer record overlap。按 structural partition 保存 uncovered counts；M1.19 natural
+  consumer 的 RAM buffer mismatch 與 M1.22 GDB transport negative 分欄記錄。story／
+  branch／battle／unit／UI／speaker／newline 語意仍 unconfirmed，不把 12 筆 static
+  ledger 或 pointer 命中當成 scene coverage。摘要在 `research/m124-corpus-caller-coverage.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

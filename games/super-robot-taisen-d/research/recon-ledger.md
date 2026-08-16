@@ -1306,3 +1306,29 @@ source-safe inventory 與 M1.20 caller inventory。工具會拒絕輸入 report 
 邊界；它沒有把 `[sp+0x5C]` 命名成 speaker、newline 或 branch，也沒有把 `240px`
 觀測值外推成引擎上限。下一步仍需要 source-buffer producer／queue record 加上 mode
 欄位值，或自然 screen／VRAM layout 證據，才能解除相應 reject。
+
+## 2026-08-16：M1.24 corpus／caller coverage reconciliation
+
+本輪重用 M1.17 的 source-safe coverage、M1.20 的五個 direct callsite、既有 ignored
+`pointer-caller-report.json`、M1.19 caller reroute、M1.22 transport receipt 與目前
+12 筆 tracked ledger；沒有重新做 pointer scan，也沒有讀取／輸出 source text。工具
+`tools/m124_corpus_caller_coverage.py` 會先拒絕任何 reused report 的 `text` key 與
+ledger 的 `source` key，再以 ROM hash、既有 ID index hash、callsite window hash 與
+runtime status 做 bounded join。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| corpus | 2325 records；glyph-only narrow `939`、mixed `833`、wide `417`、opaque／unaligned `136` |
+| exact pointer join | `609` candidates／`370` unique records／`123` caller cohorts；anchored `309` candidates、unanchored `300` |
+| structural coverage | mixed `126/833` exact records、narrow `83/939`、wide `101/417`、opaque `60/136`；其餘維持 uncovered，沒有 scene 命名 |
+| direct consumer inventory | `5` verified callsites：wrapper fallback、queue drain、dual-buffer UI `2`、indexed object buffer；皆只作 structural class |
+| tracked ledger overlap | `12/12` ledger records 有 exact pointer candidate；只證明 pointer overlap，不證明 UI／劇情／話數語意 |
+| runtime | M1.19 natural consumer `0x08066050` 的 `r0=0x02018368` 為 RAM buffer、target mismatch；M1.22 port `24568` listener／connection negative；natural caller coverage `not_observed` |
+| semantic partition | story／branch／battle dialogue／unit-pilot-weapon-spirit／UI／speaker／newline 全 `unconfirmed` |
+
+M1.24 的 coverage matrix 不是完整 caller map，也不批准第二輪翻譯。下一個解除條件
+是同一個 exact source record 同時綁定到 verified consumer callsite、producer／queue
+context 與 screen／layout state；在此之前 12 筆 ledger、609 pointer candidate 與
+structural callsite 不能外推成場景覆蓋。
