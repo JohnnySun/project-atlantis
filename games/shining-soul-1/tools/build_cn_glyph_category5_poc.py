@@ -51,13 +51,27 @@ build from scratch) in free ROM space, and repoint the SINGLE registry
 word at 0x080fa510 to it. Every one of the 8 MiB ROM's other bytes -
 including all five existing categories' pixel data - is untouched.
 
-New category-5 struct format mimics the one universal fact confirmed
-about the existing five structs (their first word is always 0x1820,
-the already-known struct-to-pixel-table-base offset from session 11) -
-this session cannot fully prove whether that offset is a hardcoded
-constant in the *consuming* code or is read live from the struct's own
-first field, so the new struct copies the same convention rather than
-guessing which hypothesis is correct.
+New category-5 struct: copy an existing category's ENTIRE 0x1820-byte
+prologue verbatim. (Session 16 wrote only the struct's first word,
+0x1820, on the theory that the struct-to-pixel-table offset was the one
+thing that mattered. Session 20 disproved that at runtime: the struct is
+a real 6,176-byte structure - word[0] = 0x1820 = offset to the pixel
+table, word[1] = 0x9820 = its end, i.e. a 256-slot span, then a long
+table of 3-word per-glyph metadata entries, 2,494 non-zero bytes in all.
+Leaving the rest as 0xFF made the renderer consume garbage metadata and
+blank the ENTIRE OBJ layer of the one screen that draws a category-5
+code - character sprite and "剣士" label wiped along with it, 128 junk
+OAM entries - while every other screen still rendered perfectly. All
+five existing categories' prologues are byte-identical, verified by
+sha256 and re-checked at build time, so copying one is sound.)
+
+Known unknown, matters before scaling this up: those 3-word per-glyph
+metadata entries are copied from category 0, i.e. they are the metadata
+for category 0's kana applied to whatever glyphs we drop into category
+5. That renders correctly for the two full-width 16x16 glyphs tested
+here, but what the three words actually encode (width? tile layout?
+spacing?) is NOT decoded. Bound this empirically before allocating slots
+in bulk - see ROADMAP "下一步".
 
 Glyph source/palette convention: same as session 15's
 build_cn_glyph_poc.py (GNU Unifont 16x16 wide glyphs, 1:1 pixel match

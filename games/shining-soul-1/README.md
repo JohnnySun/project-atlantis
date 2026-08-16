@@ -83,9 +83,11 @@
 
 ## 工具清單
 
-全部在 `games/shining-soul-1/tools/`。純靜態（讀 ROM 檔案，不需模擬器）：`scan_compression_signatures.py`、`scan_swi_calls.py`、`scan_pointer_tables.py`、`scan_sjis_runs.py`、`disasm_swi_calls.py`（需要 `/usr/bin/python3`，capstone 只裝在這個直譯器上）、`scan_sentence_strings.py`、`extract_string_pool.py`、`scan_string_pools.py`、`scan_category_stats.py`、`decode_strings.py`（原文表抽取器）、`ocr_render_lines.py`／`ocr_prepare_corpus.py`／`ocr_align_vote.py`／`ocr_contact_sheet.py`（OCR＋投票管線）、`build_cn_glyph_poc.py`（唯一會寫 ROM 檔案的工具）。
+全部在 `games/shining-soul-1/tools/`。純靜態（讀 ROM 檔案，不需模擬器）：`scan_compression_signatures.py`、`scan_swi_calls.py`、`scan_pointer_tables.py`、`scan_sjis_runs.py`、`disasm_swi_calls.py`（需要 `/usr/bin/python3`，capstone 只裝在這個直譯器上）、`scan_sentence_strings.py`、`extract_string_pool.py`、`scan_string_pools.py`、`scan_category_stats.py`、`decode_strings.py`（原文表抽取器）、`ocr_render_lines.py`／`ocr_prepare_corpus.py`／`ocr_align_vote.py`／`ocr_contact_sheet.py`（OCR＋投票管線）。**會寫出 ROM 檔案的兩支**（都只寫新的輸出檔，不改基準 ROM）：`build_cn_glyph_poc.py`（第十五輪，填 category 4 殘餘空格位）、`build_cn_glyph_category5_poc.py`（第二十輪，整類新增 category 5）。
 
-需要背景啟動 `mgba -g games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba`（連線前先 `ps aux | grep mgba` 確認沒有殘留的孤兒行程）：`gdbstub_client.py`（GDB stub 用戶端函式庫）、`render_vram_tiles.py`、`navigate_and_dump.py`、`extract_bg_fonttable.py`、`navigate_to_char_create.py`、`extract_obj_kana_fonttable.py`、`trace_sentence_glyph_load.py`、`trace_glyph_source_array.py`、`trace_sentence_string_source.py`、`extract_kanji_fonttable.py`、`render_string_glyphs.py`、`dump_category_dispatch_table.py`、`hijack_and_capture_glyph_sources.py`、`render_oam_composite.py`。
+需要背景啟動 `mgba -g games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba`（連線前先 `ps aux | grep mgba` 確認沒有殘留的孤兒行程）：`gdbstub_client.py`（GDB stub 用戶端函式庫）、`render_vram_tiles.py`、`navigate_and_dump.py`、`extract_bg_fonttable.py`、`navigate_to_char_create.py`、`extract_obj_kana_fonttable.py`、`trace_sentence_glyph_load.py`、`trace_glyph_source_array.py`、`trace_sentence_string_source.py`、`extract_kanji_fonttable.py`、`render_string_glyphs.py`、`dump_category_dispatch_table.py`、`hijack_and_capture_glyph_sources.py`、`render_oam_composite.py`、`trace_dispatch_table_init.py`（第十六輪，追 IWRAM 查表初始化）。
+
+**注意（第二十輪）**：`-g` 的 GDB 埠是編譯期常數，`-C ports.qt.gdbPort` 在 SDL／headless 路徑上無效；這台機器同時有其他遊戲的 agent 在跑 mGBA，必須自行編一份改埠的 mGBA、啟動帶 `-l 0`，且**不可 `pkill mgba`**。詳見 `SESSION-LOG.md` 第二十輪「環境教訓」。
 
 每支工具的參數、方法論限制、已知陷阱都寫在自己的 docstring 裡；用法範例與各工具對應到哪一輪偵察，見 `SESSION-LOG.md`「已完成的唯讀掃描」一節（仍保留在歷史紀錄裡，因為那裡連著方法論脈絡，搬過來只留指令反而失去上下文）。
 
