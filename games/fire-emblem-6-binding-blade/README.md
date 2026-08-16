@@ -18,6 +18,8 @@ M1.9 已用三個 fresh mGBA／各自單一 GDB connection，僅透過 active-lo
 
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
+M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
+
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
 公開 FEBuilderGBA 與 `fireemblem6j` 資料只作為待驗證的逆向參考，不取代日版 ROM，也不把既有英譯或 `.tbl` 當作翻譯來源。已知外部參考與其限制見 `research/recon-20260816.md`。
@@ -122,6 +124,16 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m110_corpus.py \
 ```
 
 工具會對每個 pointer entry 嘗試既有 worker；不符合 `0x400` buffer/terminator 邊界的 entry 只記錄 failure kind，不輸出其解碼 bytes。`research/m110-table-census.json` 可提交作為結構研究摘要；任何完整 decoder/work corpus 仍留在 ignored 路徑。
+
+要重跑 M1.11 的 static caller／callback gate report：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m111_gates.py \
+  roms/base/AFEJ.gba \
+  --output /private/tmp/afej-m111-gates.json
+```
+
+報告只保存 direct-call 數量、bounded function disassembly 摘要、index-source class 與 callback pointer 的位址／鄰接 word class；不輸出 ROM bytes、完整原文或 scene/category 命名。M1.11 的 callback pointer 只可作下一個 runtime gate 候選，不能把 controlled probe 當 natural reachability。
 
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 

@@ -18,6 +18,7 @@
 - [x] M1.8：全 ROM 靜態枚舉 163 個 `BL 0x08013ad0` direct callsites、104 個 bounded caller groups；確認非 selector 候選 `0x080985d8`／`0x080985ec` 的參數／stack index 來源，並以 natural 1 筆 + 明確 controlled 1 筆取得第二 caller 的 table/source→EWRAM receipt。自然導航未命中第二 caller，`0x06014000` 新 sink watchpoint 零命中，內容分類與 `0x01` 控制碼語義維持 unknown/opaque。
 - [x] M1.9：以三個 fresh mGBA／單一 GDB connection 完成 `start,a`、`start,a,a,a` 與 bounded menu/chapter 序列的 natural receipts；每條保存按鍵序列、時間窗、display I/O／VRAM hash、`0x080985ec`／`0x08098624`／`0x08098b10`／`0x08013ad0` hit counts。三條皆只重現 index 3087 的 selector caller，且在 `0x08098c24`／`0x08098c78` 觀察到 EWRAM consumer；第二 caller、`0x08099424`／`0x080995b0`／`0x080995a6` writer 與固定 sink 均為 0，留下 `0x080985d8`／`0x08098624` 上游 state/menu gate 作為下一個最小缺口。
 - [x] M1.10：以既有 strict tree worker census 全部 3342 pointer entries；3203 筆 decode→encode 與 source-span byte-identical，139 筆明確記為 `decoder_buffer_limit_no_terminator`（首筆 index 17）。提交的 `research/m110-table-census.json` 僅存 hash／provenance／長度／marker counts；`0x01`／`0x04`／`0xff` 仍 opaque，139 筆 worker/格式缺口與內容分類不猜測。
+- [x] M1.11：建立可重跑的 static gate report：全 ROM 163 個 loader direct BL、`0x080985d8` 的 10 個 direct callers、`0x08098624` 的 1 個 direct caller、selector 對照的 8 個 direct callers；另以對齊 Thumb function-pointer 搜尋記錄 `0x08098341`（file `0x691230`）與 `0x080984a9`（file `0x691358`）的 dispatch-like 鄰接 word。這只證明 callback／資料表候選，不宣稱自然 reachability、場景分類或 codepage。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。
