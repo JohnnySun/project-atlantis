@@ -96,6 +96,7 @@ def inspect_owner(
     port: int,
     rom_path: Path,
     *,
+    expected_identity: dict[str, object] | None = None,
     runner: CommandRunner = subprocess.run,
 ) -> dict[str, Any]:
     identity = process_identity(pid, runner=runner)
@@ -104,14 +105,40 @@ def inspect_owner(
     command = str(identity["command"]) if identity else ""
     process_matches = command_contains_rom(command, rom_path) if command else False
     listener_matches = pids == {pid}
+    initial_identity_matches = (
+        None if expected_identity is None else identity_matches(expected_identity, identity)
+    )
+    identity_changed = (
+        expected_identity is not None
+        and identity is not None
+        and not initial_identity_matches
+    )
+    reasons: list[str] = []
+    if identity is None:
+        reasons.append("process_identity_unavailable")
+    elif identity_changed:
+        reasons.append("initial_identity_changed")
+    if identity is not None and not process_matches:
+        reasons.append("rom_command_mismatch")
+    if not listener_matches:
+        reasons.append("listener_pid_mismatch")
     return {
         "pid": pid,
         "port": port,
         "process_alive": identity is not None,
         "process_matches_rom": process_matches,
+        "initial_identity_matches": initial_identity_matches,
+        "identity_changed": identity_changed,
+        "expected_identity": expected_identity,
         "listener_pids": sorted(pids),
         "listener_matches_exact_pid": listener_matches,
-        "ready": identity is not None and process_matches and listener_matches,
+        "ready": (
+            identity is not None
+            and process_matches
+            and listener_matches
+            and initial_identity_matches is not False
+        ),
+        "reasons": reasons,
         "identity": identity,
     }
 
@@ -122,16 +149,29 @@ def wait_until_ready(
     rom_path: Path,
     timeout: float,
     *,
+    expected_identity: dict[str, object],
     interval: float = 0.1,
     runner: CommandRunner = subprocess.run,
 ) -> dict[str, Any]:
     deadline = time.monotonic() + timeout
-    last = inspect_owner(pid, port, rom_path, runner=runner)
+    last = inspect_owner(
+        pid,
+        port,
+        rom_path,
+        expected_identity=expected_identity,
+        runner=runner,
+    )
     while not last["ready"] and time.monotonic() < deadline:
-        if not last["process_alive"]:
+        if not last["process_alive"] or last["identity_changed"]:
             break
         time.sleep(interval)
-        last = inspect_owner(pid, port, rom_path, runner=runner)
+        last = inspect_owner(
+            pid,
+            port,
+            rom_path,
+            expected_identity=expected_identity,
+            runner=runner,
+        )
     return last
 
 

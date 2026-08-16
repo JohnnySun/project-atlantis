@@ -68,7 +68,9 @@ loopback high port。官方資料支持下列能力：
   bounded retry，連線建立後絕不自動接到另一個 process。
 - 已確認：共享主機同時有多個 emulator；port 與 PID 所有權是 capability gate，不是便利資訊。
 - 已確認：bind-probe 與 emulator bind 之間存在競態；runner 前必須再驗 listener PID 等於
-  本次 `$!`。只驗「port 剛才是空的」不足以防止誤接另一個 Session。
+  本次 `$!`，並把當下 PID／PPID／start time／command 與 launch 後保存的 initial token
+  完整比對。只驗「port 剛才是空的」、numeric PID、ROM token 或 listener 不足以防止
+  PID reuse／替代行程；identity 變更必須在 runner 連線前回傳 unknown。
 - 有限原型：launch-time `-t` 是官方 CLI 能力，但第一版 attach runner 不自行建立或提交
   savestate；若使用，launcher 必須留下 state hash／ROM hash／命令 receipt。
 - 未證實：0.10.5 的一般 CLI `-g` 是否能透過任意 `-C` key 改 port。現有 source 顯示一般

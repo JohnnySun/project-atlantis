@@ -121,6 +121,7 @@ def main() -> int:
                 args.port,
                 args.rom.resolve(),
                 args.listener_timeout,
+                expected_identity=identity,
             )
             report["ownership"] = ownership
             if not ownership["ready"]:

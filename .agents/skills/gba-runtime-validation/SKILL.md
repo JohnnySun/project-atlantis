@@ -60,7 +60,8 @@ Treat the bind probe and launch as separate, raceable events. Before connecting 
 Use the shared owner rather than writing another per-game launcher. It performs
 the pre-launch bind probe, launches an absolute executable and ROM path,
 requires the sole listener PID to equal the child PID, records PID/PPID/start
-time/command, revalidates identity before cleanup, preserves runner exit
+time/command immediately after launch, requires readiness to match that exact
+initial token before connecting the runner, revalidates identity before cleanup, preserves runner exit
 `0/1/2`, and emits a separate session receipt:
 
 ```bash
@@ -80,6 +81,9 @@ that the port moved: the post-launch listener check remains authoritative. For
 a source-fixed GDB port, use the port actually compiled into that executable.
 An ownership receipt with `status=pass` proves only process/listener ownership;
 the runtime report independently determines whether the game case passed.
+If the numeric PID, ROM token, and listener still match but PID/PPID/start time
+or command differs from the launch token, ownership is `unknown` with
+`initial_identity_changed`; the runtime runner must not start.
 
 ## Exercise real runtime surfaces
 

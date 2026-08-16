@@ -18,7 +18,8 @@ GDB remote、VRAM 與 OAM 工作流，再吸收其他遊戲 session 實際遇到
   CRC32、SHA-256 與標頭欄位，並以明確 expectation fail closed；不輸出 ROM bytes。
 - `runtime_session.py`／`scripts/gba-runtime-session.py`：統一處理 port preflight、
   child PID／PPID／start time／command identity、listener ownership、runtime runner
-  exit code與只清理自己 process 的生命週期。
+  exit code與只清理自己 process 的生命週期；runner 連線前會再次比對 launch 後保存的
+  initial identity token，不能只靠相同 numeric PID／ROM／listener 放行。
 
 全部只使用 Python 標準函式庫，不需要安裝套件。
 

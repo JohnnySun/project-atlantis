@@ -10,6 +10,7 @@ from core.gba.runtime_session import (
     inspect_owner,
     launch_command,
     listener_pids,
+    wait_until_ready,
 )
 
 
@@ -53,6 +54,46 @@ class RuntimeSessionTest(unittest.TestCase):
         self.assertTrue(identity_matches(expected, dict(expected)))
         changed = {**expected, "start": "later"}
         self.assertFalse(identity_matches(expected, changed))
+
+    def test_readiness_rejects_reused_pid_with_changed_initial_identity(self) -> None:
+        rom = Path("/private/tmp/game.gba")
+        expected = {
+            "pid": 1234,
+            "ppid": 1,
+            "start": "Sun Aug 17 01:02:03 2026",
+            "command": "/private/tmp/mgba -g /private/tmp/game.gba",
+        }
+        listener = "COMMAND PID USER FD TYPE NAME\nmgba 1234 u 5u TCP 127.0.0.1:24567 (LISTEN)\n"
+        replacements = (
+            "1234 1 Sun Aug 17 01:03:03 2026 /private/tmp/mgba -g /private/tmp/game.gba\n",
+            "1234 1 Sun Aug 17 01:02:03 2026 /private/tmp/replacement -g /private/tmp/game.gba\n",
+        )
+        for ps_output in replacements:
+            with self.subTest(ps_output=ps_output):
+                runner = FakeRunner(ps_output, listener)
+                owner = inspect_owner(
+                    1234,
+                    24567,
+                    rom,
+                    expected_identity=expected,
+                    runner=runner,
+                )
+                self.assertFalse(owner["ready"])
+                self.assertFalse(owner["initial_identity_matches"])
+                self.assertTrue(owner["identity_changed"])
+                self.assertEqual(owner["expected_identity"], expected)
+                self.assertIn("initial_identity_changed", owner["reasons"])
+                readiness = wait_until_ready(
+                    1234,
+                    24567,
+                    rom,
+                    1.0,
+                    expected_identity=expected,
+                    interval=0.0,
+                    runner=runner,
+                )
+                self.assertFalse(readiness["ready"])
+                self.assertTrue(readiness["identity_changed"])
 
     def test_launch_command_uses_absolute_executable_and_rom(self) -> None:
         command = launch_command(Path("/private/tmp/mgba"), Path("/private/tmp/game.gba"), ["--foo"])

@@ -93,10 +93,39 @@ case：baseline 重新手寫約 180 行 shell launcher，新版直接採用
 grading、benchmark 與 analyzer notes 仍保存於 ignored workspace；此為 viewer 相容性
 限制，不是略過 eval。
 
+Baseline 保存在 `skill-snapshot/SKILL.snapshot.md`，刻意不使用 `SKILL.md` 名稱，避免
+被 workspace Skill catalog 掃描成第二個同名 Skill。每個 with-skill／baseline run 均有
+使用 `text`／`passed`／`evidence` schema 的 `grading.json`；benchmark 分數可回溯到逐項
+assertion，而不是只依 aggregate 摘要。
+
 八個翻譯 Session 均已收到 `3f4706b`／`4b040a8` 與本文件的採用指令。為保護共享
 main 上正在進行的 dirty WIP，不要求立即機械式刪除舊 helper；各 Agent 在下一個
 identity 或 runtime gate 採用，並把命令、exit/status 與本作特例寫回自己的
 ROADMAP／research。
+
+### Corrective handoff receipt（2026-08-17）
+
+- 《超級機器人大戰 D》（thread `01a008d7-d7c4-7f43-a1d5-debdbc8446f4`）：
+  **confirmed adoption**。Agent 明確回報 M1.31 將採用共用 `gba-runtime-session`
+  manifest/preflight；這是 Agent acknowledgment，不只是 send API receipt。
+- 《世界傳說：召喚者的血統》（thread `01a008d7-da51-75a2-8cba-3935c2bf4b1a`）：
+  首次核對未找到 acknowledgment，因此 corrective turn 補發一次不打斷 WIP 的短訊；
+  其後 Agent 明確回覆 M47 已使用 `gba-rom-identity.py`，若建立 runtime manifest 將採用
+  `gba-runtime-session.py`，並保留本作 adapter 邊界，現為 **confirmed adoption**。
+  send API receipt 本身未被當成確認證據。
+
+### Corrective runtime／Skill 驗收（2026-08-17）
+
+- `wait_until_ready()` 現在必須接收 launch 後保存的 initial identity；每次 ownership
+  inspection 都比較 PID、PPID、start time 與完整 command。即使 numeric PID、ROM token
+  與 listener 相同，只要 initial token 改變即回傳 `unknown`／
+  `initial_identity_changed`，runtime runner 不會啟動。
+- `test_readiness_rejects_reused_pid_with_changed_initial_identity` 分別覆蓋 start time 與
+  command replacement；`core/gba` 測試由 45 增為 46 項並全部通過。
+- Skill discovery 掃描目前只找到正式
+  `.agents/skills/gba-runtime-validation/SKILL.md`；baseline 改名後不再成為第二個 Skill。
+- iteration-4 八個 run 均有 schema-valid `grading.json`，aggregate 18/18 對 17/18 可逐項
+  回溯。
 
 ## 後續候選
 

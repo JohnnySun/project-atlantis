@@ -50,6 +50,9 @@ Session report 的 pass 只表示：port preflight、ROM command、child identit
 listener ownership 成立。遊戲 QA 的 pass/fail/unknown 仍以 runtime report 為準。
 工具只在 PID、PPID、start time、command 全部仍吻合時終止 child；不使用 `pkill`，
 也不接管其他 Agent 的 listener。
+同一 numeric PID 即使仍帶相同 ROM token 且占有 listener，只要與 launch 後保存的
+initial PID／PPID／start time／command token 有任何差異，readiness 就回傳
+`unknown`／`initial_identity_changed`，且不啟動 runtime runner。
 
 ## 3. 採用順序
 
