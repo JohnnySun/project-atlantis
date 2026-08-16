@@ -84,6 +84,10 @@ python3 games/super-robot-taisen-d/tools/verify_sjis_source_table.py \
 
 `--show-text` 只把本機候選解碼輸出到終端，不應重導向到 Git 追蹤檔案。
 
+後續 runtime 偵察優先使用共用 `core/gba/capture_runtime.py`、
+`core/gba/render_vram.py` 與 `core/gba/render_oam.py`；本目錄既有的 GDB／記憶體
+工具保留作本輪歷史證據，不再機械複製共用 packet、RAM／VRAM dump 或 renderer。
+
 ## 外部工程線索
 
 2003 年的 NewWise／Robot Town《GBA-〈超级机器人大战D〉ROM修改篇》確認了遊戲

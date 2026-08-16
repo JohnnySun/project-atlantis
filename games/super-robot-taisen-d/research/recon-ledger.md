@@ -91,15 +91,23 @@
 ## 2026-08-16：bounded mGBA runtime 邊界證據
 
 本輪只做一個 session-local 的 mGBA 0.10.5 GDB 檢查；沒有把 port rewrite 或
-啟動器基礎設施放進遊戲目錄。`tools/gdbstub_client.py` 與
-`tools/runtime_memory_probe.py` 只提供可重跑的 GDB／記憶體讀取介面，probe 輸出
-不傾印原文。
+啟動器基礎設施放進遊戲目錄。這次改用 main commit `0455796` 的共用
+`core/gba/capture_runtime.py`、`core/gba/gdbstub_client.py` 與
+`core/gba/render_vram.py`；本目錄既有的 `tools/gdbstub_client.py` 與
+`tools/runtime_memory_probe.py` 保留作前一輪歷史證據，不再擴寫。
+
+共用工具測試：`PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s core/gba/test -v`
+通過 `6/6`。標準 capture 的 runtime I/O 為 `DISPCNT=0x1f00`、
+`BG0CNT=0x0004`、`BG1CNT=0x0205`、`BG2CNT=0x0406`、`BG3CNT=0x0607`；
+使用對應 charblock／screenblock 以 `render_vram.py` 重建後，BG3 可見 Banpresto
+開場標誌。這是共用 I/O 解讀與圖形 renderer 的陽性證據，不是文字／字型證據。
+capture 的 raw dump 與 PPM／PNG 只留在 `/private/tmp`，不進 Git。
 
 | 檢查 | 結果 | 可支持的結論 | 明確限制 |
 | --- | --- | --- | --- |
-| ROM entry breakpoint `Z1,080000c0,4` | `S05k`；`pc=0x080000c0`、`lr=0x08000000` | emulated CPU 確實進入 A6SJ ROM reset code | 不是文字或字型 renderer 命中 |
-| VRAM write watchpoint `Z2,06000000,4` | `T05watch:06000000;`；停止點 `pc=0x00000264`，`r1=0x06000000` | runtime 確實觸發一個寫入 VRAM 的圖形 transfer 邊界 | 只能作 graphics consumer 陽性證據；尚未證明來源是字型 |
-| 靜態池首字 read watchpoint `Z3,08076000,4` | reset 後 bounded `10 s` 無命中，GDB client timeout | 在這個 boot window 沒有讀取池首 4 bytes | 不能推論整個池或其他字串沒有被讀取 |
+| ROM entry breakpoint `Z1,080000c0,4` | 共用 `capture_runtime.py` 得 `S05k`；`pc=0x080000c0`、`lr=0x08000000` | emulated CPU 確實進入 A6SJ ROM reset code | 不是文字或字型 renderer 命中 |
+| VRAM write watchpoint `Z2,06000000,4` | 共用 `capture_runtime.py` 得 `T05watch:06000000;`；停止點 `pc=0x00000264`，`r1=0x06000000` | runtime 確實觸發一個寫入 VRAM 的圖形 transfer 邊界 | 只能作 graphics consumer 陽性證據；尚未證明來源是字型 |
+| 靜態池首字 read watchpoint `Z3,08076000,4` | 共用 `gdbstub_client.py` bounded `10 s` timeout，隨後 interrupt 得 `S02`；`hit=false` | 在這個 boot window 沒有讀取池首 4 bytes | 不能推論整個池或其他字串沒有被讀取 |
 
 上表的第一、二列是 runtime 陽性邊界，第三個有效檢查是文字池首字的 bounded 陰性
 結果；它們合在一起只證明「ROM 執行到圖形初始化／transfer，且該時窗未讀池首」，
