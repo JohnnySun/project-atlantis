@@ -11,7 +11,8 @@
 M32 已將一條已知 name-entry 畫面 row 提升到可進最小 ledger POC 的 gate，M33 再完成該 row
 的 bounded Latin target／append relocation／BPS POC；M34 也完成第二個固定 source-pointer
 row 的 private restore／strip round-trip 與 bounded target BPS apply equality；尚未完成一般日文／CJK codepage、
-批次翻譯或 patched runtime QA。M34 又沿同一 known-screen 補上主角姓名欄位的 static
+批次翻譯或 patched runtime QA。M35 再以 `m21_source_decoder.py --known-ui-only` 固定
+重抽取兩列，不掃描新增 candidates。M34 又沿同一 known-screen 補上主角姓名欄位的 static
 source-pointer／record-raster／BG0 tilemap cross，確認 `4/4` 非 Latin glyph identity；
 這不等於 general codepage 或 live reader。M1.7 在不重做 startup baseline 的前提下，
 以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
@@ -144,6 +145,11 @@ semantic／glyph identity 尚未完成。
   relocation 與 51-byte BPS apply equality；reader breakpoint、raw byte copy、general
   codepage 與 control schema 仍為 false。詳見
   [`research/m34-known-screen-protagonist-name-20260816.md`](research/m34-known-screen-protagonist-name-20260816.md)。
+- M35 以 `--known-ui-only` 將 M32/M34 兩列的 fixed offset／terminator／source hash 接回
+  可重跑 decoder；兩列均 `complete_codepage=true`、`eligible_for_ledger=true`，但
+  `bounded-known-screen-only`、general codepage、control semantics 與 runtime context
+  仍未確認。詳見
+  [`research/m35-known-ui-decoder-20260816.md`](research/m35-known-ui-decoder-20260816.md)。
 
 ## ROM 基準
 

@@ -262,6 +262,19 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
 不可進 ledger。完整 aggregate 與下一個 proof gate 見
 [`../research/m21-private-decoder-20260816.md`](../research/m21-private-decoder-20260816.md)。
 
+M35 的 `--known-ui-only` 是另一個 fail-closed fixed mode：它不掃描 pointer candidates，
+只重建 M32/M34 兩條已通過 known-screen record／raster／tilemap proof 的 rows，並輸出
+`bounded-known-screen-only`、source hash、terminator 與 scene metadata。這兩列可供
+private restore／strip 使用；不會把 `complete_codepage=true` 外推成 general Japanese/CJK
+codepage，也不會改變 broad candidate mode 的 `eligible_for_ledger=false`。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-summoners-lineage/tools/m21_source_decoder.py \
+  /private/tmp/project-atlantis-a9pj.gba --known-ui-only \
+  --output /private/tmp/tow-a9pj-m35-known-ui/summoners-lineage-known-ui-decoded.jsonl
+```
+
 ## M22 control-code candidate audit
 
 `m22_control_code_probe.py` 只掃描 M20/M21 已定義的 bounded pointer candidates，並輸出

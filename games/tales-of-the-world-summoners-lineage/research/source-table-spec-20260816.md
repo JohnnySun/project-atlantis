@@ -187,3 +187,12 @@ M34 private row 的 restore→strip 已以 source hash equality、stable ID equa
 `source` key absence 驗證；`m33_target_reinsertion_poc.py --profile m34` 另證明一個
 14-byte terminated target relocation 與 BPS apply equality。這兩項只代表 bounded plumbing
 可重跑，不代表 general codepage、fixed-slot policy 或 patched runtime 可用。
+
+## M35 fixed known-screen decoder
+
+`m21_source_decoder.py --known-ui-only` 是目前唯一允許把 row-level known-screen proof
+重建成 private source table 的 bounded decoder mode。它固定兩個 stable ID、offset、
+terminator、code-unit sequence、record/screen provenance 與 source hash；任何 ROM drift
+都 fail closed。其輸出可交給 restore／strip，但 `codepage_status` 必須保持
+`bounded-known-screen-only`，不能拿 `complete_codepage=true` 解讀成 general Japanese/CJK
+mapping。broad candidate mode 的 rows 仍是 `unclassified`／`eligible_for_ledger=false`。

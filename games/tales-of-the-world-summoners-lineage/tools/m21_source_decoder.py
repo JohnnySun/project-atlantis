@@ -8,12 +8,12 @@ intermediate rather than a translation extractor: the stream roles are still
 unclassified, the complete kanji mapping is not established, and ``{FF70}``
 is kept as a control candidate.
 
-The only character mappings used here come from the clean ROM's name-entry
-table and the visible gojuon keyboard order.  The first five hiragana entries
-are the M20 table/runtime-confirmed mapping; the remaining keyboard-order
-labels are explicitly marked provisional in each row.  Unmapped halfwords are
-rendered as ``{Uxxxx}`` so no guessed Unicode identity silently enters a
-ledger.
+The default candidate mode only uses the clean ROM's name-entry table and the
+visible gojuon keyboard order; unresolved halfwords are rendered as
+``{Uxxxx}``.  ``--known-ui-only`` is a separate fixed mode for the two M32/M34
+known-screen rows.  It uses only their independently cross-checked code units,
+record masks and tilemaps, and must fail closed on any ROM drift.  Neither mode
+claims a general Japanese/CJK codepage.
 """
 
 from __future__ import annotations
@@ -41,10 +41,43 @@ from m20_text_record_probe import (
 
 
 DECODER_VERSION = "m21-source-decoder-20260816.v1"
+KNOWN_UI_DECODER_VERSION = "m34-known-ui-decoder-20260816.v1"
 ROM_BASE = 0x08000000
 DEFAULT_SCAN_START = 0
 DEFAULT_SCAN_END = 0x800000
 DEFAULT_MAX_UNITS = 0x400
+
+# These are the only non-placeholder mappings allowed by the fixed known-screen
+# decoder.  They come from M32/M34 record-raster and BG0 tilemap crosses, not
+# from a broad keyboard overlay.  The general decoder below remains conservative.
+KNOWN_UI_MAPPING = {
+    0x0006: "・",
+    0x000C: "ー",
+    0x0063: "イ",
+    0x0090: "ス",
+    0x009C: "タ",
+    0x00C8: "フ",
+    0x00F6: "レ",
+    0x00FE: "ン",
+}
+KNOWN_UI_ROWS = (
+    {
+        "string_id": "eb94955ec017c9faff85f062",
+        "file_offset": 0x1FA4B4,
+        "units": (0x0006, 0x00F6, 0x0090, 0x009C, 0x000C),
+        "source_hash": "4055ab372bbb3feadbf21c328f0eb72e9ceb2874c8979383feb193eb722d4c60",
+        "scene_role": "ui-name-entry",
+        "proof": "M32-known-screen-record-raster-and-bg0-tilemap",
+    },
+    {
+        "string_id": "f4bc65e10318a0204bebc5b0",
+        "file_offset": 0x087384,
+        "units": (0x00C8, 0x00F6, 0x0063, 0x00FE),
+        "source_hash": "8c24214195799be96f68bbd812d4ae8de1a086856c20846cf18c629f1f4283e4",
+        "scene_role": "ui-name-entry-protagonist-name-field",
+        "proof": "M34-known-screen-static-source-pointer-record-raster-and-tilemap",
+    },
+)
 
 
 def keyboard_labels() -> tuple[tuple[str | None, ...], tuple[str | None, ...]]:
@@ -169,6 +202,73 @@ def stream_units(data: bytes, target: int, max_units: int) -> list[int]:
     ]
 
 
+def decode_known_ui_rows(data: bytes) -> tuple[list[dict[str, object]], dict[str, object]]:
+    """Decode only the two fixed known-screen rows, failing closed on drift."""
+
+    rom_digest = sha256(data)
+    if rom_digest != EXPECTED_ROM_SHA256:
+        raise ValueError("known-screen decoder requires the clean A9PJ ROM hash")
+    mapping = {
+        unit: {"text": text, "mapping_status": "confirmed-known-screen"}
+        for unit, text in KNOWN_UI_MAPPING.items()
+    }
+    rows: list[dict[str, object]] = []
+    for spec in KNOWN_UI_ROWS:
+        units = stream_units(data, int(spec["file_offset"]), len(spec["units"]) + 1)
+        expected_units = tuple(spec["units"])
+        if tuple(units[:-1]) != expected_units or units[-1:] != [NULL_CODE_UNIT]:
+            raise ValueError(
+                f"known-screen source drift at 0x{int(spec['file_offset']):X}"
+            )
+        decoded = decode_units(units, mapping)
+        if not decoded["complete_codepage"]:
+            raise ValueError("known-screen mapping unexpectedly contains unresolved units")
+        text = str(decoded["text"])
+        source_digest = sha256(text.encode("utf-8"))
+        if source_digest != spec["source_hash"]:
+            raise ValueError(f"known-screen source hash drift for {spec['string_id']}")
+        rows.append(
+            {
+                "string_id": spec["string_id"],
+                "locale": "ja",
+                "text": text,
+                "source_text_sha256": source_digest,
+                "provenance": (
+                    f"rom-sha256={rom_digest};file-offset=0x{int(spec['file_offset']):X};"
+                    f"terminator=0x0000;decoder={KNOWN_UI_DECODER_VERSION};proof={spec['proof']}"
+                ),
+                "decoder_version": KNOWN_UI_DECODER_VERSION,
+                "source_status": "known-screen-confirmed-bounded",
+                "runtime_context": False,
+                "known_screen_context": True,
+                "scene_role": spec["scene_role"],
+                "codepage_status": "bounded-known-screen-only",
+                "terminator_status": "0x0000-confirmed-static-span",
+                "control_candidates": decoded["control_candidates"],
+                "unresolved_code_units": decoded["unresolved_code_units"],
+                "mapping_status_counts": decoded["mapping_status_counts"],
+                "complete_codepage": True,
+                "eligible_for_ledger": True,
+                "source_text_emitted": True,
+            }
+        )
+    return rows, {
+        "decoder_version": KNOWN_UI_DECODER_VERSION,
+        "rom_sha256": rom_digest,
+        "expected_a9pj_sha256_match": True,
+        "known_rows_considered": len(KNOWN_UI_ROWS),
+        "terminated_rows_emitted": len(rows),
+        "complete_codepage_rows": len(rows),
+        "runtime_context_confirmed": False,
+        "known_screen_context_confirmed": True,
+        "scene_roles_confirmed": True,
+        "eligible_for_ledger": True,
+        "general_codepage_confirmed": False,
+        "control_code_semantics_confirmed": False,
+        "source_text_rows_are_local_only": True,
+    }
+
+
 def decode_candidates(
     data: bytes,
     *,
@@ -277,19 +377,28 @@ def main() -> None:
     parser.add_argument("--target-end", type=lambda value: int(value, 0), default=DEFAULT_TARGET_END)
     parser.add_argument("--max-units", type=lambda value: int(value, 0), default=DEFAULT_MAX_UNITS)
     parser.add_argument("--candidate-limit", type=int, default=0)
+    parser.add_argument(
+        "--known-ui-only",
+        action="store_true",
+        help="decode only the fixed M32/M34 known-screen rows; no candidate scan",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.candidate_limit < 0:
         parser.error("candidate-limit must be non-negative")
-    rows, summary = decode_candidates(
-        args.rom.read_bytes(),
-        scan_start=args.scan_start,
-        scan_end=args.scan_end,
-        target_start=args.target_start,
-        target_end=args.target_end,
-        max_units=args.max_units,
-        candidate_limit=args.candidate_limit,
-    )
+    data = args.rom.read_bytes()
+    if args.known_ui_only:
+        rows, summary = decode_known_ui_rows(data)
+    else:
+        rows, summary = decode_candidates(
+            data,
+            scan_start=args.scan_start,
+            scan_end=args.scan_end,
+            target_start=args.target_start,
+            target_end=args.target_end,
+            max_units=args.max_units,
+            candidate_limit=args.candidate_limit,
+        )
     write_jsonl(args.output, rows)
     print(json.dumps({**summary, "output": str(args.output)}, sort_keys=True))
 

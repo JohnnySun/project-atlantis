@@ -24,7 +24,9 @@
   規格見 `research/source-table-spec-20260816.md`。
 - [ ] 解出 16-bit codepage、字形身份與控制碼；把「能定位 glyph」與「知道 glyph
   是哪個字」分開記錄。
-- [ ] 寫出可重跑 decoder，輸出本機 `research/*-decoded.jsonl`，不提交原文。
+- [x] 寫出可重跑的 bounded decoder，輸出本機 `research/*-decoded.jsonl`，不提交原文；
+  M35 `--known-ui-only` 只重抽取兩條已證實 known-screen rows，general candidate decoder
+  與 CJK mapping 仍另列未完成。
 - [ ] 建立日文來源的 checksum／decoder version，讓 ledger restore 能偵測漂移。
 - [ ] 建立只含少量 UI／短句的回插試驗，重新抽取逐 byte 驗證未修改區。
 
@@ -209,6 +211,9 @@
   restore／strip round-trip，以及 `Fulein` bounded target 的實際 relocation／BPS
   apply equality；原 source span 未改、runtime QA 未宣稱，target terminology 仍待
   zh-TW 多來源核對。
+- [x] M35 將 M32/M34 固定 row 接回 `m21_source_decoder.py --known-ui-only`；兩列
+  `terminated=2/2`、`complete_codepage=2/2`、`unresolved=0`、`control_candidates=0`，
+  但輸出明確維持 `bounded-known-screen-only`，不外推成 general decoder。
 
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
