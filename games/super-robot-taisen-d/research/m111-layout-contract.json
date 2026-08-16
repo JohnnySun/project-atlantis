@@ -1,0 +1,90 @@
+{
+  "schema": "super-robot-taisen-d-m111-layout-contract-v1",
+  "game_code": "A6SJ",
+  "consumer": {
+    "start": "0x08008724",
+    "end_exclusive": "0x08008A0C",
+    "code_length": 744,
+    "code_sha256": "b318d2b6e3dda2242397c61e2f9519114d7d898fe33c5475c93c99fa31abb613",
+    "direct_call_targets": {
+      "0x08002418": 1,
+      "0x080052D0": 1,
+      "0x0800536C": 1,
+      "0x080084F0": 1,
+      "0x08008554": 1,
+      "0x080085B0": 1,
+      "0x080085FC": 2,
+      "0x08008650": 7,
+      "0x08008E8C": 1
+    }
+  },
+  "terminator": {
+    "token": "NUL",
+    "source_byte_load_pc": "0x0800876C",
+    "compare_pc": "0x0800876E",
+    "exit_pc": "0x08008770",
+    "exit_target": "0x08008798",
+    "render_loop_load_pc": "0x08008950",
+    "render_loop_exit_pc": "0x08008954",
+    "render_loop_exit_target": "0x08008958"
+  },
+  "glyph_units": {
+    "load_pc": "0x08008774",
+    "verified_unit_bytes": 2,
+    "source_cursor_advance_bytes": 2,
+    "width_compare_pc": "0x0800877A",
+    "narrow_branch_pc": "0x0800877C",
+    "narrow_branch_target": "0x08008788",
+    "narrow_width_pixels": 8,
+    "wide_width_pixels": 12,
+    "loop_back_pc": "0x08008796",
+    "loop_back_target": "0x08008774"
+  },
+  "line_layout": {
+    "accumulator_register": "sl",
+    "initial_value": 0,
+    "tile_column_formula": "ceil(accumulated_pixel_width / 8)",
+    "partial_tile_flag": "accumulated_pixel_width & 7 != 0",
+    "allocation_unit_bytes": 64,
+    "tile_row_bytes": 32,
+    "glyph_render_rows": 12,
+    "corpus_record_count": 2325,
+    "corpus_contract_eligible_count": 2189,
+    "corpus_width_minimum_pixels": 8,
+    "corpus_width_maximum_pixels": 240,
+    "corpus_width_distinct_count": 56,
+    "corpus_maximum_observed_tile_columns": 30,
+    "corpus_maximum_observed_tile_bytes": 1920,
+    "engine_limit_proven": false
+  },
+  "mode_branch": {
+    "sign_extend_pc": "0x08008968",
+    "compare_pc": "0x0800896C",
+    "equal_value": 1,
+    "other_branch_pc": "0x0800896E",
+    "other_branch_target": "0x080089C6",
+    "equal_path": "bounded direct destination copy path",
+    "other_path": "opaque helper path"
+  },
+  "semantic_boundary": {
+    "newline_branch": false,
+    "speaker_field": "opaque",
+    "branch_mode_meaning": "opaque",
+    "full_multiline_policy": "opaque",
+    "unknown_token_policy": "opaque and reject for translation",
+    "translation_started": false
+  },
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "source_corpus_digest": "e461bfd7f178210b3a9db414c0ed995de0cefbd7e41b9da3577ee4a149337594"
+  },
+  "gate": {
+    "consumer_instruction_gate": true,
+    "nuls_and_two_byte_units_static": true,
+    "width_and_tile_formula_static": true,
+    "newline_semantics_complete": false,
+    "speaker_semantics_complete": false,
+    "translation_started": false
+  }
+}

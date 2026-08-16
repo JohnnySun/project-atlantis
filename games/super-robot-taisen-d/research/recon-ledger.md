@@ -597,6 +597,31 @@ offset digest 與所有計數均在研究 JSON，沒有完整原文。
 multi-line layout、分支腳本與實際 newline semantics 仍未完成，也沒有開始第二筆
 翻譯或批量翻譯。
 
+## 2026-08-16：M1.11 bounded layout contract
+
+`tools/m111_layout_contract.py` 只反組譯已在 M1.5／M1.7 證明的
+`0x08008724..0x08008A0C`，並以 instruction PC、branch target 與 function hash
+做 fail-closed gate；沒有再做廣泛 pointer scan，也沒有執行 ROM 修改。摘要在
+[`m111-layout-contract.json`](m111-layout-contract.json)，完整 disassembly 不進 Git。
+
+已固定的 layout facts：
+
+- `0x0800876c` `ldrb` → `0x0800876e` compare zero → `0x08008770` NUL exit，
+  render loop 另有 `0x08008950`／`0x08008954` NUL exit；source cursor 每一輪
+  `0x08008774` `ldrh` 後在 `0x0800878c` 前進 2 bytes。
+- low byte `<=0x87` 走 narrow width 8，否則走 wide width 12；像素寬累積在 `sl`，
+  tile columns 是 `ceil(width/8)`，partial flag 是 `width & 7 != 0`，allocation
+  unit 64 bytes、tile row 32 bytes、glyph render 12 rows。
+- 結尾 mode field 在 `0x08008968` sign-extend 後於 `0x0800896c` 比較 1；等於 1
+  走 bounded direct destination-copy path，其他值到 `0x080089c6` helper path。
+  這是 branch boundary，不是 speaker、newline 或劇情 mode 的語意命名。
+- 在 2325 筆 corpus 的 glyph-only subset，觀察 width 8..240、56 種值，最大觀察
+  30 columns／1920 bytes；這是 corpus upper bound，不是 engine hard limit。
+
+因此 M1.11 完成 NUL／unit／width／tile allocation 的靜態 contract，但 newline、
+speaker、mode branch meaning、完整 multi-line、script branch 與自然 runtime layout
+仍未證明；unknown token 仍 fail-closed opaque，翻譯範圍沒有擴大。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |

@@ -49,6 +49,9 @@
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
+- [x] M1.11 對 `0x08008724..0x08008A0C` 完成 bounded layout instruction gate，固定
+  NUL／two-byte／8-or-12px／tile allocation 公式與 mode branch 邊界；speaker、
+  newline、完整多行與 branch mode 語意仍維持 opaque。
 - [ ] 定義控制碼、終止符、換行、說話者、最大寬度／行數與分支邊界。
 - [ ] 用自然畫面或更多獨立語料上下文擴大重讀確認解碼結果；M1.6 的兩個 sample
   仍是同一受控 consumer path 的最小證據。

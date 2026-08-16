@@ -133,6 +133,12 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   16-record cohort 也維持 no-op 16/16。newline-looking／未知 pair 仍只標為 opaque，
   研究摘要在 [`research/m110-boundary-audit.json`](research/m110-boundary-audit.json)，
   不代表完整 newline、speaker、multi-line layout 或池外文本已解出。
+- M1.11 對 `0x08008724..0x08008A0C` 做 bounded instruction gate，固定 NUL exit、
+  2-byte cursor、低位元組 `<=0x87` 的 8px／否則 12px width、`ceil(width/8)`
+  tile-column 與 64-byte allocation unit；亦記錄 mode `==1` 與其他 helper branch，
+  但不替 branch mode、speaker 或 newline 猜語意。完整結果在
+  [`research/m111-layout-contract.json`](research/m111-layout-contract.json)，目前
+  corpus 觀察最大 width 240／30 columns 不是引擎上限證明。
 - 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -266,6 +272,9 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M1.10 完成 2325 筆 source record 的 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 16-record bounded no-op cohort；
   unknown token 與 newline semantics 維持 opaque／未命名。
+- [x] M1.11 完成 `0x08008724..0x08008A0C` 的 bounded layout instruction gate，固定
+  NUL／two-byte／8-or-12px／tile allocation 公式與 mode branch 邊界；speaker、
+  newline、完整多行與 branch mode 語意仍是 opaque。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
