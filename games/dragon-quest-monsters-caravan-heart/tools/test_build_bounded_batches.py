@@ -4,9 +4,11 @@ import build_bounded_batches as module
 import patch_menu
 import patch_message_batch_2
 import patch_message_batch_3
+import patch_message_batch_4
 import verify_menu_patch
 import verify_message_batch_2
 import verify_message_batch_3
+import verify_message_batch_4
 
 
 class BoundedBatchBuildTest(unittest.TestCase):
@@ -36,8 +38,28 @@ class BoundedBatchBuildTest(unittest.TestCase):
             bytes((0, 0x11, 0, 0, 0, 0, 0x66, 0, 0x88)),
         )
 
+    def test_merge_keeps_fourth_disjoint_batch_change(self) -> None:
+        clean = bytes(10)
+        menu = bytearray(clean)
+        message = bytearray(clean)
+        message_3 = bytearray(clean)
+        message_4 = bytearray(clean)
+        menu[1] = 0x11
+        message[6] = 0x66
+        message_3[8] = 0x88
+        message_4[9] = 0x99
+        self.assertEqual(
+            module.merge(clean, bytes(menu), bytes(message), bytes(message_3), bytes(message_4)),
+            bytes((0, 0x11, 0, 0, 0, 0, 0x66, 0, 0x88, 0x99)),
+        )
+
     def test_ranges_are_disjoint(self) -> None:
-        ranges = verify_menu_patch.allowed_ranges() + verify_message_batch_2.allowed_ranges() + verify_message_batch_3.allowed_ranges()
+        ranges = (
+            verify_menu_patch.allowed_ranges()
+            + verify_message_batch_2.allowed_ranges()
+            + verify_message_batch_3.allowed_ranges()
+            + verify_message_batch_4.allowed_ranges()
+        )
         for index, (start, end) in enumerate(ranges):
             for other_start, other_end in ranges[index + 1:]:
                 self.assertTrue(end <= other_start or other_end <= start)

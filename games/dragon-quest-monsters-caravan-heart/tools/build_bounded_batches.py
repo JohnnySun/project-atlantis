@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build and verify the three bounded A9HJ translation batches together.
+"""Build and verify the four bounded A9HJ translation batches together.
 
 This tool intentionally remains a bounded proof: it merges only the fixed
-menu span and two fixed system-message spans plus their authored E1 tiles.  It
+menu span and three fixed system-message spans plus their authored E1 tiles.  It
 does not claim to be the full game's encoder or source-boundary parser.
 """
 
@@ -17,9 +17,11 @@ import sys
 import patch_menu
 import patch_message_batch_2
 import patch_message_batch_3
+import patch_message_batch_4
 import verify_menu_patch
 import verify_message_batch_2
 import verify_message_batch_3
+import verify_message_batch_4
 
 
 def load_entry(path: pathlib.Path, string_id: str) -> dict[str, object]:
@@ -31,8 +33,18 @@ def load_entry(path: pathlib.Path, string_id: str) -> dict[str, object]:
     raise ValueError(f"missing {string_id}")
 
 
-def merge(clean: bytes, menu: bytes, message: bytes, message_3: bytes | None = None) -> bytes:
-    outputs = [menu, message] + ([message_3] if message_3 is not None else [])
+def merge(
+    clean: bytes,
+    menu: bytes,
+    message: bytes,
+    message_3: bytes | None = None,
+    message_4: bytes | None = None,
+) -> bytes:
+    outputs = [menu, message]
+    if message_3 is not None:
+        outputs.append(message_3)
+    if message_4 is not None:
+        outputs.append(message_4)
     if any(len(clean) != output_len for output_len in (len(output) for output in outputs)):
         raise ValueError("bounded outputs differ in size")
     result = bytearray(clean)
@@ -60,21 +72,35 @@ def verify(clean: bytes, combined: bytes) -> dict[str, object]:
     message_3 = combined[patch_message_batch_3.MESSAGE_FILE_OFFSET:patch_message_batch_3.MESSAGE_FILE_OFFSET + patch_message_batch_3.MESSAGE_SPAN_LENGTH]
     if verify_message_batch_3.decode_target(message_3) != patch_message_batch_3.TARGET_TEXT:
         raise ValueError("combined message batch 3 re-extraction mismatch")
+    message_4 = combined[patch_message_batch_4.MESSAGE_FILE_OFFSET:patch_message_batch_4.MESSAGE_FILE_OFFSET + patch_message_batch_4.MESSAGE_SPAN_LENGTH]
+    if verify_message_batch_4.decode_target(message_4) != patch_message_batch_4.TARGET_TEXT:
+        raise ValueError("combined message batch 4 re-extraction mismatch")
 
-    ranges = verify_menu_patch.allowed_ranges() + verify_message_batch_2.allowed_ranges() + verify_message_batch_3.allowed_ranges()
+    ranges = (
+        verify_menu_patch.allowed_ranges()
+        + verify_message_batch_2.allowed_ranges()
+        + verify_message_batch_3.allowed_ranges()
+        + verify_message_batch_4.allowed_ranges()
+    )
     changed = [offset for offset, (before, after) in enumerate(zip(clean, combined)) if before != after]
     if any(not any(start <= offset < end for start, end in ranges) for offset in changed):
         raise ValueError("combined output changes bytes outside bounded ranges")
     return {
         "clean_sha256": hashlib.sha256(clean).hexdigest(),
         "combined_sha256": hashlib.sha256(combined).hexdigest(),
-        "batch_string_ids": [patch_menu.MENU_STRING_ID, patch_message_batch_2.MESSAGE_STRING_ID, patch_message_batch_3.MESSAGE_STRING_ID],
+        "batch_string_ids": [
+            patch_menu.MENU_STRING_ID,
+            patch_message_batch_2.MESSAGE_STRING_ID,
+            patch_message_batch_3.MESSAGE_STRING_ID,
+            patch_message_batch_4.MESSAGE_STRING_ID,
+        ],
         "allowed_range_count": len(ranges),
         "changed_byte_count": len(changed),
         "outside_range_changes": 0,
         "menu_reextract": "ok",
         "message_reextract": "ok",
         "message_batch_3_reextract": "ok",
+        "message_batch_4_reextract": "ok",
         "runtime_qa": "not-run",
     }
 
@@ -85,6 +111,7 @@ def main() -> int:
     parser.add_argument("menu_ledger", type=pathlib.Path)
     parser.add_argument("message_ledger", type=pathlib.Path)
     parser.add_argument("message_3_ledger", type=pathlib.Path)
+    parser.add_argument("message_4_ledger", type=pathlib.Path)
     parser.add_argument("source_table", type=pathlib.Path)
     parser.add_argument("decoded", type=pathlib.Path)
     parser.add_argument("--out", type=pathlib.Path, required=True)
@@ -95,13 +122,16 @@ def main() -> int:
         ledger_menu = load_entry(args.menu_ledger, patch_menu.MENU_STRING_ID)
         ledger_message = load_entry(args.message_ledger, patch_message_batch_2.MESSAGE_STRING_ID)
         ledger_message_3 = load_entry(args.message_3_ledger, patch_message_batch_3.MESSAGE_STRING_ID)
+        ledger_message_4 = load_entry(args.message_4_ledger, patch_message_batch_4.MESSAGE_STRING_ID)
         source_menu = load_entry(args.source_table, patch_menu.MENU_STRING_ID)
         source_message = load_entry(args.source_table, patch_message_batch_2.MESSAGE_STRING_ID)
         source_message_3 = load_entry(args.source_table, patch_message_batch_3.MESSAGE_STRING_ID)
+        source_message_4 = load_entry(args.source_table, patch_message_batch_4.MESSAGE_STRING_ID)
         menu, _ = patch_menu.patch(clean, ledger_menu, source_menu, args.decoded)
         message, _ = patch_message_batch_2.patch(clean, ledger_message, source_message, args.decoded)
         message_3, _ = patch_message_batch_3.patch(clean, ledger_message_3, source_message_3, args.decoded)
-        combined = merge(clean, menu, message, message_3)
+        message_4, _ = patch_message_batch_4.patch(clean, ledger_message_4, source_message_4, args.decoded)
+        combined = merge(clean, menu, message, message_3, message_4)
         report = verify(clean, combined)
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_bytes(combined)

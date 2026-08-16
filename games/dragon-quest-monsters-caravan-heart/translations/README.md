@@ -11,7 +11,7 @@ clean A9HJ + tools/extract_text.py + tools/build_source_table.py
   -> translations/*.jsonl                                        # 唯一可提交形式，禁止 source
 ```
 
-截至 2026-08-16，已建立三筆 source-free bounded ledger；clean consumer、glyph table、mixed-byte pair
+截至 2026-08-16，已建立四筆 source-free bounded ledger；clean consumer、glyph table、mixed-byte pair
 path、`E0`／`E1` alternate glyph path 與穩定 menu 已有證據，但完整 codepage、控制碼／
 終止／跳躍、字寬／VWF、script record boundary 與 encoder round-trip 尚未完成。source
 table 產生器因此只提供保守的本機候選：未知 direct glyph 會變成 `{Uxx}`／`{Uxxxx}`，未命名
@@ -33,7 +33,12 @@ bounded re-extraction 與 BPS apply 均已重現，但兩批仍標成 `ai_review
 使用 7 個與前兩批不重疊的新手繪 E1 glyph，固定 span 最後的 `FF` 完整保留；restore／strip、
 bounded re-extraction 與 BPS apply 均已重現，仍標成 `ai_review`，mGBA runtime QA 尚未跑。
 
-`tools/build_bounded_batches.py` 會從 clean ROM 分別重建三批並拒絕 range conflict；cumulative
+`message-batch-4.jsonl` 只覆蓋 clean `g06:v00:m0044` 的 communication wait prompt。其 encoder
+使用 3 個與前三批不重疊的新手繪 E1 glyph，採用 clean direct `0x94` full-stop，固定 span 最後的
+`FF` 完整保留；restore／strip、bounded re-extraction 與 BPS apply 均已重現，仍標成
+`ai_review`，mGBA runtime QA 尚未跑。
+
+`tools/build_bounded_batches.py` 會從 clean ROM 分別重建四批並拒絕 range conflict；cumulative
 ROM／BPS 只是一個目前可審核的有限 proof，不能替代全量 decoder、全字庫或完整 QA。
 
 在 M1 gate 通過前，不從英文 patch 或其他中文 patch 反推日文原文，也不把猜測的專有
