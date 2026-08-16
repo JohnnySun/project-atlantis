@@ -524,6 +524,47 @@ record。Unifont downsample 的字形風格、未定位 corpus 對新 code-unit 
 newline／完整 layout 與 full-game QA 仍是風險；這一筆 `ai_draft` 不代表完整翻譯
 或自然畫面通過。
 
+## 2026-08-16：M1.9 patched target runtime QA 邊界
+
+M1.9 將範圍限制在 M1.8 唯一 translation ledger record `string_id=526424`、兩個
+窄字 slot `543/542`，以及相鄰 untouched record `526432`。tracked 證據只保存
+source／ledger hash、offset、長度、控制 token、slot、bytes／render hash；完整日文、
+ROM、BPS、PGM 與 probe JSON 均留在 ignored `work/`。可重跑工具為
+`tools/m19_runtime_qa.py`，其 GDB、initializer guard、consumer、codepage、glyph
+addressing、tile-writer 與 self-render 分層輸出 metadata；純函式 gate 在
+`tools/test_m19_runtime_qa.py`。
+
+### Static gate（已通過）
+
+| 項目 | 證據 |
+| --- | --- |
+| target source | ROM offset `0x080858`／address `0x08080858`；raw hash `d00ed112…`；ledger hash `868310e1…`；4-byte payload、2 units、line width 16、NUL、無已知 control token |
+| patched target | payload hash `13b51fc2…`；同長；code units `0xE883`／`0xE783`；窄字 slots `543/542` |
+| glyph static render | slot 543 bytes hash `fc802795…`、4bpp `7ea2c7a3…`；slot 542 bytes hash `baec37d9…`、4bpp `b5cd53c7…`；target 1bpp `d9afb055…`、4bpp `69aa6186…` |
+| adjacent | offset `0x080860`／string `526432`；base／patched payload hash `b5635bbc…` 相同；1bpp `20b2c971…`、4bpp `c0ef81f3…` 相同 |
+| ROM／BPS | base `12b706b6…`；patched `b58ef432…`；BPS 66 bytes／`4f694170…`；M1.8 create/apply byte-identical，本輪只重核 hash／artifact identity |
+
+### Runtime 分欄與 negative evidence
+
+M1.6 已有的 controlled positive 仍確認初始化與 consumer 的 call chain：font slots
+`0x020131d0`／`0x020103ac` 分別寫入 nonzero ROM base `0x0814f664`／`0x08120dbc`，
+並走 `0x08008724` → `0x080085fc` → `0x080088c8` → `0x08008650`。這能證明
+consumer path 存在，但不把 M1.6 的 `ラ`／`移` sample 當成 M1.9 target 畫面。
+
+本輪使用獨立 mGBA、port `24567`、每個 probe 一條 GDB connection。兩次 clean
+restart 都只做一次明確命名的 `idle_boot` natural window；listener 曾可見於
+`*:24567`，但 probe 在 target stop window 得到 `target did not stop before timeout`。
+同一 single-connection 狀態後續握手沒有有效 packet response；依 GDB stub 的單連線
+限制，不重用、不做第三次 clean restart。結果精確標記為 `transport_negative`：
+M1.9 patched target 的 runtime screen、writer destination、cache／VRAM hash、
+相鄰 runtime equal hash 均是 `not_observed`，不是 ROM／翻譯失敗，也不是自然不可達
+的證明。完整欄位與 follow-up 條件在 [`m19-runtime-qa.json`](m19-runtime-qa.json)。
+
+因此本輪只完成 static gate 與 transport boundary；下一個 runtime session 必須
+用新的 mGBA process／port，先重做 base／patched controlled capture，再分開嘗試
+自然 menu／queue。newline 仍只有 `0x08008724` 靜態「無獨立 newline branch」證據，
+不得外推成完整引擎 newline 安全。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |

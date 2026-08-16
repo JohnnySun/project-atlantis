@@ -117,6 +117,16 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   BPS create/apply 已 byte-identical。ROM、BPS、render image 與 restored／working
   source 仍只留 ignored `roms/`／`work/`；runtime patched-screen proof、完整
   newline／layout、字型美術品質與批量翻譯仍 pending。
+- M1.9 已建立 bounded runtime QA 工具與純 metadata 測試，並再次固定 target
+  `string_id=526424` 的 source／ledger hash、NUL、4-byte payload、16px line width、
+  slots `543/542` 與相鄰 `526432` 的 unchanged hashes。既有 M1.6 consumer path
+  （`0x08008724` → `0x080085fc` → `0x080088c8` → `0x08008650`）仍是陽性；本輪
+  兩次 clean restart 在自己的 port `24567` 進行一次 idle natural attempt，但
+  GDB single connection 在 stop timeout 後無法再提供有效 packet response，因此
+  patched target 的 M1.9 runtime 畫面／writer-to-cache proof 維持未觀察，不把
+  transport negative 誤報成 ROM 或譯文失敗。證據在
+  [`research/m19-runtime-qa.json`](research/m19-runtime-qa.json)；ROM、BPS、render
+  與 probe output 仍只留 ignored `roms/`／`work/`。
 - 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -235,6 +245,11 @@ queue 觸發尚未取代這條受控驗證。
   allocator、12-byte glyph packing／固定字型來源 hash，以及一筆同長 static
   `zh-TW` glyph POC；target／相鄰 record、BPS round-trip 與 fail-closed gate 已
   通過，寬字新槽容量為 0，patched runtime screen 仍待驗證。
+- [x] M1.9 完成 target／相鄰 static metadata、NUL／width 檢查、runtime QA 工具與
+  test，並記錄兩次 clean restart 的 GDB transport negative；既有 consumer positive
+  不外推為 patched target 畫面 QA。
+- [ ] 在新的獨立 mGBA process／port 完成 M1.9 patched target 與相鄰 record 的
+  controlled writer/cache 或 VRAM hash proof；自然 menu／queue 仍不宣稱已達成。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger

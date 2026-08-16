@@ -1,0 +1,110 @@
+{
+  "schema": "super-robot-taisen-d-m19-runtime-qa-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "string_id": 526424,
+    "source_address": "0x08080858",
+    "source_raw_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "source_ledger_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+    "payload_length": 4,
+    "unit_count": 2,
+    "line_width": 16,
+    "terminator": "NUL",
+    "control_tokens": []
+  },
+  "rom_and_bps": {
+    "base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce",
+    "bps_sha256": "4f694170e119fdf8a9f3113ddca9aec0850f07fdfd1adc75bfca46643a4e0f31",
+    "bps_size": 66,
+    "bps_roundtrip": "byte-identical; inherited from M1.8 and rechecked in this slice"
+  },
+  "static_target": {
+    "base_payload_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "patched_payload_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+    "same_payload_length": true,
+    "code_units": ["0xE883", "0xE783"],
+    "glyphs": [
+      {
+        "slot": 543,
+        "code_unit": "0xE883",
+        "unicode": "U+6C92",
+        "glyph_bytes_sha256": "fc802795e0a087b4a040a4aa021aec11f1ce171562606996e46720d81261b74c",
+        "render_4bpp_sha256": "7ea2c7a3ca398e333fa6b701517e7964deabe4ce64f7dadf913e4bb135677b2c"
+      },
+      {
+        "slot": 542,
+        "code_unit": "0xE783",
+        "unicode": "U+6709",
+        "glyph_bytes_sha256": "baec37d94010d471df77dae5d16aecd1d581178af6c0f65f1aabbfbde11ee01d",
+        "render_4bpp_sha256": "b5cd53c77777564920183a17e99524d08081b21e69da1e20870a05c702ed2078"
+      }
+    ],
+    "target_static_render_1bpp_sha256": "d9afb0558337ac6763bd136ad0622a13a29bcd30924b9518e56b3a9bfed00d97",
+    "target_static_render_4bpp_sha256": "69aa6186e6fafeb3c3d5e96ad4031ba0f80f0d595526f4f9e01b45dcd6cc99e1"
+  },
+  "static_adjacent": {
+    "string_id": 526432,
+    "source_address": "0x08080860",
+    "base_payload_sha256": "b5635bbc6aff0e3cb4cb6a25838273e93da18ab965919b445df2f4246a621a90",
+    "patched_payload_sha256": "b5635bbc6aff0e3cb4cb6a25838273e93da18ab965919b445df2f4246a621a90",
+    "render_1bpp_sha256": "20b2c971fdc3f2643de157bb542dd62f3658f40024d5c3502d6edfc80db89105",
+    "render_4bpp_sha256": "c0ef81f33c1de225a8f8f7dced258c92641ed2b7daa1e62c7f2d173bfb99c54f",
+    "untouched": true
+  },
+  "runtime": {
+    "font_base_slots": {
+      "narrow_slot": "0x020131D0",
+      "wide_slot": "0x020103AC",
+      "narrow_base": "0x0814F664",
+      "wide_base": "0x08120DBC",
+      "nonzero_guard": true
+    },
+    "prior_controlled_consumer": {
+      "status": "positive; inherited M1.6 evidence",
+      "consumer_pc": "0x08008724",
+      "codepage_pc": "0x080085FC",
+      "glyph_add_pc": "0x080088C8",
+      "tile_writer_pc": "0x08008650",
+      "font_initializer_callsite": "0x08014E8C",
+      "writer_pcs": ["0x08008456", "0x08008462"],
+      "target_record_not_claimed": true
+    },
+    "m19_attempt": {
+      "independent_port": 24567,
+      "single_gdb_connection_per_probe": true,
+      "fresh_process_launches": 3,
+      "clean_restarts_after_initial": 2,
+      "natural_paths_attempted": ["idle_boot"],
+      "base_hash_checked_before_probe": true,
+      "patched_hash_checked_from_static_artifact": true,
+      "listener_observed": true,
+      "listener_endpoint": "*:24567",
+      "probe_result": "transport_negative",
+      "first_failure": "target did not stop before timeout",
+      "reconnect_failure": "GDB stub accepted no usable packet response after the timed-out single connection",
+      "third_restart": "not attempted; launch budget exhausted",
+      "patched_target_runtime": "not_observed",
+      "natural_screen": "not_claimed",
+      "controlled_target_capture": "not_observed in M1.9; existing M1.6 consumer proof remains separate"
+    },
+    "required_followup": [
+      "fresh independent mGBA process and port",
+      "base and patched controlled consumer captures",
+      "writer destination/cache or VRAM hashes for slots 543/542",
+      "one real or self-rendered runtime layout proof",
+      "NUL and newline branch observation beyond static no-newline result"
+    ]
+  },
+  "gate": {
+    "static_source_and_adjacent_hashes": true,
+    "static_nul_width_control_metadata": true,
+    "existing_consumer_path_positive": true,
+    "patched_runtime_screen_proven": false,
+    "translation_status": "ai_draft",
+    "m19_complete": false,
+    "reason": "mGBA GDB transport stopped responding after the bounded single-connection attempt; no third clean launch was permitted"
+  }
+}
