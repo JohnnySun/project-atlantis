@@ -2,7 +2,7 @@
 
 本目錄只處理日版 GBA《真・女神転生II》（A5TJ），目標為臺灣繁體 `zh-TW`。ROM、sav、完整解出的原文、VRAM／OAM dump、渲染圖片與暫存構建只保存在本機，不進 Git。
 
-## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10/M1.11/M1.12/M1.13/M1.14/M1.15/M1.16/M1.17/M1.36 基準狀態（2026-08-17）
+## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10/M1.11/M1.12/M1.13/M1.14/M1.15/M1.16/M1.17/M1.36/M1.37 基準狀態（2026-08-17）
 
 - ROM header 身分已確認：`DDS_2`、`A5TJ`、maker `EB`、revision `0`、8 MiB。
 - A5TJ identity contract 為 size `8388608`、game code `A5TJ`、CRC32 `af40cc99`、SHA-256 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`。共用 `scripts/gba-rom-identity.py` 在未使用 `--allow-invalid-header` 下全部通過；report 留在 `/private/tmp/smt2-m136-identity.json`。
@@ -582,6 +582,23 @@ demon 的 table-local addressing 仍分 namespace；不輸出 source bytes、uni
 provenance，但沒有 runtime natural hit，完整 table extent、codepage、Unicode、
 width/control 與回插仍 blocked。詳見 `research/m1.36-source-index-provenance-20260817.md`。
 
+M1.37 item family full bounded extent（唯讀 metadata static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m137_item_extent.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m137-item-extent.json
+```
+
+工具重抽取 `0x08198b74` 的 `0xd0` 筆 caller-addressable records，保留每筆
+stable ID、address、field hash、length、termination、unit-count 與 aggregate
+coverage；208/208 fields 可讀，11 個既有多來源 identity anchors 全部 match。
+它不輸出 source bytes、unit values、日文、glyph、圖片或 translation ledger。這
+確認 item 的 addressing extent 與 fixed-field contract，但 564 個 unit occurrence
+仍未有 identity，semantic category、complete codepage、width/control、reinsert 與
+runtime selection 仍 blocked。詳見 `research/m1.37-item-extent-20260817.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -591,17 +608,16 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.36 固定的 item／skill／demon source-index producer→record→fixed field→
+沿 M1.37 固定的 item full extent 與 M1.36 的 skill／demon source-index producer→record→fixed field→
 stack staging→
 16-bit reader path，補完剩餘 bounded subcategory boundary；M1.30 已對
 `0x0819cb74` demon accessor（stride `0x60`、field `+0x22`）建立獨立 anchor family，
 M1.31 再確認 `0x0819b9f4` skill prefix，M1.32 已接通五筆
 code-unit→font-bank→renderer static edge，M1.33 已固定 reader control／cursor
 step 與 OAM layout contract，M1.34 已建立 59 筆 bounded semantic manifest，M1.35
-已確認三筆 adjacent record 的 shape／termination／identity。下一步只在有多來源
-reference 的 sparse record 或自然 caller source/index edge 上前進；若 runtime
-listener 仍 blocked，最多沿同一 named source caller 三層追 RAM object/table
-initializer。不能把
+已確認三筆 adjacent record 的 shape／termination／identity。下一步建立只在本機的
+item decoder/reference cross-check，逐步覆蓋 208 筆 unit identity；若 runtime listener
+仍 blocked，不重複 reset→Start，也不把 table hash 當成 live source。不能把
 command pointer、font-bank shape 或人工 OCR 當成完整文字來源；item、skill、demon、
 劇情與系統 data families 必須分開記錄。
 

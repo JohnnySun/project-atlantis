@@ -506,6 +506,24 @@
   contract；至少一族確認完整 codepage、控制碼、寬度與 round-trip 後才解除 M2 ledger
   gate。不得把 RAM index、table stride 或外部 anchor 直接當完整翻譯表。
 
+## M1.37：item family full bounded extent
+
+- [x] 依 M1.36 的 `index <= 0xcf` caller branch 固定 item table
+  `0x08198b74`、stride `0x24`、field `+0x14`、8×16-bit unit，完整重抽取 ordinal
+  `0x00..0xcf` 的 208/208 records；每筆只留 stable ID、address、field hash、length、
+  termination 與 count metadata。
+- [x] 確認 field window 7488 bytes、fixed field 16 bytes、163 筆 zero-terminated、
+  45 筆 fixed-width，總 nonzero units 1237；沒有把 `0x0300`／`0x0301` 的 absence
+  誤寫成全遊戲 control-code proof。
+- [x] 重跑 M1.28/M1.29 的 11 個 bounded identity anchors，11/11 match；外部來源
+  只做 order/identity cross-check，完整名稱與 raw source 不進 Git。
+- [~] item addressable extent 已 confirmed，但 semantic category extent、564 個
+  unmapped unit occurrences、complete codepage、Unicode、width/control、reinsert
+  與 runtime selection 仍 unknown；M2 ledger gate 維持 blocked。
+- [ ] 在 ignored work 或 `/private/tmp` 完成 item-only private decoder/reference
+  cross-check，逐步建立 identity tiers 與 source hashes；只提交不含 source 的
+  decoder contract／count/status，不能把外部清單直接當翻譯 ledger。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
