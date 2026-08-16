@@ -125,7 +125,10 @@ def header_summary(data: bytes) -> dict[str, object]:
     game_code = data[0xAC:0xB0]
     maker_code = data[0xB0:0xB2]
     stored = data[0xBD]
-    calculated = (0x19 - sum(data[0xA0:0xBD])) & 0xFF
+    # Nintendo's GBA check is -(sum(header[0xA0:0xBD]) + 0x19) mod 256.
+    # Keep this in sync with core/gba/rom_identity.py; the former 0x19 - sum
+    # expression reported a false mismatch for the A5TJ candidate.
+    calculated = (-sum(data[0xA0:0xBD]) - 0x19) & 0xFF
     return {
         "available": True,
         "title_ascii": title_bytes.rstrip(b"\x00").decode("ascii", "replace"),

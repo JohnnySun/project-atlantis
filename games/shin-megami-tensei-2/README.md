@@ -2,11 +2,11 @@
 
 本目錄只處理日版 GBA《真・女神転生II》（A5TJ），目標為臺灣繁體 `zh-TW`。ROM、sav、完整解出的原文、VRAM／OAM dump、渲染圖片與暫存構建只保存在本機，不進 Git。
 
-## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10/M1.11/M1.12/M1.13/M1.14/M1.15/M1.16/M1.17 基準狀態（2026-08-16）
+## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10/M1.11/M1.12/M1.13/M1.14/M1.15/M1.16/M1.17/M1.36 基準狀態（2026-08-17）
 
 - ROM header 身分已確認：`DDS_2`、`A5TJ`、maker `EB`、revision `0`、8 MiB。
-- 本機候選的 ROM CRC32 為 `af40cc99`，SHA-256 為 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`；完整指紋和 header complement 異常見 `research/recon-20260816.md`。
-- header complement 儲存值 `0x4a`、依標準公式計算值 `0x7c` 不一致；mGBA 仍能執行並顯示畫面，因此本階段不修改 ROM，也不把「可執行」誤當成 dump 來源乾淨的證明。
+- A5TJ identity contract 為 size `8388608`、game code `A5TJ`、CRC32 `af40cc99`、SHA-256 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`。共用 `scripts/gba-rom-identity.py` 在未使用 `--allow-invalid-header` 下全部通過；report 留在 `/private/tmp/smt2-m136-identity.json`。
+- header complement 儲存值與依正確 GBA 公式計算值皆為 `0x4a`。早期 `recon_static.py` 使用錯誤的常數符號，曾把它報成 `0x7c`；本回合已修正工具，歷史偵察紀錄保留更正說明。ROM 未被修改。
 - `tools/recon_static.py` 是本作自有的唯讀第一輪掃描器：接受 raw GBA 或只有一個 GBA 成員的 ZIP，只輸出 header、雜湊、尾端、候選計數與偏移，不輸出完整原文。
 - 2367 headless GDB 回合已完成：讀取 watchpoint 確認 KEYINPUT 消費點；Start 輸入後讀取 VRAM、palette、OAM，並依 OAM 實際排列渲染出遊戲內日文免責文字。
 - M1.5 已完成一個有界來源分析回合：Start 後有 46 個 active sprite、84 個 unique OBJ tile；完整 sprite glyph 在 ROM、IWRAM、EWRAM 與 bounded LZ77/RL stream 均無 byte-identical match，也沒有因此推導出 font stride。
@@ -47,6 +47,20 @@
 ```sh
 python3 games/shin-megami-tensei-2/tools/recon_static.py /path/to/A5TJ.zip --pretty
 ```
+
+A5TJ identity gate（ROM 與 report 都在 repository 外）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-rom-identity.py \
+  /absolute/path/to/A5TJ.gba \
+  --expect-size 8388608 --expect-game-code A5TJ \
+  --expect-crc32 af40cc99 \
+  --expect-sha256 819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e \
+  --output /private/tmp/smt2-identity.json
+```
+
+預期 status 是 `pass`；只有已證明是刻意 invalid header 的測試檔才可加入
+`--allow-invalid-header`。
 
 M1.6 的固定 DMA／queue 靜態驗證不會做 glyph pattern scan：
 
@@ -550,6 +564,24 @@ stable-ID candidate、preceding ID、地址、field hash、length/count、termin
 三個 bounded adjacency，沒有升格成完整 family extent/codepage。詳見
 `research/m1.35-adjacent-records-20260817.md`。
 
+M1.36 named source/index caller provenance（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m136_source_index_provenance.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m136-source-index.json
+```
+
+工具只追三條既有 text-family consumer：item 的 EWRAM halfword index list、skill
+的 bounded byte index list、demon 的 object halfword slots；每條最多向上追三層
+direct Thumb BL，輸出 function boundary/hash、PC/callsite、literal address、RAM
+table shape、field offset 與 count。九個 named edge 全部 target match，item／skill／
+demon 的 table-local addressing 仍分 namespace；不輸出 source bytes、unit values、
+日文、glyph、圖片或 translation ledger，也不寫 RAM。這建立了 static source/index
+provenance，但沒有 runtime natural hit，完整 table extent、codepage、Unicode、
+width/control 與回插仍 blocked。詳見 `research/m1.36-source-index-provenance-20260817.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -559,7 +591,8 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.29 固定的 item selector→`0x08198b74` record→fixed field→stack staging→
+沿 M1.36 固定的 item／skill／demon source-index producer→record→fixed field→
+stack staging→
 16-bit reader path，補完剩餘 bounded subcategory boundary；M1.30 已對
 `0x0819cb74` demon accessor（stride `0x60`、field `+0x22`）建立獨立 anchor family，
 M1.31 再確認 `0x0819b9f4` skill prefix，M1.32 已接通五筆

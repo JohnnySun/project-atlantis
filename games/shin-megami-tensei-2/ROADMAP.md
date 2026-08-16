@@ -3,7 +3,7 @@
 ## M0：身分、範圍與唯讀基準
 
 - [x] 建立獨立 slug `games/shin-megami-tensei-2/`，不混入其他遊戲資料。
-- [x] 記錄 A5TJ header、ROM size、CRC32、MD5、SHA-256 與 header complement 差異；不修補原 ROM。
+- [x] 記錄 A5TJ header、ROM size、CRC32、MD5、SHA-256 與 header complement；以共用 identity gate 驗證，不修補原 ROM。
 - [x] 建立不輸出完整原文的 `tools/recon_static.py`。
 - [x] 使用本 session 專用的 2367 headless GDB 做一次有界輸入／VRAM／OAM 回合。
 - [x] 依 GBA 標準 VRAM、OBJ palette、OAM 與 4bpp/1D mapping 假設完成畫面級交叉驗證：Start 後可渲染出遊戲內日文免責文字。
@@ -480,8 +480,31 @@
   可重抽取，未提交 unit/raw/source。
 - [~] 三筆只證明 bounded adjacency，不證明完整 family extent、intervening semantics、
   runtime selection 或 complete codepage；M2 ledger、翻譯與 patch gate 繼續 blocked。
-- [ ] 若有下一筆可多來源核對的 sparse anchor，選一個 category boundary 風險最低的
+- [x] 若有下一筆可多來源核對的 sparse anchor，選一個 category boundary 風險最低的
   record；否則轉向自然 caller 的 source/index provenance，不以連續位址填補語意。
+
+## M1.36：named source/index caller provenance
+
+- [x] 只追三條已命名 category path：item `0x0203a454+0x9c` halfword index list、
+  skill `0x0203b860+0x5d` bounded byte list、demon object `+0x26` 五筆 halfword
+  slots；沒有重跑 resource／OBJ hash 或全 ROM glyph scan。
+- [x] 以 ARM7TDMI Thumb boundary、literal pool 與 direct BL target 交叉確認三個
+  accessor：`0x080bf32c → 0x08198b74`（stride `0x24`／field `+0x14`）、
+  `0x080bf5c0 → 0x0819b9f4`（stride `0x1c`／field `+0x06`）、
+  `0x080bf648 → 0x0819cb74`（stride `0x60`／field `+0x22`）。
+- [x] 沿 named caller 向上最多三層：item `accessor→0x080d2b70→0x080d2d80→
+  0x080d3264`、skill `accessor→0x080cd1f8→0x080cb928→0x080c9bcc`、demon
+  `accessor→0x080e1644→EWRAM wrapper`；所有 9 個 bounded edge target match。
+- [x] 採用共用 `scripts/gba-rom-identity.py` 做 A5TJ gate：expected size `8388608`、
+  game code `A5TJ`、CRC32 `af40cc99`、SHA-256 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`；
+  未使用 `--allow-invalid-header`，exit `0`／status `pass`。舊
+  `recon_static.py` 的 complement 公式也已修正。
+- [~] 這是 static source/index provenance，不是 runtime natural scene hit；完整
+  item/demon/skill table extent、Unicode/codepage、main/event/system category、
+  width/control 與回插仍 unknown，GDB listener blocker 分開保留。
+- [ ] 以已命名 producer 為入口完成各 family 的 bounded source extraction／extent
+  contract；至少一族確認完整 codepage、控制碼、寬度與 round-trip 後才解除 M2 ledger
+  gate。不得把 RAM index、table stride 或外部 anchor 直接當完整翻譯表。
 
 ## M2：可審核翻譯 ledger
 
