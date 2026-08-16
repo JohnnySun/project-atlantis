@@ -16,7 +16,7 @@
 - [x] 用 `tools/scan_static.py` 對 halfword-aligned Shift-JIS-shaped run、指標 run 與有界 LZ77／RLE decoder candidate 做掃描。
 - [~] 壓縮／指標候選仍只有靜態證據；mGBA scripting/headless 路徑受 CLI 能力限制，未把候選升格為文本或資料表結論。
 
-本里程碑的靜態報告只保留 offset、長度、計數、引用與 hash。一次性的 mGBA boot snapshot 已記在研究帳本，但不再重試 port shim，也不把未證明的 runtime 實驗工具納入本作工具集。
+本里程碑的靜態報告只保留 offset、長度、計數、引用與 hash。共用 `core/gba` client／capture／renderer 的 6 項測試已通過；一次性的 mGBA boot snapshot 已記在研究帳本，但 B3CJ capture 仍受其他 session 的 2345 與 alternate-port listener 阻塞，不再重試 port shim，也不把 runtime 實驗工具納入本作工具集。
 
 ## M2：文本與字型格式
 

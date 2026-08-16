@@ -48,7 +48,7 @@ python3 games/summon-night-craft-sword-3/tools/scan_static.py \
 
 它只保留候選 offset、長度、計數、pointer reference、decoder consumed size 與 SHA-256；預設掃描 halfword alignment `0`，Shift-JIS-shaped run 至少 8 個 16-bit units，LZ77／RLE 每種最多嘗試 2048 個 header 且 expanded size 上限為 `0x40000`。`work/static-report.json` 是重跑用 ignored 產物，不是提交內容。
 
-靜態候選必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。這次 bounded runtime 只取得一次 boot register／背景設定快照；mGBA CLI 不接受已安裝版本的 `--script`，且未建立文本或 VRAM 對應，因此不把候選升格為已證實文本。尤其不能因為某段 bytes 能被 Shift-JIS 解碼，或某個半字看起來像 BIOS `swi`，就推論它是文本或壓縮器呼叫。
+靜態候選必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。共用 `core/gba/capture_runtime.py` 與 renderer 已可用，且共用測試 6 項通過；本次 B3CJ capture 仍受 runtime port 阻塞：其他 session 佔用 2345，`ports.qt.gdbPort=25352` 未建立 listener，既有 `/private/tmp` redirect dylib 的一次重用也未建立 25351。除了先前一次 boot register／背景設定快照外，沒有新的文本或 VRAM 對應，因此不把候選升格為已證實文本，也不新增遊戲專屬 GDB／dump／renderer。尤其不能因為某段 bytes 能被 Shift-JIS 解碼，或某個半字看起來像 BIOS `swi`，就推論它是文本或壓縮器呼叫。
 
 ## 文字系統研究邊界
 

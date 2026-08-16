@@ -23,6 +23,7 @@
 | `STATIC-COMP-001` | GBA LZ77／RLE decoder 可消費的資料候選 | `candidate` | 有界掃描每種最多 2048 個 header、宣告展開上限 `0x40000`；保留 32 個最大候選，例：LZ77 file offset `0xc9f0d8`、RLE `0xc6cabc` | decoder 可消費不代表 payload 是文本；需先找到 caller／用途，再決定是否解壓 |
 | `RUNTIME-001` | mGBA boot snapshot 是否能直接證實文本渲染路徑 | `blocked` | 一次性 mGBA 0.10.5 GDB snapshot 讀到 `PC=0x03003652`、`DISPCNT=0x1140`、`BG0CNT=0x0088`、`KEYINPUT=0x03ff`；沒有文字 ROM-to-VRAM match | 不再嘗試 port shim；待有可重現 scripting/headless 路徑或明確 debug 入口再開 runtime |
 | `RUNTIME-002` | mGBA scripting/headless 文本偵察 | `blocked` | 已安裝 CLI 不接受 `--script`；未保留未驗證的 GUI／GDB 實驗工具 | 先解決工具能力與可重現入口，否則維持靜態候選狀態 |
+| `RUNTIME-003` | 共用 `core/gba` 標準 capture 是否能取得 B3CJ live RAM／VRAM／OAM | `blocked` | `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s core/gba/test -v` 的 6 項測試通過；B3CJ 自有 mGBA process 的 `-C ports.qt.gdbPort=25352` 未建立 listener，2345 已由其他 session 使用；一次重用 `/private/tmp` redirect dylib 也未建立 25351。沒有產生新的 raw dump | 待有不碰其他 session 的可用 GDB port 或明確 debug 入口，再用 `core/gba/capture_runtime.py`；不重寫遊戲專屬 client |
 | `FONT-001` | 字型位置、tile 格式、codepage 身分 | `blocked` | 尚無 glyph addressing／VRAM match；不能沿用其他遊戲格式 | 找到可重複 glyph 後，分開驗證 addressing 與 identity |
 | `SOURCE-001` | 可供帳本使用的日文原文表 | `blocked` | 目前沒有已證實的 string boundary／decoder，也沒有提交原文表 | 文本結構確認後，才在 ignored `research/*-decoded.jsonl` 輸出 `string_id／locale／text／provenance` |
 | `TRANSLATION-001` | 劇情、支線、夥伴、鍛造、戰鬥、道具的有限量翻譯 | `blocked` | 目前沒有可核對的本機原文與控制碼規則 | 先完成一個可回插、可 restore／strip 往返的短批次；本里程碑不宣稱已開始翻譯 |
