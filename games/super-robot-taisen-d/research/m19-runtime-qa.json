@@ -90,6 +90,17 @@
       "natural_screen": "not_claimed",
       "controlled_target_capture": "not_observed in M1.9; existing M1.6 consumer proof remains separate"
     },
+    "followup_transport_attempt_24731": {
+      "independent_port": 24731,
+      "fresh_process_started": true,
+      "rom_role": "base A6SJ",
+      "natural_path_requested": true,
+      "unprivileged_probe_result": "sandbox localhost socket operation not permitted",
+      "escalated_probe_result": "approval transport rejected before probe execution",
+      "runtime_evidence": "not_observed",
+      "process_cleanup": "own mGBA process stopped cleanly",
+      "rom_or_translation_failure": false
+    },
     "required_followup": [
       "fresh independent mGBA process and port",
       "base and patched controlled consumer captures",

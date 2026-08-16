@@ -565,6 +565,18 @@ M1.9 patched target 的 runtime screen、writer destination、cache／VRAM hash�
 自然 menu／queue。newline 仍只有 `0x08008724` 靜態「無獨立 newline branch」證據，
 不得外推成完整引擎 newline 安全。
 
+## 2026-08-16：M1.9 follow-up port 24731 transport boundary
+
+依前輪要求只啟動本 session 自己的 mGBA，使用新的獨立 port `24731` 與 A6SJ base ROM。
+launcher 成功，但未能形成 GDB runtime evidence：普通 probe 在 localhost socket 被
+sandbox 以 `Operation not permitted` 拒絕；申請本機 socket 的 escalated probe 在
+approval transport 階段中斷，未執行 probe。自己啟動的 mGBA 已清理停止，沒有重用其他
+session 的 process／port，也沒有把這次 transport negative 解讀成 ROM／翻譯失敗。
+
+因此 `research/m19-runtime-qa.json` 新增的 follow-up metadata 只記錄 port、啟動／
+清理與 transport 結果；patched target、slot `543/542` writer／VRAM、screen layout、
+NUL／newline runtime branch 均維持 `not_observed`／pending。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

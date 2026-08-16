@@ -350,6 +350,9 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M1.9 完成 target／相鄰 static metadata、NUL／width 檢查、runtime QA 工具與
   test，並記錄兩次 clean restart 的 GDB transport negative；既有 consumer positive
   不外推為 patched target 畫面 QA。
+- [ ] M1.9 follow-up 新啟動自己的 mGBA `24731`；launcher 成功但 unprivileged GDB
+  socket 被 sandbox 拒絕，escalated probe 又遇 approval transport negative，沒有產生
+  runtime evidence；不把它誤報成 ROM／譯文失敗。
 - [ ] 在新的獨立 mGBA process／port 完成 M1.9 patched target 與相鄰 record 的
   controlled writer/cache 或 VRAM hash proof；自然 menu／queue 仍不宣稱已達成。
 - [x] M1.10 完成 2325 筆 source record 的 NUL／ordering／overlap／ROM equality

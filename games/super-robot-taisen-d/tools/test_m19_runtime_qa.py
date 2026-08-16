@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 import unittest
 
 from m19_runtime_qa import (
@@ -15,6 +17,18 @@ from m19_runtime_qa import (
 
 
 class M19RuntimeQATest(unittest.TestCase):
+    def test_followup_transport_metadata_stays_negative_and_source_safe(self) -> None:
+        report = json.loads(
+            (Path(__file__).resolve().parents[1] / "research/m19-runtime-qa.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        followup = report["runtime"]["followup_transport_attempt_24731"]
+        self.assertTrue(followup["fresh_process_started"])
+        self.assertEqual(followup["runtime_evidence"], "not_observed")
+        self.assertFalse(followup["rom_or_translation_failure"])
+        self.assertFalse(report["source_policy"]["source_text_emitted"])
+
     def test_narrow_code_units_are_strict_and_opaque_units_fail_closed(self) -> None:
         self.assertEqual(code_units(bytes.fromhex("814083e8")), (0x4081, 0xE883))
         with self.assertRaisesRegex(RuntimeQAError, "narrow-only"):

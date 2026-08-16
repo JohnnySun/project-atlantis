@@ -45,7 +45,8 @@
   consumer positive 保留為獨立證據，沒有冒充 patched target 畫面 QA。
 - [ ] M1.9 patched target runtime：在新的獨立 mGBA process／port 重新捕捉
   slots `543/542` 的 writer destination、cache／VRAM hash 與相鄰 record；自然
-  menu／queue、newline branch 仍須分開驗證。
+  menu／queue、newline branch 仍須分開驗證。已嘗試新 port `24731`：launcher 成功，
+  但 GDB socket／approval transport 未能提供 probe，維持 `not_observed`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
