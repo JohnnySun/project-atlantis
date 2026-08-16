@@ -324,6 +324,15 @@ permitted`，一次外部重試仍無 loader stop。詳情見
 與 [`research/m2-font-record-runtime-metadata.json`](research/m2-font-record-runtime-metadata.json)。
 因此 M2 live renderer／decoder 項目仍未完成，不能開始翻譯或回插。
 
+同一 loader 的固定輸出幾何另由
+[`tools/font_loader_layout_probe.py`](tools/font_loader_layout_probe.py) 驗證：
+單一 `0x20`-byte asset slot 的 `+0x00/+0x10` half 經
+`0x03001464` lookup shape，寫入 caller context 的 `+0x00/+0x20/+0x40/+0x60`
+四組 `0x20` bytes（總 `0x80` bytes）。這只是 **confirmed-static byte geometry**，
+不代表 glyph identity、bpp／字寬、完整 codepage、live source consumer 或
+context→VRAM；receipt 見
+[`research/m2-font-loader-layout-20260816.md`](research/m2-font-loader-layout-20260816.md)。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \

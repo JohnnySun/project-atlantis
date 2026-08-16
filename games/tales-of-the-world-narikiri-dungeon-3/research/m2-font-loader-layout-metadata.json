@@ -1,0 +1,47 @@
+{
+  "identity": {
+    "title_ascii": "TOWNARIKIRI3",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "crc32": "1867CCEF"
+  },
+  "fixed_entries": {
+    "font_loader": "0x080021A8",
+    "font_loader_callsite": "0x015C26",
+    "font_init": "0x08002100",
+    "asset_base": "0x080DDCC4",
+    "lookup_base": "0x03001464"
+  },
+  "input_geometry": {
+    "asset_bytes": 32,
+    "half_bytes": 16,
+    "half_offsets": ["0x00", "0x10"],
+    "status": "confirmed-static-input-geometry"
+  },
+  "output_geometry": {
+    "group_count": 4,
+    "group_bytes": 32,
+    "total_bytes": 128,
+    "group_offsets": ["0x00", "0x20", "0x40", "0x60"],
+    "status": "confirmed-static-output-geometry"
+  },
+  "direct_calls": {
+    "font_loader": ["0x015C26"],
+    "font_init": ["0x002146", "0x002174", "0x0021E2", "0x0022FC"]
+  },
+  "bounded_span": {
+    "file_start": "0x0021A8",
+    "file_end_exclusive": "0x002310",
+    "byte_length": 360,
+    "sha256": "4f8a02106766982948229d849b668f9236603db9d4d279d720030f967cc10756"
+  },
+  "classification": {
+    "asset_to_context_byte_geometry": "confirmed-static",
+    "glyph_format_semantics": "unconfirmed",
+    "codepage_identity": "unconfirmed",
+    "live_source_consumer": "unconfirmed",
+    "context_to_vram": "unconfirmed",
+    "capacity_and_roundtrip": "unconfirmed"
+  }
+}
