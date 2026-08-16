@@ -14,6 +14,7 @@
 - [x] M1.5：以可重跑 loader breakpoint、copy-wrapper breakpoint 與 EWRAM write-watchpoint 證明 ROM pointer table → EWRAM code-unit buffer；記錄一個 `0x01` marker 與 payload 後的 `0x00` 邊界。
 - [x] M1.6：反組譯實際 loader entry、caller return 區域與 IWRAM worker 的 ROM 初始化來源；確認 `table + index * 4`、bounded table boundary 與 custom tree expansion。
 - [x] M1.6：建立 `index 3080..3095` 的 16 筆 opaque code-unit/control corpus；保存 stable ID、pointer provenance、source/output hash、長度與 marker offsets；16/16 decode→encode byte-identical，index 3087 與獨立 runtime receipt hash 相等。
+- [x] M1.7：由 `0x08098afc`／`0x08098b10` 的靜態 BL 與 runtime LR 收據證明高階 selector caller → `0x08013ad0`；修正 `0x08013b04` 為 Thumb-2 BL 第二 halfword，實際 copy callsite 為 `0x08013b02`。Start 可達第二顯示狀態，但 bounded 觀察未命中同一 loader 或 `0x02029404` write-watchpoint，因此第二場景的內容分類與 table 歸屬維持 unknown。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。

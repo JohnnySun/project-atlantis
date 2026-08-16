@@ -33,7 +33,9 @@ from gdbstub_client import GdbClient  # noqa: E402
 ENTRY = 0x080000C0
 LOADER_REGION_START = 0x08013ACC
 LOADER_ENTRY = 0x08013AD0
-LOADER_CALL = 0x08013B04
+# 0x08013b02 is the first halfword of the Thumb-2 BL to the copy wrapper.
+# 0x08013b04 is only its second halfword and yields misleading LR provenance.
+LOADER_CALL = 0x08013B02
 LOADER_RETURN = 0x08013B08
 COPY_WRAPPER_BRANCH = 0x0800385E
 POINTER_TABLE = 0x080F635C

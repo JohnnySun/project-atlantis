@@ -10,6 +10,8 @@
 
 M1.5 已再確認一個有限 producer：ROM pointer table `0x080f635c[index 3087]` 取出 `0x080f2256`，經 copy／IWRAM worker 寫入 `0x02029404`，並在 renderer 實際觀察到 `0x01` marker 與 payload 後的 `0x00` 邊界。M1.6 已反組譯實際 loader entry `0x08013ad0`、IWRAM worker 的 ROM 初始化來源，並建立 `index 3080..3095` 的 16 筆 opaque-token corpus；16/16 decode→encode source bytes 相等，index 3087 的固定 buffer hash 也與獨立 runtime receipt 相等。source encoding、`0x01` 的換行／等待／結束語義及完整表格仍屬 provisional；沒有開始大批翻譯。
 
+M1.7 已往上確認高階 caller：`0x08098afc` 以 selector 經 ROM table `0x08691738` 映射到 loader index，並在實際 `BL 0x08013ad0` callsite `0x08098b10` 觸發 index 3087。loader 的 copy-wrapper BL 真正起點是 `0x08013b02`；`0x08013b04` 是同一條 Thumb-2 BL 的第二個 halfword，不能用來命名 caller 或解讀 LR。Start 可自然到達不同的顯示狀態，但 bounded 觀察沒有再次命中 `0x08013ad0` 或 `0x02029404` write-watchpoint，因此第二場景尚不能歸入 3342-entry table；`0x01` 仍是 opaque。
+
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
 公開 FEBuilderGBA 與 `fireemblem6j` 資料只作為待驗證的逆向參考，不取代日版 ROM，也不把既有英譯或 `.tbl` 當作翻譯來源。已知外部參考與其限制見 `research/recon-20260816.md`。
@@ -51,6 +53,16 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/capture_m16_runtime.py \
 ```
 
 該 receipt 只保存 loader entry／table／source／worker／EWRAM 位址、breakpoint／watchpoint 停止點、buffer hash、長度與 logical marker offsets，不保存 ROM、RAM dump 或完整原文。
+
+要重跑 M1.7 的 caller／場景收據，使用一次性自己的 mGBA GDB port：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m17_callers.py \
+  roms/base/AFEJ.gba --port 23901 --sequence start,a \
+  --output work/afej-m17-runtime.json
+```
+
+它只輸出 Thumb callsite／LR、selector/index/table/source provenance、EWRAM／VRAM hash、marker offset 與顯示寄存器摘要；按鍵輸入透過 `KEYINPUT` read-watchpoint 注入，`work/afej-m17-runtime.json` 維持 ignored。M1.7 的第二場景沒有命中 loader 或 EWRAM buffer write-watchpoint 是 bounded negative result，不是已完成的內容分類。
 
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
