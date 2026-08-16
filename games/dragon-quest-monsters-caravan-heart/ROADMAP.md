@@ -6,12 +6,14 @@
 - [x] 確認 GBA 標頭：`A9HJ`、Rev.00、`DQM-CARAVANH`、header complement。
 - [x] 審核公開 clean ROM 指紋與目前本機候選的差異。
 - [x] 建立不輸出完整原文的 `tools/recon_rom.py`。
+- [x] 以獨立 GDB 埠驗證 mGBA ROM 入口、VRAM watchpoint 與開機 BG0 live layout。
 - [ ] 取得／核准 clean 日版 ROM，重新建立基準指紋。
 
 ## M1：文字與字型系統
 
 - [ ] 找到文本的儲存形式：固定表、腳本 bytecode、壓縮 blob 或執行期生成資料。
 - [ ] 找到文本消費者、字型搬移與實際螢幕渲染路徑。
+- [ ] 追蹤 title／menu／事件畫面，區分 tile、bitmap、sprite 與可能的 VWF 路徑。
 - [ ] 確認指標／bank／壓縮格式與控制碼，不套用其他遊戲假設。
 - [ ] 建立可重跑的 `research/*-decoded.jsonl` 本機原文表。
 - [ ] 分別記錄 glyph addressing 與 glyph identity 的證據層級。
