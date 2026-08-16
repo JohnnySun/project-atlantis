@@ -6,7 +6,7 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3 與 M2.4 static／diagnostic slices 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、2-glyph／2-record 的 fail-closed bounded encoder POC，以及 gdb.port／單次 handshake diagnostic 與 static writer→RAM destination contract。未命名 VM opcode、palette／runtime VRAM、完整 ROM container rebuild 與翻譯回插仍未完成，尚未開始大批翻譯。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md)、[`research/m2.4-runtime.md`](research/m2.4-runtime.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3、M2.4 與 M2.5 static slices 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、fail-closed glyph encoder、1 筆 zh-TW／3-glyph bounded static build、BPS apply round-trip，以及 gdb.port／單次 handshake diagnostic 與 static writer→RAM destination contract。完整 VM／未命名 opcode、palette／runtime VRAM、自然畫面 QA 與批次翻譯仍未完成；本批仍是 `ai_draft`，不是可發布 patch。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md)、[`research/m2.4-runtime.md`](research/m2.4-runtime.md)、[`research/m2.5-batch.md`](research/m2.5-batch.md) 與 [`ROADMAP.md`](ROADMAP.md)。
 
 ### ROM metadata／外部比對
 
@@ -133,15 +133,23 @@ stride 是 `0x80`，`sub_0800379C → sub_080031E8` 是 `0x40`；兩條都先經
 static 12×12／24-byte render。M2.4 runtime gate 仍 blocked，沒有準備 translation
 ledger candidate。
 
+## M2.5 首批 zh-TW ledger／static build
+
+本切片從 ignored 的 361 筆 source table 選出 resource 24 的結構完整短內容群，先以四筆同長度候選做容量預檢；四筆同時重建會使 LZ77 輸出超過原 span，因此 fail closed，最後只提交一筆有界 record：`b3cj:t2:024:0x0064`。它保留 `0x0308`／`0x0000` control shape，payload 維持 14 bytes／7 cells／1 line，target 是臺灣繁體 AI 初稿 `這次的獎品是…`，沒有專有名詞，未把 M2.3 的 `ec48`／`ec49` static 假資料當翻譯。
+
+`research/m2.5-batch-plan.json` 固定 source／ROM／font hash、source hash、target hash、code units、resource span、adjacent untouched IDs 與三個 fail-closed allocation：`ec64`→`0x847`（這）、`ec65`→`0x848`（獎）、`ec66`→`0x849`（是）。`build_m2_5_batch.py` 會先產生 ignored source adapter，再經 `restore_translations.rb`／`strip_translations.rb` 產生只含 hash、target、status／review metadata 的 tracked ledger；build 後重新抽取 361 筆，target 1、untouched 360，兩筆相鄰 record byte-identical，並由 core BPS create／apply 證實 applied ROM 與 target byte-identical。
+
+固定收據、hash 與未證實邊界見 [`research/m2.5-batch.md`](research/m2.5-batch.md)；ROM、完整原文、working/source adapter、target ROM、BPS、raw dump 與圖片均留在 ignored `roms/`／`research/*-decoded.jsonl`／`work/`。runtime screen reachability、palette、VRAM／tilemap／OAM、畫面可讀性與翻譯審核仍 pending。
+
 ## 文字系統研究邊界
 
-外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL?oldid=53006) 提供主日文字型的 16-bit code-table 線索；本輪已用固定 B3CJ ROM 的多個 `0x0308 ... 0x0000` record 交叉驗證：VM halfword 仍按 little-endian 讀取，但 marker 後的 codepage bytes 必須以記憶體原始順序直接做 strict Shift-JIS decode，不能逐 halfword swap。M2.1 另以 csm3 handler／expression callsite 證實有限控制形狀，未知 word 保留 opaque；這不代表字型與所有 opcode 都已命名，也不能假設第一、二代的格式相同。完整格式見 [`research/static-format.md`](research/static-format.md) 與 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。研究時必須分開記錄：
+外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL?oldid=53006) 提供主日文字型的 16-bit code-table 線索；本輪已用固定 B3CJ ROM 的多個 `0x0308 ... 0x0000` record 交叉驗證：VM halfword 仍按 little-endian 讀取，但 marker 後的 codepage bytes 必須以記憶體原始順序直接做 strict Shift-JIS decode，不能逐 halfword swap。M2.1 另以 csm3 handler／expression callsite 證實有限控制形狀，未知 word 保留 opaque；這不代表字型與所有 opcode 都已命名，也不能假設第一、二代的格式相同。完整格式見 [`research/static-format.md`](research/static-format.md) 與 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。M2.5 另以固定 plan、source hash、code-unit／glyph allocation、resource span 與重抽取收據限制第一筆翻譯，不把 static build 當成 runtime QA。研究時必須分開記錄：
 
 1. 字串在哪裡、如何分界、是否有指標、壓縮與控制碼如何運作。
 2. glyph 的位址／tile 定址是否已找到。
 3. 每個 glyph 的 Unicode 身分是否有獨立交叉證據。
 
-目前已建立受限的 `research/summon-night-craft-sword-3-decoded.jsonl` 作為本機原文邊界；OCR 只能作候選證據，不能直接複製到翻譯記錄。已命名控制碼可做 record/stream round-trip，但未知 opcode、字型與完整排版規則確認前，不開始劇情、支線、夥伴、鍛造、戰鬥或道具的翻譯批次。
+目前已建立受限的 `research/summon-night-craft-sword-3-decoded.jsonl` 作為本機原文邊界；OCR 只能作候選證據，不能直接複製到翻譯記錄。已命名控制碼可做 record/stream round-trip；M2.5 僅建立一筆 AI 初稿 static batch，未知 opcode、完整排版、runtime 畫面與人工審核仍未完成，不開始劇情、支線、夥伴、鍛造、戰鬥或道具的大批翻譯。
 
 ## 翻譯帳本與術語
 
@@ -157,16 +165,18 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 
 目標語言固定明寫為 `zh-TW`。專有名詞先查臺灣繁體 Wikipedia、巴哈姆特等多個社群來源，採既有主流寫法；若來源分裂，保留現有選擇並在 review note 說明，不自行創造音譯。既有英文／中文 patch 可參考工程資訊，但不是未審核的日文翻譯來源。
 
-## 完成標準（M2.3 static slice 已達成，翻譯／回插尚未達成）
+## 完成標準（M2.5 static slice 已達成，翻譯審核／runtime QA 尚未達成）
 
 - clean 日版 ROM 的 header、revision、CRC32、SHA-256 已記錄並可重跑。
 - type-2 script table、LZ77、`PSI3` stream、bounded text record、Shift-JIS codepage 與 csm3 consumer 有遊戲專用、可重跑證據。
 - 已命名控制碼的參數寬度、opaque fallback、361 筆 source re-encode 與 13 個 resource 的 decoded stream byte-identical round-trip 有收據。
 - M2.2 已由本機 callsite／literal、type-3 BIT resource、code-unit lookup、12×12／24-byte cell 與 8 個 identity/addressing samples 證實 static glyph chain；已掃描 2144 slots，保留 27 個明確空槽，並完成不破壞既有 mapping 的 2-glyph static POC。
 - M2.3 已固定只允許 `0x845..0x85f` 的 glyph allocation manifest；2 個 opaque POC code unit、2 筆等長短 record 通過 source／ROM／font hash、font mapping／cell、record／PSI3 stream 與原 resource span capacity 的 fail-closed byte-level round-trip。這不等於翻譯或完整 ROM 回插。
+- M2.5 已以 `restore → work → strip` 建立 1 筆 `ai_draft` zh-TW ledger；固定 `source_hash`、14-byte／7-cell contract、`ec64/ec65/ec66`→`0x847/0x848/0x849` allocation、resource 24 span 與兩筆 adjacent untouched record。
+- M2.5 static build 重新抽取全部 361 筆 record，驗證 target 1／untouched 360、其他 resource decoded bytes 不變；原 resource span 為 `1379/1392`，新輸出 `1392/1392`，BPS 生成／套用後 target ROM byte-identical。這仍不是發布 patch 或畫面通過。
 - 相同 byte length 的 record-level 原地修改可行；zero padding 縮短 blocked，變長需 resource rebuild；完整 VM、字型、LZ77／pointer encoder 與 ROM 回插仍待建立。
-- 至少一個有限量批次通過 `restore → work → strip` 往返與 repository safety check。
+- 至少一個有限量批次通過 `restore → work → strip` 往返與 repository safety check；M2.5 的唯一 target 仍需人工／術語／runtime review。
 - 編碼器／回插器拒絕來源 hash、缺字、控制碼或長度不一致，而不是放寬檢查。
 - 重建 ROM 重新抽取吻合；BPS round-trip 與 mGBA 核心畫面回歸另有收據。
 
-目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction、M2.2 static font chain／POC 與 M2.3 fail-closed allocation／bounded POC；尚無翻譯、ROM build、BPS、完整 VM／resource rebuild／font insertion 或 runtime QA 收據。
+目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction、M2.2 static font chain／POC、M2.3 fail-closed allocation／bounded POC，以及 M2.5 一筆 `ai_draft` zh-TW static build／BPS round-trip；尚無翻譯人工審核、完整 VM／resource rebuild、自然畫面 runtime QA 或可發布 patch 收據。

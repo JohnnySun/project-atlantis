@@ -72,6 +72,17 @@ M2.3 完整 static／runtime 收據見 [`research/m2.3-poc.md`](research/m2.3-po
 
 M2.4 完整啟動、PID／listener、client 設定、static writer 邊界與下一缺口見 [`research/m2.4-runtime.md`](research/m2.4-runtime.md)。這個切片沒有開始大批翻譯，也沒有宣稱 POC 可發布。
 
+## M2.5：首批 zh-TW ledger／static build
+
+- [x] 從 ignored 361-record source table 選出 resource 24 的結構完整短內容群；四筆同時重建因 LZ77 超過原 span 而 fail closed，收斂為 `b3cj:t2:024:0x0064` 一筆 target，沒有把 `ec48`／`ec49` POC 假資料當翻譯。
+- [x] 固定 `research/m2.5-batch-plan.json`：source／ROM／font／target hash、14-byte／7-cell／1-line contract、`0x0308`／`0x0000` 控制形狀、adjacent untouched IDs，以及 `ec64/ec65/ec66`→`0x847/0x848/0x849` 的 fail-closed glyph allocation。
+- [x] 由 `build_m2_5_batch.py prepare` 建立 ignored source adapter，通過 `restore_translations.rb` → ignored `work` → `strip_translations.rb`，產生只含 `source_hash`、target、`ai_draft` status 與 review metadata 的 tracked ledger。
+- [x] 以實際 target builder 重建 font mapping／cell 與 resource 24，重新抽取 361 筆 record：target `1`、untouched `360`，adjacent records 與其他 resources 保持 byte-identical；原 span `1379/1392`、新 span `1392/1392`。
+- [x] 以 core BPS create／apply 做 byte-for-byte round-trip，target ROM SHA-256、BPS SHA-256、size 與 applied hash 留在 [`research/m2.5-batch.md`](research/m2.5-batch.md)；ROM／BPS／raw source／work 均 ignored。
+- [~] runtime 仍 pending：沒有自然畫面 reachability、palette、VRAM／tilemap／OAM、live glyph readability 或人工翻譯 QA；本批只是 `ai_draft` static POC，不是發布 patch。
+
+M2.5 只完成第一個有界 static translation slice。下一個最小缺口是先完成這一筆的人工／術語／字型審核，再在 runtime 解鎖後驗證畫面；不擴大到劇情、支線、夥伴、鍛造、戰鬥或道具的大批翻譯。
+
 ## M2：文本與字型格式
 
 - [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。
@@ -84,10 +95,10 @@ M2.4 完整啟動、PID／listener、client 設定、static writer 邊界與下�
 ## M3：原文表與可逆試驗
 
 - [~] 由遊戲專用 decoder 產生本機 ignored `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`source_text`、structured controls、length contract 與 `provenance`；尚未建立可提交 translation ledger。
-- [ ] 先選一個可達、短且有明確結構的 UI／道具／戰鬥批次，不一次處理全遊戲。
-- [ ] 建立本機 `work/*.jsonl`，明寫 `zh-TW`、`status`、`context`、`terms`。
-- [ ] 用 `core/ledger/restore_translations.rb` 與 `strip_translations.rb` 驗證 source hash 與帳本往返。
-- [ ] 只提交不帶 `source` 的 `translations/*.jsonl`，並通過 `scripts/check-repository-safety.rb`。
+- [x] 先選一個可達候選、短且有明確結構的 UI 批次，不一次處理全遊戲；M2.5 目前只固定一筆 static candidate，runtime 可達性仍 pending。
+- [x] 建立本機 `work/*.jsonl`，明寫 `zh-TW`、`ai_draft`、`context`、`terms` 與 byte/layout contract。
+- [x] 用 `core/ledger/restore_translations.rb` 與 `strip_translations.rb` 驗證 source hash 與帳本往返。
+- [x] 只提交不帶 `source` 的 `translations/*.jsonl`，並通過 `scripts/check-repository-safety.rb`；人工審核尚未完成。
 
 ## M4：有限量翻譯與術語
 
@@ -98,8 +109,8 @@ M2.4 完整啟動、PID／listener、client 設定、static writer 邊界與下�
 
 ## M5：回插、BPS 與 runtime QA
 
-- [ ] 建立本作專用 encoder／font subset／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。
-- [ ] 從重建 ROM 重新抽取，確認未修改字串與目標翻譯均吻合。
-- [ ] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256。
+- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。完整 resource／pointer rebuild 尚未建立。
+- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；尚非完整 ROM container coverage。
+- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；目前僅一筆 `ai_draft` static POC。
 - [ ] 以 mGBA 測試實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面，保留未測試範圍。
 - [ ] 只有完成上述收據後，才評估 zh-TW 發布。

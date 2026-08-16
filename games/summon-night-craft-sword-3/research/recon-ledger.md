@@ -39,8 +39,10 @@
 | `FONT-003` | glyph cell encoder／靜態 POC | `confirmed`（static POC） | 既有 GNU Unifont 17.0.05、固定 SHA／授權；`ec48`／`ec49` → slots `0x845`／`0x846`，table/cell 修改區域 52 bytes、實際非零 byte diff 43，static render 含 adjacent untouched `0x844`；patched ROM／PGM hash 收據見 `research/m2.2-font.md` | 未更新 ROM checksum、script container 或 runtime QA；不能稱翻譯或發布 patch |
 | `FONT-004` | fail-closed glyph allocation manifest／record encoder | `confirmed`（bounded static POC） | `research/m2.3-glyph-manifest.json` 固定 B3CJ／source／font hash 與唯一 `0x845..0x85f` 範圍；`tools/encode_m2_3_poc.py` 對 `ec48`／`ec49`、兩筆 4／2-byte record 重抽 mapping／cell、record／PSI3 stream 與原 resource span 內 LZ77；summary 收到 patched ROM SHA-256 `ce99a443cfab8f84cc7f7a0319b9271ce3173dc64c488ca138696ae938460a07`，所有差異均在 manifest regions；測試另拒絕 duplicate、strict collision、hash mismatch、fallback／out-of-resource 與 capacity overrun | 仍只證實 static POC；未知 VM／排版、palette／VRAM/OAM、pointer／header／BPS rebuild 與 runtime 可讀性不升格 |
 | `FONT-005` | M2.4 static writer→destination 與 changed／untouched glyph 收斂 | `confirmed`（static）／`blocked`（live） | `tools/runtime_m2_4.py` 重新驗證本機 writer／caller full SHA-256、`sub_080036F8 → sub_08002CB4` 的 `0x80` 與 `sub_0800379C → sub_080031E8` 的 `0x40` RAM/output-buffer contract；同一 POC 的 adjacent untouched `0x844` 與 changed `0x845`／`0x846` 均為 12×12／24-byte static cells | 只把 destination 稱為 RAM/output buffer；尚未取得 live argument、font cache、VRAM／palette／tilemap／OAM 或畫面可讀性，不建立 controlled reachability 結論 |
-| `SOURCE-001` | 可供帳本使用的 bounded 日文原文表 | `confirmed`（M1.5 範圍） | `tools/extract_static.py` 對固定 ROM 可重抽 361 筆 `string_id／locale／source_text／provenance`；ignored JSONL 不 stage，tracked 文件只留 hash／offset／control token | 完成 font／VM／回插契約後，才建立可翻譯的工作帳本；目前不宣稱全遊戲 source coverage |
-| `TRANSLATION-001` | 劇情、支線、夥伴、鍛造、戰鬥、道具的有限量翻譯 | `blocked` | 雖已有 bounded 本機原文表與 M2.1 round-trip，但尚無完整 VM／字型／回插契約與可提交翻譯 ledger | 先選 1–2 筆、保持相同 Shift-JIS byte length、控制資料不變的短批次；本里程碑不宣稱已開始翻譯 |
+| `FONT-006` | M2.5 target glyph allocation 與 static cell build | `confirmed`（static allocation）／`provisional`（Unicode identity／live render） | `research/m2.5-batch-plan.json` 與 `tools/build_m2_5_batch.py` 固定 `ec64/ec65/ec66`→`0x847/0x848/0x849`；三個 clean table entries 均為 `0x0000`、physical cells 全零且位於 `0x845..0x85f`，target-side cell SHA-256 與 post-build lookup 可重跑；沒有採用 M2.3 `ec48/ec49` 假資料 | 只證實 static allocation／cell bytes；Unicode identity、palette、VRAM／tilemap／OAM、runtime readability 與人工字型 QA 仍 pending |
+| `SOURCE-001` | 可供帳本使用的 bounded 日文原文表 | `confirmed`（M1.5 範圍） | `tools/extract_static.py` 對固定 ROM 可重抽 361 筆 `string_id／locale／source_text／provenance`；ignored JSONL 不 stage，tracked 文件只留 hash／offset／control token | M2.5 已在此 source table 上建立一筆受限 ledger；不把它升格為全遊戲 source coverage，廣泛批次仍需完整契約 |
+| `TRANSLATION-001` | 劇情、支線、夥伴、鍛造、戰鬥、道具的大批翻譯 | `blocked` | M2.5 只完成一筆 resource-24 `ai_draft` static candidate；完整 VM／排版／runtime／人工審核仍未完成 | 先完成 M2.5 target 的人工／字型／runtime review，再考慮下一個同長度短批次；不擴大到全遊戲 |
+| `TRANSLATION-002` | M2.5 resource-24 首批 zh-TW static ledger／build | `confirmed`（ledger／static contract）／`provisional`（`ai_draft` translation） | `b3cj:t2:024:0x0064` 以 `restore → work → strip` 產生 tracked ledger；source hash、14-byte／7-cell／1-line contract、`0x0308`／`0x0000` control shape、target code units、resource span 與 adjacent IDs 固定；build 後 361 筆重抽為 target `1`／untouched `360`，BPS apply byte-identical | target `這次的獎品是…` 尚未人工／術語／runtime review；只允許此一筆，下一步先完成 review，不擴大翻譯批次 |
 
 ## 第一個可重現檢查
 
@@ -97,6 +99,18 @@ GDB client 的 `qSupported` 未送達，故沒有 live coverage。static fallbac
 writer→RAM/output-buffer 的 `0x80`／`0x40` contract、full function hashes，以及
 changed `0x845/0x846` 和 adjacent untouched `0x844` 的 cell evidence；不代表
 VRAM／palette／OAM 或畫面 render。詳見 [`research/m2.4-runtime.md`](m2.4-runtime.md)。
+
+M2.5 的固定收據是 resource-24 一筆 target：`b3cj:t2:024:0x0064`、source hash
+`c10caff6b389dc1506d1879cdac4e21111ead7eb8b41e05eca6aed3d73873ddc`、target UTF-8
+hash `ce6e829d970a7d1d4a0330637244dca64b0412b61ea88c4bdaa1687df6c0e2b0`，以及
+`ec64/ec65/ec66`→`0x847/0x848/0x849`。`build_m2_5_batch.py` 先產生 ignored source
+adapter，再經 core ledger restore／strip；static build 重新抽取 361 筆（target
+`1`、untouched `360`），resource 24 compressed/span `1379/1392`→`1392/1392`，
+changed bytes `1397`。target ROM SHA-256 為
+`da9c99426bf80c18729256a694ce6e499eab6d036fe26887908b8cb44cdf5b16`，BPS 為
+`1543` bytes、SHA-256 `42618b4afffed33600f3f8f73b3e3f6bea3f7aa9ba8c74e5016121f9f7ec6e5b`，
+apply 後與 target byte-identical。完整 plan／ledger／build 邊界見
+[`research/m2.5-batch.md`](m2.5-batch.md)；runtime、人工 review 與發布資格仍 pending。
 
 ## 外部資料索引
 
