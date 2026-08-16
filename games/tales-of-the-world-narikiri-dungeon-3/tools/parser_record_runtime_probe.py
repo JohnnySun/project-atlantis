@@ -61,6 +61,13 @@ STATE_HANDLER_ENTRIES = {
 # arbitrary runtime memory.  A caller may opt in with a handler name mapped to
 # one guarded register-relative byte field, e.g. ``("r0", 0x28)``.
 STATE_HANDLER_MEMORY_FIELDS: dict[str, tuple[str, int]] = {}
+# Optional one-shot return addresses for a fixed handler set.  These are
+# normally empty; a bounded caller may populate one from a reviewed live LR.
+STATE_HANDLER_RETURN_ENTRIES: dict[str, int] = {}
+# Optional one-shot callsites from the reviewed state-7 static chain.  These
+# stop immediately before the fixed BL; the following parser breakpoint can
+# then prove whether the call actually executes on the same connection.
+STATE7_CANDIDATE_ENTRIES: dict[str, int] = {}
 
 
 def _hex(value: int, width: int = 8) -> str:
@@ -190,6 +197,10 @@ def trace_after_navigation(
             "state7_handler": _hex(STATE7_HANDLER_ENTRY),
             "state7_epilogue": _hex(STATE7_HANDLER_EPILOGUE),
             "state3_handler": _hex(STATE3_HANDLER_ENTRY),
+            "state7_candidate_entries": {
+                name: _hex(address)
+                for name, address in STATE7_CANDIDATE_ENTRIES.items()
+            },
         },
         "sequence": [
             {"key": name, "events": count}
@@ -203,9 +214,12 @@ def trace_after_navigation(
         "output_write_hits": [],
         "writer_hits": [],
         "state_handler_hits": [],
+        "state_handler_returns": [],
+        "state7_candidate_hits": [],
         "key_events": [],
         "classification": {
             "parser_entry": "unconfirmed-until-runtime-breakpoint-hit",
+            "state7_candidate_callsite": "unconfirmed-until-runtime-breakpoint-hit",
             "strict_source_read": "unconfirmed-until-exact-watch-hit",
             "ram_output_write": "unconfirmed-until-runtime-watch-hit",
             "iwram_writer": "unconfirmed-until-runtime-breakpoint-hit",
@@ -216,6 +230,12 @@ def trace_after_navigation(
     parser_breakpoint = False
     writer_breakpoint = False
     state_handler_breakpoints = {name: False for name in STATE_HANDLER_ENTRIES}
+    state_handler_return_breakpoints = {
+        name: False for name in STATE_HANDLER_RETURN_ENTRIES
+    }
+    state7_candidate_breakpoints = {
+        name: False for name in STATE7_CANDIDATE_ENTRIES
+    }
     key_watch = False
     source_watch = False
     source_address: int | None = None
@@ -232,6 +252,12 @@ def trace_after_navigation(
             for name, address in STATE_HANDLER_ENTRIES.items():
                 client.set_breakpoint(address, kind=2)
                 state_handler_breakpoints[name] = True
+            for name, address in STATE_HANDLER_RETURN_ENTRIES.items():
+                client.set_breakpoint(address, kind=2)
+                state_handler_return_breakpoints[name] = True
+            for name, address in STATE7_CANDIDATE_ENTRIES.items():
+                client.set_breakpoint(address, kind=2)
+                state7_candidate_breakpoints[name] = True
             client.set_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
             key_watch = True
         except (RuntimeError, TimeoutError, OSError, ConnectionError) as exc:
@@ -264,6 +290,30 @@ def trace_after_navigation(
                 stop_count += 1
                 kind, stop_address = parse_stop_watch(stop)
                 pc = normalized_pc(registers)
+
+                return_name = next(
+                    (
+                        name
+                        for name, address in STATE_HANDLER_RETURN_ENTRIES.items()
+                        if pc == address and state_handler_return_breakpoints[name]
+                    ),
+                    None,
+                )
+                if return_name is not None:
+                    result["state_handler_returns"].append(
+                        {
+                            "state": return_name,
+                            "return": _stop_row(
+                                stop, kind, stop_address, registers
+                            ),
+                            "status": "confirmed-runtime-state-handler-return",
+                        }
+                    )
+                    _remove_breakpoint(
+                        client, STATE_HANDLER_RETURN_ENTRIES[return_name]
+                    )
+                    state_handler_return_breakpoints[return_name] = False
+                    continue
 
                 handler_name = next(
                     (
@@ -317,6 +367,36 @@ def trace_after_navigation(
                         client, STATE_HANDLER_ENTRIES[handler_name]
                     )
                     state_handler_breakpoints[handler_name] = False
+                    continue
+
+                candidate_name = next(
+                    (
+                        name
+                        for name, address in STATE7_CANDIDATE_ENTRIES.items()
+                        if pc == address and state7_candidate_breakpoints[name]
+                    ),
+                    None,
+                )
+                if candidate_name is not None:
+                    result["state7_candidate_hits"].append(
+                        {
+                            "candidate": candidate_name,
+                            "callsite": _stop_row(
+                                stop, kind, stop_address, registers
+                            ),
+                            "r0_input": classify_parser_pointer(
+                                registers.get("r0", 0), records, role="r0"
+                            ),
+                            "r1_input": classify_parser_pointer(
+                                registers.get("r1", 0), records, role="r1"
+                            ),
+                            "status": "confirmed-runtime-state7-text-candidate-callsite",
+                        }
+                    )
+                    _remove_breakpoint(
+                        client, STATE7_CANDIDATE_ENTRIES[candidate_name]
+                    )
+                    state7_candidate_breakpoints[candidate_name] = False
                     continue
 
                 if parser_breakpoint and pc == PARSER_ENTRY:
@@ -455,4 +535,10 @@ def trace_after_navigation(
             _remove_breakpoint(client, PARSER_WRITER_ENTRY)
         for name, address in STATE_HANDLER_ENTRIES.items():
             if state_handler_breakpoints[name]:
+                _remove_breakpoint(client, address)
+        for name, address in STATE_HANDLER_RETURN_ENTRIES.items():
+            if state_handler_return_breakpoints[name]:
+                _remove_breakpoint(client, address)
+        for name, address in STATE7_CANDIDATE_ENTRIES.items():
+            if state7_candidate_breakpoints[name]:
                 _remove_breakpoint(client, address)

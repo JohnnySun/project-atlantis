@@ -36,11 +36,18 @@ class ParserRecordRuntimeProbeTests(unittest.TestCase):
             },
         )
         self.assertEqual(parser_record_runtime_probe.STATE_NEXT, 0x02000000)
+        self.assertEqual(parser_record_runtime_probe.STATE_HANDLER_RETURN_ENTRIES, {})
+        self.assertEqual(parser_record_runtime_probe.STATE7_CANDIDATE_ENTRIES, {})
 
     def test_state7_readiness_probe_keeps_fixed_resource_field_boundary(self):
         self.assertEqual(state7_readiness_probe.STATE7_ENTRY, 0x080A85D8)
         self.assertEqual(state7_readiness_probe.A82AC_ENTRY, 0x080A82AC)
+        self.assertEqual(state7_readiness_probe.A82AC_RETURN, 0x080A8508)
         self.assertEqual(state7_readiness_probe.RESOURCE_STATUS_OFFSET, 0x28)
+        self.assertEqual(
+            state7_readiness_probe.parser_probe.STATE7_CANDIDATE_ENTRIES,
+            {},
+        )
 
     def test_parser_input_requires_exact_strict_record_start(self):
         records = {

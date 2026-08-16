@@ -232,6 +232,23 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 
 完整界線見 [`research/m2-state7-readiness-runtime-20260816.md`](research/m2-state7-readiness-runtime-20260816.md)。
 
+固定 renderer／loader candidates 的同日 natural-flow 邊界見
+[`research/m2-natural-consumer-boundary-20260816.md`](research/m2-natural-consumer-boundary-20260816.md)。
+`0x08001414`、`0x080014F4` 與 `0x080021A8` 在各自 bounded sequence 都沒有命中；
+`--inject-record-offset 0x146EE0` 因 loader entry 未命中而沒有實際執行，不能當作
+argument-injected pipeline 或 natural text consumer 證明。
+
+shared runtime-validation framework 的 B3TJ case contract 與 static preflight 見
+[`research/m2-runtime-case-20260816.md`](research/m2-runtime-case-20260816.md) 及
+[`research/b3tj-clean-state4-runtime-case.json`](research/b3tj-clean-state4-runtime-case.json)。
+manifest／static／report-safety 已通過；framework runtime actions 尚未執行，不能
+把它或既有 game-specific receipt 當作完成的 localized text QA。
+下一個窄 consumer contract 是
+[`research/b3tj-state7-selected-record-runtime-case.json`](research/b3tj-state7-selected-record-runtime-case.json)：
+它按正常 state4→state7 順序設置 parser `0x080025CC` 與 selected record
+`0x08146EE0` read-watch；manifest/static 已通過，但 runtime/source read 仍是
+unknown。
+
 M2 前置的 source-separated ledger 與控制標記 metadata 由
 [`tools/ledger_metadata.py`](tools/ledger_metadata.py) 產生；提交的
 [`translations/ledger.jsonl`](translations/ledger.jsonl) 只有 `source_hash`、
@@ -354,6 +371,12 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 `--trace-builder-input --max-builder-hits 4`。它只在 `0x08015B74` 記錄 `r1`、LR
 與 strict-window classification，仍不讀 source bytes；命中後才繼續同一個 loader
 entry/source/asset pipeline。builder hit 本身不是自然文字 consumer proof。
+
+為縮小下一次 state 7 runtime breakpoint，新增
+[`tools/state7_static_callpath.py`](tools/state7_static_callpath.py)：它只驗證兩條
+固定 direct-BL chain，分別到 formatter `0x080014F4` 與 parser `0x080025CC`，不做
+新的 pointer scan，也不把 static chain 當作 natural-flow source read。詳情見
+[`research/m2-state7-static-callpath-20260816.md`](research/m2-state7-static-callpath-20260816.md)。
 
 為了把另一條已確認的 formatter edge 收斂成一個可重跑切片，新增
 [`tools/format_record_runtime_probe.py`](tools/format_record_runtime_probe.py)。它只

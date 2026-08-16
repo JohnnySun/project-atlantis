@@ -103,6 +103,15 @@ state 7 text-consumer trace，不是擴大 pointer scan。
   `r0=0x0200D10C`、`r0+0x28=0`，並在 `none:256` bounded phase 中保留 parser／strict
   source／output／writer 全 0 的 natural-flow negative；不把 loader edge 當文字
   consumer
+- [x] 以固定 `0x08001414`、`0x080014F4`、`0x080021A8` entries 做 bounded
+  natural-flow boundary；40-event font/formatter 與 602-event loader/builder 均
+  無 hit，`0x146EE0` injection 僅請求未執行；setup race 與遊戲 negative 分開記錄
+- [x] 建立 `gba-runtime-validation` native clean-ROM case；manifest、static
+  identity/record/adjacent preflight 與 fail-closed report check 通過，runtime
+  case 仍保留為 unproven，未把 listener approval/socket failure 當遊戲 negative
+- [x] 建立 state7→selected-record native consumer case；固定 state7/parser/
+  `0x08146EE0` read-watch 順序，manifest/static preflight 通過，runtime 仍保留
+  為 unknown，未把 case contract 當作 live source read
 - [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
   edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
   仍保留為 unknown
@@ -110,6 +119,9 @@ state 7 text-consumer trace，不是擴大 pointer scan。
   offline pipeline 通過，實際 mGBA setup negative 已留 receipt，未冒充 live hit
 - [x] 對 `0x080021A8` 固定驗證 `0x20`-byte asset→四個 `+0x20` output group 的
   `0x80`-byte static geometry；glyph 語意、codepage 與 context→VRAM 仍未確認
+- [x] 固定驗證 state 7 到 formatter `0x080014F4` 與 parser `0x080025CC` 的兩條
+  bounded direct-BL call chain；只用來縮小下一次 runtime breakpoint/caller 邊界，
+  不升格成 natural-flow、strict source read 或 glyph 證明
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構

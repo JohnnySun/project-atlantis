@@ -31,6 +31,7 @@ from consumer_probe import parse_sequence  # noqa: E402
 STATE7_ENTRY = parser_probe.STATE7_HANDLER_ENTRY
 A82AC_ENTRY = 0x080A82AC
 RESOURCE_STATUS_OFFSET = 0x28
+A82AC_RETURN = 0x080A8508
 
 
 def run_probe(
@@ -53,12 +54,21 @@ def run_probe(
 
     old_entries = parser_probe.STATE_HANDLER_ENTRIES
     old_fields = parser_probe.STATE_HANDLER_MEMORY_FIELDS
+    old_returns = parser_probe.STATE_HANDLER_RETURN_ENTRIES
+    old_candidates = parser_probe.STATE7_CANDIDATE_ENTRIES
     parser_probe.STATE_HANDLER_ENTRIES = {
         "state7": STATE7_ENTRY,
         "a82ac": A82AC_ENTRY,
     }
     parser_probe.STATE_HANDLER_MEMORY_FIELDS = {
         "a82ac": ("r0", RESOURCE_STATUS_OFFSET),
+    }
+    parser_probe.STATE_HANDLER_RETURN_ENTRIES = {
+        "a82ac": A82AC_RETURN,
+    }
+    parser_probe.STATE7_CANDIDATE_ENTRIES = {
+        "formatter-callsite": 0x08001652,
+        "parser-callsite": 0x08001D92,
     }
     try:
         return m18.run_probe(
@@ -80,6 +90,8 @@ def run_probe(
     finally:
         parser_probe.STATE_HANDLER_ENTRIES = old_entries
         parser_probe.STATE_HANDLER_MEMORY_FIELDS = old_fields
+        parser_probe.STATE_HANDLER_RETURN_ENTRIES = old_returns
+        parser_probe.STATE7_CANDIDATE_ENTRIES = old_candidates
 
 
 def main() -> None:

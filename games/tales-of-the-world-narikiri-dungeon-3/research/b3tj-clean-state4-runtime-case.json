@@ -1,0 +1,149 @@
+{
+  "$schema": "https://project-atlantis.invalid/schemas/gba-runtime-case.schema.json",
+  "format_version": 1,
+  "case_id": "b3tj.clean.state4.input",
+  "description": "B3TJ clean-ROM boot, state-4 setup, and observed KEYINPUT hook receipt; this case does not claim a text consumer.",
+  "provenance": {
+    "evidence_level": "natural",
+    "rom_revision": "B3TJ-rev00",
+    "game_specific_probe": "tools/m18_a1ac_probe.py",
+    "text_consumer_status": "unproven",
+    "source_separation": "ROM and runtime reports stay local; committed file contains metadata only."
+  },
+  "rom": {
+    "sha256": "d083d66b818b1353a449af7f1dd4232b490c254a4107951a3749973d03a0a394",
+    "size": 16777216,
+    "game_code_hex": "4233544a"
+  },
+  "static": {
+    "regions": [
+      {
+        "id": "selected-strict-record-span",
+        "offset": "0x146EE0",
+        "length": 5,
+        "policy": "observe"
+      },
+      {
+        "id": "selected-record-adjacent-guard",
+        "offset": "0x146EDB",
+        "length": 5,
+        "policy": "observe"
+      }
+    ],
+    "records": [
+      {
+        "id": "sjis-0x146ee0-boundary",
+        "offset": "0x146EE0",
+        "allocated_length": 5,
+        "unit_bytes": 1,
+        "terminator": 0,
+        "allowed_values": [[0, 255]],
+        "preserve_controls": false
+      }
+    ]
+  },
+  "runtime": {
+    "required_capabilities": [
+      "gdb-remote",
+      "register-read",
+      "memory-read",
+      "breakpoint",
+      "watchpoint",
+      "register-write",
+      "keyinput-consumer-hook",
+      "render-bg",
+      "render-oam"
+    ],
+    "gdb_timeout_seconds": 30,
+    "connect_timeout_seconds": 10,
+    "actions": [
+      {
+        "id": "boot-dispatch-entry",
+        "op": "breakpoint",
+        "address": "0x08005ECC",
+        "timeout_seconds": 30
+      },
+      {
+        "id": "boot-screen-receipt",
+        "op": "capture",
+        "regions": [
+          {"id": "state-bytes", "address": "0x02000000", "length": 3},
+          {"id": "iwram-head", "address": "0x03000000", "length": 256}
+        ],
+        "renders": [
+          {"id": "bg0", "kind": "bg", "bg": 0, "map_width": 32, "map_height": 32},
+          {"id": "oam", "kind": "oam", "mapping": "auto"}
+        ]
+      },
+      {
+        "id": "state4-input-loop",
+        "op": "breakpoint",
+        "address": "0x0800A050",
+        "timeout_seconds": 30
+      },
+      {
+        "id": "normal-start-pulse",
+        "op": "keys",
+        "keys": ["START"],
+        "destination_register": "r1",
+        "hold_reads": 1,
+        "release_reads": 3,
+        "per_read_timeout_seconds": 30
+      },
+      {
+        "id": "state4-after-start",
+        "op": "capture",
+        "regions": [
+          {"id": "state-bytes", "address": "0x02000000", "length": 3},
+          {"id": "edge-word", "address": "0x030033F8", "length": 4}
+        ],
+        "renders": [
+          {"id": "bg0", "kind": "bg", "bg": 0, "map_width": 32, "map_height": 32},
+          {"id": "oam", "kind": "oam", "mapping": "auto"}
+        ]
+      },
+      {
+        "id": "a1ac-entry",
+        "op": "breakpoint",
+        "address": "0x0800A1AC",
+        "timeout_seconds": 30
+      },
+      {
+        "id": "normal-a-pulse",
+        "op": "keys",
+        "keys": ["A"],
+        "destination_register": "r1",
+        "hold_reads": 1,
+        "release_reads": 3,
+        "per_read_timeout_seconds": 30
+      },
+      {
+        "id": "state7-after-a",
+        "op": "capture",
+        "regions": [
+          {"id": "state-bytes", "address": "0x02000000", "length": 3},
+          {"id": "edge-word", "address": "0x030033F8", "length": 4}
+        ],
+        "renders": [
+          {"id": "bg0", "kind": "bg", "bg": 0, "map_width": 32, "map_height": 32},
+          {"id": "oam", "kind": "oam", "mapping": "auto"}
+        ]
+      }
+    ],
+    "assertions": [
+      {
+        "kind": "positive",
+        "id": "state4-screen-has-vram",
+        "snapshot": "state4-after-start",
+        "path": "regions.state-bytes.nonzero_bytes"
+      },
+      {
+        "kind": "equals",
+        "id": "a-release-is-idle",
+        "snapshot": "state7-after-a",
+        "path": "io.KEYINPUT.value",
+        "value": 1023
+      }
+    ]
+  }
+}
