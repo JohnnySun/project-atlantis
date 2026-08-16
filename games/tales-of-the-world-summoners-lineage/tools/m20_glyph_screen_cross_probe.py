@@ -38,9 +38,9 @@ TARGETS: dict[int, dict[str, Any]] = {
         "store_addresses": (0x060020E0, 0x06002320),
     },
     0x0066: {
-        "keyboard_slot": "a-row-2",
-        "keyboard_label": "い",
-        "input_path": "RIGHT then A at the known second kana slot",
+        "keyboard_slot": "a-row-3",
+        "keyboard_label": "う",
+        "input_path": "RIGHT then A at observed row-0 selection 2",
         "screen_positions": ((15, 4), (15, 5)),
         "store_addresses": (0x06002100, 0x06002340),
     },

@@ -453,8 +453,8 @@ def run() -> None:
             "navigation": "adaptive START navigation, bounded by the known BG1 keyboard signature",
             "input_plan": [
                 {"button": "a", "known_slot": "a-row-1", "known_layout_label": "あ", "tilemap_xy": [1, 7]},
-                {"button": "right", "known_effect": "move to a-row-2", "tilemap_xy": [2, 7]},
-                {"button": "a", "known_slot": "a-row-2", "known_layout_label": "い", "tilemap_xy": [2, 7]},
+                {"button": "right", "known_effect": "bounded step to row-0 selection 2 (0x0066 / う)", "tilemap_xy": [2, 7]},
+                {"button": "a", "known_slot": "row0-selection-2", "known_layout_label": "う", "tilemap_xy": [2, 7]},
             ],
             "ewram": {"address": f"0x{EWRAM:08X}", "length": EWRAM_SIZE},
             "iwram": {"address": f"0x{IWRAM:08X}", "length": IWRAM_SIZE},

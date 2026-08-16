@@ -31,8 +31,8 @@ M1.7 的 input path 是 keyboard gate 通過後的 `A` → `0x005E`、`RIGHT` �
 | --- | ---: | ---: | ---: | --- | --- | --- |
 | `0x005E`／`a-row-1`／あ | `0x060020E0` | `0x107` | `(14,4)` | `e4e4d7a2c175ff1948a21042c922cddeb99f8b003060ec9e8d21e99c7d0de26b` | `a9564920d553b7ad2a8b2562e3c02b231992ca28e8b4dece84e65deddb626e29` | no |
 | `0x005E`／`a-row-1`／あ | `0x06002320` | `0x119` | `(14,5)` | `4f7234b450f09d6c001ed82c962bc5ffd5633ce43eb7013208fe196fe88e3e6c` | `5f0a3f740aa36e1f6313bbee99ed04e8a0b631ca105b683d83b65f4f9218f2b2` | no |
-| `0x0066`／`a-row-2`／い | `0x06002100` | `0x108` | `(15,4)` | `316efab5906d81656c22df3b35e82fc7fc6f1022b345ac5288434d0453450b96` | `8f89099c2a087dd6a4c3e64bacf2d7c86a58eb22ee091e578730cfec6d06f52f` | no |
-| `0x0066`／`a-row-2`／い | `0x06002340` | `0x11A` | `(15,5)` | `136fb23c046f15a3a312ff8f1f693b88c5be609558e216c86852a306b0914ef0` | `136fb23c046f15a3a312ff8f1f693b88c5be609558e216c86852a306b0914ef0` | yes |
+| `0x0066`／`a-row-3`／う | `0x06002100` | `0x108` | `(15,4)` | `316efab5906d81656c22df3b35e82fc7fc6f1022b345ac5288434d0453450b96` | `8f89099c2a087dd6a4c3e64bacf2d7c86a58eb22ee091e578730cfec6d06f52f` | no |
+| `0x0066`／`a-row-3`／う | `0x06002340` | `0x11A` | `(15,5)` | `136fb23c046f15a3a312ff8f1f693b88c5be609558e216c86852a306b0914ef0` | `136fb23c046f15a3a312ff8f1f693b88c5be609558e216c86852a306b0914ef0` | yes |
 
 把兩個垂直 tile 的 4bpp ink mask 合成 8×16 metadata，可得到：
 

@@ -94,7 +94,7 @@ KEYBOARD_TILE_METADATA = (
 
 CODE_UNIT_LAYOUT = {
     0x005E: ("a-row-1", "あ", 1),
-    0x0066: ("a-row-2", "い", 2),
+    0x0066: ("a-row-3", "う", 3),
 }
 
 # A DMA control write is a useful negative/positive boundary even when the
@@ -736,7 +736,7 @@ def run() -> None:
         "scope": {
             "milestone": "M1.7",
             "navigation": "adaptive START to existing BG1 keyboard signature; no startup baseline",
-            "input_plan": ["A -> 0x005E / あ", "RIGHT", "A -> 0x0066 / い"],
+            "input_plan": ["A -> 0x005E / あ", "RIGHT", "A -> 0x0066 / う"],
             "code_unit_font_record_formula": "0x08089E00 + code_unit * 0x18",
             "renderer_entry_pc": hex32(RENDERER_ENTRY_PC),
             "record_read_pc": hex32(RECORD_READ_PC),

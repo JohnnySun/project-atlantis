@@ -42,7 +42,7 @@ class M20GlyphScreenCrossProbeTests(unittest.TestCase):
 
     def test_targets_keep_keyboard_labels_separate_from_addresses(self) -> None:
         self.assertEqual(TARGETS[0x005E]["keyboard_label"], "あ")
-        self.assertEqual(TARGETS[0x0066]["keyboard_label"], "い")
+        self.assertEqual(TARGETS[0x0066]["keyboard_label"], "う")
         self.assertNotEqual(TARGETS[0x005E]["store_addresses"], TARGETS[0x0066]["store_addresses"])
 
 
