@@ -138,6 +138,15 @@ ja	zh-TW	category	status	notes
 風無	風無	tactic	provisional	封鎖策略輔助策略；待 ROM 選單核對
 風気	風氣	tactic	provisional	兵數轉策略值候選；待 ROM 選單核對
 一騎打ち	單挑	event	provisional	臺灣攻略常見事件用語；待 ROM 事件核對
+群雄	群雄	scenario	provisional	普通歷史敘事用語；E batch 14 待 ROM 結局畫面核對
+復興	復興	scenario	provisional	普通歷史敘事用語；E batch 14 待 ROM 結局畫面核對
+平安	平安	scenario	provisional	普通敘事用語；E batch 14 待 ROM 結局畫面核對
+冷落	冷落	scenario	provisional	普通敘事用語；E batch 14 待 ROM 結局畫面核對
+安寧	安寧	scenario	provisional	普通歷史敘事用語；E batch 15 待 ROM 結局畫面核對
+刺客	刺客	event	provisional	普通劇情事件用語；E batch 15 待 ROM 結局畫面核對
+大意	大意	scenario	provisional	普通敘事用語；E batch 15 待 ROM 結局畫面核對
+防備	防備	scenario	provisional	普通敘事用語；E batch 15 待 ROM 結局畫面核對
+信念	信念	scenario	provisional	普通敘事用語；E batch 15 待 ROM 結局畫面核對
 援軍	援軍	event	provisional	臺灣三國志慣用事件用語；待 ROM 事件核對
 増援	增援	event	provisional	臺灣繁體字形；待 ROM 事件核對
 説得	說服	event	provisional	事件選項候選；是否為勸降語境待 ROM 核對
