@@ -283,6 +283,36 @@ inline record ID route。輸出 field contract、jump target、address／hash／
 termination metadata，不輸出原文、raw bytes、glyph 或 translation ledger；selector
 語意與自然 scene 仍保持 provisional/unknown。
 
+M1.21 named reader source inventory（唯讀 bounded）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m121_source_inventory.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m121-source-inventory.json
+```
+
+工具只消費兩個 named reader 的 direct callers；按 caller 分組 r0 literal、stack
+buffer、runtime/table-derived class，對候選 ROM pointer 做最多 `0x100` bytes 的
+terminator metadata probe。輸出 caller boundary、address／hash／length／termination／
+count，不輸出 raw source、decoded text、圖片或 translation ledger。這是候選 family
+inventory，不能把 `0x0815bed4` 等 pointer run 直接當成已命名的惡魔、技能、道具或劇情表。
+
+M1.22 state-field／pointer route（唯讀 static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m122_state_routes.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m122-state-routes.json
+```
+
+工具只追 `0x080ce760`／`0x080cf414` 的 `+0x1e` halfword state load，驗證 4+5
+條 literal route 全部進入 `0x0815bed4`–`0x0815c082` 的 15 筆 bounded family，
+以及 named reader callsite。輸出 route address、boundary、hash、length、termination
+與 count，不輸出原文、raw source、glyph 或 translation ledger；category 語意與
+自然 scene 仍保持 provisional/unknown。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -292,12 +322,12 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.18 的 named code-unit reader family，先枚舉 `0x080ac334`／`0x080ac3ac`
-的 direct callers 與 caller 形成的 stack／RAM source buffer，並對
-`0x085861c8` 以外的同類 pointer table 做明確 category boundary；目標是以
-scene／object state 證明一組 stable string ID 與 source table，而不是由地址形狀
-猜測語意。優先追到 ROM pointer、RAM table 或 code-unit/index 參數，再確認主劇情、
-惡魔、技能、道具與系統各自的資料家族。
+沿 M1.21 inventory 的 `0x080ce760`／`0x080cf414` caller，先確認
+`0x0815bed4` 起 15 筆 `0x0301` candidate 的 state／literal branch boundary，
+再以可重抽取的 pointer/index contract 分開主劇情、事件、惡魔、技能、道具與系統
+data families。目標是以 scene／object state 證明 stable string ID 與 source table，
+而不是由地址形狀猜測語意；runtime 若仍受 listener blocker，static 與 runtime 必須
+分層記錄。
 
 不得再擴張 M1.15 resource set、重做同一 OBJ hash 分類或全 ROM glyph scan；
 `0x08163444` 的 bounded ASCII/padding prefix 與 M1.18 的 28 筆 candidate 都

@@ -236,6 +236,35 @@
 - [ ] 將 route 與自然 scene/category 交叉並建立可審核的 stable source ID；在
   Unicode identity、width rule 與回插契約確認前不建立翻譯 ledger。
 
+## M1.21：named reader source inventory
+
+- [x] 只從 `0x080ac334`／`0x080ac3ac` bounded direct callers 建立 caller-local
+  inventory；64-callsite cap 下分出 37 groups、58 candidate occurrences／56 unique
+  pointer values，沒有全 ROM string/glyph scan。
+- [x] 對每個 candidate 只做最多 `0x100` bytes 的 zero／`0x0301` terminator probe，
+  保留 address、caller boundary/hash、length、termination、unit class/count；
+  stack-buffer 與 runtime/table-derived class 分層，不提交 raw source。
+- [~] 初步分出 `0x0815bed4` 起 15 筆 `0x0301` candidate family、`0x084f*`、
+  `0x081652*`、`0x080095*` 與 M1.19 `0x08162b*` caller boundaries；目前只有
+  addressing／consumer evidence，category 語意與自然 scene 尚未確認。
+- [x] 只對 `0x080ce760`／`0x080cf414` 追 state/literal branch，確認 15 筆 family
+  的 bounded addressing 與 consumer boundary；兩個 handler 的 `+0x1e` halfword
+  load、4+5 literal routes 與 reader callsites 均已交叉，未確認 codepage、Unicode、
+  width 與回插前維持 M2 ledger gate blocked。
+
+## M1.22：state-field route 與 encoded-string category boundary
+
+- [x] 確認 `0x080ce760` 的 `r6+0x1e`、`0x080cf414` 的 `r2+0x1e` halfword load，
+  function boundary／literal pool／route target 交叉一致。
+- [x] 確認 4+5 route 全部落在 `0x0815bed4`–`0x0815c082` bounded 15-pointer family，
+  每筆 `0x0301` termination metadata 可重抽取，named reader callsite 全部到
+  `0x080ac334`。
+- [~] 這是 state→consumer-compatible pointer boundary，不是自然 scene、category
+  語意或 Unicode proof；GDB listener socket blocker 與 static evidence 分開記錄，
+  沒有 synthetic selector/table/state write。
+- [ ] 取得至少一條自然 transition 的 scene/state/source pointer 交叉；在 codepage、
+  stable ID、control/width 與回插契約確認前，M2 ledger gate 維持 blocked。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
