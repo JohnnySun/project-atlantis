@@ -265,6 +265,102 @@
 - [ ] 取得至少一條自然 transition 的 scene/state/source pointer 交叉；在 codepage、
   stable ID、control/width 與回插契約確認前，M2 ledger gate 維持 blocked。
 
+## M1.23：encoded-string handler 的 indirect dispatch boundary
+
+- [x] 只沿兩個已命名 command stream：`0x080ced00 → 0x084f0ec0` 與
+  `0x080d44a0 → 0x084f1514`；各自驗證 queue producer BL、ROM literal、bounded
+  stream window 與 producer caller boundary，不做全 ROM command scan。
+- [x] 驗證 callback table entry 10/11 的 `0x08` stride、handler boundary、
+  `0x0815cccc` `BX r3` trampoline，以及兩條 stream 的 opcode/record length：
+  A 為 14 筆 `0x0b`／3 words／1 argument，B 為 1 筆 `0x0a`／2 words／0 argument。
+- [x] 交叉 `0x080ce760`／`0x080cf414` 的 bounded function boundary 與 M1.22
+  state→family→reader continuity；兩個 handler 的 direct BL caller count 都為 0，
+  故不把 indirect static route 寫成 runtime natural hit。
+- [x] 由 queue consumer 交叉 input contract：entry `+0x14`／`+0x10` 分別是
+  stream pointer/index，callback 11 的 `r0` 是 queue entry、`r1` 是 small selector；
+  A 的 14 筆 command 只有 11 個 selector class，沒有把 selector 當 source/index。
+- [~] 這是 command-stream→handler→encoded-string-family 的 static boundary，
+  不是 scene/category、Unicode、codepage 或 glyph proof；本機 listener blocker
+  與此 static evidence 分開記錄，沒有 synthetic table/state write。
+- [ ] 沿 callback 呼叫約定 bounded 追 `r0` state object、`+0x1e` writer/initializer
+  與 ROM/RAM source/index；若仍只有 resource/command class，轉回下一個未命名
+  text/code-unit consumer，不再增加 graphics 分類切片。
+
+## M1.24：bounded 16-bit source table 與 reversible unit contract
+
+- [x] 固定只讀 `0x085861c8` 的 28 筆 record、stride `0x08`、pointer field `+0x04`，
+  每筆建立 table-local stable ID，28/28 stored ID 與 ordinal 一致、28/28 pointer
+  在 ROM 範圍。
+- [x] 以最多 `0x100` bytes 的 bounded unit probe 確認 28/28 `0x0301` termination、
+  `0x0300` line-break metadata、unit-stream hash/count 與 zero-unit separation；
+  不輸出 raw source、unit values 或 decoded text。
+- [x] 將 source table 與 M1.18 font-bank address expression 交叉：16-bit unit、
+  high-byte bank、low-byte glyph slot、`0x20` block 與 `0x08` bank stride 均可重抽取。
+- [~] stable ID 與 addressing 已 confirmed，但仍不是 semantic scene/category ID；
+  codepage、Unicode、字寬、font replacement、主劇情／惡魔／技能／道具表關係仍未知，
+  M2 ledger gate 維持 blocked。
+- [ ] 取得至少一個有 code-path context 的 record 的 glyph identity／日文語境交叉；
+  不以人工 OCR 或單一畫面猜測完整 source table，runtime blocker 需與 static evidence
+  分層。
+
+## M1.25：opcode 0x13 command context 到 source-table reader
+
+- [x] 固定只讀 descriptor `0x085819A0+0x0c` 與其 named stream `0x085862A8` 的
+  bounded `0x200` window；確認唯一 target command 是 opcode `0x13`、Thumb pointer
+  `0x080DD7CD`、2-word record，pointer 後接下一個 command class `0x0c`。
+- [x] 交叉 callback table entry 19、`0x080AD540` first callback、queue entry
+  `+0x20` staged function 與 `0x080AD0BE → 0x0815CCC4` indirect call，確認
+  `r0=queue entry` 的 function dispatch edge；不把 function pointer 當文字參數。
+- [x] 交叉 `0x080DD7CC` boundary/literal 與 `0x080DD884 → 0x080AC3AC`：
+  signed `entry+0x26` index、`0x08` stride、table `+0x04` pointer field，接回
+  M1.24 的 28-record stable local ID/addressing contract。
+- [~] `0x080DD30C`–`0x080DD7C8` 有 5 個 bounded record-index writer，但沒有自然
+  runtime selected value；這是 static context provenance，不是 scene/category、
+  Unicode 或 glyph identity proof。既有 listener blocker 與 static evidence 分層。
+- [ ] 取得一次自然 transition 的 live record index/source pointer/reader/glyph
+  chain；若 runtime 仍 blocked，最多沿已命名 caller/RAM object field 三層收斂 category。
+  在 codepage、stable semantic ID、control/width 與回插契約確認前，M2 ledger gate
+  維持 blocked。
+
+## M1.26：context initializer 與 bounded record-index domain
+
+- [x] 沿 M1.25 named stream 的 opcode `0x0A` pointer，確認
+  `0x080DD279` constructor boundary、兩個 named BL 與 context `+0x24` layout；
+  `entry+0x26` 的 initializer default 是 `1`，保留為 static default 而非 runtime hit。
+- [x] 解析 `0x080DDE2C` selection-array writer：context `+0x15` 起 `0x1B` slots，
+  value class 是 ordinal-plus-one `1..27`；交叉 state machine 的 5 個
+  `record-index` writes，接回 M1.25 `table+index*0x08+0x04` reader edge。
+- [~] 這個 domain 可重抽取 M1.24 local-ID addressing 的候選範圍
+  `m18-record-0002..0028`，但沒有 category、scene、日文 identity、Unicode 或
+  glyph proof；沒有把 ordinal mapping 升格為翻譯 source。
+- [ ] 取得自然 transition 的 live index/source pointer/reader/glyph chain；若
+  listener 仍 blocked，只沿一個 named selector caller/RAM object field 做最小
+  category boundary，保持 M2 ledger blocked。
+
+## M1.27：named reader accessor 與 fixed-field source edge
+
+- [x] 以 `0x080e1030` 這個已命名 16-bit reader caller 的 Thumb boundary、兩個
+  wrapper、object `+0x40/+0x42` loads 與三個 accessor BL 做交叉驗證；沒有把其他
+  accessor caller 的數量當成自然 runtime hit。
+- [x] 確認 `0x080bf32c`／`0x080bf354` 共用 `0x08198b74`、stride `0x24`、field
+  `+0x14`，caller threshold `0..0xcf` 給出 bounded 208-record addressing；
+  `0x080bf418` 的 `0x08198eb4`／stride `0x20`／field `+0x0c` 只保留為未定界
+  secondary probe。三個 accessor 的 ARM7TDMI boundary、literal pool、bit-15
+  normalization 與 callsite 均有 metadata evidence。
+- [x] 確認 selected record field 固定複製 8 個 16-bit unit 到 `sp+0x0c`、追加
+  `0x0000`，再依 object flag 呼叫 `0x080ac334` 或 `0x080ac3ac`；建立
+  object→record→stack staging→named reader 的 static source edge。
+- [~] `m27-shared-record-{ordinal:04d}` 僅是可重抽取的 table-local addressing ID；
+  fixed-field length/control counts、table hash 與 secondary probe 已記錄，但沒有
+  語意 category、Unicode/codepage、glyph identity 或完整 width rule。
+- [~] 本回合未做 runtime capture；自然 selector、scene/category 與 live source
+  pointer 仍未知，M2 ledger gate 維持 blocked。不得將 208 筆 addressing contract
+  直接升格為主劇情、惡魔、技能、道具或系統翻譯表。
+- [ ] 從 wrapper 或同一 accessor 的一個自然可達 caller 取得一次 live object
+  selector→record address→field copy→reader argument 因果鏈；若 listener 仍阻塞，
+  沿同一 caller 向上最多三層確認 RAM object/table initializer，再進行 category
+  mapping、codepage/glyph identity 與 width/control contract。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

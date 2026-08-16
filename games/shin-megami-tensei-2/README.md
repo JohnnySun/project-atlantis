@@ -313,6 +313,96 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B \
 與 count，不輸出原文、raw source、glyph 或 translation ledger；category 語意與
 自然 scene 仍保持 provisional/unknown。
 
+M1.23 encoded-string handler indirect dispatch（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m123_handler_dispatch.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m123-handler-dispatch.json
+```
+
+工具只追已命名的 `0x084f0ec0`／`0x084f1514` 兩個 command stream、各自的
+producer literal/BL、callback table entry 10/11、`0x0815cccc` trampoline 與
+`0x080ce760`／`0x080cf414` handler boundary。輸出 stream window hash、opcode／
+record length／argument count、caller boundary 與 function hash metadata，不輸出
+command word、argument value、raw source、decoded text、glyph 或 translation ledger。
+工具另保留 queue entry `+0x14`／`+0x10` 與 handler state `+0x1e` 的 input
+contract；A 的 argument 只報 small-selector domain count，不輸出每個值。兩個
+handler 沒有 direct BL caller；這是 static indirect route，不是 runtime natural
+scene proof。
+
+M1.24 bounded source table／unit contract（唯讀 static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m124_source_table.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m124-source-table.json
+```
+
+工具只讀 M1.18 已命名的 `0x085861c8` 28 筆、stride `0x08`、pointer `+0x04`，
+每筆最多 probe `0x100` bytes，輸出 stable local ID、address、hash、length、unit/
+control/font-bank count 與 termination metadata；不輸出 16-bit unit、raw source、
+decoded text、glyph 或 translation ledger。`0x0300`／`0x0301` 與 M1.18 font-bank
+address expression 只當 addressing/control evidence，Unicode、寬度與 category 仍
+保持 blocked。
+
+M1.25 command context 到 source-table reader（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m125_command_context.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m125-context.json
+```
+
+工具只沿 `0x085819A0+0x0c → 0x085862A8` 的 named descriptor/command edge，確認
+bounded stream 中唯一的 opcode `0x13`、callback table entry 19、queue entry `+0x20`
+staged function、`0x080DD7CC` signed record index `+0x26`、`0x085861c8+index*8+4`
+與 `0x080ac3ac` reader。輸出 address、boundary、hash、length、count 與 field
+contract；不輸出 raw command/source/unit/glyph、decoded text、圖片或 translation
+ledger。這是 static command→source-table provenance，不是 runtime natural scene、
+category、Unicode 或 glyph identity proof；詳見 `research/m1.25-command-context-20260816.md`。
+
+M1.26 context initializer／record-index domain（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m126_context_index.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m126-context-index.json
+```
+
+工具只追同一 command stream 的 `0x080DD279` initializer、`0x080DDE2C` 27-slot
+selection-array writer 與 `0x080DD30C` state machine；確認 context `entry+0x26`
+default `1`、array `+0x15` 的 ordinal-plus-one domain `1..27` 與 5 個 bounded
+record-index writes。輸出 address、boundary、hash、length、count 與 field/domain
+contract，不輸出 array values、raw source、decoded text、glyph 或 translation
+ledger；這是 stable addressing/context evidence，不是 category、Unicode 或自然
+runtime proof。詳見 `research/m1.26-context-index-20260816.md`。
+
+M1.27 named reader accessor／fixed-field provenance（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m127_name_accessor.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m127-name-accessor.json
+```
+
+工具只追 `0x080e1030` 這個已命名 16-bit reader caller 與兩個 wrapper：object
+`+0x40/+0x42` selector 分流到 `0x080bf32c`、`0x080bf354`、`0x080bf418` 三個
+accessor，再由 `0x08198b74`／stride `0x24`／field `+0x14` 或
+`0x08198eb4`／stride `0x20`／field `+0x0c` 取得固定 8-halfword field。工具驗證
+stack `sp+0x0c` copy、`0x0000` append 與 `0x080ac334/0x080ac3ac` reader BL，並
+以 caller threshold 將 shared table 限定為 selector `0..0xcf` 的 208 筆；secondary
+window 僅為 256 筆 metadata probe，不宣稱 table extent。輸出只有 address、boundary、
+literal、stride、field offset、hash、termination count 與 contract，不輸出 raw record、
+16-bit unit、decoded text、glyph 或 translation ledger。沒有 runtime capture；category、
+Unicode、codepage、width 與自然 selector 仍保持 provisional/unknown。詳見
+`research/m1.27-name-accessor-20260816.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -322,12 +412,12 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.21 inventory 的 `0x080ce760`／`0x080cf414` caller，先確認
-`0x0815bed4` 起 15 筆 `0x0301` candidate 的 state／literal branch boundary，
-再以可重抽取的 pointer/index contract 分開主劇情、事件、惡魔、技能、道具與系統
-data families。目標是以 scene／object state 證明 stable string ID 與 source table，
-而不是由地址形狀猜測語意；runtime 若仍受 listener blocker，static 與 runtime 必須
-分層記錄。
+沿 M1.27 固定的 object selector→ROM record accessor→fixed field→stack staging→
+16-bit reader path，取得一次自然 transition 的 live selector、record address、field
+copy 與 reader argument；若 runtime listener 仍 blocked，最多沿同一 wrapper/direct
+caller 三層追 RAM object/table initializer。不能把 command pointer、font-bank shape
+或人工 OCR 當成完整文字來源。接著以可重抽取的 pointer/index contract 分開主劇情、
+事件、惡魔、技能、道具與系統 data families；runtime 與 static evidence 必須分層記錄。
 
 不得再擴張 M1.15 resource set、重做同一 OBJ hash 分類或全 ROM glyph scan；
 `0x08163444` 的 bounded ASCII/padding prefix 與 M1.18 的 28 筆 candidate 都
