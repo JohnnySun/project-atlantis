@@ -32,6 +32,11 @@ class TextLayoutAuditTest(unittest.TestCase):
             receipt["layout_branch"]["alt_glyph_bank_by_lead"],
             {"0xE0": "0x0000", "0xE1": "0x4000"},
         )
+        self.assertEqual(receipt["advance_model"]["signature_count"], 2)
+        self.assertEqual(
+            receipt["advance_model"]["bounded_vwf_status"],
+            "not-proven; clean writer evidence is fixed-cell output-slot advance",
+        )
 
     def test_wrong_size_is_rejected(self) -> None:
         with self.assertRaises(ValueError):

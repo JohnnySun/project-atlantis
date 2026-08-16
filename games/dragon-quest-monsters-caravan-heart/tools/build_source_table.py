@@ -35,7 +35,7 @@ ROM_SIZE = 0x800000
 EXPECTED_CRC32 = 0x3C24ABCC
 EXPECTED_SHA256 = "fb388539b95fdaf6009bad879e9bbb25955daf8d4d438486a9213d407b2b48ce"
 CONTROL_MIN = 0xDF
-DECODER_VERSION = "dqmch-source-table-20260816.v4-provisional"
+DECODER_VERSION = "dqmch-source-table-20260816.v5-provisional"
 
 
 def validate_rom(data: bytes) -> None:
@@ -64,7 +64,9 @@ def direct_map() -> dict[int, str]:
     if len(hiragana) != 53 or len(katakana) != 53:
         raise AssertionError("kana atlas map must contain 53 hiragana and 53 confirmed katakana entries")
     result.update(dict(enumerate(hiragana, start=0x24)))
-    # These identities are supported by clean script-name/context records:
+    # These identities are supported by clean script-name/context records and
+    # independently corroborated by the game's public character-code table:
+    # https://gbacode.ame-zaiku.com/gba-dragon_quest_monsters.html
     # 0x59 occurs in ちからをためる and いきをすいこむ, while 0x5A
     # occurs in しんりゅう.
     result[0x59] = "を"
@@ -76,18 +78,55 @@ def direct_map() -> dict[int, str]:
     # only as codepage corroboration, never as a translation source.
     result[0x90] = "ヲ"
     result[0x91] = "ン"
-    # These punctuation entries are promoted only after repeated clean script
-    # context: 0x94 closes ordinary dialogue sentences, 0x9B/0x9C close
-    # question/exclamation sentences, and 0xA0/0xA2 occur in the clean title
-    # as the middle dot and wave dash respectively.
-    result[0x94] = "。"
-    result[0x9B] = "？"
-    result[0x9C] = "！"
-    result[0xA0] = "・"
-    # Clean names and the atlas identify this long-vowel mark.  It is a
-    # direct glyph mapping, not a control-code convention.
-    result[0xA1] = "ー"
-    result[0xA2] = "～"
+    # The rest of the direct punctuation／UI atlas is corroborated by the
+    # same public code table.  This is codepage engineering evidence only;
+    # it is not an English or Chinese translation source.  0x92/0x93 remain
+    # pair leads and are intentionally not entered as direct glyphs.
+    result.update(
+        {
+            0x94: "。",
+            0x95: "「",
+            0x96: "」",
+            0x97: "『",
+            0x98: "』",
+            0x99: "“",
+            0x9A: "”",
+            0x9B: "？",
+            0x9C: "！",
+            0x9D: "♪",
+            0x9E: "▽",
+            0x9F: "、",
+            0xA0: "・",
+            0xA1: "ー",
+            0xA2: "～",
+            0xA3: "／",
+            0xA4: "＊",
+            0xA5: "（",
+            0xA6: "）",
+            0xA7: "＋",
+            0xA8: "：",
+            0xA9: "…",
+            0xAA: "Lv",
+            0xAB: "Ex",
+            0xAC: "♂",
+            0xAD: "♀",
+            0xAE: "力",
+            0xAF: "全",
+            0xB0: "★",
+            0xB1: "↑",
+            0xB2: "↓",
+            0xB3: "←",
+            0xB4: "→",
+            0xB5: "心",
+            0xB6: "号",
+            0xB7: "％",
+            0xB9: "ｚ",
+            0xBA: "．",
+            0xBB: "＆",
+            0xBC: "’",
+            0xBD: "◎",
+        }
+    )
     # This clean atlas entry is all background nibbles and is used as a
     # visible separator in the stable menu.
     result[0xBF] = " "

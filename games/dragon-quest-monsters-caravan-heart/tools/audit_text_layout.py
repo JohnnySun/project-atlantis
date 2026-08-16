@@ -32,6 +32,13 @@ PAIR_MASK_GENERAL = 0xFF1FFFFF
 PAIR_MASK_93 = 0xF1FFFFFF
 PAIR_MASK_9230 = 0xF1F1FFFF
 
+# Thumb signatures for the output-slot advance in the two proven writers:
+# ldrb state+0x16; adds #1; ldrb state+0x16; strb state+0x16.
+ADVANCE_SIGNATURES = (
+    (0x080137FE, bytes.fromhex("b07d0130b17db075"), "pair output-index +1"),
+    (0x08013E34, bytes.fromhex("a87d0130a97da875"), "single output-index +1"),
+)
+
 
 def read_u32(data: bytes, offset: int) -> int:
     return struct.unpack_from("<I", data, offset)[0]
@@ -46,8 +53,23 @@ def validate_rom(data: bytes) -> None:
         raise ValueError(f"refusing non-clean A9HJ ROM: CRC32={crc32:08X}, SHA256={sha256}")
 
 
+def audit_advance_signatures(data: bytes) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    for address, expected, label in ADVANCE_SIGNATURES:
+        offset = address - 0x08000000
+        actual = data[offset:offset + len(expected)]
+        if actual != expected:
+            raise ValueError(
+                f"output-index signature changed at 0x{address:08X}: "
+                f"expected {expected.hex()}, got {actual.hex()}"
+            )
+        rows.append({"address": f"0x{address:08X}", "bytes": expected.hex(), "label": label})
+    return rows
+
+
 def audit(data: bytes) -> dict[str, object]:
     validate_rom(data)
+    advance_signatures = audit_advance_signatures(data)
     values = {
         "state_pointer": read_u32(data, 0x13790),
         "pair_mask_93": read_u32(data, 0x13794),
@@ -107,6 +129,14 @@ def audit(data: bytes) -> dict[str, object]:
             "alt_glyph_handler": "0x0801284A",
             "output_index": "state[0x16]",
         },
+        "advance_model": {
+            "pair": "state[0x16] read, +1, write after 8-word combiner",
+            "single": "state[0x16] read, +1, write after one glyph slot",
+            "output_slot_stride": "glyph_stride",
+            "bounded_vwf_status": "not-proven; clean writer evidence is fixed-cell output-slot advance",
+            "signature_count": len(advance_signatures),
+            "signatures": advance_signatures,
+        },
     }
 
 
@@ -127,6 +157,7 @@ def main() -> int:
     print("pair-masks", receipt["pair_masks"])
     print("dma3", receipt["dma3"])
     print("layout-branch", receipt["layout_branch"])
+    print("advance-model", receipt["advance_model"])
     return 0
 
 
