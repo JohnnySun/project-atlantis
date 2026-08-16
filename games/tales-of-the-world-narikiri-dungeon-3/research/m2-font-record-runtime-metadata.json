@@ -44,6 +44,30 @@
       "loader_hits": 0,
       "source_read_hits": 0,
       "asset_read_hits": 0
+    },
+    {
+      "port": 24388,
+      "environment": "fresh-own-process-gdb.port",
+      "termination": "setup-error",
+      "error_type": "OSError",
+      "error_errno": 49,
+      "error_message": "Can't assign requested address",
+      "source_injection": "0x146EE0",
+      "loader_hits": 0,
+      "source_read_hits": 0,
+      "asset_read_hits": 0
+    },
+    {
+      "port": 24388,
+      "environment": "fresh-own-process-ports.qt.gdbPort",
+      "termination": "setup-error",
+      "error_type": "OSError",
+      "error_errno": 49,
+      "error_message": "Can't assign requested address",
+      "source_injection": "0x146EE0",
+      "loader_hits": 0,
+      "source_read_hits": 0,
+      "asset_read_hits": 0
     }
   ],
   "offline_fake_pipeline": {

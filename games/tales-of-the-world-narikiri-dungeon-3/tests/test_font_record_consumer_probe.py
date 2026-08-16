@@ -25,6 +25,16 @@ class FontRecordConsumerProbeTests(unittest.TestCase):
         self.assertEqual(font_record_consumer_probe.FONT_LOADER_CALLSITE, 0x15C26)
         self.assertEqual(font_record_consumer_probe.FONT_BUILDER_CALLSITE, 0xCD170)
         self.assertEqual(len(font_record_consumer_probe.OBJECT_TEXT_BUILDER_CALLS), 5)
+        self.assertEqual(
+            font_record_consumer_probe.OBJECT_TEXT_BUILDER_CALLER_INPUTS,
+            (
+                (0xD5218, 0xD5212, "[sp+0x00]", 0x9800),
+                (0xD5224, 0xD521E, "[sp+0x04]", 0x9801),
+                (0xD5234, 0xD522E, "[sp+0x08]", 0x9802),
+                (0xD5240, 0xD523A, "[sp+0x0C]", 0x9803),
+                (0xD6C86, 0xD6C80, "[r7+4+scaled-index]", 0x6800),
+            ),
+        )
         self.assertEqual(font_record_consumer_probe.FONT_ASSET_STRIDE, 0x20)
 
     def test_static_contract_constants_are_bounded(self):

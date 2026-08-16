@@ -19,6 +19,15 @@ object/text builder 0x080CD14C
   -> 0x080DDCC4 + sjis_like_index*0x20
 ```
 
+本回合再沿同一條已確認鏈向上一層固定 input provenance：
+`0x080CD14C` entry 的 `r0` 先保存到 `r5`，在 file `0x0CD16E` 以 `r1=r5`
+呼叫 `0x08015B74`。該 object/text builder 的五個 direct caller 只保留 bounded
+register/setup metadata：`0x0D5218`、`0x0D5224`、`0x0D5234`、`0x0D5240` 分別
+從 `[sp+0x00]`、`[sp+0x04]`、`[sp+0x08]`、`[sp+0x0C]` 放入 `r0`，
+`0x0D6C86` 則從 `[r7+4+scaled-index]` 放入 `r0`。這是 **confirmed-static
+register/input shape only**；stack/table value、strict record membership、自然
+流程命中與 decoder/glyph path 都仍未確認，沒有把 caller input 當成文字來源。
+
 `0x080021A8` 直接讀 `r1` 與 `r1+1`，以 lead `0x87` 為分界計算相同的
 lead/trail index，再以 `lsls #5` 與 literal `0x080DDCC4` 選固定 32-byte
 asset slot。這是 **source-pointer-shaped static edge**，不是 strict
@@ -47,8 +56,10 @@ destination，尚未證明是 VRAM 或最終 tilemap。
 
 ## 下一個最小 runtime slice
 
-在同一個本作獨立 mGBA session 只設 `0x080021A8` entry breakpoint；命中後記錄
-`r0/r1/r2/lr`，對 `r1` 指向的固定 source read 設 bounded read-watch，並對
+在同一個本作獨立 mGBA session 先在 `0x08015B74` 或其唯一 upstream
+`0x080CD170` 設單一 breakpoint，記錄 `r0/r1/lr` 與 caller setup；接著只對該次
+`r1` 指向的固定 source read 設 bounded read-watch，再在 `0x080021A8` entry 記錄
+`r0/r1/r2/lr`，並對
 `0x080DDCC4 + computed_index*0x20` 設單一 ROM read-watch。若 source 位址落入
 strict five-window，才保存 `string_id`、caller 與 asset receipt；否則照實記
 non-strict／outside-window。不要把 `0x08001414` 的 static path 或畫面 OCR 當作

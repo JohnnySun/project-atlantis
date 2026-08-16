@@ -38,6 +38,15 @@ strict record classification 直接重用本作 `consumer_probe.py` 的五個已
 identity、RAM decoder、VRAM writer 或回插成立。另一個權限重試在工具審核串流中斷後
 未被允許，沒有再使用其他 process、port 或 transport workaround。
 
+之後又以兩個全新的、只由本回合啟動的 mGBA process 重跑同一個 bounded probe，均使用
+獨立 port `24388` 與 `--inject-record-offset 0x146EE0`；第一次使用 `gdb.port` 設定
+鍵，第二次使用既有 Qt `ports.qt.gdbPort` 設定鍵。兩次都在 client setup 得到
+`OSError`／errno `49`（`Can't assign requested address`），`loader_hits=0`、
+`source_read_hits=0`、`asset_read_hits=0`。注入選項只完成 ROM-side strict-start
+驗證，因為 loader entry 根本沒有命中，所以沒有產生任何注入 source read；這仍是
+**listener/setup negative**，不是自然流程或注入 pipeline 的 runtime proof。兩個
+自有 process 都已由各自的 bounded harness 停止，沒有接觸其他 session。
+
 ## offline contract
 
 `tests/test_font_record_runtime_probe.py` 以 fake client 重演三個 bounded stop：
@@ -55,9 +64,11 @@ source-shaped loader harness 為 **confirmed tooling contract**；以下工程�
 - event／角色／服裝／技能／戰鬥／選單分類；
 - 容量、指標重寫、壓縮邊界、round-trip、BPS 與翻譯。
 
-下一個最小切片是取得一個可連線的本作獨立 mGBA session 後，重跑同一工具並只沿
-第一個 loader hit 的 source watch 往下一個 decoder/output stop；在此之前 M2 的
-live renderer 項目保持未完成，M3 不得開始填入譯文。
+下一個最小切片不是再增加 port shim 或 static geometry，而是沿已確認的
+`0x08015C26 → 0x080021A8` caller 向上固定其 input provenance，或在已有可連線的
+本作獨立 mGBA session 上重跑同一工具；一旦取得第一個真實 loader hit，只追該次
+source watch 往下一個 decoder/output stop。在此之前 M2 的 live renderer 項目保持未
+完成，M3 不得開始填入譯文。
 
 若自然流程仍難以觸發 loader，可加 `--inject-record-offset 0x146EE0`。此模式只在
 loader entry 已命中後寫入 `r1`，且 CLI 會拒絕非 strict record 起點；所有 receipt

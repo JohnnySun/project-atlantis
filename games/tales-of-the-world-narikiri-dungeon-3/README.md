@@ -302,6 +302,12 @@ loader `r1`，loader 讀 `[r1]`／`[r1+1]` 後選取
 這仍是 source-pointer-shaped static edge；strict record membership、live read、
 glyph identity 與 VRAM destination 尚未確認。
 
+同一份 bounded probe 也固定了 caller-upward input shape：`0x080CD14C` 的 `r0`
+保存至 `r5`，再由 `0x080CD170` 以 `r1=r5` 呼叫 `0x08015B74`；上游五個 direct
+caller 的 input setup 只列為 static register metadata，不代表 strict record。下一次
+runtime 只需在這條已確認鏈設單一 breakpoint，再追同一筆 `r1` 到 loader/source
+watch；不增加 pointer scan 或幾何切片。
+
 已另建立窄化的 runtime probe
 [`tools/font_record_runtime_probe.py`](tools/font_record_runtime_probe.py)：它從
 `0x080021A8` entry 只追該次 `r1` source pointer，在 `0x080021DA` 觀察計算完成的
@@ -323,6 +329,15 @@ permitted`，一次外部重試仍無 loader stop。詳情見
 [`research/m2-font-record-runtime-20260816.md`](research/m2-font-record-runtime-20260816.md)
 與 [`research/m2-font-record-runtime-metadata.json`](research/m2-font-record-runtime-metadata.json)。
 因此 M2 live renderer／decoder 項目仍未完成，不能開始翻譯或回插。
+
+其後兩次各自新啟動的 B3TJ mGBA process 使用獨立 port `24388` 重跑同一 probe：
+分別嘗試 `gdb.port` 與 `ports.qt.gdbPort` 設定鍵，均在 setup 得到
+`OSError errno 49: Can't assign requested address`，loader/source/asset hits 都是
+`0`。`--inject-record-offset 0x146EE0` 只完成 strict-start metadata 驗證，因沒有
+loader entry hit 並未改寫寄存器；這是 listener/setup negative，不能升格為自然
+consumer 或注入 pipeline 證據。兩個自有 process 均已停止，receipt 詳見同一份
+[`research/m2-font-record-runtime-20260816.md`](research/m2-font-record-runtime-20260816.md)
+與 metadata JSON。
 
 若自然流程難以觸發 loader，可用同一 probe 的
 `--inject-record-offset 0x146EE0` 模式，只在 loader entry 已命中後把 `r1` 暫時

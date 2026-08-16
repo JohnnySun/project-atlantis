@@ -36,6 +36,13 @@ FONT_BUILDER_ENTRY = 0x08015B74
 FONT_BUILDER_CALLSITE = 0xCD170
 OBJECT_TEXT_BUILDER_ENTRY = 0x080CD14C
 OBJECT_TEXT_BUILDER_CALLS = (0xD5218, 0xD5224, 0xD5234, 0xD5240, 0xD6C86)
+OBJECT_TEXT_BUILDER_CALLER_INPUTS = (
+    (0xD5218, 0xD5212, "[sp+0x00]", 0x9800),
+    (0xD5224, 0xD521E, "[sp+0x04]", 0x9801),
+    (0xD5234, 0xD522E, "[sp+0x08]", 0x9802),
+    (0xD5240, 0xD523A, "[sp+0x0C]", 0x9803),
+    (0xD6C86, 0xD6C80, "[r7+4+scaled-index]", 0x6800),
+)
 FONT_INIT_ENTRY = 0x08002100
 FONT_INIT_CALLS = (0x2146, 0x2174, 0x21E2, 0x22FC)
 
@@ -153,6 +160,28 @@ def _callset(data: bytes, target: int, expected: tuple[int, ...]) -> dict[str, o
     }
 
 
+def _object_text_caller_inputs(data: bytes) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for callsite, setup_offset, source_shape, expected_halfword in (
+        OBJECT_TEXT_BUILDER_CALLER_INPUTS
+    ):
+        actual = _read_halfword(data, setup_offset)
+        if actual != expected_halfword:
+            raise ValueError(
+                f"object/text caller setup changed at {_hex(setup_offset, 6)}: "
+                f"0x{actual:04X} != 0x{expected_halfword:04X}"
+            )
+        rows.append(
+            {
+                "callsite": _hex(callsite, 6),
+                "input_setup": _hex(setup_offset, 6),
+                "input_shape": source_shape,
+                "status": "confirmed-static-r0-input-shape",
+            }
+        )
+    return rows
+
+
 def analyze(data: bytes) -> dict[str, object]:
     identity = verify_identity(data)
     direct_calls = {
@@ -206,6 +235,8 @@ def analyze(data: bytes) -> dict[str, object]:
     if not all(instruction_checks.values()):
         raise ValueError("font record consumer instruction signature mismatch")
 
+    object_text_caller_inputs = _object_text_caller_inputs(data)
+
     return {
         "identity": identity,
         "fixed_entries": {
@@ -216,6 +247,15 @@ def analyze(data: bytes) -> dict[str, object]:
         },
         "direct_calls": direct_calls,
         "static_pointer_provenance": {
+            "object_text_builder_input": {
+                "entry": _hex(OBJECT_TEXT_BUILDER_ENTRY),
+                "entry_input": "r0=caller_input_pointer",
+                "preserved_as": "r5",
+                "font_builder_callsite": _hex(FONT_BUILDER_CALLSITE, 6),
+                "font_builder_input": "r1=r5",
+                "status": "confirmed-static-register-shape-only",
+            },
+            "object_text_builder_direct_callers": object_text_caller_inputs,
             "object_text_builder_to_font_builder": {
                 "callsite": _hex(FONT_BUILDER_CALLSITE, 6),
                 "register_setup": "r0=caller_allocated_context; r1=builder_input",
@@ -254,6 +294,7 @@ def analyze(data: bytes) -> dict[str, object]:
         ],
         "instruction_checks": instruction_checks,
         "classification": {
+            "object_text_input_provenance": "confirmed-static-register-shape-only",
             "source_pointer_shaped_font_loader_edge": "confirmed-static",
             "strict_five_window_record_membership": "unconfirmed",
             "live_source_read": "unconfirmed",
