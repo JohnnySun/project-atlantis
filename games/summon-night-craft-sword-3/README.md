@@ -6,7 +6,7 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。已完成有界的 halfword-aligned Shift-JIS 形狀、指標 run 與 LZ77／RLE decoder-candidate 掃描；這些結果仍只是文本／資料候選，尚未證實字串邊界、控制碼、字型或回插路徑。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record。這些 record 的 bounded Shift-JIS 解碼、pointer provenance 與 script consumer 已有交叉證據；字型、完整 VM 控制碼、編碼器與回插路徑仍未完成。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md) 與 [`ROADMAP.md`](ROADMAP.md)。
 
 ### ROM metadata／外部比對
 
@@ -20,7 +20,7 @@
 | 本機 SHA-256 | `39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d` | 已確認 |
 | 公開反編譯 build/reference SHA-1 | `3f5253fcf57e07ce52472bd29a61d16b98a12376` | 只作外部比對，不能代替本機 clean ROM |
 
-這些值來自 [Data Crystal 遊戲頁](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi) 與 [csm3 反編譯專案](https://github.com/jiangzhengwenjz/csm3)。若本機檔案不一致，必須保留實際 hash 並標記版號差異，不得直接覆寫或把不同版本混為同一 revision。
+這些值來自固定的 [Data Crystal 遊戲頁 oldid=69650](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi?oldid=69650) 與 [csm3 commit `7e388ac`](https://github.com/jiangzhengwenjz/csm3/commit/7e388ac861bbac289b1f86dc5b8fa46d47b1a1a2)。若本機檔案不一致，必須保留實際 hash 並標記版號差異，不得直接覆寫或把不同版本混為同一 revision。
 
 ## 唯讀偵察
 
@@ -48,17 +48,27 @@ python3 games/summon-night-craft-sword-3/tools/scan_static.py \
 
 它只保留候選 offset、長度、計數、pointer reference、decoder consumed size 與 SHA-256；預設掃描 halfword alignment `0`，Shift-JIS-shaped run 至少 8 個 16-bit units，LZ77／RLE 每種最多嘗試 2048 個 header 且 expanded size 上限為 `0x40000`。`work/static-report.json` 是重跑用 ignored 產物，不是提交內容。
 
-靜態候選必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。共用 `core/gba/capture_runtime.py` 與 renderer 已可用，且共用測試 6 項通過；本次 B3CJ capture 仍受 runtime port 阻塞：其他 session 佔用 2345，`ports.qt.gdbPort=25352` 未建立 listener，既有 `/private/tmp` redirect dylib 的一次重用也未建立 25351。除了先前一次 boot register／背景設定快照外，沒有新的文本或 VRAM 對應，因此不把候選升格為已證實文本，也不新增遊戲專屬 GDB／dump／renderer。尤其不能因為某段 bytes 能被 Shift-JIS 解碼，或某個半字看起來像 BIOS `swi`，就推論它是文本或壓縮器呼叫。
+M1.5 的 bounded script extractor 另用：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract_static.py \
+  games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba \
+  --output games/summon-night-craft-sword-3/research/summon-night-craft-sword-3-decoded.jsonl
+```
+
+這會驗證固定 ROM 身分，解析 type-2 table `0x1718ffc` 的 79 個 resource ID，解壓 `PSI3` stream，並把不含翻譯的日文原文寫入 ignored JSONL。工具測試與實際收據見 [`research/static-format.md`](research/static-format.md)；不要將該 JSONL stage。
+
+尚未由 extractor 覆蓋的候選仍必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。共用 `core/gba/capture_runtime.py` 與 renderer 已可用，且共用測試 6 項通過；本次 B3CJ capture 仍受 runtime port 阻塞：其他 session 佔用 2345，`ports.qt.gdbPort=25352` 未建立 listener，既有 `/private/tmp` redirect dylib 的一次重用也未建立 25351。RUNTIME-003 只限制 live RAM／VRAM 交叉驗證，不否定已由本機 ROM、固定 pointer table 與 csm3 consumer 重跑的 M1.5 靜態結果；不新增遊戲專屬 GDB／dump／renderer。
 
 ## 文字系統研究邊界
 
-外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL) 提供主日文字型的 16-bit code-table 線索，包含類似 `0x8140` 起始的標記；這是待驗證假說，不能直接套入 GBA little-endian ROM，也不能假設第一、二代的格式相同。研究時必須分開記錄：
+外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL?oldid=53006) 提供主日文字型的 16-bit code-table 線索；本輪已用固定 B3CJ ROM 的多個 `0x0308 ... 0x0000` record 交叉驗證：VM halfword 仍按 little-endian 讀取，但 marker 後的 codepage bytes 必須以記憶體原始順序直接做 strict Shift-JIS decode，不能逐 halfword swap。這只證實已抽 record 的 codepage，不代表字型與所有 opcode 都已命名，也不能假設第一、二代的格式相同。完整格式見 [`research/static-format.md`](research/static-format.md)。研究時必須分開記錄：
 
 1. 字串在哪裡、如何分界、是否有指標、壓縮與控制碼如何運作。
 2. glyph 的位址／tile 定址是否已找到。
 3. 每個 glyph 的 Unicode 身分是否有獨立交叉證據。
 
-只有三者足夠穩定後，才建立本機 `research/summon-night-craft-sword-3-decoded.jsonl`；OCR 只能作候選證據，不能直接複製到翻譯記錄。控制碼與排版規則確認前，不開始劇情、支線、夥伴、鍛造、戰鬥或道具的翻譯批次。
+目前已建立受限的 `research/summon-night-craft-sword-3-decoded.jsonl` 作為本機原文邊界；OCR 只能作候選證據，不能直接複製到翻譯記錄。完整控制碼、字型與排版規則確認前，不開始劇情、支線、夥伴、鍛造、戰鬥或道具的翻譯批次。
 
 ## 翻譯帳本與術語
 
@@ -67,19 +77,20 @@ python3 games/summon-night-craft-sword-3/tools/scan_static.py \
 ```text
 research/*-decoded.jsonl  (本機日文原文，不提交)
         + restore_translations.rb
-work/*.jsonl              (本機 source + zh-Hans + zh-TW 工作檔，不提交)
+work/*.jsonl              (本機 source + zh-TW 工作檔，不提交)
         + strip_translations.rb
 translations/*.jsonl      (可提交 ledger，只含 source_hash)
 ```
 
-目標語言固定明寫為 `zh-Hans` 與 `zh-TW`。專有名詞先查臺灣繁體 Wikipedia、巴哈姆特等多個社群來源，採既有主流寫法；若來源分裂，保留現有選擇並在 review note 說明，不自行創造音譯。既有英文／中文 patch 可參考工程資訊，但不是未審核的日文翻譯來源。
+目標語言固定明寫為 `zh-TW`。專有名詞先查臺灣繁體 Wikipedia、巴哈姆特等多個社群來源，採既有主流寫法；若來源分裂，保留現有選擇並在 review note 說明，不自行創造音譯。既有英文／中文 patch 可參考工程資訊，但不是未審核的日文翻譯來源。
 
-## 完成標準（尚未達成）
+## 完成標準（M1.5 已達成，後續尚未達成）
 
 - clean 日版 ROM 的 header、revision、CRC32、SHA-256 已記錄並可重跑。
-- 文本、字型、codepage、指標／壓縮／控制碼與可逆回插路徑有遊戲專用證據。
+- type-2 script table、LZ77、`PSI3` stream、bounded text record、Shift-JIS codepage 與 csm3 consumer 有遊戲專用、可重跑證據。
+- 字型 tile／glyph identity、完整控制碼語意、字串修改長度契約與可逆回插路徑仍待建立。
 - 至少一個有限量批次通過 `restore → work → strip` 往返與 repository safety check。
 - 編碼器／回插器拒絕來源 hash、缺字、控制碼或長度不一致，而不是放寬檢查。
 - 重建 ROM 重新抽取吻合；BPS round-trip 與 mGBA 核心畫面回歸另有收據。
 
-目前已完成 clean 日版 ROM 身分／hash 與有限量靜態偵察；尚無文本 decoder、翻譯、ROM build、BPS 或 runtime QA 收據。
+目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder 與 361 筆 ignored source extraction；尚無翻譯、ROM build、BPS、字型／回插或 runtime QA 收據。

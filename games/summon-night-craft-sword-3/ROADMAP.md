@@ -18,19 +18,30 @@
 
 本里程碑的靜態報告只保留 offset、長度、計數、引用與 hash。共用 `core/gba` client／capture／renderer 的 6 項測試已通過；一次性的 mGBA boot snapshot 已記在研究帳本，但 B3CJ capture 仍受其他 session 的 2345 與 alternate-port listener 阻塞，不再重試 port shim，也不把 runtime 實驗工具納入本作工具集。
 
+## M1.5：csm3 導向的靜態文本工程
+
+- [x] 固定 Data Crystal 遊戲頁／TBL oldid 與 csm3 commit、review 路徑及授權狀態；不提交第三方 source。
+- [x] 依 csm3 `sub_08001D3C`、`sub_08012D30`、`sub_08012E14` 定位 type-2 resource table、LZ77 callsite 與 `PSI3` stream consumer。
+- [x] 以本機 ROM 交叉驗證 type-2 table `0x1718ffc`、16-byte pointer units、LZ77 MSB-first flags、`PSI3`／`+0x10` stream 與 `0x0308 ... 0x0000` record。
+- [x] 建立 bounded `tools/extract_static.py` 與測試；可由固定 B3CJ ROM 重抽 361 筆真實 record，完整日文 source 只寫 ignored JSONL。
+- [x] 保留 stable `string_id`、pointer／payload provenance、compressed/decompressed hash 與 control token；tracked 文件不含完整原文。
+- [ ] 完成完整 VM opcode／換行語意、font lookup／glyph identity、修改長度契約與回插路徑。
+
+M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉驗證的獨立 blocked 項，不是本里程碑的 gate。格式證據與重跑命令見 [`research/static-format.md`](research/static-format.md)。
+
 ## M2：文本與字型格式
 
-- [ ] 定位劇情／支線／夥伴／鍛造／戰鬥／道具的字串儲存區與邊界。
-- [ ] 判定文本是否直接編碼、使用自訂 codepage、壓縮、腳本 bytecode 或混合格式。
+- [~] 定位已確認的 `PSI3` script resource 與 bounded text record；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。
+- [~] 已確認 type-2 pointer、GBA LZ77、script bytecode 與 record-level Shift-JIS；完整自訂 codepage／VM opcode 語意仍待命名。
 - [ ] 定位字型資料與渲染器；分開驗證 glyph addressing 與 glyph identity。
 - [ ] 確認字串 ID、指標、換行、控制碼、字寬／行數上限與未修改內容的回插契約。
 - [ ] 以 ROM-to-VRAM byte match、已知畫面內容或全語料庫上下文重讀交叉確認解碼。
 
 ## M3：原文表與可逆試驗
 
-- [ ] 由遊戲專用 decoder 產生本機 `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`text`、`provenance`。
+- [~] 由遊戲專用 decoder 產生本機 ignored `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`source_text`、`provenance`；尚未建立可提交 translation ledger。
 - [ ] 先選一個可達、短且有明確結構的 UI／道具／戰鬥批次，不一次處理全遊戲。
-- [ ] 建立本機 `work/*.jsonl`，明寫 `zh-Hans`、`zh-TW`、`status`、`context`、`terms`。
+- [ ] 建立本機 `work/*.jsonl`，明寫 `zh-TW`、`status`、`context`、`terms`。
 - [ ] 用 `core/ledger/restore_translations.rb` 與 `strip_translations.rb` 驗證 source hash 與帳本往返。
 - [ ] 只提交不帶 `source` 的 `translations/*.jsonl`，並通過 `scripts/check-repository-safety.rb`。
 
