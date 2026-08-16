@@ -32,6 +32,8 @@ M1.30 已完成 address-only source layout census：121 個 formula address 無�
 
 M1.31 已由 `0x08098aee` → `0x08099404` 建立 source initializer provenance：initializer 以 `0x0837f478` ROM asset 與 `0x02000000` EWRAM destination 呼叫 `0x08013ca4`；source header class `0x10`、expanded size `0x2800`、dispatcher table entry `0x0809dcf5` → `SVC #0x11` 的 bounded LZ77-WRAM path 可重跑，compressed span consumed `0x1a53` 並以 1 byte alignment padding 接到 `0x08380ecc`。expanded source payload 只保存 hash。這也收斂 M1.29/M1.30 的過寬邊界：在 121 個數學 formula inputs 中，只有 0..79 的 plane word reads 落在 expanded window，80..120 是明確 out-of-window negative，不再視為 font slots；兩份 natural receipt 的 16 個 lookup 仍全在 bounds 內。font bytes 的同 run runtime read、font identity、Unicode 與回插仍未宣稱。
 
+M1.32 已新增 full-table content gate：重用已驗證 worker 對 3342 筆表建立 stable ID、pointer span、source/output hash、marker count 與 round-trip 摘要，3203 筆 strict、139 筆明確 decoder-negative；table digest 為 `bab6f37b…d566a0794`。兩份 natural receipts 共 4 筆 loader（source pointer 4/4、output hash 3/4；2679 mismatch 保留），觀察到 caller `0x08098b10`／index 3087 與 `0x08009252`／indices 2678、2679，但沒有獨立 scene/category receipt，所以內容分類仍 0 筆、全部 unknown；不把 route 名稱或 index adjacency 當翻譯來源。
+
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
@@ -224,6 +226,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m131_font_initializer.py \
 ```
 
 輸出只含 initializer／dispatcher instruction receipts、壓縮 span／expanded hash、formula bounds 與 natural lookup count；不輸出 compressed/expanded payload、font bytes、bitmap 或 Unicode。特別注意：formula input `80..120` 是 expanded source window 之外的 negative，不能當作已定位 glyph pool。
+
+要重跑 M1.32 的 full-table／caller content gate（輸出應留在 ignored `/private/tmp`）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m132_content_gate.py \
+  roms/base/AFEJ.gba \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --runtime-report /private/tmp/afej-m119-natural-long-menu.json \
+  --output /private/tmp/afej-m132-content-gate.json
+```
+
+輸出可包含 3342 筆 hash-only record summaries 與 139 筆 failure kinds，但不含 tokens、code-unit bytes、source text 或 Unicode；caller/route 只作 provenance，`content_categories_assigned` 必須保持空集合，直到有獨立 scene/category 證據。
 
 要重跑 M1.11 的 static caller／callback gate report：
 
