@@ -257,6 +257,17 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m122_codepage.py \
 
 目前結果是 121/121 map pairs 可 strict Shift-JIS 解碼；natural `start,a` receipt 的 8 筆 map lookup 與 8 筆 glyph-field 都有 map pair／glyph index equality，前 4 筆 code-unit hash 與 index 3087 corpus prefix 相符。這只建立 `shift_jis_candidate_with_runtime_map_correspondence`，不確認完整 Unicode identity、場景／內容分類或翻譯 readiness；M1.6 corpus 與所有原文仍維持 ignored source/work 邊界。
 
+M1.23 的 32 筆 bounded strict corpus 與 natural receipt 對照可重跑如下；輸出只含 hash、長度、marker、script-count 與 caller/display provenance：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/extract_m123_bounded_corpus.py \
+  roms/base/AFEJ.gba --start 3064 --count 32 \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --output /private/tmp/afej-m123-corpus.json
+```
+
+目前 32/32 records 皆 decode→encode byte-identical、相鄰 source span 相等且通過 Shift-JIS candidate decode；index 3087 的 static output hash 與 natural loader buffer hash 相等。這是 bounded extractor/receipt 證據，不是劇情、支援、事件或選單分類；完整 `tokens`／原文仍只留 ignored research/work。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
