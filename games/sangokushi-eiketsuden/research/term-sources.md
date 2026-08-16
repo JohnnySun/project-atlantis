@@ -22,6 +22,7 @@
 
 12. [中文 Wikipedia：桃園三結義](https://zh.wikipedia.org/wiki/%E6%A1%83%E5%9C%92%E4%B8%89%E7%B5%90%E7%BE%A9) 與 [巴哈姆特：桃園三結義](https://forum.gamer.com.tw/C.php?bsn=36815&snA=1925)：交叉確認 `桃園`、`桃園三結義`／`桃園結義` 為臺灣三國題材常用字形；只作 E:009／E:010 的專有名詞決策，不作日版 ROM 原文來源。
 13. [中文 Wikipedia：漢獻帝](https://zh.wikipedia.org/wiki/%E6%B1%89%E7%8C%AE%E5%B8%9D) 與 [巴哈姆特：獻帝相關三國志討論](https://forum.gamer.com.tw/G2.php?bsn=6331&lorder=5&parent=1584&sn=600)：交叉確認日文 `献帝` 對應臺灣慣用 `獻帝`；只作 E:012 的人物術語決策，不作日版 ROM 原文來源。
+14. [GameFAQs GBA guide](https://gamefaqs.gamespot.com/gba/925912-san-goku-shi-eiketsuden/faqs/38912)：只校準 START→main menu、GBA 版新增選單與戰役／事件類別的導航假設，不作日版 ROM 原文或逐句翻譯來源。
 
 ## 暫定決策
 

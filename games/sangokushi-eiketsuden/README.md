@@ -19,6 +19,13 @@
 - **M2.5 stable-title runtime boundary（2026-08-16）已完成有界收尾**：共用 `core/gba` 的 10 秒 I/O 時序確認 B3EJ startup 在第 9 秒才穩定到 title `DISPCNT=0x1E40`、BG0–BG3 `0x1400/0x1501/0x1602/0x1703`；依此以 `settle=9.0s` 重跑 START 與 A 兩條 fresh-process、single-connection path，各 32 events 且 builder／consumer／formatter／writer／glyph pipeline 全為 0，VRAM hash 不變。另以 `0x0805CF62` breakpoint 證明 KEYINPUT read stop 後 `r0` 確實收到 `0x03F7`／release `0x03FF`，所以 input receipt 與遊戲 state gate 分開記錄；自然 index `<44`、normal count、自然 glyph receipt 仍 unknown。詳見 `research/m2-5-stable-title-runtime-20260816.md`。
 - **獨立 story-event pool E static consumer chain（2026-08-16）已建立**：`tools/analyze_story_pool.py` 固定 file `0x0CDB64`／GBA `0x080CDB64` 的 33 entries、33 unique targets（`0x077328–0x077E68`）、32/33 LF、33/33 strict Shift-JIS、0 opaque controls；`0x08011990` literal 與 caller span 的 27 個 entry-range slots 接到 `0x08011904` → `0x080118C8` → `0x0800CAD8`。這是 static-consumer-confirmed、natural-runtime-pending；story pool 與四池 custom-glyph audit 分離，因 E source 使用 `0x8141`／`0x8142`／`0x8148`／`0x8158`，不能盲套既有 17-map。
 - **E 已知結局流程交叉證據（2026-08-16）已建立**：日文 GBA 攻略 Wiki 的夷陵／劉備生死結局流程，和 E pool 的 hash-only record 分組相符；另有系列流程資料交叉支持史實／假想與生死差異。這只標為 `provisional-known-screen-cross`，不冒充自然 runtime glyph receipt；詳見 `research/m3-story-known-screen-cross-20260816.md`。
+- **E known-screen／codepage／layout bounded cross-check（2026-08-16）已建立**：E:000–E:032
+  全部有 source-free record ledger、LF／control signature、固定槽位與 re-extract／BPS
+  receipt；common `0x080650A4` lookup → `0x080650DC` expander 及 controlled B[0]
+  `U+90E8`／cache／VRAM／tilemap edge 另提供 codepage addressing 交叉證據。這是
+  `confirmed-static / confirmed-controlled` 與 `provisional-known-screen-cross` 的分層
+  結論，不把 E natural runtime 或 glyph address 當成 Unicode identity；詳見
+  `research/m3-story-known-screen-cross-20260816.md`。
 - **公開術語研究已建立**：`translations/glossary.zh-TW.tsv` 是待 ROM 畫面／上下文核對的臺灣繁體候選表，涵蓋武將、地名、兵種／官職、策略和戰役事件用語；`research/term-sources.md` 記錄來源交叉核對與爭議項目。
 - **Table B bounded translation ledgers（2026-08-16）已建立**：`table-b-batch-1.jsonl`
   的 B0–B5 六筆、`table-b-batch-2.jsonl` 的 19 筆，以及 custom-glyph `table-b-batch-3.jsonl`

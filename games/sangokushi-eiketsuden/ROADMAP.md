@@ -40,7 +40,11 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
 - [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
 - [x] 分別確認四組 bounded candidate pool 的完整 NUL／Shift-JIS／LF／控制碼統計；A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未把 noisy compression signature 當成文本壓縮。各池完整畫面語意與其餘 runtime glyph identity 仍分開 pending；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [x] 建立 story-event E 的 bounded static boundary／consumer chain：`0x0CDB64/33`、33 unique targets、32/33 LF、33/33 strict Shift-JIS、0 opaque controls，並驗證 `0x080CDB64 → 0x08011904 → 0x080118C8 → 0x0800CAD8`；另以日文 GBA 攻略的夷陵／劉備生死結局流程建立 `provisional-known-screen-cross`，但 E 的 natural runtime、glyph receipt 和完整語意仍 pending，且不併入四池 custom-glyph source non-use。
-- [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。
+- [x] 建立已知流程／標題渲染／static codepage 的 bounded cross-check：E:000–E:032 的
+  hash-only 結局分組與公開夷陵／生死流程相符，common writer 的 codepage lookup／glyph
+  addressing 與 controlled B[0] U+90E8 receipt 相接；runtime glyph pool 定位、E natural
+  formatter→cache→VRAM receipt 與其餘 Unicode 身分仍分欄標為 pending／provisional，未以
+  address 推導 Unicode。詳見 `research/m3-story-known-screen-cross-20260816.md`。
 - [x] 寫出 `tools/extract_text_pools.py` 唯讀 decoder，輸出 ignored `research/sangokushi-eiketsuden-decoded.jsonl` 本機原文表與不含原文的 pool metadata；renderer 仍只使用共用 `core/gba` 工具。
 - [x] 以 B0–B5 的 fixed-slot bounded patch 做一次選定 record 的 extract→encode→patch→re-extract
   round-trip；全池／全 ROM 的回插路徑仍保留到里程碑 4 驗收。

@@ -13,7 +13,7 @@ file 0x0CDB64 / GBA 0x080CDB64 / 33 entries
 
 這是指標、有效 Thumb 函式邊界、literal pool 和 callsite 的靜態 consumer 證據；
 目前仍沒有自然 mGBA runtime hit，因此標記為
-`static-consumer-confirmed; known-screen-cross-provisional; natural-runtime-pending`。
+`static-consumer-confirmed; known-screen-cross-provisional; ledger-complete; natural-runtime-pending`。
 本文件只保存 metadata、
 offset、計數和 hash，不保存日文原文、record payload、dump 或 glyph 圖片。
 
@@ -84,13 +84,15 @@ record 分組相符；這只形成 `provisional-known-screen-cross`，不取代�
 
 ## E-specific custom glyph gate
 
-`research/m3-story-custom-glyph-map.json` 是 E:003/E:004/E:005/E:006/E:007/E:008 的獨立 bounded map。它使用
+`research/m3-story-custom-glyph-map.json` 是 E-specific records 的獨立 bounded map。它使用
 完整 `--include-story` 292-record source table 做 raw-unit non-use audit，選取 codepage
-indices `15`、`16`、`23`、`24`、`25`、`26`、`27`、`28`、`32`（U+7B49、U+537B、U+570B、U+5433、
-U+5F9E、U+6B64、U+53EA、U+65BC、U+95DC），不使用與 E source
+indices `15`、`16`、`23`、`24`、`25`、`26`、`27`、`28`、`32`、`34`、`35`、`36`
+（U+7B49、U+537B、U+570B、U+5433、U+5F9E、U+6B64、U+53EA、U+65BC、U+95DC、U+737B、
+ U+4E82、U+6B0A），不使用與 E source
 重疊的四個 existing-map units。`custom_glyph_patch.py` 和 `verify_custom_glyph_patch.py`
-已對 batch 3／4／5／6 取得 custom plane `3/3`／`4/4`／`5/5`／`5/5`、fixed-slot／re-extract `2/2`／`1/1`／`1/1`／`2/2`、
-pointer／codepage table unchanged；這仍不是 full-ROM non-use 或自然 glyph identity 證明。
+已對 batch 3／4／5／6／8／9／10／11／12／13／14／15／17 取得各批 custom plane
+與 fixed-slot／re-extract receipts（完整計數見各批 research receipt），pointer／codepage
+table unchanged；這仍不是 full-ROM non-use 或自然 glyph identity 證明。
 
 ## Status
 
@@ -101,9 +103,9 @@ pointer／codepage table unchanged；這仍不是 full-ROM non-use 或自然 gly
 | literal → pair helper → writer static chain | confirmed |
 | natural menu／ending reachability | pending; no natural cohort |
 | formatter → cache → VRAM receipt for E | unknown / runtime pending |
-| E custom-glyph safety | confirmed-static / bounded for E:003–E:008; full-ROM non-use unknown |
+| E custom-glyph safety | confirmed-static / bounded for E-specific batches 3–6／8–15／17; full-ROM non-use unknown |
 | E known-screen／flow cross | provisional-known-screen-cross; see `m3-story-known-screen-cross-20260816.md` |
-| E translation ledger | batches 1–6 established for E:002／E:011／E:032／E:003／E:004／E:005／E:006／E:007／E:008; remaining 24 records pending |
+| E translation ledger | 18 source-free batches cover E:000–E:032，33/33 record-level ledger；每批有 layout/control/fixed-slot/re-extract/BPS receipt，人工終審與自然 runtime 仍 pending |
 
 下一步只能在 E-specific source-use gate、版面與術語審核之外，再取得自然 formatter→
 cache→VRAM／tilemap receipt；若目標需要 `0x8141`／`0x8142`／`0x8148`／`0x8158` 等
