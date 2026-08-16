@@ -127,6 +127,12 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   transport negative 誤報成 ROM 或譯文失敗。證據在
   [`research/m19-runtime-qa.json`](research/m19-runtime-qa.json)；ROM、BPS、render
   與 probe output 仍只留 ignored `roms/`／`work/`。
+- M1.10 以 `tools/m110_boundary_audit.py` 對同一個 source pool 完成 2325/2325
+  ROM/source byte identity、NUL boundary、offset ordering／overlap 與 opaque-token
+  統計：2189 筆可進 glyph-only no-op contract、136 筆 opaque／unaligned fail-closed；
+  16-record cohort 也維持 no-op 16/16。newline-looking／未知 pair 仍只標為 opaque，
+  研究摘要在 [`research/m110-boundary-audit.json`](research/m110-boundary-audit.json)，
+  不代表完整 newline、speaker、multi-line layout 或池外文本已解出。
 - 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -139,6 +145,13 @@ python3 games/super-robot-taisen-d/tools/scan_indexed_text.py ROM \
 python3 games/super-robot-taisen-d/tools/verify_sjis_source_table.py \
   ROM games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
   --start 0x76000 --end 0x82490 --expected-count 2325
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m110_boundary_audit.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --start 0x76000 --end 0x82490 --cohort-size 16 \
+  --output games/super-robot-taisen-d/work/m110-boundary-audit.json
 
 PYTHONDONTWRITEBYTECODE=1 python3 \
   games/super-robot-taisen-d/tools/build_m16_cohort.py \
@@ -250,6 +263,9 @@ queue 觸發尚未取代這條受控驗證。
   不外推為 patched target 畫面 QA。
 - [ ] 在新的獨立 mGBA process／port 完成 M1.9 patched target 與相鄰 record 的
   controlled writer/cache 或 VRAM hash proof；自然 menu／queue 仍不宣稱已達成。
+- [x] M1.10 完成 2325 筆 source record 的 NUL／ordering／overlap／ROM equality
+  audit、opaque／unaligned 分布、line-width 統計與 16-record bounded no-op cohort；
+  unknown token 與 newline semantics 維持 opaque／未命名。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger

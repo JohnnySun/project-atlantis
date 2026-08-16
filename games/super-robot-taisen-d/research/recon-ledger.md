@@ -565,6 +565,38 @@ M1.9 patched target 的 runtime screen、writer destination、cache／VRAM hash�
 自然 menu／queue。newline 仍只有 `0x08008724` 靜態「無獨立 newline branch」證據，
 不得外推成完整引擎 newline 安全。
 
+## 2026-08-16：M1.10 record boundary／opaque-token audit
+
+在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的
+`0x076000..0x082490` 與 ignored strict Shift-JIS source table 做完整 2325 筆
+逐筆 byte identity 檢查。工具只把 source text 留在本機記憶體，tracked 摘要只留
+offset、hash、length、NUL、token count、class count、line-width 統計與 bounded
+cohort metadata；可重跑輸出在 ignored `work/m110-boundary-audit.json`，tracked
+摘要在 [`m110-boundary-audit.json`](m110-boundary-audit.json)。
+
+### 已確認的 boundary／contract 分布
+
+| 項目 | 結果 |
+| --- | --- |
+| source records | 2325；`0x08076000..0x08082490`；offset 嚴格遞增、duplicate 0、overlap 0 |
+| terminator | 2325/2325 為 NUL；embedded NUL 0；最後 terminator `0x08082489` |
+| ROM/source equality | 2325/2325 strict Shift-JIS bytes 相等 |
+| tokenization | glyph-only 2189；opaque／unaligned 136；glyph 15885（narrow 11902、wide 3983） |
+| opaque 分布 | ASCII／format-like opaque 1032 tokens；unaligned tail 88；未觀察到 newline candidate |
+| layout | 可進 glyph contract 的 2189 筆，width 8..240、56 個 distinct width；最大值只是 corpus 統計，不是引擎最大行寬證明 |
+| no-op | 全部 2325 筆 encode byte identity；其中 2189/2189 通過 glyph-only contract，136 筆 opaque／unaligned 明確拒絕翻譯 |
+
+`0x08008724` 的 static consumer branch 仍只有 NUL exit、two-byte unit、narrow／wide
+分流；沒有 dedicated newline branch。因此 `m110_boundary_audit.py` 將未知 pair、
+unaligned tail 與任何 newline-looking data 保持 opaque，不以 byte value 命名語意，
+也不把 `width=240` 外推為所有畫面的安全寬度。中心 `0x0807B3FC` 的 16-record
+bounded cohort 為 16/16 no-op、16/16 contract-eligible；其 source-safe digest、
+offset digest 與所有計數均在研究 JSON，沒有完整原文。
+
+這個 slice 只收斂 record boundary、NUL 與 fail-closed token policy；speaker、
+multi-line layout、分支腳本與實際 newline semantics 仍未完成，也沒有開始第二筆
+翻譯或批量翻譯。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |

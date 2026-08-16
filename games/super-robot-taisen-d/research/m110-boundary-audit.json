@@ -1,0 +1,130 @@
+{
+  "schema": "super-robot-taisen-d-m110-boundary-audit-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "opaque_values": "preserve for statistics; reject for translation contract",
+    "newline_semantics": "unconfirmed_opaque; no numeric token naming"
+  },
+  "source_range": {
+    "start": "0x08076000",
+    "end_exclusive": "0x08082490",
+    "record_count": 2325,
+    "first_record_address": "0x08076000",
+    "last_record_address": "0x08082478",
+    "last_terminator_address": "0x08082489",
+    "source_corpus_digest": "e461bfd7f178210b3a9db414c0ed995de0cefbd7e41b9da3577ee4a149337594"
+  },
+  "record_boundaries": {
+    "strictly_ordered": true,
+    "duplicate_offset_count": 0,
+    "overlap_count": 0,
+    "gap_count": 2324,
+    "gap_length_counts": {
+      "0": 26,
+      "1": 1005,
+      "2": 60,
+      "3": 1070,
+      "5": 4,
+      "7": 4,
+      "9": 7,
+      "11": 12,
+      "13": 8,
+      "15": 6,
+      "17": 17,
+      "19": 15,
+      "21": 6,
+      "23": 5,
+      "25": 6,
+      "27": 4,
+      "29": 1,
+      "31": 5,
+      "33": 4,
+      "35": 6,
+      "37": 3,
+      "41": 3,
+      "43": 1,
+      "45": 1,
+      "47": 1,
+      "49": 11,
+      "51": 2,
+      "55": 2,
+      "57": 2,
+      "61": 3,
+      "63": 1,
+      "67": 1,
+      "73": 1,
+      "75": 2,
+      "87": 1,
+      "95": 1,
+      "97": 2,
+      "105": 1,
+      "111": 1,
+      "117": 2,
+      "123": 1,
+      "127": 1,
+      "133": 1,
+      "145": 1,
+      "149": 1,
+      "181": 1,
+      "197": 1,
+      "201": 1,
+      "226": 1,
+      "2765": 1,
+      "853": 1
+    },
+    "terminator_kind_counts": {"NUL": 2325},
+    "embedded_nul_count": 0,
+    "record_end_in_source_range": true,
+    "rom_source_byte_identity_count": 2325
+  },
+  "tokenization": {
+    "status_counts": {"glyph_only": 2189, "opaque_or_unaligned": 136},
+    "token_kind_counts": {
+      "glyph": 15885,
+      "opaque_ascii_or_format": 1032,
+      "opaque_unaligned_tail": 88
+    },
+    "glyph_class_counts": {"narrow": 11902, "wide": 3983},
+    "opaque_reason_counts": {
+      "consumer_advances_source_cursor_by_two_bytes": 88,
+      "not_a_verified_double_byte_glyph": 1032
+    },
+    "consumer_newline_branch": false,
+    "newline_candidate_count": 0,
+    "unknown_token_policy": "opaque"
+  },
+  "layout": {
+    "contract_eligible_record_count": 2189,
+    "opaque_or_unaligned_record_count": 136,
+    "line_width_minimum": 8,
+    "line_width_maximum": 240,
+    "line_width_distinct_count": 56,
+    "line_width_values_sha256": "9cde3237766d2180399ed55a872a43dba596dc4f9f109c013e206c95a46a1f11"
+  },
+  "no_op": {
+    "all_record_byte_identity_count": 2325,
+    "all_record_count": 2325,
+    "contract_eligible_count": 2189,
+    "contract_eligible_byte_identity_count": 2189,
+    "opaque_rejected_count": 136,
+    "fail_closed": true
+  },
+  "cohort": {
+    "center": "0x0807B3FC",
+    "record_count": 16,
+    "offset_index_sha256": "1d71a36e5edc775c4b5f4a8a7d60a408668c085a3c29c557079ff4ab27cc1fc5",
+    "byte_identity_no_op_count": 16,
+    "contract_eligible_count": 16
+  },
+  "gate": {
+    "record_count_match": true,
+    "rom_source_identity_complete": true,
+    "all_nul_terminated": true,
+    "no_overlap": true,
+    "supported_no_op_complete": true,
+    "opaque_not_named_as_control": true,
+    "translation_started": false
+  }
+}

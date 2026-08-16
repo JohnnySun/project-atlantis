@@ -46,6 +46,9 @@
 - [ ] M1.9 patched target runtime：在新的獨立 mGBA process／port 重新捕捉
   slots `543/542` 的 writer destination、cache／VRAM hash 與相鄰 record；自然
   menu／queue、newline branch 仍須分開驗證。
+- [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
+  audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
+  no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
 - [ ] 定義控制碼、終止符、換行、說話者、最大寬度／行數與分支邊界。
 - [ ] 用自然畫面或更多獨立語料上下文擴大重讀確認解碼結果；M1.6 的兩個 sample
   仍是同一受控 consumer path 的最小證據。
