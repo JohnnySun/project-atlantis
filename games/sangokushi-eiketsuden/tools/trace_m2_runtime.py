@@ -53,6 +53,24 @@ STATIC_RECORD_WRAPPER_ADDRESS = 0x0800D8F0
 RECORD_POOL_START = 0x08078528
 RECORD_POOL_END_EXCLUSIVE = 0x0807870B
 
+M22_BREAKPOINTS = {
+    "consumer_entry": 0x08026054,
+    "consumer_index_setup": 0x080262F8,
+    "record_wrapper": 0x0800D8F0,
+    "formatter": 0x0800D3FC,
+    "output_writer": 0x0800CAD8,
+    "sjis_renderer": 0x08008D18,
+    "codepage_lookup": 0x080650A4,
+    "glyph_expand": 0x080650DC,
+    "vram_copy": 0x080656D4,
+    "tilemap_writer": 0x08008914,
+}
+M22_SENTINEL_CODES = {0x9594: "U+90E8", 0x82C9: "U+306B", 0x97CD: "U+529B"}
+M22_RAM_RANGES = (
+    (0x02000000, 0x02040000),
+    (0x03000000, 0x03008000),
+)
+
 
 def parse_sequence(spec: str) -> list[tuple[str, int]]:
     """Parse ``none:5,start:4,none:12`` into key phases."""
@@ -177,6 +195,320 @@ def vram_summary(before: bytes, after: bytes) -> dict[str, object]:
         "first_changed_4bpp_tiles": [f"0x{tile:04X}" for tile in changed_tiles[:32]],
         "changed_halfword_count": len(changed_halfwords),
     }
+
+
+def _in_runtime_ram(address: int) -> bool:
+    return any(start <= address < end for start, end in M22_RAM_RANGES)
+
+
+def _u16_from(client: GdbClient, address: int) -> int | None:
+    if not _in_runtime_ram(address):
+        return None
+    try:
+        return int.from_bytes(client.read_memory(address, 2), "little")
+    except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+        return None
+
+
+def _u16_any(client: GdbClient, address: int) -> int | None:
+    try:
+        return int.from_bytes(client.read_memory(address, 2), "little")
+    except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+        return None
+
+
+def _r6_metadata(client: GdbClient, registers: dict[str, int], *, entry_pc: bool) -> dict[str, object]:
+    """Record structure fields and index evidence without dumping source bytes."""
+
+    base = registers["r0"] if entry_pc else registers["r6"]
+    result: dict[str, object] = {
+        "r6_base": f"0x{base:08X}",
+        "caller_lr": f"0x{registers['lr']:08X}",
+        "r6_base_is_runtime_ram": _in_runtime_ram(base),
+    }
+    fields: dict[str, int | None] = {}
+    for offset in (0x00, 0x02, 0x04, 0x06, 0x08, 0x1C, 0x24):
+        fields[f"0x{offset:02X}"] = _u16_from(client, base + offset) if offset != 0x1C else None
+    if _in_runtime_ram(base + 0x1C):
+        try:
+            fields["0x1C"] = int.from_bytes(client.read_memory(base + 0x1C, 4), "little")
+        except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+            fields["0x1C"] = None
+    result["r6_fields_u16_or_pointer"] = fields
+    record_base = fields.get("0x1C")
+    if isinstance(record_base, int):
+        result["record_byte_base"] = f"0x{record_base:08X}"
+    if not entry_pc and isinstance(record_base, int):
+        event_array_index = registers["r7"] - record_base
+        result["event_array_index"] = event_array_index
+        result["event_byte_pointer"] = f"0x{registers['r7']:08X}"
+        try:
+            event_byte_value: int | None = client.read_memory(registers["r7"], 1)[0]
+        except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+            event_byte_value = None
+        result["event_byte_value"] = event_byte_value
+        length = fields.get("0x02")
+        result["event_array_index_less_than_local_length"] = (
+            isinstance(length, int) and 0 <= event_array_index < length
+        )
+        if event_byte_value is not None:
+            table_index = event_byte_value & 0x7F
+            result["actual_index"] = table_index
+            result["masked_table_index"] = table_index
+            result["index_less_than_table_b_count"] = 0 <= table_index < 44
+    result["bound_status"] = "runtime-observed-only; not-static-proof"
+    return result
+
+
+def _pipeline_hit_metadata(
+    client: GdbClient,
+    name: str,
+    registers: dict[str, int],
+) -> dict[str, object]:
+    pc = registers["pc"] & ~1
+    result: dict[str, object] = {
+        "hit": name,
+        "pc": f"0x{pc:08X}",
+        "lr": f"0x{registers['lr']:08X}",
+        "registers": register_snapshot(registers),
+    }
+    if name == "consumer_entry":
+        result["index_metadata"] = _r6_metadata(client, registers, entry_pc=True)
+    elif name == "consumer_index_setup":
+        result["index_metadata"] = _r6_metadata(client, registers, entry_pc=False)
+    elif name == "codepage_lookup":
+        code = registers["r1"] & 0xFFFF
+        result["code_unit"] = f"0x{code:04X}"
+        result["unicode_identity"] = M22_SENTINEL_CODES.get(code, "unmapped")
+    elif name == "glyph_expand":
+        codepage_index = registers["r1"] & 0xFFFF
+        result["codepage_index"] = codepage_index
+        result["codepage_table_address"] = f"0x{0x0824110C + codepage_index * 2:08X}"
+        code = _u16_any(client, 0x0824110C + codepage_index * 2)
+        if code is not None:
+            result["code_unit"] = f"0x{code:04X}"
+            result["unicode_identity"] = M22_SENTINEL_CODES.get(code, "unmapped")
+        else:
+            result["unicode_identity"] = "unmapped"
+    elif name == "record_wrapper":
+        result["record_pointer"] = f"0x{registers['r0']:08X}"
+        result["record_pointer_is_B0"] = registers["r0"] == ROM_BASE + CANDIDATE["record_file_offset"]
+    elif name == "formatter":
+        result["source_pointer"] = f"0x{registers['r0']:08X}"
+        result["formatter_output_arg"] = f"0x{registers['r2']:08X}"
+    elif name == "output_writer":
+        result["formatted_buffer_pointer"] = f"0x{registers['r0']:08X}"
+    elif name == "vram_copy":
+        result["destination"] = f"0x{registers['r0']:08X}"
+        result["source"] = f"0x{registers['r1']:08X}"
+        result["copy_length_units"] = registers["r2"]
+        result["copy_length_bytes"] = registers["r2"] * 0x20
+    elif name == "tilemap_writer":
+        result["tilemap_x"] = registers["r0"] & 0xFFFF
+        result["tilemap_y"] = registers["r1"] & 0xFFFF
+        result["tilemap_value_base"] = registers["r2"] & 0xFFFF
+    return result
+
+
+def _pipeline_breakpoint_name(pc: int) -> str | None:
+    normalized = pc & ~1
+    for name, address in M22_BREAKPOINTS.items():
+        if normalized == address:
+            return name
+    return None
+
+
+def _collect_pipeline_events(
+    client: GdbClient,
+    report: dict[str, object],
+    *,
+    sequence: list[str],
+    max_events: int,
+    event_timeout: float,
+    mode: str,
+) -> bool:
+    """Collect natural or controlled stops; return whether target is stopped."""
+
+    target_stopped = True
+    events = report["events"]
+    for index in range(max_events):
+        desired = sequence[index] if index < len(sequence) else "none"
+        target_stopped = False
+        try:
+            stop = client.continue_until_stop(event_timeout)
+        except TimeoutError:
+            report["negative"].append({
+                "mode": mode,
+                "event_index": index,
+                "kind": "event-timeout",
+                "message": "no breakpoint/watchpoint stop in bounded interval",
+            })
+            return False
+        target_stopped = True
+        kind, address = parse_stop_watch(stop)
+        registers = client.read_registers()
+        hit = _pipeline_breakpoint_name(registers["pc"])
+        event: dict[str, object] = {
+            "mode": mode,
+            "index": index,
+            "requested_key": desired,
+            "stop": stop,
+            "stop_kind": kind,
+            "stop_address": None if address is None else f"0x{address:08X}",
+            "pc": f"0x{registers['pc'] & ~1:08X}",
+            "lr": f"0x{registers['lr']:08X}",
+        }
+        if hit is not None:
+            event.update(_pipeline_hit_metadata(client, hit, registers))
+            events.append(event)
+            # GDB stops before the breakpoint instruction. Single-step exactly
+            # that instruction so the next continue cannot retrigger it.
+            if (registers["pc"] & ~1) == M22_BREAKPOINTS[hit]:
+                report.setdefault("breakpoint_steps", []).append({
+                    "mode": mode,
+                    "hit": hit,
+                    "response": client.request("s"),
+                })
+            continue
+
+        if address is not None and KEYINPUT_ADDRESS <= address < KEYINPUT_ADDRESS + 2:
+            event["watch"] = "KEYINPUT"
+            event["requested_keyinput"] = f"0x{key_value(desired):04X}"
+            events.append(event)
+            client.write_register(0, key_value(desired))
+            continue
+
+        event["watch"] = "unclassified"
+        events.append(event)
+    return target_stopped
+
+
+def run_pipeline_trace(
+    rom_path: Path,
+    *,
+    host: str,
+    port: int,
+    sequence: list[str],
+    natural_events: int,
+    controlled_events: int,
+    event_timeout: float,
+    settle_seconds: float,
+    controlled_record: bool,
+) -> dict[str, object]:
+    """Trace natural reachability, then optionally inject B[0] at the wrapper.
+
+    Register writes are an explicitly labelled controlled experiment.  They
+    do not turn a controlled hit into evidence that the game naturally chose
+    table-B entry 0.
+    """
+
+    static = static_candidate_metadata(rom_path)
+    report: dict[str, object] = {
+        "read_only": True,
+        "harness": "M2.2-pipeline",
+        "candidate": candidate_addresses(),
+        "static_candidate": static,
+        "breakpoints": {name: f"0x{address:08X}" for name, address in M22_BREAKPOINTS.items()},
+        "events": [],
+        "breakpoint_steps": [],
+        "negative": [],
+        "natural_reachability": "not-observed",
+        "controlled_reachability": "not-requested",
+    }
+    client = GdbClient(host, port, timeout=max(5.0, event_timeout), packet_delay=0.08)
+    breakpoint_set: list[tuple[str, int]] = []
+    watch_set = False
+    target_stopped = True
+    before_vram: bytes | None = None
+    try:
+        client.connect()
+        report["supported"] = client.request("qSupported:multiprocess+")
+        report["initial_stop"] = client.request("?")
+        report["initial_registers"] = register_snapshot(client.read_registers())
+        report["settle_stop"] = client.continue_and_interrupt(settle_seconds)
+        target_stopped = True
+        before_vram = client.read_memory(0x06000000, 0x18000)
+        for name, address in M22_BREAKPOINTS.items():
+            client.set_breakpoint(address)
+            breakpoint_set.append((name, address))
+        client.set_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
+        watch_set = True
+
+        target_stopped = _collect_pipeline_events(
+            client,
+            report,
+            sequence=sequence,
+            max_events=natural_events,
+            event_timeout=event_timeout,
+            mode="natural",
+        )
+        natural_hits = [
+            event for event in report["events"]
+            if event.get("mode") == "natural" and event.get("hit") in {
+                "consumer_entry", "consumer_index_setup", "record_wrapper", "formatter",
+            }
+        ]
+        report["natural_reachability"] = "observed" if natural_hits else "not-observed"
+
+        if controlled_record and not natural_hits:
+            report["controlled_reachability"] = "requested"
+            if not target_stopped:
+                report["interrupt_before_controlled"] = client.interrupt(timeout=2.0)
+                target_stopped = True
+            current = client.read_registers()
+            record_address = ROM_BASE + CANDIDATE["record_file_offset"]
+            client.write_register(0, record_address)
+            client.write_register(15, STATIC_RECORD_WRAPPER_ADDRESS)
+            report["controlled_injection"] = {
+                "mode": "controlled-consumer-call-hijack",
+                "entry": f"0x{STATIC_RECORD_WRAPPER_ADDRESS:08X}",
+                "r0_record_pointer": f"0x{record_address:08X}",
+                "previous_pc": f"0x{current['pc']:08X}",
+                "previous_lr": f"0x{current['lr']:08X}",
+                "natural_reachability_preserved": True,
+            }
+            target_stopped = _collect_pipeline_events(
+                client,
+                report,
+                sequence=[],
+                max_events=controlled_events,
+                event_timeout=event_timeout,
+                mode="controlled",
+            )
+            controlled_hits = [
+                event for event in report["events"]
+                if event.get("mode") == "controlled" and event.get("hit") in {
+                    "record_wrapper", "formatter", "output_writer", "sjis_renderer",
+                    "codepage_lookup", "glyph_expand", "vram_copy", "tilemap_writer",
+                }
+            ]
+            report["controlled_reachability"] = "observed" if controlled_hits else "not-observed"
+        elif controlled_record:
+            report["controlled_reachability"] = "skipped-natural-hit"
+
+        if not target_stopped:
+            report["final_interrupt"] = client.interrupt(timeout=2.0)
+            target_stopped = True
+        after_vram = client.read_memory(0x06000000, 0x18000)
+        report["vram_delta"] = vram_summary(before_vram, after_vram)
+        report["natural_index_evidence"] = [
+            event["index_metadata"]
+            for event in report["events"]
+            if event.get("mode") == "natural" and "index_metadata" in event
+        ]
+    finally:
+        if watch_set:
+            try:
+                client.remove_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
+            except (ConnectionError, OSError, RuntimeError, TimeoutError):
+                pass
+        for _name, address in reversed(breakpoint_set):
+            try:
+                client.remove_breakpoint(address)
+            except (ConnectionError, OSError, RuntimeError, TimeoutError):
+                pass
+        client.close()
+    return report
 
 
 def run_trace(
@@ -328,6 +660,18 @@ def main() -> int:
     parser.add_argument("--settle-seconds", type=float, default=0.25)
     parser.add_argument("--post-seconds", type=float, default=0.50)
     parser.add_argument(
+        "--pipeline",
+        action="store_true",
+        help="trace the M2.2 formatter/codepage/glyph pipeline breakpoints",
+    )
+    parser.add_argument(
+        "--controlled-record",
+        action="store_true",
+        help="after natural tracing, inject the reviewed B[0] pointer at the wrapper (controlled only)",
+    )
+    parser.add_argument("--natural-events", type=int, default=24)
+    parser.add_argument("--controlled-events", type=int, default=96)
+    parser.add_argument(
         "--disable-wrapper-breakpoint",
         action="store_true",
         help="skip the static-chain 0x0800D8F0 breakpoint",
@@ -336,20 +680,39 @@ def main() -> int:
     args = parser.parse_args()
     if args.max_events < 1:
         parser.error("--max-events must be positive")
+    if args.natural_events < 1:
+        parser.error("--natural-events must be positive")
+    if args.controlled_events < 1:
+        parser.error("--controlled-events must be positive")
+    if args.controlled_record and not args.pipeline:
+        parser.error("--controlled-record requires --pipeline")
     try:
         sequence = expand_sequence(parse_sequence(args.sequence))
-        report = run_trace(
-            args.rom,
-            host=args.host,
-            port=args.port,
-            sequence=sequence,
-            max_events=args.max_events,
-            event_timeout=args.event_timeout,
-            settle_seconds=args.settle_seconds,
-            post_seconds=args.post_seconds,
-            wrapper_breakpoint=not args.disable_wrapper_breakpoint,
-        )
-    except (OSError, RuntimeError, TimeoutError, ValueError) as exc:
+        if args.pipeline:
+            report = run_pipeline_trace(
+                args.rom,
+                host=args.host,
+                port=args.port,
+                sequence=sequence,
+                natural_events=args.natural_events,
+                controlled_events=args.controlled_events,
+                event_timeout=args.event_timeout,
+                settle_seconds=args.settle_seconds,
+                controlled_record=args.controlled_record,
+            )
+        else:
+            report = run_trace(
+                args.rom,
+                host=args.host,
+                port=args.port,
+                sequence=sequence,
+                max_events=args.max_events,
+                event_timeout=args.event_timeout,
+                settle_seconds=args.settle_seconds,
+                post_seconds=args.post_seconds,
+                wrapper_breakpoint=not args.disable_wrapper_breakpoint,
+            )
+    except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError) as exc:
         print(f"trace_m2_runtime.py: {exc}", file=sys.stderr)
         return 2
     text = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"

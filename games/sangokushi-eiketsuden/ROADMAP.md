@@ -19,18 +19,21 @@
 ## 里程碑 2：文本、字型與可逆路徑
 
 2026-08-16 的 M2 bounded slice 已選定 table B entry 0（file target `0x078528`）並
-建立 `tools/trace_m2_runtime.py`。後續 M2.1 已以 static consumer chain 前進：table B
-邊界與 44 entries 已固定，並由 Thumb code-flow 證實 table index／record load →
-wrapper／byte formatter；runtime pointer／record → glyph/tile writer 仍 pending，以下
-未勾選項目不變。
+建立 `tools/trace_m2_runtime.py`。M2.1 已以 static consumer chain 固定 table B 邊界與
+44 entries，並由 Thumb code-flow 證實 table index／record load → wrapper／byte formatter。
+M2.2 再把 formatter 靜態接到 output writer、SJIS codepage、glyph cache、VRAM copy 和
+tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph identity 仍 pending。
 
 - [x] 靜態定位劇情／系統／戰役相關候選 Shift-JIS 區段與四組 pointer-table 候選；分類和範圍見 recon ledger。
 - [x] 初步確認 `0x00` 終止、`0x0A` 換行、格式參數和候選控制序列；尚未確認完整字串結構。
 - [x] M2.1 固定 table B 邊界（44 entries、26 unique targets），驗證 table B record 的 Shift-JIS／NUL 結構，並記錄未知控制 bytes 為 opaque。
 - [x] M2.1 找到有效 Thumb static chain：`0x080262F8` literal → `0x080262FA–0x08026306` index／record load → `0x0800D8F0` wrapper → `0x0800D3FC` byte formatter／reader；glyph writer 尚未證實。
 - [x] M2.1 建立 bounded analyzer、ignored decoded JSONL extractor、反組譯／邊界／結構測試；兩次乾淨 runtime retry 未取得 consumer hit，runtime edge 保留 pending。
-- [ ] 分別確認字串結構、指標／池、壓縮、控制碼、換行和字型／glyph addressing。
-- [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 glyph pool 定位和 Unicode 身分確認。
+- [x] M2.2 以有效 Thumb span、literal pool 和 callsite 驗證 `0x0800D3FC` stack output buffer → `0x0800CAD8` writer → `0x08008D18` SJIS renderer → `0x080650A4` codepage lookup → `0x080650DC` glyph expand → `0x080656D4` VRAM copy／`0x08008914` tilemap writer。
+- [x] M2.2 建立 source-safe static analyzer、44-record decode→encode no-op verifier、三個 strict SJIS sentinel 的 codepage index／static glyph hash 交叉證據；不把 raw source、dump 或圖片寫入 Git。
+- [x] M2.2 擴充 pipeline breakpoint harness，natural／controlled 事件分欄並記錄 r6 base、欄位、caller LR 與 actual index；本次 runtime listener 未產生可用 report，故維持 pending。
+- [ ] 分別確認完整字串結構、指標／池、壓縮、控制碼、換行和 runtime glyph identity；M2.2 的 addressing 結論只限已驗證的 static path。
+- [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。
 - [ ] 寫出 `games/sangokushi-eiketsuden/tools/` 下的唯讀 decoder／renderer，輸出本機原文表。
 - [ ] 只有在未修改內容可抽出再回插後逐 byte 一致，才宣稱回插路徑可行。
 

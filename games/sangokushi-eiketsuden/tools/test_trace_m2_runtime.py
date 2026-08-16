@@ -40,6 +40,45 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertEqual(summary["changed_4bpp_tile_count"], 2)
         self.assertNotIn("data", summary)
 
+    def test_m22_breakpoints_normalize_thumb_addresses(self) -> None:
+        self.assertEqual(TRACE.M22_BREAKPOINTS["output_writer"], 0x0800CAD8)
+        self.assertEqual(TRACE.M22_BREAKPOINTS["glyph_expand"], 0x080650DC)
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x0800CAD9), "output_writer")
+        self.assertEqual(TRACE._pipeline_breakpoint_name(0x080650DD), "glyph_expand")
+        self.assertEqual(TRACE.M22_SENTINEL_CODES[0x9594], "U+90E8")
+        self.assertNotIn("text", TRACE.M22_BREAKPOINTS)
+
+    def test_m22_index_metadata_keeps_local_and_table_bounds_separate(self) -> None:
+        class FakeClient:
+            def read_memory(self, address: int, length: int) -> bytes:
+                fields = {
+                    0x02000100: (2).to_bytes(2, "little"),
+                    0x02000102: (6).to_bytes(2, "little"),
+                    0x02000104: (1).to_bytes(2, "little"),
+                    0x02000106: (1).to_bytes(2, "little"),
+                    0x02000108: (1).to_bytes(2, "little"),
+                    0x02000124: (0).to_bytes(2, "little"),
+                    0x0200011C: (0x03000200).to_bytes(4, "little"),
+                    0x03000205: bytes([0x85]),
+                }
+                return fields[address][:length]
+
+        metadata = TRACE._r6_metadata(
+            FakeClient(),
+            {
+                "r6": 0x02000100,
+                "r7": 0x03000205,
+                "r0": 0,
+                "lr": 0x08026040,
+            },
+            entry_pc=False,
+        )
+        self.assertEqual(metadata["event_array_index"], 5)
+        self.assertEqual(metadata["actual_index"], 5)
+        self.assertTrue(metadata["event_array_index_less_than_local_length"])
+        self.assertTrue(metadata["index_less_than_table_b_count"])
+        self.assertEqual(metadata["bound_status"], "runtime-observed-only; not-static-proof")
+
 
 if __name__ == "__main__":
     unittest.main()

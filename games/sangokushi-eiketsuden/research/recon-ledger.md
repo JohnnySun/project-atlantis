@@ -46,16 +46,16 @@
 | rendered title screen | `confirmed-runtime / visual-evidence` | 用共用 `render_vram.py` 依上述 BG 設定產生 ignored PPM/PNG：BG0 可見英文開始提示、BG1 可見版權列、BG2 可見日文標題圖樣、BG3 為紅黑圓形裝飾；共用 `render_oam.py` 在 OAM 1D 模式下顯示 0 個可見 sprite | 可證明 GBA tile／tilemap 渲染路徑與目前畫面分層，不證明 BG2 圖樣或任何 ROM 區段就是可解碼劇情文字／字型 |
 | VRAM／DMA | `confirmed-runtime / bounded` | 先前與本次 capture 均觀察到 DMA／資料搬移及非空 VRAM；已知例包含 `0x08079a08 -> 0x03004ee0`、`0x020013d8 -> 0x06000000` 類事件 | 這只能證明執行期圖形資料活動，不證明某段就是字型或文字 tile |
 | M2 selected short record | `confirmed-static / runtime-negative` | table B（`0x0D1FFC`）entry `0` 指向 file `0x078528`；payload 14 bytes、SHA-256 `c7ac47044e9576475f854841981b18ae20eca25ad41df403164ee6307b1aecca`，可由 bounded harness 重核 | 這是早期戰役效果訊息的候選選樣，不是 runtime consumer proof；本次沒有 pointer／record read hit |
-| M2 pointer／record → writer | `negative / not-observed` | 已建立 `tools/trace_m2_runtime.py`，會以 `KEYINPUT`、GBA pointer `0x080d1ffc`、record `0x08078528` read watchpoint 及 VRAM hash delta 做有界追蹤 | headless／SDL／Qt runtime 入口均未建立本 session 可用 GDB listener；沒有 source pointer／record 到 glyph/tile writer 的 confirmed chain |
+| M2 pointer／record → writer | `negative / natural-not-observed; static-confirmed` | M2.2 static chain 已從 `0x0800d3fc` output buffer 接到 `0x0800cad8` writer、`0x08008d18` SJIS renderer、`0x080650a4` lookup、`0x080650dc` glyph expand、`0x080656d4` VRAM copy 和 `0x08008914` tilemap writer；pipeline harness 仍以 `KEYINPUT`、breakpoint 和 VRAM hash 做有界追蹤 | 本次自己的 headless listener 未產生可用 pipeline report；沒有 natural 或 controlled runtime hit，static chain 不冒充 runtime reachability |
 | M2.1 table B 邊界 | `confirmed-static` | file `0x0d1ffc` 到 `0x0d20ac` 為 44 個連續 GBA pointer；下一個 word 為零，table C 從 `0x0d20d8` 開始；record target 有 26 個唯一落點 | 呼叫端只證實 index `& 0x7f`；本地未證實 `<44` bound，不能把 dispatch 的 `cmp #0x22` 當成 table B bound |
 | M2.1 static consumer chain | `confirmed-static / Thumb` | `0x080262f8` literal 取 table base；`0x080262fa–0x08026306` mask／scale／load record pointer；`BL 0x0800d8f0` 再 `BL 0x0800d3fc` | 已到 byte reader／formatter；沒有 glyph writer 或 tile destination 證據 |
 | M2.1 table B record 結構 | `confirmed-static` | 44/44 為 NUL 終止且可由標準 Shift-JIS 解碼；payload 長度為 14×16、16×22、18×6；`0x0a`、格式參數和其他 `<0x20` opaque 控制 byte 皆為 0 | 結構結論只適用 table B；未知控制 byte 仍須保留 opaque，不由靜態解碼推論 glyph identity |
 | M2.1 runtime retry | `pending / bounded-negative` | 兩次新 process／獨立 port、無 bind shim；第二次可讀 GDB I/O／VRAM 並命中 16 次 KEYINPUT watchpoint | 未命中 table pointer、record 或 `0x0800d8f0` wrapper；沒有導航到 consumer 的 runtime evidence，本切片不再重試 |
-| 字型資料 | `unmapped` | 看到 VRAM 活動，但未定位 ROM font、runtime glyph pool 或 tilemap identity | 需要畫面／字型候選與渲染路徑交叉驗證 |
-| glyph addressing | `provisional / title-only` | 標題畫面的 BG／tilemap 位址與 renderer 已確認；M2 harness 只會摘要 VRAM 變動 tile | 尚未確認 font base、glyph index、cell stride、writer／DMA destination；不能把 title BG 重建當成 glyph addressing |
-| Unicode identity | `confirmed-static interpretation / runtime-unconfirmed` | M2 payload 可由標準 Shift-JIS 解碼，字元數與 source hash 固定 | 尚未將任何 Unicode 字元與 runtime glyph tile 或已知畫面位置交叉核對；Unicode codepage 和 glyph identity 分開追蹤 |
+| M2.2 output buffer／writer chain | `confirmed-static / runtime-pending` | formatter `0x0800d3fc` 在 `sp+0x18` 建立 NUL-terminated output；`0x0806ed80` 是 `bx r2` veneer，literal 解析到 writer `0x0800cad8`；writer 的 SJIS path、renderer、lookup、glyph expand、cache、VRAM copy、tilemap callsite 均在有效 Thumb span 內 | 需要 breakpoint／watchpoint 或受控 renderer 事件，才能把 static output path 提升為 runtime observation |
+| glyph addressing | `confirmed-static / runtime-unconfirmed` | codepage table file `0x024110c` 有 1834 entries；lookup index 保存於 `0x080650ec`，glyph expander 以 index×`0x20` 取兩組 static source base，寫入 cache `0x02000000` 128 bytes，再由 `0x080656d4` copy 到 VRAM；三個 sentinel 各有 source chunk hash | 尚未取得 runtime glyph/cache/VRAM breakpoint hit；static chunk 不是 runtime tile identity 證明，也不把 title BG 當字型證據 |
+| Unicode identity | `confirmed-static-for-three-sentinels / runtime-unconfirmed` | table B entry 0 的三個 strict Shift-JIS code `0x9594`／`0x82c9`／`0x97cd` 分別解為 U+90E8／U+306B／U+529B，並各自連到 codepage index 與兩組 static glyph chunk hash；identity 與 addressing 分欄 | 尚未將 Unicode identity 與 runtime glyph tile 或已知畫面位置交叉核對 |
 | compression | `not-confirmed` | bounded signature scan 僅得到 noisy counts：LZ77 `10744`、Huffman `6692`、RLE `4704`、Diff `4966` | 沒有把任何 signature 當成文本壓縮；需由 code／runtime 呼叫證實 |
-| 可逆回插 | `blocked-on-structure` | 目前只有 metadata／pointer summary tool，無 decoder／encoder | 先固定字串 ID、長度、控制碼、字型與 pointer relocation，再做未修改 round trip |
+| 可逆回插 | `record-level-no-op-only` | `verify_table_b_roundtrip.py` 對 table B 44/44 decode→Shift-JIS encode byte-identical、hash-identical、control-invariant；aggregate record hash `e08935e581f822010e5f9f7ba14db556abfd80c25162048019d88f60d2b29af5` | 只證明 record-level no-op；尚未證明 table relocation、ROM encoder、字庫覆蓋、patch 或完整抽出→回插 round trip |
 | 翻譯 ledger | `ready / empty` | glossary 已有 `zh-TW` 候選；沒有 source table 或 translation record | decoder 完成前不建立翻譯批次，不猜 string ID |
 
 ## 可重現命令
@@ -138,15 +138,42 @@ record 只寫到 ignored `research/sangokushi-eiketsuden-decoded.jsonl`，不進
   沒有 pointer／record read 或 wrapper breakpoint。故 runtime glyph/tile writer、
   glyph addressing 和 Unicode identity 仍未確認；不建立翻譯 batch。
 
-此切片的 next static edge 是檢查 `0x0800d3fc` 對 `0x0806ed80` 的 consumer／writer
-語意；需另有 code-flow 或畫面／VRAM 證據後，才能改變目前的 pending 狀態。
+當時的 next static edge 是檢查 `0x0800d3fc` 對 `0x0806ed80` 的 consumer／writer
+語意；該 edge 已在 M2.2 完成，runtime 與回插邊界仍另行分層。
+
+## M2.2 static pipeline（2026-08-16）
+
+完整 source-safe offsets、function spans、sentinel hashes 和再現命令見
+[`research/m2-2-static-pipeline-20260816.md`](m2-2-static-pipeline-20260816.md)。本
+帳只保留可審核 metadata，不保存 record 原文或 glyph dump。
+
+- **confirmed-static**：formatter `0x0800d3fc` 的 stack output `sp+0x18` 經
+  `0x0806ed80: bx r2` veneer 解析至 writer `0x0800cad8`。writer 的 SJIS path
+  `0x0800cb62` 呼叫 renderer `0x08008d18`，再呼叫 `0x080650a4` codepage lookup、
+  `0x080650dc` glyph expand、`0x080656d4` VRAM copy 和 `0x08008914` tilemap writer。
+- **confirmed-static**：codepage table file `0x024110c` 有 1834 entries；lookup
+  index 在 `0x080650ec` 保存，glyph source 以 `base + index*0x20` 定址，cache 為
+  `0x02000000`／128 bytes。三個 strict SJIS sentinel U+90E8、U+306B、U+529B
+  各自有 codepage index 與兩組 static glyph chunk hash；Unicode identity 與
+  glyph addressing 分開保存。
+- **confirmed-static / record-level only**：44/44 records decode→encode
+  byte/hash identical、control invariant；aggregate hash 為
+  `e08935e581f822010e5f9f7ba14db556abfd80c25162048019d88f60d2b29af5`。這不表示
+  ROM encoder、relocation 或 patch 已成立。
+- **confirmed-static / not-proven**：consumer 的 local bound 仍是 `u16(r6+0x02)`；
+  `event_byte & 0x7f` 不能當 `<44`。harness 會在 consumer/index setup 記錄 r6 base、
+  fields、actual index 和 caller LR，並標記 `runtime-observed-only; not-static-proof`。
+- **negative / pending**：一次新的 bounded pipeline listener attempt 沒有產生可用
+  report 或 accepted natural/controlled hit；因此 runtime reachability、runtime
+  glyph/cache/VRAM identity、有效 index 實例和自然畫面連結仍 pending。受控 hijack
+  若未成功，不把它寫成自然 reachability。
 
 ## 後續證據邊界
 
 1. 用 ROM-independent tests 保持 identity／pointer summary 工具可重跑。
 2. 若重新做 runtime，使用本 session 自己的 mGBA 進程與獨立 GDB port；只記錄寄存器、DMA、VRAM／IWRAM 範圍和可重現 breakpoint，不提交 build、probe 或 ROM。
 3. 只有在同一候選字串能以 pointer／code-flow／畫面三者交叉確認後，才建立本機 ignored decoded source table。
-4. 只有未修改內容可抽出、回插、再抽出逐 byte 一致，才將 reversible insertion 從 `blocked-on-structure` 改為 confirmed。
+4. 目前只有 record-level no-op；只有未修改內容可抽出、回插、再抽出逐 byte 一致，才將 reversible insertion 從 `record-level-no-op-only` 改為 confirmed。
 5. 第一批翻譯仍必須通過 `core/ledger/restore_translations.rb`、`strip_translations.rb`、schema、安全檢查與術語來源審核。
 
 ## 尚未採用的假設

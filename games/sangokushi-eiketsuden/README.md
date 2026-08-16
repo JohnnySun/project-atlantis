@@ -12,6 +12,7 @@
 - **靜態文本線索已建立**：已確認可讀的標準 Shift-JIS 字串群、`0x00` 終止／`0x0A` 換行、格式參數與候選指標池；`research/recon-ledger.md` 僅記錄偏移、分類與證據，不保存完整原文。
 - **執行期已完成標題畫面有界 capture**：使用共用 `core/gba` 工具在獨立 mGBA/GDB session 讀取 ROM、IWRAM、VRAM、OAM 與 palette，確認 Mode 0 下 BG0–BG3 的 screenbase，並以共用 renderer 重建出開始提示、版權列、日文標題圖樣與裝飾層；尚未把靜態 Shift-JIS 字串池連到文字呼叫、字型 glyph identity 或可逆回插路徑。
 - **M2.1 static consumer chain（2026-08-16）已完成有界切片**：table B file base `0x0D1FFC` 有 44 個指標、26 個唯一 record target，連續範圍至 `0x0D20AC`，下一個 word 為零，鄰接 table C 從 `0x0D20D8` 開始。已證實 Thumb consumer `0x080262F8` 取 table base、`0x080262FA–0x08026306` 做 index mask／scale／record load，再呼叫 `0x0800D8F0` → `0x0800D3FC` 的 wrapper／byte formatter；這條證據止於 reader／formatter，尚未證實 glyph writer。呼叫端目前只證實 `index & 0x7f`，沒有 `<44` bound。工具、分類與 runtime pending 見 `research/m2-1-static-chain-20260816.md`。
+- **M2.2 static text→glyph chain（2026-08-16）已完成有界切片**：`0x0800D3FC` 建立 stack output buffer `sp+0x18`，經 `0x0806ED80: bx r2` veneer 解析到 `0x0800CAD8` output writer；SJIS double-byte path `0x0800CB62` → `0x08008D18` → codepage lookup `0x080650A4` → glyph expand `0x080650DC` → 128-byte cache `0x02000000` → VRAM copy `0x080656D4`／tilemap `0x08008914` 均已由有效 Thumb span、literal pool 與 callsite 驗證。codepage table 是 file `0x024110C` 的 1834 entries；glyph source 是 `base + codepage_table_index * 0x20`，不是直接以 raw Shift-JIS code 索引。三個 strict SJIS sentinel（U+90E8、U+306B、U+529B）已有 source byte、codepage index 與兩組 static glyph chunk hash 的交叉證據；runtime glyph hit 仍 pending。event index 仍只有 local `u16(r6+0x02)` bound，`<44` 未證明；`trace_m2_runtime.py --pipeline --controlled-record` 已加入但本次 headless listener 未產生可用 report，沒有把 controlled 或 natural hit 冒充 confirmed。完整 offsets、hash、confirmed／provisional／negative 分類見 `research/m2-2-static-pipeline-20260816.md`。
 - **公開術語研究已建立**：`translations/glossary.zh-TW.tsv` 是待 ROM 畫面／上下文核對的臺灣繁體候選表，涵蓋武將、地名、兵種／官職、策略和戰役事件用語；`research/term-sources.md` 記錄來源交叉核對與爭議項目。
 - **沒有翻譯批次**：`research/sangokushi-eiketsuden-decoded.jsonl` 只在本機 ignored 路徑作為 bounded extractor 輸出，含原文但不進 Git；沒有任何可提交 ledger 記錄，因此不能宣稱已完成劇情翻譯或可逆回插。
 
@@ -35,7 +36,7 @@ python3 -m unittest tools/test_inspect_rom.py tools/test_scan_text_pointers.py
 
 ## 控制碼、排版與回插邊界
 
-目前已由靜態資料支持標準 Shift-JIS、`0x00` 終止和 `0x0A` 換行；另觀察到候選 `ESC C6 %s` 格式序列及 `%s`／`%d`／`%u`／`%%` 參數。這些仍不是完整控制碼契約；字型格式、glyph identity、最大寬度／行數、壓縮使用方式和回插位置，必須等遊戲專用解碼與畫面交叉驗證後才可確認。不套用黃金太陽或光明之魂的格式假設。
+目前已由靜態資料支持標準 Shift-JIS、`0x00` 終止和 `0x0A` 換行；另觀察到候選 `ESC C6 %s` 格式序列及 `%s`／`%d`／`%u`／`%%` 參數。M2.2 已確認一條 SJIS codepage 到 static glyph source/cache/VRAM writer 的 addressing 鏈，但尚未確認 runtime glyph identity、完整控制碼契約、最大寬度／行數、壓縮使用方式或回插位置。不套用黃金太陽或光明之魂的格式假設。
 
 ## 公開研究的使用限制
 
