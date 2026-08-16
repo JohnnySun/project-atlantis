@@ -26,6 +26,8 @@ M1.27 已將字型渲染後段固化為可重跑的 static contract：`0x080995b
 
 M1.28 已把兩份 ignored M1.19 natural receipt 的 map lookup 與 glyph-field write 做 deterministic join：每條 route 各 8/8 配對，map entry pointer 都符合 `0x08691644 + map_index*2`，glyph index 與 map index 8/8 相等，glyph field offset 固定為 `0x4a`。這只確認 bounded text buffer→map→glyph object 的索引資料流；兩份 receipt 的 renderer/writer 都是 0，因此 font-source／VRAM byte pairing、Unicode identity 與 scene category 仍 unknown。
 
+M1.29 已將 composer 的 map-index→font-source address formula 以 strict AFEJ static check 固化：source base `0x02000000`、destination base `0x06010000`、config address `0x02002800`、offset mask `0x3ff` 均重新核對；121 個 map index 都產生 bounded formula row，兩份自然 receipt 的 16 個 lookup index 都可 resolve。這是 computed address candidate，不是 font pool bytes／Unicode identity；runtime source address 與 writer pairing 仍未取得。
+
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
@@ -182,6 +184,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m128_map_glyph_pairing.py \
 ```
 
 輸出只含 code-unit SHA-256、map/glyph index、ROM map entry pointer、glyph object field offset 與 renderer/writer hit counts；不含兩位元組 code-unit、完整日文、bitmap 或 raw RAM。
+
+要重跑 M1.29 的 map-index／font-source address formula census：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m129_font_source_formula.py \
+  roms/base/AFEJ.gba \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --runtime-report /private/tmp/afej-m119-natural-long-menu.json \
+  --output /private/tmp/afej-m129-font-source-formula.json
+```
+
+輸出只含公式、literal provenance、map index、computed address 與 code-unit hash；不把 computed source address 當成已讀取的 font bytes，也不宣稱可回插。
 
 要重跑 M1.11 的 static caller／callback gate report：
 

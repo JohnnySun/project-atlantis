@@ -36,6 +36,7 @@
 - [x] M1.26：新增 `analyze_m126_provenance.py`，以 generic caller 鄰近 `2672:16` 與 selector 鄰近 `3080:16` 的兩個不重疊 bounded windows 建立 32 筆跨 caller source/provenance census；32/32 strict worker round-trip、source-span 相等，4 筆 natural loader receipt 的 source pointer 4/4 對上、output hash 3/4 對上，index 2679 mismatch 保留且不猜原因。自然 caller families `0x08098b10`／`0x08009252` 均有收據，但 scene/content category 不從 index、caller 或 route name 推導，維持 unknown。
 - [x] M1.27：新增 `analyze_m127_font_contract.py`，對 AFEJ strict identity 下的 `0x080995b0` renderer／`0x08099580` kernel 做靜態契約驗證：4 次 plane call 的 offset 為 `0x00/0x40/0x80/0xc0`，kernel 以 `0x0f << ((r2 & 7) * 4)` 做 packed-nibble merge，實際 writer 是 `0x080995a6: str r1,[r2]`。這確認位元／plane data flow，不確認 font identity、Unicode、palette 或同一-run writer bytes；translation／回插仍 disabled。
 - [x] M1.28：新增 `analyze_m128_map_glyph_pairing.py`，對兩份 ignored natural receipt 各自配對 8/8 map lookup→glyph-field write；8/8 map entry pointer 符合 `0x08691644 + index*2`，8/8 glyph index 等於 map index，field offset 為 `0x4a`。兩份 receipt 的 renderer/writer 都是 0，font-source pairing 保持 unknown；只保存 code-unit hash，不建立 Unicode、翻譯或回插。
+- [x] M1.29：新增 `analyze_m129_font_source_formula.py`，重驗 composer literals `0x02000000`／`0x06010000`／`0x02002800`／`0x3ff`，對 map domain 121 entries 展開 source address formula；兩份 natural receipt 的 16 個 lookup index 都可 deterministic resolve，實際 source bytes／renderer／writer pairing 仍未取得，font identity／Unicode 維持 unknown。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。
