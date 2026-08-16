@@ -58,8 +58,10 @@ Static font/layout review: `8 pass` under the current bounded contracts.
 
 Translation status: all eight remain `ai_draft`.
 
-Runtime status: pending. There is still no natural/controlled consumer hit,
-live cache/writer-to-VRAM trace, palette/tilemap/OAM evidence, or screen
-readability proof. The next work must close those release gates or document an
-equivalent static writer/destination proof; it must not add more repeated short
-translation batches.
+Runtime status: partial. A clean 2347 route now has qSupported/`S02` readiness
+and a live palette-shadow-to-hardware-DMA call (`0x03005d60` to `0x05000000`,
+`0x400` bytes). There is still no natural/controlled text consumer hit,
+live cache/writer-to-text-VRAM trace, changed/adjacent glyph VRAM equality,
+tilemap/OAM evidence, or screen readability proof. The next work must close
+those release gates or document an equivalent static writer/destination proof;
+it must not add more repeated short translation batches.

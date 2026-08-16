@@ -236,8 +236,9 @@ M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS recei
 - [x] 完成既有八筆 target 的 bounded consistency review：stable ID、source／target hash、byte-length、控制碼、單行版面、glyph／adjacent static contract 均固定；維持 `ai_draft`，不把 provisional wording 或 `重金礦` 升格為人工定稿。
 - [x] 以 `/private/tmp` compile-time fixed-port SDL mGBA 做一次與 `-C gdb.port` 不同的 fresh transport route；port `2346` preflight 無 listener，launcher 回報 `Debugger: Couldn't open socket`，沒有 qSupported 或 live coverage；收據見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
 - [x] 建立 `tools/audit_static_render_destination.py`／測試；以本機 10 個 function／10 個 literal hashes 確認 writer → DMA queue → GBA DMA register `0x040000D4` → text VRAM destination `0x06010000`，並確認 palette source／shadow → hardware palette destination `0x05000000`／`0x400` bytes 的 static chain。
-- [~] runtime 仍為 transport-only blocked；tilemap／OAM、live cache、natural reachability、VRAM readback 與畫面可讀性沒有證據，static chain 不升格為 runtime QA。
-- [~] 本作 milestone commit 尚 pending：path-limited Git stage 在 `.git/index.lock` 建立處被 workspace permission 拒絕；不使用 alternate index 或其他繞過方式，收據見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
+- [~] clean mGBA 2347 route 已取得 qSupported／`S02` 與自然 palette DMA live call（`0x03005d60 → 0x05000000`, `0x400` bytes）；但 `0x0308` consumer、writer、changed glyph `0x847/0x848/0x849` 的 live VRAM、tilemap／OAM 與畫面可讀性仍無證據，static chain 不升格為文字 runtime QA。
+- [x] 先前 index-lock permission negative 已由 path-limited commit `87ed08a` 解決；不使用 alternate index 或其他繞過方式，歷史收據與最新 runtime 邊界見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
+- [ ] 在不同 fresh process 上成功完成一次文字 consumer/writer hit（自然導航或明確標記的 controlled call），並讀出 changed／adjacent live VRAM；一次 controlled connection `Errno 49` negative 不算 ROM／譯文失敗。
 - [ ] 完成八筆人工語意／術語／字型／版面 review，尤其查證 `重金礦`；未通過前不得改為 reviewed／approved。
 - [ ] 取得可實際完成 `qSupported` 的不同 runtime transport，或以更完整且可重跑的 static tilemap／OAM callsite 證據替代；未達成前不宣稱可發布。
 
