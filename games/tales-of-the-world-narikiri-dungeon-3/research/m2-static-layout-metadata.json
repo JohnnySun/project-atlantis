@@ -1,0 +1,83 @@
+{
+  "bounded_layout": {
+    "all_literal_references_match": true,
+    "layout_dispatch_case_count": 19,
+    "layout_dispatch_target_count": 19,
+    "layout_dispatch_target_hash": "698dddc7ca9837fc236a232567a9cf483f6d7eeff8ff8c6d6cc4daabff901e85",
+    "layout_dispatch_unique_targets": 19,
+    "layout_dispatcher_file_offset": "0x0C90F8",
+    "literal_reference_count": 5,
+    "literal_references": [
+      {
+        "code_file_offset": "0x0C8F7E",
+        "literal_file_offset": "0x0C8F90",
+        "matches_width_table": true,
+        "value": "0x081BE31C"
+      },
+      {
+        "code_file_offset": "0x0C8FF0",
+        "literal_file_offset": "0x0C9038",
+        "matches_width_table": true,
+        "value": "0x081BE31C"
+      },
+      {
+        "code_file_offset": "0x0C9074",
+        "literal_file_offset": "0x0C9098",
+        "matches_width_table": true,
+        "value": "0x081BE31C"
+      },
+      {
+        "code_file_offset": "0x0C92D0",
+        "literal_file_offset": "0x0C92DC",
+        "matches_width_table": true,
+        "value": "0x081BE31C"
+      },
+      {
+        "code_file_offset": "0x0C92E0",
+        "literal_file_offset": "0x0C92F0",
+        "matches_width_table": true,
+        "value": "0x081BE31C"
+      }
+    ],
+    "width_table": {
+      "byte_length": 132,
+      "first_byte_counts": {
+        "0": 3,
+        "1": 9,
+        "2": 9,
+        "4": 8,
+        "5": 23,
+        "6": 3,
+        "7": 1,
+        "8": 9,
+        "9": 1
+      },
+      "nonzero_bytes": 96,
+      "pair_count": 66,
+      "second_byte_counts": {
+        "0": 33,
+        "1": 27,
+        "2": 3,
+        "3": 3
+      },
+      "sha256": "1f7d49bf3a67a5da0aac126f44e75f6642428ecc0166b650e452bd867c2243f0",
+      "unique_pair_count": 18
+    },
+    "width_table_end_file_offset": "0x1BE3A0",
+    "width_table_file_offset": "0x1BE31C",
+    "width_table_gba_address": "0x081BE31C"
+  },
+  "classification": {
+    "glyph_identity": "unconfirmed",
+    "japanese_codepage": "unconfirmed",
+    "runtime_text_consumer": "unconfirmed",
+    "width_table": "provisional-layout-table"
+  },
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  }
+}

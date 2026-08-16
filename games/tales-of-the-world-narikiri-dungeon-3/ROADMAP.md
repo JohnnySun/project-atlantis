@@ -41,14 +41,32 @@
 - [x] 靜態確認 `0x08000E0C` 的 active-low KEYINPUT→`r1`→`0x030033F8` edge path，與 `A1AC` bit 0 對 resource object `+0x54`／`A2C0` return 的正常條件
 - [x] 以本作獨立 mGBA 與既有 KEYINPUT harness 重跑 bounded startup；runtime 確認 dispatcher、state 4 handler、`A58C` 與 `A388` caller，未覆寫 state 或 save
 - [x] 擴充 `tools/state_probe.py` 的 open-dispatch negative metadata 與 bounded sequence 測試；輸出只含 registers、state、hash、count metadata
-- [ ] 在 live `A1AC` 後完成一次可重跑的正常 A pulse／`A2C0`／`0x08005E12` return，取得真正 menu/event 的 navigation receipt
-- [ ] state 4 正常 return 後，沿既有 `consumer_probe.py --trace-first-record` 重跑並取得五窗 strict record source read
 
 M1.7 的完整 static、confirmed/provisional/negative runtime 界線見
-[`research/m17-state4-navigation-20260816.md`](research/m17-state4-navigation-20260816.md)。目前仍不可宣稱 resolver text edge、decoder、codepage、glyph identity、翻譯或回插成立；下一個最小切片是修正 A1AC live stop 後的 GDB KEYINPUT register-write／ack receipt，不是擴充 pointer scan。
+[`research/m17-state4-navigation-20260816.md`](research/m17-state4-navigation-20260816.md)。M1.7
+本身仍不可宣稱 resolver text edge、decoder、codepage、glyph identity、翻譯或回插成立。
+
+## M1.8：A1AC 單一 register-write 與正常 return
+
+- [x] 在 A030/A050 正常 gate 後，只以一次 `0x03F7` START pulse 離開初始化 loop，並保留有限 `0x03FF` release；不覆寫 state、object 或 save
+- [x] 在 live `0x0800A1AC` 後對 KEYINPUT destination `r1` 寫入 active-low `0x03FE`，取得 core GDB `OK` ACK，沿用 packet delay 與一次 timeout retry 邊界
+- [x] 觀察 IWRAM `0x030033F8` bit 0，bounded single-step 驗證 `0x0800A174 → 0x0800A180`，並確認 object `0x0200C6DC + 0x54` 由 0 變 1
+- [x] 取得 `0x0800A2C0` entry／`r0=1` caller-after、dispatcher common return `0x08005E12`、state 4→7 與固定畫面 hash metadata
+- [x] 正常 return 後以 clean mGBA session 重跑 `consumer_probe.py --trace-first-record`：strict count `8938`、4 個 resolver hits 全在五窗外，source read/caller return 均為 0
+- [x] 建立 `tools/m18_a1ac_probe.py`、離散測試與不含 raw/source 的 runtime research receipt
+- [ ] 沿 state 7 正常畫面找到第一個真正落入五窗 strict record 的 text consumer，再追 RAM decoder／glyph writer
+
+M1.8 的完整 confirmed/provisional/negative/unknown 邊界見
+[`research/m18-a1ac-runtime-20260816.md`](research/m18-a1ac-runtime-20260816.md)。目前仍不可宣稱
+文字 consumer、codepage、glyph identity、翻譯或回插成立；下一個最小切片是 bounded
+state 7 text-consumer trace，不是擴大 pointer scan。
 
 ## M2：尚未開始的必要證明
 
+- [x] 建立不含原文的 8,938 筆 source-hash ledger scaffold 與控制標記 metadata；以
+  本機 source table 做 decoder／hash drift verify，所有 target 仍為 untranslated
+- [x] 對既有固定 ROM literal 做 bounded layout／width-table metadata verify；只列為
+  provisional，不把它升格成字型／codepage 證明
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構

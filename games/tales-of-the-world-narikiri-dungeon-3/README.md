@@ -6,7 +6,7 @@ zh-TW 研究與本地化。ROM、存檔、完整日文原文表、解碼輸出�
 
 ## 目前狀態
 
-目前完成 M0 身分鎖定、M1 工程可行性偵察、M1.5 與 M1.6 的 bounded consumer 回合：已
+目前完成 M0 身分鎖定、M1 工程可行性偵察、M1.5 至 M1.8 的 bounded runtime 回合：已
 確認一批以 NUL 結尾的標準 Shift-JIS 候選資料、可重現的嚴格抽取邊界、五窗
 absolute／relative 指標分層，以及遊戲啟動期實際執行的 BIOS 圖形解壓縮路徑。
 M1.5 已確認早期 KEYINPUT polling caller，但選定 record 的 read watchpoint 在
@@ -14,9 +14,14 @@ bounded menu 序列中為 negative。M1.6 已確認 `0x08003444` 會被真實 UI
 載入路徑呼叫，但本回合的 8 個 resolved pointers 全部在五個文字窗外；selected
 record `0x08146EE0` read watchpoint 仍為 negative。M1.7 已確認 boot→state 4 的
 dispatcher、`0x08009C68 → 0x0800A58C → 0x0800A388` setup caller，以及正常 A 鍵
-edge 的 static 條件；bounded runtime 尚未取得 state 4 return 或真正 menu/event，
-所以 `--trace-first-record` 尚未在新畫面重跑。**尚未開始翻譯，也尚未證明
-文字 renderer、字型 codepage 或可逆回插。** 不把既有英文 patch 的少量選單／開頭
+edge 的 static 條件。M1.8 已以正常 START gate 重現
+`A1AC → r1=A(OK) → edge bit0 → object +0x54 → A2C0(r0=1) → 0x08005E12`，
+並觀察到 state 4→7 的 return 與固定畫面 hash；隨後 clean
+`--trace-first-record` 的 4 個 resolver hits 仍全部在五窗外，strict source read
+為 0。已建立不含原文的 8,938 筆 source-hash ledger scaffold，但其 decoder、
+控制標記與 renderer 仍屬靜態候選。**尚未開始翻譯，也尚未證明文字 renderer、
+字型 codepage 或可逆回插。**
+不把既有英文 patch 的少量選單／開頭
 內容當作完整翻譯來源。
 
 ## ROM 身分
@@ -82,9 +87,10 @@ return、caller LR、五窗 filter 與 selected-record negative 見
 - 尚無 builder、容量檢查、checksum/round-trip 或實機／mGBA 回插驗證；目前
   不可宣稱能安全擴長字串。第一個回插試驗必須先限制在等長或已證明有餘裕的
   NUL 記錄，並逐筆保存原始 bytes、控制碼與 renderer 結果。
-- 本次只完成有限 runtime 證據；輸入導覽、事件／戰鬥畫面和文字畫面尚未被
- 可靠導航到。M1.7 雖已到達 state 4 的 `A388` setup，仍沒有共同 return，
-  因此沒有把「未命中」解讀成「不存在」。
+- 本次只完成有限 runtime 證據；M1.8 已可靠導航離開 state 4，但 state 7 的
+  特定 menu/event 文字畫面仍未以 source consumer 證明。M1.8 的
+  `--trace-first-record` 仍是五窗外／source-read=0 的 negative，因此不能把
+  state transition 或畫面 hash 解讀成文字 consumer。
 
 ## 可重跑命令
 
@@ -173,6 +179,60 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 `open_dispatch.return_observed=false`；這是 negative navigation receipt，不能
 當成正常 state transition。M1.7 的 static／runtime 邊界見
 [`research/m17-state4-navigation-20260816.md`](research/m17-state4-navigation-20260816.md)。
+
+M1.8 使用 [`tools/m18_a1ac_probe.py`](tools/m18_a1ac_probe.py) 做窄 bounded
+navigation：在 A030 loop 後才掛 KEYINPUT read-watch，先送一次正常 START
+`0x03F7` 完成 state 4 gate，再在 live `0x0800A1AC` 後送一次 A `0x03FE`；
+後續只允許有限 `0x03FF` release。它記錄每次 `P1` 的 `OK` response、
+`0x030033F8`、object `+0x54`、A2C0、`0x08005E12` 與固定畫面 hash，不寫
+state/object/save，也不輸出 raw bytes：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/m18_a1ac_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port <your-independent-gdb-port> --per-stop-timeout 30 \
+  --max-stops 64 --max-edge-checks 8 --release-reads 3 --max-steps 12 \
+  --output /private/tmp/tow-nd3-m18-a1ac.json
+```
+
+M1.8 的完整 confirmed／provisional／negative／unknown receipt 見
+[`research/m18-a1ac-runtime-20260816.md`](research/m18-a1ac-runtime-20260816.md)。
+成功 return 後再以全新 mGBA session 執行既有 resolver trace-first：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/consumer_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port <your-independent-gdb-port> --trace-first-record \
+  --max-resolver-hits 24 --per-event-timeout 5 \
+  --output /private/tmp/tow-nd3-m18-trace-first.json
+```
+
+此 clean rerun 的 4 個 resolver return 均在五窗外，`source_read_count=0`、
+`caller_return_count=0`；下一步是 state 7 的真正 text consumer，不是擴大
+pointer scan 或開始翻譯。
+
+M2 前置的 source-separated ledger 與控制標記 metadata 由
+[`tools/ledger_metadata.py`](tools/ledger_metadata.py) 產生；提交的
+[`translations/ledger.jsonl`](translations/ledger.jsonl) 只有 `source_hash`、
+stable ID、區域／控制標記名稱與空白 targets。用 `--verify` 可在本機重新產生
+source table 後檢查 decoder drift 與 hash mismatch；它不代表已解出碼頁，也不
+允許在 renderer／容量證明前填入譯文。
+
+固定 ROM literal／layout dispatch 的 provisional evidence 見
+[`research/m2-static-layout-20260816.md`](research/m2-static-layout-20260816.md)，
+摘要由 [`tools/static_layout_probe.py`](tools/static_layout_probe.py) 產生。它只
+確認 66-pair table 的固定位置／雜湊與 19-entry dispatch 一致，仍未確認日文
+codepage、glyph identity 或 runtime text consumer。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \
+  games/tales-of-the-world-narikiri-dungeon-3/research/tales-of-the-world-narikiri-dungeon-3-decoded.jsonl \
+  --ledger-out games/tales-of-the-world-narikiri-dungeon-3/translations/ledger.jsonl \
+  --metadata-out /private/tmp/tow-nd3-ledger-summary.json --verify
+```
 
 ## 外部工程參考
 
