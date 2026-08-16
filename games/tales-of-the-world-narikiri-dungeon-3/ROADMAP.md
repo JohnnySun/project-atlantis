@@ -34,6 +34,19 @@
 
 詳情見 [`research/m16-resolver-20260816.md`](research/m16-resolver-20260816.md)。目前仍不可宣稱 codepage、glyph identity、翻譯或回插成立。
 
+## M1.7：state 4 正常導覽邊界
+
+- [x] 在 `0x08005ECC` 與共同 return `0x08005E12` 建立單一 entry／return probe，記錄 next/current/previous bytes、signed dispatch index、table base、resolved function 與 LR
+- [x] 靜態確認 boot state 0 以正常 caller 設定 next state 4，以及 state 4 `0x08009C68 → 0x0800A58C → 0x0800A388 → 0x080004EC` 初始化鏈
+- [x] 靜態確認 `0x08000E0C` 的 active-low KEYINPUT→`r1`→`0x030033F8` edge path，與 `A1AC` bit 0 對 resource object `+0x54`／`A2C0` return 的正常條件
+- [x] 以本作獨立 mGBA 與既有 KEYINPUT harness 重跑 bounded startup；runtime 確認 dispatcher、state 4 handler、`A58C` 與 `A388` caller，未覆寫 state 或 save
+- [x] 擴充 `tools/state_probe.py` 的 open-dispatch negative metadata 與 bounded sequence 測試；輸出只含 registers、state、hash、count metadata
+- [ ] 在 live `A1AC` 後完成一次可重跑的正常 A pulse／`A2C0`／`0x08005E12` return，取得真正 menu/event 的 navigation receipt
+- [ ] state 4 正常 return 後，沿既有 `consumer_probe.py --trace-first-record` 重跑並取得五窗 strict record source read
+
+M1.7 的完整 static、confirmed/provisional/negative runtime 界線見
+[`research/m17-state4-navigation-20260816.md`](research/m17-state4-navigation-20260816.md)。目前仍不可宣稱 resolver text edge、decoder、codepage、glyph identity、翻譯或回插成立；下一個最小切片是修正 A1AC live stop 後的 GDB KEYINPUT register-write／ack receipt，不是擴充 pointer scan。
+
 ## M2：尚未開始的必要證明
 
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者

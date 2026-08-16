@@ -12,7 +12,10 @@ absolute／relative 指標分層，以及遊戲啟動期實際執行的 BIOS 圖
 M1.5 已確認早期 KEYINPUT polling caller，但選定 record 的 read watchpoint 在
 bounded menu 序列中為 negative。M1.6 已確認 `0x08003444` 會被真實 UI／資源
 載入路徑呼叫，但本回合的 8 個 resolved pointers 全部在五個文字窗外；selected
-record `0x08146EE0` read watchpoint 仍為 negative。**尚未開始翻譯，也尚未證明
+record `0x08146EE0` read watchpoint 仍為 negative。M1.7 已確認 boot→state 4 的
+dispatcher、`0x08009C68 → 0x0800A58C → 0x0800A388` setup caller，以及正常 A 鍵
+edge 的 static 條件；bounded runtime 尚未取得 state 4 return 或真正 menu/event，
+所以 `--trace-first-record` 尚未在新畫面重跑。**尚未開始翻譯，也尚未證明
 文字 renderer、字型 codepage 或可逆回插。** 不把既有英文 patch 的少量選單／開頭
 內容當作完整翻譯來源。
 
@@ -80,7 +83,8 @@ return、caller LR、五窗 filter 與 selected-record negative 見
   不可宣稱能安全擴長字串。第一個回插試驗必須先限制在等長或已證明有餘裕的
   NUL 記錄，並逐筆保存原始 bytes、控制碼與 renderer 結果。
 - 本次只完成有限 runtime 證據；輸入導覽、事件／戰鬥畫面和文字畫面尚未被
-  可靠導航到，因此沒有把「未命中」解讀成「不存在」。
+ 可靠導航到。M1.7 雖已到達 state 4 的 `A388` setup，仍沒有共同 return，
+  因此沒有把「未命中」解讀成「不存在」。
 
 ## 可重跑命令
 
@@ -149,6 +153,26 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 若要先取得候選再選 concrete record，可用 `--resolver-only`；若沒有 selected
 record 命中，可用 `--trace-first-record` 對第一個實際返回的 strict-window
 record 做有界 caller/source read trace。兩種模式都不做 runtime pointer scan。
+
+M1.7 state probe 只觀察 state dispatcher 的單一 entry／return、KEYINPUT read
+destination，以及 bounded screen hashes；它不覆寫 state bytes、不掃 resolver
+指標，也不輸出 RAM/VRAM raw。breakpoint 必須在 mGBA reset stop 時安裝，才能
+捕捉 boot→state 4 的 one-shot entry：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/state_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port <your-independent-gdb-port> \
+  --sequence start:1,none:300,a:1,none:300 \
+  --max-events 602 --max-stops 2048 \
+  --output /private/tmp/tow-nd3-m17-state.json
+```
+
+若 bounded sequence 在 state 4 handler 尚未 return 就耗盡，JSON 會標示
+`open_dispatch.return_observed=false`；這是 negative navigation receipt，不能
+當成正常 state transition。M1.7 的 static／runtime 邊界見
+[`research/m17-state4-navigation-20260816.md`](research/m17-state4-navigation-20260816.md)。
 
 ## 外部工程參考
 
