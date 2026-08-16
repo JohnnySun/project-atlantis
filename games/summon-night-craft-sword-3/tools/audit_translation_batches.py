@@ -5,7 +5,9 @@ This is a target-side QA gate for the committed ledger boundary.  It checks
 stable IDs, target hashes, code-unit/byte-length/layout contracts, control
 metadata, allowed glyph allocations, and a small explicit Simplified-Chinese
 leak guard.  Source hash correctness and restore/strip are intentionally
-delegated to ``validate_ledger.py``.
+delegated to ``validate_ledger.py``.  Plans remain ``ai_draft``; a tracked
+ledger may be ``ai_draft`` or the post-session-review ``ai_review`` state, but
+never ``approved`` without the separate human approval gate.
 """
 
 from __future__ import annotations
@@ -120,7 +122,8 @@ def audit_batch(plan_path: pathlib.Path, ledger_path: pathlib.Path) -> dict[str,
     string_id = plan.get("records", [{}])[0].get("string_id")
     _require(isinstance(string_id, str) and ledger.get("string_id") == string_id, f"{ledger_path} stable ID mismatch")
     _require(ledger.get("source_locale") == "ja-JP" and len(str(ledger.get("source_hash"))) == 64, f"{ledger_path} source metadata malformed")
-    _require(ledger.get("status") == "ai_draft" and plan.get("status") == "ai_draft", f"{ledger_path} status is not ai_draft")
+    _require(plan.get("status") == "ai_draft", f"{plan_path} status is not ai_draft")
+    _require(ledger.get("status") in {"ai_draft", "ai_review"}, f"{ledger_path} status is not an allowed review state")
 
     context = plan.get("context")
     contract = plan.get("target_contract")

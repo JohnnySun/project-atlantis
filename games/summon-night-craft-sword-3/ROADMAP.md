@@ -89,7 +89,7 @@ M2.5 只完成第一個有界 static translation slice。下一個最小缺口�
 - [x] 建立 `tools/runtime_m2_6.py` 與測試；先驗證 target ID `b3cj:t2:024:0x0064`、`ec64/ec65/ec66`→`0x847/0x848/0x849` static render、adjacent glyph `0x846` base／target cell hash，以及 361／1／360 re-extraction receipt，再只開一條 core GDB connection。
 - [x] 完成兩輪 fresh launcher／process ownership 收據：高位 port `25126` 無 listener；GUI PID `50537` 啟動後退出，headless PID `50654` 輸出 `Debugger: Couldn't open socket`；兩個自有 process 均已停止，沒有附加其他 session。
 - [~] qSupported／renderer runtime gate 仍 blocked：兩份 diagnostic 都是 `handshake=blocked`，本環境 socket connect 回報 `PermissionError [Errno 1]`；沒有 breakpoint／watchpoint、font cache、writer destination、palette、VRAM／tilemap／OAM 或畫面可讀性證據。這是 transport-only negative，不是 ROM／譯文失敗。
-- [ ] 使用 `/private/tmp` compile-time GDB-port mGBA build，或在允許 localhost socket 的環境，以同一 hash-guarded diagnostic 重跑；runtime 解鎖前不擴大第二筆翻譯、不改 `ai_draft` 狀態。
+- [ ] 使用 `/private/tmp` compile-time GDB-port mGBA build，或在允許 localhost socket 的環境，以同一 hash-guarded diagnostic 重跑；runtime 解鎖前不擴大第二筆翻譯、不改 `ai_review` 狀態。
 
 M2.6 已把 static target／adjacent proof 與 runtime transport failure 分開記錄。完整 launcher、PID、port、hash、static glyph 與下一個 runtime 方案見 [`research/m2.6-runtime.md`](research/m2.6-runtime.md)；這一輪沒有宣稱畫面通過或可發布 patch。
 
@@ -99,7 +99,7 @@ M2.6 已把 static target／adjacent proof 與 runtime transport failure 分開�
 - [x] 以 `lsof` 先確認高位 port `25273`／`26371` 無 listener，再以兩個不同的既有 mGBA binary 進行 fresh process；兩個 launcher 都使用 `-C gdb.port=<high-port> -C skipBios=1 -g` 並指向本作 M2.5 target。
 - [x] 兩個自有 foreground process 均明確回報 `Debugger: Couldn't open socket`，啟動前後指定 port 都無 listener，並已乾淨停止；沒有附加或終止其他 session。PTY wrapper 未暴露 child OS PID，故不虛構 PID。
 - [x] 建立 `tools/runtime_m2_7.py`／測試；重用 M2.6 static guard、`core/gba/gdbstub_client.py` 的單次 connection、`0.08s` packet delay、ACK／一次 retry；兩份 ignored diagnostic 在 `connect()` 前得到 `PermissionError [Errno 1]`，`qSupported` 未送出。
-- [~] runtime gate 仍 transport-only blocked：沒有 natural／controlled consumer hit、font cache、writer destination、palette、VRAM／tilemap／OAM 或 changed／adjacent live render；`ai_draft` 不變，不宣稱畫面通過或可發布。
+- [~] runtime gate 仍 transport-only blocked：沒有 natural／controlled consumer hit、font cache、writer destination、palette、VRAM／tilemap／OAM 或 changed／adjacent live render；`ai_review` 不變，不宣稱畫面通過或可發布。
 - [ ] 在允許 localhost socket 的環境，或以 `/private/tmp` compile-time GDB-port mGBA build，重跑同一 hash-guarded probe；解鎖前不擴大翻譯。
 
 M2.7 的 launcher、listener、single-connection error、safe alternatives 與重跑命令見 [`research/m2.7-runtime.md`](research/m2.7-runtime.md)。這個切片達到 transport evidence boundary 即停止，不把 `PermissionError` 解讀成 ROM／譯文失敗。
@@ -128,7 +128,7 @@ M2.8 的 pointer／record／layout 收據見 [`research/m2.8-layout.md`](researc
 - [x] 先選一個可達候選、短且有明確結構的 UI 批次，不一次處理全遊戲；M2.5 目前只固定一筆 static candidate，runtime 可達性仍 pending。
 - [x] 建立本機 `work/*.jsonl`，明寫 `zh-TW`、`ai_draft`、`context`、`terms` 與 byte/layout contract。
 - [x] 用 `core/ledger/restore_translations.rb` 與 `strip_translations.rb` 驗證 source hash 與帳本往返。
-- [x] 只提交不帶 `source` 的 `translations/*.jsonl`，並通過 `scripts/check-repository-safety.rb`；人工審核尚未完成。
+- [x] 只提交不帶 `source` 的 `translations/*.jsonl`，並通過 `scripts/check-repository-safety.rb`；外部人工審核尚未完成。
 
 M3 ledger workflow 的 source adapter、hash guard、restore／strip receipt 與負面測試見 [`research/m3-ledger.md`](research/m3-ledger.md) 及 `tools/validate_ledger.py`。
 
@@ -166,7 +166,7 @@ M4.3 的 source hash、glyph allocation、cell／capacity、cumulative re-extrac
 
 - [~] 已建立四筆 M4 cumulative static target；M5.2／M5.3／M5.4／M5.5 另加入第五至第八筆 resource-24 static slices；停止新增同型短句，下一階段改做既有八筆的人工／術語／字型／版面與 runtime／發布 gate。
 - [~] 專有名詞以 Wikipedia zh-tw、巴哈姆特及其他獨立社群資料交叉核對；目前 `重金礦` 已由兩個臺灣社群來源的 `重金鉱` 交叉支持，但不把單一 patch 的譯名視為定論，仍待人工核准。
-- [~] 建立 `translations/glossary.zh-TW.tsv`（目前收七個 bounded target term，其中六個 generic provisional UI／語氣詞；`重金礦` 已由外部來源支持為 provisional，八筆 ledger 仍為 `ai_draft`）。
+- [~] 建立 `translations/glossary.zh-TW.tsv`（目前收七個 bounded target term，其中六個 generic provisional UI／語氣詞；`重金礦` 已由外部來源支持為 provisional，八筆 ledger 已為 `ai_review`）。
 - [x] 對目前四筆 M4 bounded batch 做字寬、行數、缺字、控制碼、簡繁漏入與 target metadata QA；M5.2 另由 relocation builder 做同等 fail-closed target contract；完整用語一致性與人工翻譯 review 仍待進行。
 
 M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](research/m4-batch-qa.md)。
@@ -175,7 +175,7 @@ M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](resear
 
 - [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成 resource-24 translation relocation、13-resource 與全 type-2 table 的 semantic container no-op；全遊戲變長 translation／alias policy 尚未建立。
 - [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2／M5.3／M5.4／M5.5 涵蓋 resource-24 translation rebuild，`tools/rebuild_full_container.py` 另覆蓋 79 entries／68 non-zero payload groups 的 no-op／BPS，尚非全遊戲 translated insertion。
-- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；八筆 cumulative `ai_draft` static POC 與 13-resource semantic no-op 均可重跑，但尚未達可發布 gate。
+- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；八筆 cumulative `ai_review` static POC 與 13-resource semantic no-op 均可重跑，但尚未達可發布 gate。
 - [~] clean mGBA 2350 已完成一次受控 glyph lookup／writer→queue→flush→VRAM probe；實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面、自然 `0x0308` consumer、tilemap／live OAM 與可讀性仍未測試，保留未測試範圍。
 - [ ] 只有完成上述收據後，才評估 zh-TW 發布。
 
@@ -227,13 +227,13 @@ M5.4 的 plan、glyph／relocation／re-extract／BPS receipts 見 [`research/m5
 - [x] 以 M5.4 relocated resource 重建同一 record；既有 `ec64/ec65/ec66` mappings 保持 `0x847/0x848/0x849`，compressed 維持 `1406` 且仍在 `1536`-byte span 內。
 - [x] 全部 361 筆 re-extract 為 target `8`／untouched `353`；七筆既有 target 對 M5.4 byte-identical，local adjacent records／glyph `0x048` 保持 clean byte/render identical。
 - [x] 產生 `4856`-byte BPS，套用後 target ROM SHA-256 `acfb3587a8217bf4ea444daf25f32c0947998a9203ee874db5006d7b6b016db6`、CRC32 `fc874c4d`，apply byte-identical；ROM／BPS／summary 仍 ignored。
-- [~] 這是最後一個同型 static slice；八筆 target 仍需人工／術語／字型／版面 review，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending；不再新增 M5.6。
+- [~] 這是最後一個同型 static slice；八筆 target 已完成 session 語意／術語／字型／版面 review，仍需外部人工核准，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending；不再新增 M5.6。
 
 M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS receipts 見 [`research/m5.5-repeated-prize-header.md`](research/m5.5-repeated-prize-header.md)。
 
 ## M5.5 後發布 gate 收斂（不新增翻譯）
 
-- [x] 完成既有八筆 target 的 bounded consistency review：stable ID、source／target hash、byte-length、控制碼、單行版面、glyph／adjacent static contract 均固定；維持 `ai_draft`，不把 provisional wording 或 `重金礦` 升格為人工定稿。
+- [x] 完成既有八筆 target 的 bounded consistency review：stable ID、source／target hash、byte-length、控制碼、單行版面、glyph／adjacent static contract 均固定；ledger 提升為 `ai_review`，不把 provisional wording 或 `重金礦` 升格為 `approved`。
 - [x] 以 `/private/tmp` compile-time fixed-port SDL mGBA 做一次與 `-C gdb.port` 不同的 fresh transport route；port `2346` preflight 無 listener，launcher 回報 `Debugger: Couldn't open socket`，沒有 qSupported 或 live coverage；收據見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
 - [x] 建立 `tools/audit_static_render_destination.py`／測試；以本機 13 個 function／16 個 literal hashes 確認 writer → DMA queue → GBA DMA register `0x040000D4` → text VRAM destination `0x06010000`、`sub_08009654` 的 `0x20`-byte text tile address formula，以及 `sub_08001BC0` → `sub_080092CC` 的 OAM buffer `0x030038B0` → `0x07000000`／`0x400` bytes static chain；同時確認 palette source／shadow → hardware palette destination `0x05000000`／`0x400` bytes。
 - [~] clean mGBA 2347 route 已取得 qSupported／`S02` 與自然 palette DMA live call（`0x03005d60 → 0x05000000`, `0x400` bytes）；另以固定 clean clone 的 compile-time port `2348` 取得一次 listener／qSupported／`S02`，但 controlled IWRAM `M 0x03007000` 回 `E06`，後續 direct AF_INET／same-launcher probe 回 `Errno 49`。`0x0308` consumer、writer、changed glyph `0x847/0x848/0x849` 的 live VRAM、tilemap、live OAM values/layout 與畫面可讀性仍無證據。static OAM copy／text tile address 只作替代 static evidence，不升格為文字 runtime QA。
@@ -242,8 +242,8 @@ M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS recei
 - [x] 以 `tools/audit_static_text_oam.py` 補足文字 renderer 的 static object path：`sub_0800D81C → sub_0800B730` per-glyph `0x28` descriptor、`sub_08001C00 → sub_0800901C` pack 至 `gOamBuffer=0x030038B0`，再接既有 `0x07000000` OAM DMA；tilemap、live OAM／VRAM 與 screen readability 仍 unknown。
 - [x] 以 `tools/rebuild_container.py` 完成 13 resources／11 payload groups 的 semantic PSI3／LZ77 no-op rebuild；directory byte-identical、361/361 source re-encode、capacity guard 與 BPS apply byte-identical，僅關閉 no-op container 層，不等於 translated release insertion。
 - [x] 以 `tools/rebuild_full_container.py` 擴展至固定 type-2 table 的全部 79 entries／68 non-zero PSI3 payload groups；zero-span alias、positive span 不重疊、79-entry PSI3 round-trip、361/361 source re-encode、24507-byte payload-only diff 與 26147-byte BPS apply byte-identical 均通過；仍不等於 translated release insertion。
-- [~] 在 fresh clean 2350 process 上完成一次明確標記的 controlled `sub_080036F8`／`sub_08002CB4` writer hit，並由 `sub_08006BA4`／`0x08006ac4` 讀出 changed `0x847/0x848/0x849` 的 live VRAM；自然 `0x0308` consumer／target record reachability、adjacent natural equality 與畫面可讀性仍未完成。
-- [~] 完成本 session 逐筆 source-to-target 語意／字型／版面 review：8 筆 provisional-pass；`重金礦` 已有兩個臺灣社群來源支持但仍需人工術語核准，ledger `ai_review`／`approved` 狀態仍未完成。
+- [~] 在 fresh clean 2350 process 上完成一次明確標記的 controlled `sub_080036F8`／`sub_08002CB4` writer hit，並由 `sub_08006BA4`／`0x08006ac4` 讀出 changed `0x847/0x848/0x849` 的 live VRAM；另以 clean 2351 process 對 `pc=0x0800D81C` 取得受控 `sub_0800B730 → sub_080036F8 → sub_08002CB4` downstream hits；自然 `0x0308` consumer／target record reachability、adjacent natural equality 與畫面可讀性仍未完成。
+- [~] 完成本 session 逐筆 source-to-target 語意／術語／字型／版面 review：8 筆 provisional-pass，ledger 為 `ai_review`；`重金礦` 已有兩個臺灣社群來源支持，但外部人工術語核准與 `approved` 狀態仍未完成。
 - [ ] 在已確認的 localhost runtime transport 上補齊自然文字 consumer／target record／tilemap／palette／OAM／screen coverage，或取得足以替代的完整 static layout／release encoder evidence；2350 的 controlled writer→VRAM receipt 只關閉其中一段，未達成前不宣稱可發布。
 
 本節是 M5.5 後的 gate 收斂，不是 M5.6，也不允許再增加同長度、重複通用短句。

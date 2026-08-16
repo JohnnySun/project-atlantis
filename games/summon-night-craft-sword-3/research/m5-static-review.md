@@ -2,10 +2,10 @@
 
 ## Review scope
 
-This is the first language/term/font/layout review of the eight existing
-bounded records. It does not add a target, change a ledger status, or claim
-runtime/release readiness. Every row remains `zh-TW`/`ai_draft` until human
-approval and runtime gates are available.
+This is the bounded language/term/font/layout review of the eight existing
+records. It does not add a target or claim runtime/release readiness. Every
+row is now `zh-TW`/`ai_review`; external human approval and runtime gates are
+still unavailable.
 
 The review uses the ignored B3CJ source table only through stable ID, source
 hash, provenance, and bounded control metadata. No Japanese source sentence is
@@ -53,7 +53,7 @@ stable ID and source hash, then checked semantic scope against its current
 Result: all eight rows pass this bounded semantic pass, with the ore term now
 externally source-supported but still provisional. This is a reproducible
 session review, not a claim of external human approval; all eight ledger
-statuses therefore remain `ai_draft`.
+statuses are therefore `ai_review`, not `approved`.
 
 ## Font and layout review
 
@@ -81,7 +81,7 @@ source support but still requires human terminology approval.
 
 Static font/layout review: `8 pass` under the current bounded contracts.
 
-Translation status: all eight remain `ai_draft`.
+Translation status: all eight are `ai_review`; none is `approved`.
 
 Runtime status: partial. A clean 2347 route now has qSupported/`S02` readiness
 and a live palette-shadow-to-hardware-DMA call (`0x03005d60` to `0x05000000`,

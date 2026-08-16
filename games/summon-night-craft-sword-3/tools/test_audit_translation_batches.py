@@ -26,6 +26,21 @@ class AuditTranslationBatchesTest(unittest.TestCase):
         self.assertEqual(report["batches"], 4)
         self.assertEqual([row["code_units"] for row in report["records"]], [7, 6, 5, 4])
         self.assertEqual([row["allocation_count"] for row in report["records"]], [3, 2, 0, 1])
+        self.assertEqual({row["status"] for row in report["records"]}, {"ai_review"})
+
+    def test_approved_status_is_still_rejected_until_human_gate(self) -> None:
+        plan_path, ledger_path = AUDIT.EXPECTED_BATCHES[0]
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+        ledger["status"] = "approved"
+        with tempfile.TemporaryDirectory(prefix="b3cj-target-qa-") as directory:
+            root = pathlib.Path(directory)
+            plan_copy = root / "plan.json"
+            ledger_copy = root / "ledger.jsonl"
+            plan_copy.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+            ledger_copy.write_text(json.dumps(ledger, ensure_ascii=False) + "\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                AUDIT.audit_batch(plan_copy, ledger_copy)
 
     def test_source_bearing_ledger_is_rejected(self) -> None:
         plan_path, ledger_path = AUDIT.EXPECTED_BATCHES[0]
