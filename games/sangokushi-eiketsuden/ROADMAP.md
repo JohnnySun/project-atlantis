@@ -14,7 +14,7 @@
 - [x] 記錄 CRC32、MD5、SHA-1、SHA-256；確認本地 dump 的 `B3EJ` header 與公開產品候選相符。
 - [x] 掃描標準 Shift-JIS、候選指標表、GBA 位址指標、BIOS 壓縮標記與 bounded 候選計數。
 - [x] 建立 `inspect_rom.py`、`scan_text_pointers.py` 與 ROM-independent tests；候選輸出只含偏移／計數，不含完整原文。
-- [x] 完成一次有界 mGBA/GDB runtime sanity check：確認 ROM 可執行且可讀取 IWRAM／VRAM；尚未證實文字渲染路徑。
+- [x] 完成一次有界 mGBA/GDB runtime capture：以共用 `core/gba` 工具確認 ROM 可執行、標題畫面 Mode 0／BG0–BG3 配置，並重建 title-screen tilemap；靜態文字池與 runtime 文字呼叫仍未對應。
 
 ## 里程碑 2：文本、字型與可逆路徑
 

@@ -41,8 +41,10 @@
 | pointer table B | `confirmed-static / text-candidate` | file `0x0d1ffc`, 44 entries；26 unique targets；target `0x078528–0x0786fc` | 需以執行期選單／戰鬥畫面核對 |
 | pointer table C | `confirmed-static / text-candidate` | file `0x0d20d8`, 4 entries；4 unique targets；target `0x07880c–0x078848` | 需核對其所屬畫面／事件 |
 | pointer table D | `confirmed-static / text-candidate` | file `0x0d4d00`, 28 entries；16 unique targets；target `0x079764–0x0797e4` | 鄰接欄位含非 pointer 小資料，不能整段當純文字表 |
-| runtime execution | `confirmed-runtime / bounded` | 獨立 headless mGBA/GDB session 可連線；continue 後 PC `0x03004d74`、SP `0x03007d64`、CPSR `0x8000001f`；ROM／IWRAM／VRAM 可讀 | 沒有完成穩定畫面導航、文字呼叫 breakpoint 或 glyph identity 核對 |
-| VRAM／DMA | `confirmed-runtime / bounded` | 觀察到 DMA 將 ROM／IWRAM/EWRAM 資料搬往 VRAM，包含 `0x08079a08 -> 0x03004ee0` 與 `0x020013d8 -> 0x06000000` 類事件；VRAM read 非空 | 這只能證明執行期圖形資料活動，不證明某段就是字型或文字 tile |
+| runtime execution | `confirmed-runtime / bounded / title-screen` | 以共用 `core/gba/capture_runtime.py` 在本 session 獨立 mGBA/GDB port `39123` 完成標準 capture；初始／繼續停止狀態均可讀，ROM、IWRAM、VRAM、OAM 和 palette 均非空 | 尚未完成穩定畫面導航、文字呼叫 breakpoint 或 glyph identity 核對；本 capture 尚未把靜態 Shift-JIS 池連到特定呼叫點 |
+| display mode／BG 配置 | `confirmed-runtime` | capture 的 `DISPCNT=0x1e40`（Mode 0、OBJ 1D）；`BG0CNT=0x1400`、`BG1CNT=0x1501`、`BG2CNT=0x1602`、`BG3CNT=0x1703`，分別使用 screenbase `0xa000`、`0xa800`、`0xb000`、`0xb800` | 這是標題畫面當下配置；尚未證明劇情／戰役畫面沿用相同 screenbase 或 tile 組織 |
+| rendered title screen | `confirmed-runtime / visual-evidence` | 用共用 `render_vram.py` 依上述 BG 設定產生 ignored PPM/PNG：BG0 可見英文開始提示、BG1 可見版權列、BG2 可見日文標題圖樣、BG3 為紅黑圓形裝飾；共用 `render_oam.py` 在 OAM 1D 模式下顯示 0 個可見 sprite | 可證明 GBA tile／tilemap 渲染路徑與目前畫面分層，不證明 BG2 圖樣或任何 ROM 區段就是可解碼劇情文字／字型 |
+| VRAM／DMA | `confirmed-runtime / bounded` | 先前與本次 capture 均觀察到 DMA／資料搬移及非空 VRAM；已知例包含 `0x08079a08 -> 0x03004ee0`、`0x020013d8 -> 0x06000000` 類事件 | 這只能證明執行期圖形資料活動，不證明某段就是字型或文字 tile |
 | 字型資料 | `unmapped` | 看到 VRAM 活動，但未定位 ROM font、runtime glyph pool 或 tilemap identity | 需要畫面／字型候選與渲染路徑交叉驗證 |
 | compression | `not-confirmed` | bounded signature scan 僅得到 noisy counts：LZ77 `10744`、Huffman `6692`、RLE `4704`、Diff `4966` | 沒有把任何 signature 當成文本壓縮；需由 code／runtime 呼叫證實 |
 | 可逆回插 | `blocked-on-structure` | 目前只有 metadata／pointer summary tool，無 decoder／encoder | 先固定字串 ID、長度、控制碼、字型與 pointer relocation，再做未修改 round trip |
@@ -68,6 +70,19 @@ python3 games/sangokushi-eiketsuden/tools/scan_text_pointers.py \
 ```
 
 `inspect_rom.py` 的 bounded probe 只報告偏移與計數；`scan_text_pointers.py` 只報告 table／target 範圍。兩者都不輸出完整日文腳本。
+
+## 共用 runtime capture（2026-08-16）
+
+本次使用 Project Atlantis 共用 GBA 工具，不重寫遊戲專用 GDB client 或 renderer。原始 dump、rendered PPM/PNG 和暫存 mGBA build 均留在 ignored／暫存路徑，未納入本帳：
+
+```text
+PYTHONDONTWRITEBYTECODE=1 python3 core/gba/capture_runtime.py \
+  --port 39123 --run-seconds 1 \
+  --dump-dir games/sangokushi-eiketsuden/work/runtime \
+  --output games/sangokushi-eiketsuden/work/runtime/summary.json
+```
+
+capture summary 的可審核讀值為：`DISPCNT=0x1e40`、`BG0CNT=0x1400`、`BG1CNT=0x1501`、`BG2CNT=0x1602`、`BG3CNT=0x1703`、`KEYINPUT=0x03ff`；EWRAM head、IWRAM、palette、VRAM 和 OAM dump 都有非零內容。以 `render_vram.py` 依四個 screenbase 輸出後，BG0–BG3 的畫面內容與上述 title-screen 分層相符；`render_oam.py --mapping 1d` 沒有可見 sprite。這次結果將 runtime 狀態從「可執行 sanity check」提升為「標題畫面 BG／tilemap 已觀察」，但仍保持字串池、字型 glyph 和回插路徑未證實。
 
 ## 後續證據邊界
 
