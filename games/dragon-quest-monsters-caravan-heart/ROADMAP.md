@@ -37,6 +37,7 @@
 - [x] 以 clean `g06:v00:m0006` 固定 span 建立第三筆 source-free ledger，保留 `FF` 尾段並完成 bounded restore／strip／schema 檢查；全量 ledger 仍待完成。
 - [x] 以 clean `g06:v00:m0044` 固定 span 建立第四筆 source-free ledger，保留 `FF` 尾段並完成 bounded restore／strip／schema 檢查；全量 ledger 仍待完成。
 - [x] 以 clean `g06:v00:m0045` 固定 span 建立第五筆 source-free ledger，保留 `FE`／`FF` 控制並完成 bounded restore／strip／schema 檢查；全量 ledger 仍待完成。
+- [x] 以 clean `g06:v00:m0041` 固定 span 建立第六筆 source-free ledger，重用既有 E1 glyph、保留 `FF` 並完成 bounded restore／strip／schema 檢查；全量 ledger 仍待完成。
 
 ## M3：回插與發布前 QA
 
@@ -46,7 +47,7 @@
 - [x] 對 `message-batch-3` 完成 clean→patched bounded re-extraction 與 BPS apply round-trip；receipt 位於 `research/message-batch-3-roundtrip-20260816.md`。
 - [x] 對 `message-batch-4` 完成 clean→patched bounded re-extraction 與 BPS apply round-trip；receipt 位於 `research/message-batch-4-roundtrip-20260816.md`。
 - [x] 對 `message-batch-5` 完成 clean→patched bounded re-extraction 與 BPS apply round-trip；receipt 位於 `research/message-batch-5-roundtrip-20260816.md`。
-- [x] 將五個 bounded batch 以 disjoint-range merge 建立 cumulative ROM／BPS proof；receipt 位於 `research/bounded-batches-roundtrip-20260816.md`，全遊戲 encoder／BPS 仍待完成。
+- [x] 將六個 bounded batch 以 disjoint-range merge 建立 cumulative ROM／BPS proof；receipt 位於 `research/bounded-batches-roundtrip-20260816.md`，全遊戲 encoder／BPS 仍待完成。
 - [ ] clean ROM → 重建 ROM → 重新抽取，確認未修改內容一致。
 - [ ] 產生並套用 BPS，完成逐位元組 round-trip。
 - [ ] 在 mGBA 及可用實機完成已覆蓋場景 QA，記錄未測畫面與剩餘風險。

@@ -22,7 +22,7 @@ ROM、抽出的日文原文、字型點陣、OCR／渲染圖片、工作記錄�
 - **已完成穩定 menu 的 code-unit cross-check**：`tools/verify_menu_glyphs.py` 將 clean menu dump 的十個連續 glyph tile 與同一 ROM glyph table 逐 tile 比對，並核對 pointer `0x0828647C` 的本機 script prefix；得到九個 single units 與一組 `0x92 0x34` pair，十個位置皆 matched。這是已知畫面內容的局部 identity 證據，不是完整 codepage。
 - **已完成一筆局部 glyph output round-trip**：`tools/verify_glyph_output.py` 以 clean glyph table、script record 與本機 VRAM dump 重建 `0x0828667D` 的 38 個 tile；納入 `0x08013738` 的 pair masks 後達到 38/38 exact。這只驗證 glyph writer／局部版面，不代表完整 script encoder 或回插已完成。
 - **文字格式仍未完成**：目前只能把 codepage 標成 `custom-mixed-byte candidate`；`0x92`／`0x93` 是已證明的雙 byte glyph lead，`0xE0`／`0xE1` 是已證明的 alt-glyph lead，其他 `<=0xDE` byte 另走單 byte glyph 路徑，`0xDF..0xFF` 是 control dispatch 候選。腳本儲存邊界、控制碼、alt pool glyph identity、字寬表、完整 VWF writer 與可逆回插尚未證明。直接搜尋常見日文 Shift-JIS UI sentinel 仍為 0 命中，不能套用《黃金太陽》或《光明之魂》的格式假設。
-- **尚未全量翻譯**：clean 基準已具備，並已建立五筆 bounded source-free ledger 與含 alt-glyph placeholder 的本機 extractor／source-table stage；可逆抽取路徑、文字格式、完整字型／控制碼與版面仍未確認，不把 bounded proof 宣稱為全遊戲覆蓋，也不宣稱英文 patch 已被本專案覆蓋或重用。
+- **尚未全量翻譯**：clean 基準已具備，並已建立六筆 bounded source-free ledger 與含 alt-glyph placeholder 的本機 extractor／source-table stage；可逆抽取路徑、文字格式、完整字型／控制碼與版面仍未確認，不把 bounded proof 宣稱為全遊戲覆蓋，也不宣稱英文 patch 已被本專案覆蓋或重用。
 
 詳細數值、英文 patch 工程審計與已排除的假設見 `research/recon-20260816.md`。
 
