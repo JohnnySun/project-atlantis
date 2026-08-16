@@ -45,7 +45,11 @@
 | display mode／BG 配置 | `confirmed-runtime` | capture 的 `DISPCNT=0x1e40`（Mode 0、OBJ 1D）；`BG0CNT=0x1400`、`BG1CNT=0x1501`、`BG2CNT=0x1602`、`BG3CNT=0x1703`，分別使用 screenbase `0xa000`、`0xa800`、`0xb000`、`0xb800` | 這是標題畫面當下配置；尚未證明劇情／戰役畫面沿用相同 screenbase 或 tile 組織 |
 | rendered title screen | `confirmed-runtime / visual-evidence` | 用共用 `render_vram.py` 依上述 BG 設定產生 ignored PPM/PNG：BG0 可見英文開始提示、BG1 可見版權列、BG2 可見日文標題圖樣、BG3 為紅黑圓形裝飾；共用 `render_oam.py` 在 OAM 1D 模式下顯示 0 個可見 sprite | 可證明 GBA tile／tilemap 渲染路徑與目前畫面分層，不證明 BG2 圖樣或任何 ROM 區段就是可解碼劇情文字／字型 |
 | VRAM／DMA | `confirmed-runtime / bounded` | 先前與本次 capture 均觀察到 DMA／資料搬移及非空 VRAM；已知例包含 `0x08079a08 -> 0x03004ee0`、`0x020013d8 -> 0x06000000` 類事件 | 這只能證明執行期圖形資料活動，不證明某段就是字型或文字 tile |
+| M2 selected short record | `confirmed-static / runtime-negative` | table B（`0x0D1FFC`）entry `0` 指向 file `0x078528`；payload 14 bytes、SHA-256 `c7ac47044e9576475f854841981b18ae20eca25ad41df403164ee6307b1aecca`，可由 bounded harness 重核 | 這是早期戰役效果訊息的候選選樣，不是 runtime consumer proof；本次沒有 pointer／record read hit |
+| M2 pointer／record → writer | `negative / not-observed` | 已建立 `tools/trace_m2_runtime.py`，會以 `KEYINPUT`、GBA pointer `0x080d1ffc`、record `0x08078528` read watchpoint 及 VRAM hash delta 做有界追蹤 | headless／SDL／Qt runtime 入口均未建立本 session 可用 GDB listener；沒有 source pointer／record 到 glyph/tile writer 的 confirmed chain |
 | 字型資料 | `unmapped` | 看到 VRAM 活動，但未定位 ROM font、runtime glyph pool 或 tilemap identity | 需要畫面／字型候選與渲染路徑交叉驗證 |
+| glyph addressing | `provisional / title-only` | 標題畫面的 BG／tilemap 位址與 renderer 已確認；M2 harness 只會摘要 VRAM 變動 tile | 尚未確認 font base、glyph index、cell stride、writer／DMA destination；不能把 title BG 重建當成 glyph addressing |
+| Unicode identity | `confirmed-static interpretation / runtime-unconfirmed` | M2 payload 可由標準 Shift-JIS 解碼，字元數與 source hash 固定 | 尚未將任何 Unicode 字元與 runtime glyph tile 或已知畫面位置交叉核對；Unicode codepage 和 glyph identity 分開追蹤 |
 | compression | `not-confirmed` | bounded signature scan 僅得到 noisy counts：LZ77 `10744`、Huffman `6692`、RLE `4704`、Diff `4966` | 沒有把任何 signature 當成文本壓縮；需由 code／runtime 呼叫證實 |
 | 可逆回插 | `blocked-on-structure` | 目前只有 metadata／pointer summary tool，無 decoder／encoder | 先固定字串 ID、長度、控制碼、字型與 pointer relocation，再做未修改 round trip |
 | 翻譯 ledger | `ready / empty` | glossary 已有 `zh-TW` 候選；沒有 source table 或 translation record | decoder 完成前不建立翻譯批次，不猜 string ID |
@@ -83,6 +87,26 @@ PYTHONDONTWRITEBYTECODE=1 python3 core/gba/capture_runtime.py \
 ```
 
 capture summary 的可審核讀值為：`DISPCNT=0x1e40`、`BG0CNT=0x1400`、`BG1CNT=0x1501`、`BG2CNT=0x1602`、`BG3CNT=0x1703`、`KEYINPUT=0x03ff`；EWRAM head、IWRAM、palette、VRAM 和 OAM dump 都有非零內容。以 `render_vram.py` 依四個 screenbase 輸出後，BG0–BG3 的畫面內容與上述 title-screen 分層相符；`render_oam.py --mapping 1d` 沒有可見 sprite。這次結果將 runtime 狀態從「可執行 sanity check」提升為「標題畫面 BG／tilemap 已觀察」，但仍保持字串池、字型 glyph 和回插路徑未證實。
+
+## M2 bounded trace（2026-08-16）
+
+本切片選定 table B entry 0（file pointer table `0x0D1FFC`、target `0x078528`）作為
+早期戰役短 record 候選，完整邊界、payload hash、工具命令與分類見
+[`research/m2-runtime-trace-20260816.md`](m2-runtime-trace-20260816.md)。新增的
+`tools/trace_m2_runtime.py` 只引用共用 `core/gba/gdbstub_client.py`，不保存或輸出
+原始文本；必要的視覺核對仍應使用共用 `core/gba/render_vram.py`。
+
+本次已界定但未完成的 runtime slice：
+
+- **confirmed**：B[0] 的 static pointer／payload hash 可重跑；既有 title baseline
+  與 BG renderer evidence 不變；所有本 session mGBA 子進程已清理。
+- **provisional**：B[0] 屬於 menu／battle effect pool，Shift-JIS byte-level 解讀
+  有效；glyph addressing 只有 title-only evidence，Unicode identity 尚未對應到
+  runtime glyph。
+- **negative**：headless port `39123`、SDL 獨立 port `24388`、Qt 獨立 port
+  `24387` 均未提供可用的本 session GDB runtime；沒有 KEYINPUT 導航後的 pointer
+  read、record read、writer PC 或 VRAM delta。因此不能宣稱 source pointer／record
+  已連到 runtime glyph/tile writer，也不開始翻譯批次。
 
 ## 後續證據邊界
 
