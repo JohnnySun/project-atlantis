@@ -19,19 +19,24 @@
 - [x] M1.5 完成 bounded pointer-caller／literal-pool 分類，並以 `0x0800f49a` ->
   `0x08007e04` 確認一個真實 source-byte consumer；反組譯與受控 runtime 亦走通
   `0x08008724` -> `0x080085fc` -> glyph-base arithmetic -> `0x08008650`。
-  自然畫面觸發與 font resource initialization 仍待完成，不能視為 glyph identity
-  或完整 renderer QA。
-- [ ] 由 runtime 或反組譯確認文字 renderer／decoder 的呼叫鏈。
+  自然畫面觸發與完整 renderer QA 仍待完成，不能把 bounded trace 擴張成全遊戲覆蓋。
+- [x] M1.6 以 slot watchpoint 確認 `0x08014e8c -> 0x080083a0` initializer、
+  `0x08008456`／`0x08008462` slot writer 與兩個 nonzero ROM resource base；在
+  base 已初始化後，以 `0x0807b3fc`／`0x0807b380` 的 strict source context 確認
+  `ラ`／`移` 兩條 code unit -> glyph bytes -> tile writer output chain。
+- [ ] 由自然畫面／queue 狀態擴大確認文字 renderer／decoder 的呼叫鏈覆蓋。
 - [ ] 完整定位文本區與字串分區：話數、分支、機體／駕駛員／武器／精神、戰鬥
   對話及 UI；目前只完成靜態池的局部分類。
-- [ ] 分別證明「glyph addressing」與「glyph identity」，不能以字符表位置猜測
-  Unicode 身分。
+- [x] M1.6 已用 strict source context 分別證明兩個 bounded sample 的「glyph
+  addressing」與「glyph identity」，不能以字符表位置猜測 Unicode 身分。
 - [ ] 定義控制碼、終止符、換行、說話者、最大寬度／行數與分支邊界。
-- [ ] 用至少兩個獨立畫面／語料上下文重讀確認解碼結果。
+- [ ] 用自然畫面或更多獨立語料上下文擴大重讀確認解碼結果；M1.6 的兩個 sample
+  仍是同一受控 consumer path 的最小證據。
 
 ## M2：可審核翻譯資料
 
-- [ ] 產生本機 `research/super-robot-taisen-d-decoded.jsonl`。
+- [x] 產生並以 strict ROM checker 驗證本機 ignored
+  `research/super-robot-taisen-d-decoded.jsonl`（2325/2325）。
 - [ ] 建立 `translations/glossary.zh-TW.tsv`，專有名詞先核對 Wikipedia zh-tw、
   巴哈姆特等多個社群來源，記錄分歧與採用理由。
 - [ ] 先做一個可達且邊界明確的小批次：例如 UI／精神指令／一個完整對話群，

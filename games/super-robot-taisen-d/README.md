@@ -75,9 +75,18 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   `0x0807b3fc`、EWRAM buffer `0x02000d60` 與 bound `0x10`。
 - 反組譯另確認 `0x08008724` 是逐字讀取並分流單／雙位元組的 text consumer，
   `0x080085fc` 做 codepage/glyph offset arithmetic，`0x080088c8` 做 glyph-base
-  加法，`0x08008650` 寫入 tile buffer；受控 GDB trace 已走通這條鏈。自然
-  reset/title window 尚未命中 renderer，且受控初始化時 `0x020131d0` glyph-base
-  slot 為 zero，所以 font resource initialization 與 glyph identity 仍未完成。
+  加法，`0x08008650` 寫入 tile buffer；受控 GDB trace 已走通這條鏈。這些是
+  M1.5 的 addressing／consumer 證據，不能單獨當成字型來源 identity。
+- M1.6 以 runtime slot `0x020131d0`（窄字）與 `0x020103ac`（寬字）設 write
+  watchpoint，確認初始化 caller `0x08014e8c -> 0x080083a0`、writer
+  `0x08008456`／`0x08008462`，以及兩個 nonzero ROM-mapped resource base
+  `0x0814f664`／`0x08120dbc`。受控流程先完成初始化，再由 guard 放行
+  `0x08008724` consumer；已用 strict source context 確認兩條 glyph identity
+  chain：`0x0807b3fc` 的 `0x8983` → `ラ` 與 `0x0807b380` 的 `0xda88` → `移`。
+  每條都交叉驗證 base+offset glyph bytes hash、`0x08008650` tile writer 與
+  writer-output hash；最小 provenance map 在
+  [`research/m16-glyph-provenance.json`](research/m16-glyph-provenance.json)，
+  原始 runtime／cohort 輸出仍只在 ignored `work/`。
 - 回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
@@ -88,11 +97,27 @@ python3 games/super-robot-taisen-d/tools/static_recon.py ROM
 python3 games/super-robot-taisen-d/tools/scan_indexed_text.py ROM \
   --table-offset 0x7cb55c --table-count 1783 --show-text
 python3 games/super-robot-taisen-d/tools/verify_sjis_source_table.py \
-  ROM research/super-robot-taisen-d-decoded.jsonl \
+  ROM games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
   --start 0x76000 --end 0x82490 --expected-count 2325
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/build_m16_cohort.py \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --pointer-report games/super-robot-taisen-d/work/pointer-caller-report.json --size 16 \
+  --output games/super-robot-taisen-d/work/m16-source-cohort.jsonl
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/probe_font_resource.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  --port 24567 \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --consumer-hijack --output games/super-robot-taisen-d/work/m16-font-runtime.json
 ```
 
 `--show-text` 只把本機候選解碼輸出到終端，不應重導向到 Git 追蹤檔案。
+最後一個 probe 須使用本 session 自己的 mGBA `-C skipBios=1 -C gdb.port=24567 -g`
+進程；它會先驗證兩個 slot 非零，才執行 post-init consumer capture。自然選單／
+queue 觸發尚未取代這條受控驗證。
 
 後續 runtime 偵察優先使用共用 `core/gba/capture_runtime.py`、
 `core/gba/render_vram.py` 與 `core/gba/render_oam.py`；本目錄既有的 GDB／記憶體
@@ -113,12 +138,15 @@ python3 games/super-robot-taisen-d/tools/verify_sjis_source_table.py \
 - [x] 確認一個有界的靜態 Shift-JIS 文字池與其絕對 pointer 交叉命中。
 - [x] 完成一次 bounded mGBA runtime boundary check：ROM entry／VRAM transfer 陽性，
   文字池首字 read watchpoint 陰性；未把它誤報成文字 renderer 證明。
+- [x] M1.6 完成 font resource initialization 的 live slot writer／ROM resource
+  pointer 證據，並以兩個 strict Shift-JIS source context 建立 glyph identity、
+  glyph bytes hash 與 tile writer output hash 的最小可審核鏈。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
-- [ ] 輸出本機 `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger 流程
-  建立第一個小批次。
+- [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
+  流程保留 source provenance；第一個翻譯小批次仍未開始。
 - [ ] 建立嚴格拒絕 source mismatch、缺字與控制碼不一致的編碼／回插器。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始翻譯；完成的是可驗證的靜態文字／pointer 與 bounded runtime 邊界起點，
-字型 identity、文字 renderer、控制碼與可逆回插仍未證明。
+目前尚未開始翻譯；M1.6 只完成兩個 glyph identity 的 bounded proof，不代表完整
+文字覆蓋、控制碼／layout、容量策略或可逆回插已證明。

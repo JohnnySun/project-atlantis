@@ -225,17 +225,120 @@ font resource initialization 與 glyph identity 尚未完成」，不是翻譯�
 | 自然 boot/title reachability | 未命中；精確 queue／dispatcher trigger 已記錄 |
 | 翻譯／可逆回插 | 尚未開始／未證明 |
 
-### 第一輪結論
+## 2026-08-16：M1.6 font resource initialization／glyph identity
+
+本輪把 runtime 偵察限制在兩個已知 live font-base slot 與一條已確認的文字
+consumer。沒有再做全域 pointer 掃描，也沒有把 ROM、完整日文 source、raw dump、
+圖片或 mGBA work output 放進 Git。遊戲專用工具是
+`tools/probe_font_resource.py` 與 `tools/build_m16_cohort.py`；純測試在
+`tools/test_probe_font_resource.py`、`tools/test_build_m16_cohort.py`。
+
+### Static resource path
+
+`0x080083a0` 的 initializer 在 `0x08008450`／`0x0800845e` 以
+`r0=0`、`r1=3`／`r1=2` 呼叫 `0x08003290`。resolver 讀取 literal table
+`0x08081e58`，其 group-0 descriptor root 為 `0x081196b8`，再以 relative
+descriptor entry 得到：
+
+| slot | resolver index | descriptor relative | ROM resource pointer | 0x100-byte SHA-256 |
+| --- | ---: | ---: | --- | --- |
+| narrow `0x020131d0` | 3 | `0x00035fac` | `0x0814f664` | `9ea4cc823cda13f0bb5b717346a904eb822c641f998f88cf76a0b865d0ae0a09` |
+| wide `0x020103ac` | 2 | `0x00007704` | `0x08120dbc` | `f9f4665a91cef443dd7e61eb588abb05c50f87c48217c49b91236d01d6475e71` |
+
+這條已知初始化路徑的 resource pointer 直接落在 GBA ROM mapping；本輪 live
+read 與 static descriptor 一致，沒有觀察到解壓或 RAM copy。這只限於這兩個
+resource 與這條 initializer，不擴張成全遊戲沒有其他字型路徑的結論。
+
+`0x08014e84` 的既有 Thumb caller setup 以 `r0=0x06000000`、`r1=0x06008000`、
+`r2=0x0a` 呼叫 initializer，callsite 是 `0x08014e8c`。因自然 reset／title
+window 與先前 bounded input poll 沒有到達該 caller，本輪使用 ROM 內既有 ARM
+`BX` at `0x08000210` 進入 `0x08014e84`；initializer phase 沒有寫入 ROM 或
+RAM code。mGBA 使用獨立 port `24567` 與 `skipBios=1`，因本機 session 沒有
+官方 BIOS image；這是 runtime setup 限制，並非遊戲初始化已自然觸發的宣稱。
+
+### Live slot watchpoints
+
+一次性 session 先設兩個 write watchpoint，再由上面的已驗證 caller 執行；entry
+停在 `pc=0x080083a0`、`lr=0x08014e91`，由 Thumb `BL` return address 還原出的
+caller callsite 為 `0x08014e8c`。
+
+| slot | watch stop PC | writer instruction | writer LR | live `r0`／slot value | live region |
+| --- | --- | --- | --- | --- | --- |
+| `0x020131d0` | `0x08008458` | `0x08008456` (`str r0,[r1]`) | `0x08008455` | `0x0814f664` | ROM |
+| `0x020103ac` | `0x08008464` | `0x08008462` (`str r0,[r4]`) | `0x08008463` | `0x08120dbc` | ROM |
+
+兩個 slot 在同一流程結束時均為 nonzero；watchpoint event 也讀回 resource bytes
+並得到上表相同的 hash。這是本輪的 font resource initialization proof。
+
+### First glyph identity chains
+
+只有在兩個 slot 都已讀回 nonzero 後，probe 才會以 guard 放行對既有
+`0x08008724` consumer 的 bounded temporary EWRAM stack／tile buffer setup。每個
+identity 同時保留 strict source record 的 `string_id`／source hash、runtime
+source pointer、code unit、codepage lookup、base+offset glyph bytes hash 與
+tile writer output hash；Unicode 身分與 glyph addressing 分開記錄。
+
+| source context | strict source hash | code unit → Unicode | mode | base slot/value + glyph offset | glyph pointer／bytes SHA-256 | tile writer／output SHA-256 |
+| --- | --- | --- | ---: | --- | --- | --- |
+| `0x0807b3fc` (`string_id=0x0007b3fc`) | `74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e` | `0x8983` → `ラ` | 1 | `0x020131d0` / `0x0814f664` + `0x1500` | `0x08150b64`, 12 bytes, `55b2fd73918c81d6dd243d2268a88c5bd6f3d017b300e6820153c73e561b7838` | `0x08008650` via `0x08008914`; output `0x02019520`, 128 bytes, `0b24283a864c99088c88f548b98589932bccaba8fda4678d2103a533fe79eb7a` |
+| `0x0807b380` (`string_id=0x0007b380`) | `7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381` | `0xda88` → `移` | 0 | `0x020103ac` / `0x08120dbc` + `0x5bea` | `0x081269a6`, 24 bytes, `14b957c056e66cdd282857d73cfa04df932fa7dcaaec7e4a9c026c24c8323515` | `0x08008650` via `0x0800886c`; output `0x02019670`, 128 bytes, `792e708f8ad7664b5614b4c1067191740108214107b683ed3c8a65265c90e868` |
+
+兩條 chain 的 codepage lookup 都在 `0x080085fc`；窄字 callsite 是
+`0x080088bc`，glyph base+offset 完成於 `0x080088c8`；寬字 callsite 是
+`0x0800880c`，對應 base+offset 完成於 `0x08008818`。兩個 glyph byte window
+與實際 tile writer output 都有 nonzero bytes。這些條件共同支持「source context
+的 code unit 身分」與「runtime glyph address」的一致性，不以孤立 OCR 或字符表
+順序推定 Unicode。
+
+tracked 的最小 map 是 [`m16-glyph-provenance.json`](m16-glyph-provenance.json)，
+只存上列 hash／address／count metadata 與兩個必要的單字元 identity；完整 source
+仍在 ignored `research/super-robot-taisen-d-decoded.jsonl`。以中心
+`0x0007b3fc` 建立的 16-record cohort 也只在 ignored
+`work/m16-source-cohort.jsonl`，每筆保存 stable `string_id`、source hash、
+control-token position 與 bounded pointer/caller provenance；中心 record 延續
+M1.5 的 `0x0800f49a -> 0x08007e04` direct-copy positive，其餘沒有 runtime 命中
+的 row 維持 static-only 或 provisional。
+
+### Reproduction and boundary
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/verify_sjis_source_table.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --start 0x76000 --end 0x82490 --expected-count 2325
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/build_m16_cohort.py \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --pointer-report games/super-robot-taisen-d/work/pointer-caller-report.json \
+  --size 16 --output games/super-robot-taisen-d/work/m16-source-cohort.jsonl
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/probe_font_resource.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  --port 24567 \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --consumer-hijack --output games/super-robot-taisen-d/work/m16-font-runtime.json
+```
+
+最後一個命令需由本 session 自己啟動的 mGBA 執行：
+`mGBA -C gdb.port=24567 -C skipBios=1 -g <A6SJ ROM>`。probe 的 post-init
+temporary writes 只在兩個 slot nonzero guard 後發生；若自然畫面／queue 沒有
+命中，不能把 controlled capture 擴張成完整場景覆蓋。M1.6 尚未處理控制碼與
+layout 邊界、zh-TW 字寬／容量、encoder／回插與 round-trip；翻譯仍未開始。
+
+### 第一輪結論（M0／M1 初輪快照；M1.6 更新見上）
 
 | 問題 | 狀態 |
 | --- | --- |
 | ROM 身分／CRC | 已確認（A6SJ／`efb45117`） |
 | 有界靜態文字池／分區線索 | 已確認 `0x076000..0x082490` 的 NUL 結尾 Shift-JIS 候選池；完整文本仍未確認 |
-| 字型／glyph addressing | 未確認；尚未從 VRAM／ROM 做 byte-identical 來源匹配 |
-| glyph identity | 未開始；字符表候選不能直接視為已知 codepage |
-| codepage | 已確認有界靜態池使用嚴格標準 Shift-JIS；池外文本未確認 |
+| 字型／glyph addressing | M1.6 已在兩個 initialized ROM base 上完成 bounded glyph bytes／tile output hash；完整字型格式仍未確認 |
+| glyph identity | M1.6 已確認 `ラ`／`移` 兩個 strict source-context sample；字符表候選仍不能直接擴張成完整 codepage |
+| codepage | 已確認有界靜態池為嚴格標準 Shift-JIS，並以兩個 runtime code unit 走通 lookup；池外文本未確認 |
 | 指標表 | 有界池已有 4-byte 絕對 pointer 命中與群組；語意／caller／runtime 未確認 |
-| runtime 邊界 | ROM entry／VRAM transfer 有陽性；`0x08076000` 首字 read watchpoint 在 10 秒 boot window 陰性 |
+| runtime 邊界 | ROM entry／VRAM transfer、font slot writer 與兩個 bounded glyph consumer 均有陽性；自然 boot／menu 覆蓋仍有限 |
 | 壓縮 | 只有 BIOS／簽章候選，未確認與文本相關 |
 | 控制碼／終止碼／行寬 | 未確認 |
 | 可逆回插 | 未確認，尚未建立 encoder／builder |
@@ -243,11 +346,11 @@ font resource initialization 與 glyph identity 尚未完成」，不是翻譯�
 
 ## 下一輪入口
 
-1. 分類有界文字池的 pointer 群組與 ID／表格語意，確認名稱／UI 與話間資料的
-   邊界是否共享同一 renderer。
-2. 反組譯與 runtime 追蹤表格／字型 loader，優先確認兩個字符表是否會被讀入
-   VRAM／RAM，以及字串 renderer 的來源參數。
-3. 若靜態分析無法縮小範圍，啟動新的 mGBA GDB session，讀取 `DISPCNT`、VRAM、
-   palette 與可疑 ROM／RAM 區域；每次 GDB 斷線都重啟 mGBA。
-4. 只在取得一組可重複的字串邊界、codepage／控制碼與 glyph 來源後，才輸出
-   `research/super-robot-taisen-d-decoded.jsonl` 並建立第一批翻譯。
+1. 以已知 queue／UI caller 為邊界，擴大自然畫面與分支／話數資料的 renderer
+   覆蓋；不把兩個 controlled sample 當作完整劇情 coverage。
+2. 定義 control token、換行／行寬、說話者與字串容量，並確認窄／寬字 codepage
+   的完整 glyph table 與缺字策略。
+3. 以現有共用 core GDB／renderer 工具做少量可重現場景驗證；每次 GDB 斷線都
+   重啟本 session 自己的 mGBA，raw output 留 ignored。
+4. 只有在上述邊界、encoder、回插與 round-trip 條件都可審核後，才建立第一批
+   zh-TW 翻譯與回插實驗；目前 translation 仍未開始。

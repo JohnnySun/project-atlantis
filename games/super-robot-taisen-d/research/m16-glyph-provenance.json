@@ -1,0 +1,110 @@
+{
+  "game_code": "A6SJ",
+  "milestone": "M1.6",
+  "status": "bounded_font_initialization_and_glyph_identity_proof",
+  "candidate_count": 2,
+  "source_contexts": [
+    {
+      "string_id": "0x0007B3FC",
+      "source_address": "0x0807B3FC",
+      "source_hash": "74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e",
+      "source_length": 10
+    },
+    {
+      "string_id": "0x0007B380",
+      "source_address": "0x0807B380",
+      "source_hash": "7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381",
+      "source_length": 10
+    }
+  ],
+  "font_initialization": {
+    "caller_callsite": "0x08014E8C",
+    "initializer": "0x080083A0",
+    "narrow_store": "0x08008456",
+    "wide_store": "0x08008462",
+    "narrow_slot": "0x020131D0",
+    "narrow_base": "0x0814F664",
+    "wide_slot": "0x020103AC",
+    "wide_base": "0x08120DBC",
+    "resource_resolver": "0x08003290",
+    "narrow_resource_sha256_100": "9ea4cc823cda13f0bb5b717346a904eb822c641f998f88cf76a0b865d0ae0a09",
+    "wide_resource_sha256_100": "f9f4665a91cef443dd7e61eb588abb05c50f87c48217c49b91236d01d6475e71"
+  },
+  "glyphs": [
+    {
+      "identity_status": "confirmed",
+      "unicode": "ラ",
+      "source_string_id": "0x0007B3FC",
+      "source_address": "0x0807B3FC",
+      "source_hash": "74130c92f0ed276e207ef1a1f09c683e146e0b282de1735e25421753b6b9d41e",
+      "source_byte_offset": 0,
+      "code_unit": "0x8983",
+      "codepage_lookup": "0x080085FC",
+      "codepage_callsite": "0x080088BC",
+      "mode": 1,
+      "base_slot": "0x020131D0",
+      "initialized_base": "0x0814F664",
+      "glyph_add_pc": "0x080088C8",
+      "glyph_offset": "0x1500",
+      "glyph_pointer": "0x08150B64",
+      "glyph_length": 12,
+      "glyph_sha256": "55b2fd73918c81d6dd243d2268a88c5bd6f3d017b300e6820153c73e561b7838",
+      "glyph_nonzero_bytes": 8,
+      "tile_writer_pc": "0x08008650",
+      "tile_writer_callsite": "0x08008914",
+      "tile_output_address": "0x02019520",
+      "tile_output_length": 128,
+      "tile_output_sha256": "0b24283a864c99088c88f548b98589932bccaba8fda4678d2103a533fe79eb7a",
+      "tile_output_nonzero_bytes": 96,
+      "chain_checks": {
+        "source_pointer_matches_context": true,
+        "code_unit_matches_strict_shift_jis_context": true,
+        "glyph_pointer_equals_base_plus_offset": true,
+        "glyph_bytes_nonzero": true,
+        "tile_output_nonzero": true
+      }
+    },
+    {
+      "identity_status": "confirmed",
+      "unicode": "移",
+      "source_string_id": "0x0007B380",
+      "source_address": "0x0807B380",
+      "source_hash": "7d3b523577ed1641eca7493db0ad72576d17665be8df9180450c6fa66eb3f381",
+      "source_byte_offset": 0,
+      "code_unit": "0xDA88",
+      "codepage_lookup": "0x080085FC",
+      "codepage_callsite": "0x0800880C",
+      "mode": 0,
+      "base_slot": "0x020103AC",
+      "initialized_base": "0x08120DBC",
+      "glyph_add_pc": "0x08008818",
+      "glyph_offset": "0x5BEA",
+      "glyph_pointer": "0x081269A6",
+      "glyph_length": 24,
+      "glyph_sha256": "14b957c056e66cdd282857d73cfa04df932fa7dcaaec7e4a9c026c24c8323515",
+      "glyph_nonzero_bytes": 22,
+      "tile_writer_pc": "0x08008650",
+      "tile_writer_callsite": "0x0800886C",
+      "tile_output_address": "0x02019670",
+      "tile_output_length": 128,
+      "tile_output_sha256": "792e708f8ad7664b5614b4c1067191740108214107b683ed3c8a65265c90e868",
+      "tile_output_nonzero_bytes": 56,
+      "chain_checks": {
+        "source_pointer_matches_context": true,
+        "code_unit_matches_strict_shift_jis_context": true,
+        "glyph_pointer_equals_base_plus_offset": true,
+        "glyph_bytes_nonzero": true,
+        "tile_output_nonzero": true
+      }
+    }
+  ],
+  "insertion_status": {
+    "translation_started": false,
+    "remaining_conditions": [
+      "control-code and line-layout boundaries",
+      "capacity and allocation policy for zh-TW text",
+      "reversible encode/insert path and round-trip verification",
+      "natural menu or queue trigger for broader text coverage"
+    ]
+  }
+}
