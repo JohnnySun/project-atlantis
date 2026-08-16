@@ -3,10 +3,10 @@
 
 The mGBA/GDB listener is a separate runtime gate.  This read-only audit is
 useful when that transport is unavailable: it verifies the local B3CJ bytes
-for the reviewed glyph writer, its DMA queue, the text-window callsite, and
-the fixed VRAM character destination.  It also records the palette shadow
-path without pretending that the hardware palette, tilemap, OAM, or a live
-screen has been observed.
+for the reviewed glyph writer, its DMA queue, the text-window callsite, the
+fixed VRAM character destination, the text-tile address formula, and the OAM
+copy callsite.  It also records the palette shadow path without pretending
+that a live text cache, tilemap, or screen has been observed.
 
 The report contains only hashes, addresses, formulas, and bounded metadata.
 It never writes a ROM or emits decoded source text/raw memory.
@@ -44,10 +44,13 @@ EXPECTED_CSM3_COMMIT = "7e388ac861bbac289b1f86dc5b8fa46d47b1a1a2"
 # the next reviewed function entry in csm3's assembly and is independently
 # checked against the local B3CJ ROM bytes.
 REVIEWED_FUNCTIONS = (
+    ("sub_08001BC0", 0x00001BC0, 0x00001BF6, "db6aeb2ceae31a50c9428fc3f14d63b9716598c9621e9135d435e0df48fb66f7"),
     ("sub_08001C00", 0x00001C00, 0x00001C30, "11e49e947411f5f978996bd1ae569a04348d9fbb3764cc100a1ec7d4566fe8ff"),
     ("sub_08002CB4", 0x00002CB4, 0x000031E8, "7ea0b0df799259d52eee5b818d7abcfa8fe51ddbdc0456fe202489769f67ee1b"),
     ("sub_080036C4", 0x000036C4, 0x000036F8, "1f747a03c51832819aab72c06c50b2a18613eb82a7a2e8019c4706ab3ee041b7"),
     ("sub_080036F8", 0x000036F8, 0x0000382E, "8593bbedfbfa610d0411f09ac808ccb4191ab7ff8b570f66168b94ddd639ee35"),
+    ("DmaCopyBufferToOam.local_sub_080092CC", 0x000092CC, 0x000092E0, "adaf453e707c3d45b76099c0213ee8ab5efc2438e3f1d5f6dcd1ce7088b7b110"),
+    ("sub_08009654", 0x00009654, 0x00009678, "63081b9bbd76ddb96ceb4236ae499c796edbaff2058cf648a366bac5e671d7c4"),
     ("DmaCopyMapAndPltt", 0x00006AC4, 0x00006BA4, "0a6d478733805e022ac1f1bbd781d492adcc561a5203ff6887f55694e56477a1"),
     ("sub_08006BA4", 0x00006BA4, 0x00006C10, "6f94efbb3c1c17caaceed4ee506d94758cfb5d028db0569547c9da3c97cedd2a"),
     ("sub_0800B730", 0x0000B730, 0x0000B7DE, "d4807052a062cb7b57e436f9cf1ffdec0b74ce6537a57fc8e5557845d395fcb0"),
@@ -61,6 +64,12 @@ REVIEWED_FUNCTIONS = (
 # local-ROM proof.
 REVIEWED_LITERALS = (
     ("sub_080036C4.palette_source_table", 0x000036F4, 0x08B6D610),
+    ("sub_080092CC.dma_register", 0x000092E0, 0x040000D4),
+    ("sub_080092CC.oam_source", 0x000092E4, 0x030038B0),
+    ("sub_080092CC.dma_control", 0x000092E8, 0x84000100),
+    ("sub_08009654.tile_table_root", 0x00009678, 0x030040C0),
+    ("sub_08009654.tile_index_mask", 0x0000967C, 0x000003FF),
+    ("sub_08009654.text_vram_base", 0x00009680, 0x06010000),
     ("DmaCopyMapAndPltt.dma_register", 0x00006BA0, 0x040000D4),
     ("sub_08006BA4.queue_count", 0x00006BD0, 0x03003180),
     ("sub_08006BA4.queue_table", 0x00006BD4, 0x03002DC0),
@@ -125,8 +134,8 @@ def audit_rom(path: pathlib.Path) -> dict[str, object]:
     literal_checks = _literal_checks(data)
 
     return {
-        "audit_version": "b3cj-static-render-destination-v2",
-        "evidence_level": "confirmed-static-writer-dma-vram-palette-hardware-copy",
+        "audit_version": "b3cj-static-render-destination-v3",
+        "evidence_level": "confirmed-static-writer-dma-vram-palette-oam-copy-and-text-tile-address",
         "rom_identity": identity,
         "csm3_commit": EXPECTED_CSM3_COMMIT,
         "function_checks": function_checks,
@@ -157,6 +166,15 @@ def audit_rom(path: pathlib.Path) -> dict[str, object]:
             "memory_region": "VRAM character/tile data region",
             "evidence": "local literal 0x06010000 plus writer -> DMA descriptor callsite chain",
         },
+        "text_tile_address": {
+            "function": "sub_08009654",
+            "table_root_runtime": "0x030040c0",
+            "formula": "(((var->unk2 & 0x3ff) + var3->unk2) * 0x20) + 0x06010000",
+            "tile_index_mask": "0x3ff",
+            "tile_stride": "0x20 bytes (4bpp)",
+            "base": "0x06010000",
+            "evidence": "local function hash and literal guards cross-checked with csm3 copy.c formula; this proves tile-data addressing, not tilemap placement",
+        },
         "palette": {
             "source_table_gba": "0x08b6d610",
             "loader": "sub_080036C4",
@@ -175,8 +193,15 @@ def audit_rom(path: pathlib.Path) -> dict[str, object]:
             "evidence_level": "not proven by this bounded chain",
         },
         "oam": {
-            "destination": "unknown",
-            "evidence_level": "not proven by this bounded chain",
+            "caller": "sub_08001BC0",
+            "local_transfer": "DmaCopyBufferToOam.local_sub_080092CC",
+            "source": "0x030038b0",
+            "destination": "0x07000000",
+            "dma_register": "0x040000d4",
+            "length": "0x400 bytes",
+            "control": "0x84000100",
+            "evidence_level": "confirmed-static-oam-dma",
+            "boundary": "OAM buffer copy is confirmed as a display metadata transfer; it is not evidence that text glyphs use OAM or that a live screen was rendered",
         },
         "runtime": {
             "handshake": "blocked-transport-only",
@@ -185,7 +210,7 @@ def audit_rom(path: pathlib.Path) -> dict[str, object]:
             "vram_read": False,
             "screen_readability": False,
         },
-        "boundary": "Static writer -> queued DMA -> 0x06010000 and palette shadow -> queued DMA -> 0x05000000 evidence is confirmed; live cache, tilemap, OAM, natural reachability, and screen readability remain unconfirmed.",
+        "boundary": "Static writer -> queued DMA -> 0x06010000, text tile address formula, OAM buffer -> 0x07000000, and palette shadow -> queued DMA -> 0x05000000 evidence is confirmed; live text cache, tilemap, natural reachability, VRAM readback, and screen readability remain unconfirmed.",
     }
 
 
