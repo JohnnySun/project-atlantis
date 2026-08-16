@@ -62,6 +62,16 @@ M2.2 的完整字型、slot、source/license 與 POC 收據見 [`research/m2.2-f
 
 M2.3 完整 static／runtime 收據見 [`research/m2.3-poc.md`](research/m2.3-poc.md)。下一個最小缺口是可重現的 renderer runtime evidence（或等價 static writer／VRAM destination 證據），再評估第一筆經術語審核的同長度 zh-TW 翻譯；本切片不開始批量翻譯。
 
+## M2.4：runtime handshake diagnostic 與 static writer→destination
+
+- [x] 唯讀 review 其他成功 session 的 `-C gdb.port=<high-port> -C skipBios=1 -g` 啟動方式、單次 GDB client、ACK／delay／一次 timeout retry 邊界；不再使用 `ports.qt.gdbPort` shim。
+- [x] 以本作 M2.3 POC ROM、獨立高位 port `24763`／`24764` 做兩輪 fresh process ownership／listener 檢查；第一輪 GUI PID `29811` 無 `24763` listener，第二輪 headless 明確輸出 `Debugger: Couldn't open socket`，兩個 process 均已停止。
+- [x] 建立 `tools/runtime_m2_4.py` 與測試；對每輪已釋放 port 收到可重現的 `ConnectionRefusedError`，並保存 ignored diagnostic 的 client 設定與失敗邊界；沒有假造 `qSupported`、breakpoint 或 watchpoint hit。
+- [x] 以本機 function hash／callsite 收斂 `sub_080036F8 → sub_08002CB4` 的 `0x80`、`sub_0800379C → sub_080031E8` 的 `0x40` RAM/output-buffer contract，並重驗 changed `0x845/0x846` 與 adjacent untouched `0x844` static glyph POC。
+- [~] runtime gate 仍 blocked：尚無 live font cache、lookup／writer destination、VRAM／palette／tilemap／OAM 或畫面可讀性；controlled argument hijack 尚未執行，也未準備 translation ledger candidate。
+
+M2.4 完整啟動、PID／listener、client 設定、static writer 邊界與下一缺口見 [`research/m2.4-runtime.md`](research/m2.4-runtime.md)。這個切片沒有開始大批翻譯，也沒有宣稱 POC 可發布。
+
 ## M2：文本與字型格式
 
 - [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。

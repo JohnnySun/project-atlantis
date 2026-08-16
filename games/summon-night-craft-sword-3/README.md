@@ -6,7 +6,7 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2 與 M2.3 static slices 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest，以及 2-glyph／2-record 的 fail-closed bounded encoder POC。未命名 VM opcode、palette／runtime VRAM、完整 ROM container rebuild 與翻譯回插仍未完成，尚未開始大批翻譯。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3 與 M2.4 static／diagnostic slices 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、2-glyph／2-record 的 fail-closed bounded encoder POC，以及 gdb.port／單次 handshake diagnostic 與 static writer→RAM destination contract。未命名 VM opcode、palette／runtime VRAM、完整 ROM container rebuild 與翻譯回插仍未完成，尚未開始大批翻譯。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md)、[`research/m2.4-runtime.md`](research/m2.4-runtime.md) 與 [`ROADMAP.md`](ROADMAP.md)。
 
 ### ROM metadata／外部比對
 
@@ -59,7 +59,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract
 
 這會驗證固定 ROM 身分，解析 type-2 table `0x1718ffc` 的 79 個 resource ID，解壓 `PSI3` stream，並把不含翻譯的日文原文與結構化控制資料寫入 ignored JSONL；`--verify-roundtrip` 只驗證解壓 PSI3 stream 與 record 層，不宣稱 LZ77／pointer／ROM 回插。工具測試與實際收據見 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)；不要將該 JSONL stage。
 
-尚未由 extractor 覆蓋的候選仍必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。共用 `core/gba/capture_runtime.py` 與 renderer 已可用，且共用測試 6 項通過；M2.3 曾先確認高位 `24387` 空閒，再以本作自己的 mGBA PID `26484` 嘗試 `-C ports.qt.gdbPort=24387`，但 mGBA 0.10.5 CLI 仍只 listen 自己的 `2345`。透過該 PID 的 listener 執行 core capture 時，`qSupported:multiprocess+` timeout；程序已停止，沒有 runtime summary 或 raw dump 證據。這次收據記為 `RUNTIME-004`，只限制 live RAM／VRAM／palette／OAM 交叉驗證，不否定已由本機 ROM、固定 pointer table 與 csm3 consumer 重跑的 M1.5／M2.3 靜態結果；不新增遊戲專屬 GDB／dump／renderer。
+尚未由 extractor 覆蓋的候選仍必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。共用 `core/gba/capture_runtime.py` 與 renderer 已可用，且共用測試 6 項通過；M2.4 依其他成功 session 改用 `-C gdb.port=<high-port>`，兩輪 fresh process 分別使用 `24763`／`24764`，但第一輪 GUI process 未建立 listener，第二輪 headless binary 明確回報 `Debugger: Couldn't open socket`。兩次均以本作 diagnostic 收到 `ConnectionRefusedError`，程序已停止，沒有 `qSupported`、breakpoint/watchpoint、runtime summary、VRAM／palette／OAM 或畫面證據。這次收據記為 `RUNTIME-005`，只限制 live RAM／VRAM／palette／OAM 交叉驗證，不否定 M2.4 已由本機 function hash 收斂的 writer→RAM output-buffer static contract；不新增共用 GDB／dump／renderer。
 
 ## M2.2 字型鏈與 static POC
 
@@ -108,7 +108,30 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/encode_
 ```
 
 這仍是 static POC，不是已審核翻譯、完整 ROM 回插、BPS 或可發布 patch；palette、
-writer destination、VRAM/OAM layout 與畫面 glyph 可讀性仍因 `RUNTIME-004` blocked。
+writer destination、VRAM/OAM layout 與畫面 glyph 可讀性仍因 `RUNTIME-004`／
+`RUNTIME-005` blocked。
+
+## M2.4 runtime handshake diagnostic／static writer destination
+
+本切片先 review 其他已成功 session 的 `-C gdb.port=<high-port> -C skipBios=1 -g`
+模式與單次 GDB client，再對 M2.3 POC 做最多兩輪 fresh process。第一輪
+`24763` 的 homebrew mGBA process PID `29811` 命令列與 ROM ownership 對上，但
+沒有 listener；第二輪使用其他 session 已成功的 headless mGBA 與 `24764`，直接
+回報 `Debugger: Couldn't open socket`。兩輪 process 都已停止，diagnostic 對已
+釋放的 ports 收到 `ConnectionRefusedError`，未取得 `qSupported` 或任何 runtime
+breakpoint／watchpoint hit。完整 launcher、PID、port、client delay／ACK／retry 與
+失敗邊界見 [`research/m2.4-runtime.md`](research/m2.4-runtime.md)。
+
+本作新增 [`tools/runtime_m2_4.py`](tools/runtime_m2_4.py) 與測試。它不啟動或停止
+mGBA，只對單一已核對 listener 使用共用 `core/gba/gdbstub_client.py`，並輸出不含
+原文／raw memory 的 ignored diagnostic。若 listener 不可用，仍會驗證本機 B3CJ
+writer ranges：`sub_080036F8 → sub_08002CB4` 的 `r1` output-buffer span／per-glyph
+stride 是 `0x80`，`sub_0800379C → sub_080031E8` 是 `0x40`；兩條都先經
+`sub_0800348C` lookup。這是 confirmed-static 的 RAM/output-buffer contract，
+不是 VRAM address，也不證明自然 reachability、palette、tilemap、OAM 或畫面可讀性。
+同一 diagnostic 重新驗證 changed `0x845/0x846` 與 adjacent untouched `0x844` 的
+static 12×12／24-byte render。M2.4 runtime gate 仍 blocked，沒有準備 translation
+ledger candidate。
 
 ## 文字系統研究邊界
 
