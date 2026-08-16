@@ -168,3 +168,17 @@ unit count 與 encoded target hash；core BPS create/apply 再確認 target imag
 因此 M33 可標記「實際文字變更的 bounded relocation／BPS POC 已通過」，但以下 gate
 仍關閉：CJK／一般日文 codepage、控制碼 schema、全域 fixed-slot policy、clean source
 re-extract hash stability、patched mGBA runtime QA。
+
+## M34 bounded known-screen row gate
+
+M34 沿同一 clean name-entry capture 補上一個有限的 static source-pointer row。工具
+驗證 `0x08003E24` literal → file `0x087384` 的 10-byte terminated span，再以
+`0x08089E00 + unit*0x18`、4 個 record hash、4 個 screen mask 與 8 個 BG0 tilemap/tile
+hash 交叉。這使該主角姓名欄位的 4 個 code unit 達到 `known-screen` glyph identity
+與 bounded `eligible_for_ledger=true`；它不是 runtime reader、DMA／CPU byte-copy 或
+general keyboard tail mapping。
+
+M34 的 row 可以在本機建立 source／working record，但提交 ledger 仍只能保留 stable ID、
+source hash、scene、width／line budget、control metadata 與 terminology status。source
+span、record rows、圖片與完整原文不可進 Git。若 keyboard selection slot 與 known-screen
+identity 不一致，必須維持兩個欄位，不得用 table slot 自動覆寫 identity。

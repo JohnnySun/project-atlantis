@@ -9,11 +9,15 @@ sys.path.insert(0, str(TOOLS))
 from m29_ui_row_cross_probe import (  # noqa: E402
     EXPECTED_CALLER,
     EXPECTED_STREAM,
+    M34_PROTAGONIST_UNITS,
+    M34_SCREEN_BOXES,
+    bounded_tilemap_receipt,
     M32_STREAM_UNITS,
     crop_mask,
     cross_check,
     font_record_mask,
     image_component_mask,
+    protagonist_name_raster_cross,
     tilemap_receipt,
 )
 
@@ -103,6 +107,27 @@ class M29UiRowCrossProbeTests(unittest.TestCase):
         self.assertEqual(len(receipt["rows"]), len(M32_STREAM_UNITS))
         self.assertFalse(receipt["expected_vram_sha256_match"])
         self.assertFalse(receipt["all_tilemap_and_tile_hashes_match"])
+
+    def test_m34_known_name_shape_is_fixed_metadata_only(self) -> None:
+        self.assertEqual(M34_PROTAGONIST_UNITS, (0x00C8, 0x00F6, 0x0063, 0x00FE))
+        self.assertEqual(set(M34_SCREEN_BOXES), set(M34_PROTAGONIST_UNITS))
+
+    def test_m34_cross_fails_closed_without_rom(self) -> None:
+        result = protagonist_name_raster_cross(
+            rom=None,
+            vram=None,
+            image_pixels=None,
+            image_sha256=None,
+            screen_summary=screen_summary(),
+        )
+        self.assertEqual(result["classification"]["glyph_identity_confirmed_by_this_probe"], 0)
+        self.assertFalse(result["classification"]["eligible_for_ledger"])
+        self.assertFalse(result["source_text_emitted"])
+
+    def test_bounded_tilemap_receipt_accepts_explicit_empty_cohort(self) -> None:
+        receipt = bounded_tilemap_receipt(bytes(0x18000), {})
+        self.assertEqual(receipt["rows"], {})
+        self.assertTrue(receipt["all_tilemap_and_tile_hashes_match"])
 
 
 if __name__ == "__main__":

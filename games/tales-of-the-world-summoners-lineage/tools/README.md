@@ -437,6 +437,27 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
 M33 不會把 Latin static proof 外推成 CJK／一般 text stream codepage，也不會把沒有
 GDB listener 的 mGBA run 當成 runtime QA。
 
+## M34 protagonist-name known-screen cross
+
+`m29_ui_row_cross_probe.py --protagonist-name-cross` 重用 M19 的已知 name-entry screen，
+只檢查固定的 `0x08003E24` source-pointer literal、`0x087384` 的 terminated span、四個
+font record mask 與八個 BG0 tilemap/tile hash。它輸出 source-free offset、code-unit、
+record／mask／tile hash 與 gate fields；不輸出 source bytes、glyph rows、圖片或 OCR 結果。
+M34 只確認該 bounded 主角姓名欄位，general codepage、control schema、live reader 與
+CPU/DMA byte-copy 仍關閉。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-summoners-lineage/tools/m29_ui_row_cross_probe.py \
+  /private/tmp/tow-a9pj-m24-direct/direct-decoded.jsonl \
+  /private/tmp/tow-a9pj-m19-gate-seq-1/summary.json \
+  --rom /private/tmp/project-atlantis-a9pj.gba \
+  --bg0-vram /private/tmp/tow-a9pj-m19-gate-seq-1/dump/vram.bin \
+  --bg0-image /private/tmp/tow-a9pj-m19-gate-seq-1/bg0-gate.png \
+  --protagonist-name-cross \
+  --output /private/tmp/tow-a9pj-m34-known-screen/summary.json
+```
+
 ## M30 `0xFF70` control/render cross-check
 
 `m30_control_render_cross_probe.py` 只對既有 direct target 做 bounded control receipt：

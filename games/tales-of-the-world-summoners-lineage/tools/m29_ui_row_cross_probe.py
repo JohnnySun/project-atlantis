@@ -84,6 +84,53 @@ M32_TILE_RECEIPTS = {
 M32_BLANK_TILE_SHA256 = "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925"
 M32_BG0_VRAM_SHA256 = "6662c7de25340739f352e19f8634dbcd8b2318892481b2599ea1e9b927924da1"
 
+# M34 is a second fixed known-screen cross, using the protagonist-name field
+# visible in the same clean BG0 capture.  The code units, hashes, boxes and
+# tile receipts are metadata only; no decoded source string is stored here.
+M34_PROTAGONIST_UNITS = (0x00C8, 0x00F6, 0x0063, 0x00FE)
+M34_SOURCE_FILE_OFFSET = 0x087384
+M34_SOURCE_BYTE_LENGTH = 10
+M34_SOURCE_STREAM_SHA256 = "a996824161672f240ae4ddf9578ffce192cc5464efea28949f08dead2d0f23e9"
+M34_SOURCE_POINTER_LITERAL_FILE_OFFSET = 0x003E34
+M34_SOURCE_POINTER_BUS_ADDRESS = 0x08087384
+M34_SOURCE_POINTER_LOAD_PC = 0x08003E24
+M34_RECORD_HASHES = {
+    0x00C8: "2bbd328bba90164ca0b3b10eff1d260f181454f3b305315703931dcfafcfda14",
+    0x00F6: "11ed35e98e5a20b31a870c1f02c4277aa2c54243c3a3d93636483c1edf8e4b93",
+    0x0063: "4e2a7536070a7a01c9b608753351a68183591899973578678e7ae2b6026f705c",
+    0x00FE: "b125b55c7f58c53b3deedc785a79703855a7502e0610e6bac5435014a00877b9",
+}
+M34_SCREEN_BOXES = {
+    0x00C8: (65, 34, 74, 43),
+    0x00F6: (78, 33, 86, 43),
+    0x0063: (88, 32, 97, 43),
+    0x00FE: (101, 34, 110, 43),
+}
+M34_MASK_HASHES = {
+    0x00C8: "ae462e7b71635156eaf20de4c538043a8a1af4d213a882da316b0fd3b44e860c",
+    0x00F6: "a6228b8b625dad1d6c55e0b569c5c0a5be759b9f23c0e0dd8820ca4ecb9720d4",
+    0x0063: "0b8ca2a33b11b1e28fac69641f5a8ae228ceab5d958d5edc94a74c00da87b774",
+    0x00FE: "fd4fee0e0b579fa395ff61687607ac0f3431380d18904a873712b6ef3732e878",
+}
+M34_TILE_RECEIPTS = {
+    0x00C8: {
+        "top": (8, 4, 0x0101, "f4d91b583cfcb6ef0551065264d6163a46432639acd6be23f54a2bace0e58526"),
+        "bottom": (8, 5, 0x0113, "2bc6c85e4e77f3291411067131f8a4b4bade0ac592e4ae25cf4f29cd74797e9a"),
+    },
+    0x00F6: {
+        "top": (9, 4, 0x0102, "a686db5215765dd5d2470a2b50647c59f9ad50c71309a0752f51810c36caa0ef"),
+        "bottom": (9, 5, 0x0114, "bb7f904ce841b6794668f86bfd61625c42e302c05bcc1e3c2ff54a168eaa4f17"),
+    },
+    0x0063: {
+        "top": (11, 4, 0x0104, "ddb252fd6c24a9a54b54e588abf336a7da526debac947eb24f0a773262b58da5"),
+        "bottom": (11, 5, 0x0116, "95a34edb0d05a1c4dcb40ac23b89468c7d83c4ecbe9a65f64ac73bf1ebcb945f"),
+    },
+    0x00FE: {
+        "top": (12, 4, 0x0105, "fa69a7b5dc3dc94d8ba998433c9b4a8630a9ceb998eb4a29aa7a1b7da896ca30"),
+        "bottom": (12, 5, 0x0117, "3c69cf77c1732a2e8391fc81eff3859801ca6a22a5a0695690d4c2e05c202197"),
+    },
+}
+
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -163,14 +210,16 @@ def read_u16(data: bytes, offset: int) -> int:
     return int.from_bytes(data[offset:offset + 2], "little")
 
 
-def tilemap_receipt(vram: bytes) -> dict[str, object]:
-    """Check only the five row positions and their two BG0 tile cells."""
+def bounded_tilemap_receipt(
+    vram: bytes,
+    expected_tiles: dict[int, dict[str, tuple[int, int, int, str]]],
+) -> dict[str, object]:
+    """Check an explicitly bounded set of BG0 tilemap cells and tile hashes."""
 
     rows: dict[str, object] = {}
     all_match = True
-    for unit in M32_STREAM_UNITS:
+    for unit, expected in expected_tiles.items():
         receipt: dict[str, object] = {}
-        expected = M32_TILE_RECEIPTS[unit]
         for side, (x, y, expected_entry, expected_hash) in expected.items():
             entry_offset = (y * 32 + x) * 2
             entry = read_u16(vram, entry_offset)
@@ -202,6 +251,179 @@ def tilemap_receipt(vram: bytes) -> dict[str, object]:
         "charbase": "0x00000000",
         "rows": rows,
         "all_tilemap_and_tile_hashes_match": all_match,
+    }
+    return result
+
+
+def tilemap_receipt(vram: bytes) -> dict[str, object]:
+    """Check only the five M32 row positions and their two BG0 tile cells."""
+
+    return bounded_tilemap_receipt(vram, M32_TILE_RECEIPTS)
+
+
+def protagonist_name_raster_cross(
+    *,
+    rom: bytes | None,
+    vram: bytes | None,
+    image_pixels: Sequence[Sequence[tuple[int, int, int]]] | None,
+    image_sha256: str | None,
+    screen_summary: dict[str, object],
+) -> dict[str, object]:
+    """Cross one fixed protagonist-name source pointer with the known BG0 screen.
+
+    This is deliberately not a source extractor.  It checks one source pointer,
+    one terminated halfword span, four record hashes, four cropped raster masks
+    and eight BG0 tile hashes.  No decoded name or glyph bytes are serialized.
+    """
+
+    screen = screen_summary["starts"][0]["screen"]
+    keyboard = screen.get("keyboard_layout", {})
+    keyboard_gate = (
+        bool(screen.get("gate_confirmed"))
+        and screen.get("bg1_screenblock_sha256") == EXPECTED_BG1_SCREENBLOCK_SHA256
+        and keyboard.get("position_match_count") == 8
+        and len(keyboard.get("selected_positions", [])) == 8
+    )
+    result: dict[str, object] = {
+        "probe_version": "m34-protagonist-name-raster-cross-20260816.v1",
+        "method": "known-screen-static-source-pointer-record-raster-and-tilemap-cross",
+        "source_text_emitted": False,
+        "runtime_reader_breakpoint_hit": False,
+        "screen": {
+            "bg0_image_sha256": image_sha256,
+            "bg0_image_expected_hash_match": image_sha256 == EXPECTED_BG0_IMAGE_SHA256,
+            "keyboard_gate": keyboard_gate,
+        },
+        "source_pointer": {
+            "literal_file_offset": f"0x{M34_SOURCE_POINTER_LITERAL_FILE_OFFSET:06X}",
+            "load_pc": f"0x{M34_SOURCE_POINTER_LOAD_PC:08X}",
+            "expected_bus_address": f"0x{M34_SOURCE_POINTER_BUS_ADDRESS:08X}",
+            "expected_file_offset": f"0x{M34_SOURCE_FILE_OFFSET:06X}",
+        },
+        "source_stream": {
+            "file_offset": f"0x{M34_SOURCE_FILE_OFFSET:06X}",
+            "byte_length": M34_SOURCE_BYTE_LENGTH,
+            "expected_sha256": M34_SOURCE_STREAM_SHA256,
+            "expected_code_unit_count": len(M34_PROTAGONIST_UNITS),
+            "expected_terminator": "0x0000",
+        },
+        "records": [],
+        "tilemap": None,
+        "classification": {
+            "scene_role_candidate": "ui-name-entry-protagonist-name-field",
+            "runtime_context_proof": "missing",
+            "glyph_identity_confirmed_by_this_probe": 0,
+            "source_pointer_confirmed": False,
+            "general_codepage_confirmed": False,
+            "control_schema_confirmed": False,
+            "eligible_for_ledger": False,
+        },
+    }
+    if rom is None:
+        result["failure_reason"] = "ROM input not supplied"
+        return result
+
+    rom_sha256 = hashlib.sha256(rom).hexdigest()
+    stream = rom[M34_SOURCE_FILE_OFFSET:M34_SOURCE_FILE_OFFSET + M34_SOURCE_BYTE_LENGTH]
+    stream_units = [
+        int.from_bytes(stream[index:index + 2], "little")
+        for index in range(0, len(stream), 2)
+        if len(stream[index:index + 2]) == 2
+    ]
+    stream_match = (
+        len(stream) == M34_SOURCE_BYTE_LENGTH
+        and hashlib.sha256(stream).hexdigest() == M34_SOURCE_STREAM_SHA256
+        and tuple(stream_units[:-1]) == M34_PROTAGONIST_UNITS
+        and stream_units[-1:] == [0x0000]
+    )
+    literal = int.from_bytes(
+        rom[M34_SOURCE_POINTER_LITERAL_FILE_OFFSET:M34_SOURCE_POINTER_LITERAL_FILE_OFFSET + 4],
+        "little",
+    )
+    pointer_match = literal == M34_SOURCE_POINTER_BUS_ADDRESS
+    result["rom"] = {
+        "sha256": rom_sha256,
+        "expected_a9pj_sha256_match": rom_sha256 == EXPECTED_ROM_SHA256,
+        "size": len(rom),
+    }
+    result["source_pointer"].update({
+        "literal_value": f"0x{literal:08X}",
+        "literal_match": pointer_match,
+    })
+    result["source_stream"].update({
+        "observed_sha256": hashlib.sha256(stream).hexdigest(),
+        "observed_code_unit_count": max(0, len(stream_units) - 1),
+        "has_terminator": bool(stream_units and stream_units[-1] == 0x0000),
+        "units_match": tuple(stream_units[:-1]) == M34_PROTAGONIST_UNITS,
+        "bytes_match_expected": stream_match,
+    })
+
+    record_results: list[dict[str, object]] = []
+    raster_match_count = 0
+    for unit in M34_PROTAGONIST_UNITS:
+        bus_address = M32_RECORD_BASE + unit * M32_RECORD_STRIDE
+        file_offset = bus_address - 0x08000000
+        record = rom[file_offset:file_offset + M32_RECORD_STRIDE]
+        record_hash = hashlib.sha256(record).hexdigest()
+        record_mask = font_record_mask(record) if len(record) == M32_RECORD_STRIDE else ()
+        screen_mask = None
+        if image_pixels is not None:
+            screen_mask = image_component_mask(image_pixels, M34_SCREEN_BOXES[unit])
+        mask_match = screen_mask is not None and record_mask == crop_mask(screen_mask)
+        if mask_match:
+            raster_match_count += 1
+        record_results.append({
+            "code_unit": f"0x{unit:04X}",
+            "record_bus_address": f"0x{bus_address:08X}",
+            "record_file_offset": f"0x{file_offset:06X}",
+            "record_sha256": record_hash,
+            "expected_record_sha256": M34_RECORD_HASHES[unit],
+            "record_hash_match": record_hash == M34_RECORD_HASHES[unit],
+            "screen_bbox": list(M34_SCREEN_BOXES[unit]),
+            "record_mask_sha256": mask_sha256(record_mask) if record_mask else None,
+            "expected_mask_sha256": M34_MASK_HASHES[unit],
+            "screen_mask_sha256": mask_sha256(screen_mask) if screen_mask else None,
+            "mask_equal": mask_match,
+        })
+    result["records"] = record_results
+
+    tilemap_match = False
+    if vram is not None:
+        result["tilemap"] = bounded_tilemap_receipt(vram, M34_TILE_RECEIPTS)
+        tilemap_match = bool(result["tilemap"]["all_tilemap_and_tile_hashes_match"])
+    all_record_hashes = all(bool(row["record_hash_match"]) for row in record_results)
+    all_masks = raster_match_count == len(M34_PROTAGONIST_UNITS)
+    eligible = (
+        keyboard_gate
+        and rom_sha256 == EXPECTED_ROM_SHA256
+        and pointer_match
+        and stream_match
+        and all_record_hashes
+        and image_sha256 == EXPECTED_BG0_IMAGE_SHA256
+        and all_masks
+        and tilemap_match
+    )
+    result["classification"] = {
+        "scene_role_candidate": "ui-name-entry-protagonist-name-field",
+        "runtime_context_proof": (
+            "known-screen-static-source-pointer-record-raster-and-tilemap-correlated"
+            if eligible else "partial-known-screen-cross"
+        ),
+        "glyph_identity_confirmed_by_this_probe": raster_match_count if eligible else 0,
+        "source_pointer_confirmed": pointer_match and stream_match,
+        "general_codepage_confirmed": False,
+        "control_schema_confirmed": False,
+        "eligible_for_ledger": eligible,
+    }
+    result["gate_checks"] = {
+        "keyboard_gate": keyboard_gate,
+        "rom": rom_sha256 == EXPECTED_ROM_SHA256,
+        "source_pointer": pointer_match,
+        "source_stream": stream_match,
+        "record_hashes": all_record_hashes,
+        "image_sha256": image_sha256 == EXPECTED_BG0_IMAGE_SHA256,
+        "record_to_image_masks": all_masks,
+        "bg0_tilemap_and_tile_hashes": tilemap_match,
     }
     return result
 
@@ -462,6 +684,11 @@ def main() -> None:
     parser.add_argument("--rom", type=Path)
     parser.add_argument("--bg0-vram", type=Path)
     parser.add_argument("--m17-summary", type=Path)
+    parser.add_argument(
+        "--protagonist-name-cross",
+        action="store_true",
+        help="also run the fixed M34 protagonist-name source/raster cross",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     image_hash = sha256_file(args.bg0_image) if args.bg0_image else None
@@ -480,6 +707,14 @@ def main() -> None:
         bg0_image_sha256=image_hash,
         raster_receipt=raster_receipt,
     )
+    if args.protagonist_name_cross:
+        result["protagonist_name_cross"] = protagonist_name_raster_cross(
+            rom=args.rom.read_bytes() if args.rom else None,
+            vram=args.bg0_vram.read_bytes() if args.bg0_vram else None,
+            image_pixels=image_pixels,
+            image_sha256=image_hash,
+            screen_summary=json.loads(args.screen_summary.read_text(encoding="utf-8")),
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"probe_version": PROBE_VERSION, "output": str(args.output), "source_text_emitted": False}, sort_keys=True))

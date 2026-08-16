@@ -187,6 +187,10 @@
 - [x] M33 以既有 keyboard row 2 與 16×12 MSB record raster 固定一個 Latin target
   子集，並由既有 M20 probe 提供 source-free bounded encoder receipt；不外推成一般
   日文／CJK codepage。
+- [x] M34 重用 M19 known-screen 與 M29 cross tool，沿 `0x08003E24` literal →
+  `0x087384` terminated span → `0x08089E00 + unit*0x18` record → BG0 raster／tilemap
+  取得主角姓名欄位的 `4/4` 非 Latin glyph identity 與 `8/8` tile receipt；這是
+  bounded static source-pointer proof，不是 live reader／byte-copy 或 general codepage。
 
 ## 里程碑 2B：最小 zh-TW ledger／回插 POC
 
