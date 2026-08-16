@@ -613,6 +613,32 @@ speaker、newline 與 engine width limit 全部 `unconfirmed`；wide existing-sl
 仍為 743 identities、runtime confirmed 1、新 wide capacity 0。這是分類邊界與下一個
 runtime gate，不是語意分類或新增翻譯。
 
+## 2026-08-16：M1.13 fail-closed narrow／wide encoder contract
+
+本輪新增 [`tools/m113_full_encoder_contract.py`](../tools/m113_full_encoder_contract.py)，
+不重新掃描 ROM，也不產生 target 或修改 ROM。它重用 ignored M4 narrow allocation 與
+wide reuse audit，將可回插邊界收斂成一個可測的 encoder contract：窄字須通過固定 ROM、
+Unifont source／license hash、code-unit→slot formula、codepoint／unit／slot collision
+與固定長度；寬字只允許既有 map 中具 `runtime_confirmed_bounded` 的 identity。ledger
+的 source hash 會重新對回 strict source table 的 UTF-8 identity，source payload 再對回
+clean ROM；輸出只保存 hash、address、count、mode 與 gate metadata。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| source no-op | strict source 2325/2325；token encode no-op 2325/2325 |
+| narrow map | 28 allocations；codepoint index hash `614ce93a…`；ROM／font／license hash gate 通過 |
+| wide map | 743 existing identities；runtime-confirmed 1（`0xDA88`／slot 905）；static-only 742 |
+| ledger | 12/12 source hash／encode accepted；same-length 12/12；encoded modes narrow 48 |
+| reject boundary | static-only wide、wide new slot（capacity 0）、missing glyph、opaque/control、variable length、hash mismatch、collision |
+| semantic status | `full_semantic_translation=false`；完整 story／branch／battle／unit／speaker／newline 仍未確認 |
+
+這個 slice 證明的是「窄字 static subset＋一個已 runtime 確認的既有寬字 identity」的
+可驗證 fail-closed encoder，不是 743 個 wide renderer proof，也不是完整翻譯或完整
+resource expansion。完整輸出在 [`m113-full-encoder-contract.json`](m113-full-encoder-contract.json)；
+ROM、font source、working／raw output 仍留 ignored。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

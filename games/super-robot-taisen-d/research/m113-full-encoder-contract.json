@@ -1,0 +1,62 @@
+{
+  "contract": {
+    "full_encoder_status": "fail_closed_narrow_plus_runtime_confirmed_wide_subset",
+    "full_semantic_translation": false,
+    "missing_glyph": "reject",
+    "narrow_existing_and_allocated_slots": "accepted only after source/font/hash/slot/length gates",
+    "opaque_or_control": "reject",
+    "variable_length": "reject",
+    "wide_new_slot": "reject_capacity_zero",
+    "wide_runtime_confirmed_existing_slot": "accepted only for bounded runtime-confirmed identity",
+    "wide_static_only_existing_slot": "reject_for_new_target_until_runtime_confirmed"
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "ledger_source_safe": true,
+    "no_rom_modified": true,
+    "rom_hash_match": true,
+    "source_no_op_2325": true,
+    "source_records_2325": true,
+    "wide_new_slot_capacity_zero": true
+  },
+  "inputs": {
+    "narrow_allocation_count": 28,
+    "narrow_codepoint_index_sha256": "614ce93aaa8069866937b28ac81a072b7f028b1ee17d49e859b9e3ed2bf404a0",
+    "rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "wide_codepoint_index_sha256": "c126fe8aa176d349078934e7e74a5749d73be935eba5fb72c5f9a105aaaa7499",
+    "wide_existing_identity_count": 743,
+    "wide_new_slot_capacity": 0,
+    "wide_runtime_confirmed_identity_count": 1,
+    "wide_static_only_identity_count": 742
+  },
+  "schema": "super-robot-taisen-d-m113-full-encoder-contract-v1",
+  "source_noop": {
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_count": 2325,
+    "source_record_id_index_sha256": "9525ea0db01754260c57d64746d2c2bc665b5239494526d3eb5d6371b42a831d",
+    "strict_source_count": 2325,
+    "token_encode_no_op_count": 2325
+  },
+  "source_policy": {
+    "rom_modified": false,
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false,
+    "wide_identity_policy": "strict source context plus bounded runtime confirmation for target acceptance"
+  },
+  "translation_ledger": {
+    "accepted_count": 12,
+    "accepted_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+    "encoded_mode_counts": {
+      "narrow": 48
+    },
+    "record_count": 12,
+    "rejected_counts": {},
+    "same_length_count": 12,
+    "source_text_emitted": false
+  }
+}

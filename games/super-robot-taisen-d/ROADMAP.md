@@ -133,6 +133,12 @@
   重讀；12 筆 ledger 全在窄字 accepted subset，其餘 927 筆窄字尚未翻譯、833 筆混合、
   417 筆全寬、136 筆 opaque／unaligned 明確拒絕。`full_encoder_status` 維持
   `fail_closed_subset_only`，不宣稱完整語意 encoder。
+- [x] M1.13 bounded full-encoder contract 完成：重用 28 個窄字 allocation 與 743 個
+  strict source-context wide identity，核對 ROM／Unifont／license hash、code-unit→slot
+  公式與一對一 collision；12/12 ledger source hash／同長 encode、2325/2325 source
+  token no-op 通過。只有 1 個 wide identity 有 bounded runtime confirmation，742 個
+  static-only wide 與 wide new slot capacity 0 維持 reject；`full_semantic_translation`
+  仍為 `false`。摘要在 `research/m113-full-encoder-contract.json`。
 - [ ] 在上述 gate 後建立完整 source-safe `zh-TW` ledger，所有專有名詞先通過
   glossary provenance；每筆翻譯保留 restore／working／strip 可重現鏈，opaque／
   變長／缺字／超寬 record fail-closed。

@@ -386,6 +386,12 @@ queue 觸發尚未取代這條受控驗證。
   partition、2 筆 controlled runtime positive 與 exact-pointer overlap 分開保存。
   story／branch／battle／unit／UI、speaker、newline 與 engine width limit 均維持
   `unconfirmed`，沒有新增翻譯。摘要在 [`research/m112-semantic-caller-boundary.json`](research/m112-semantic-caller-boundary.json)。
+- [x] M1.13 建立 fail-closed narrow＋runtime-confirmed-wide encoder contract：28 個
+  已分配窄字、743 個既有寬字 identity（其中 1 個 bounded runtime-confirmed）均核對
+  code-unit／slot collision、ROM／字型 hash 與容量；12 筆 tracked `ai_draft` ledger
+  的 source hash、同長與窄字 encode 全數通過，2325/2325 source token no-op 通過。
+  742 個 static-only wide、opaque/control、缺字、變長與 wide 新槽仍拒絕；這不是完整
+  語意翻譯或完整 wide resource 策略。摘要在 [`research/m113-full-encoder-contract.json`](research/m113-full-encoder-contract.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
