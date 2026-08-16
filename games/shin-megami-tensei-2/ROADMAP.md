@@ -456,9 +456,22 @@
 - [~] writer/layout contract 已 static confirmed，但 natural runtime arguments、
   完整 codepage、scene-specific screen fit、font replacement 與主劇情 source
   table 仍未知；M2 ledger、翻譯與 patch gate 保持 blocked。
-- [ ] 在不擴張 M1.15 graphics/resource class 的前提下，從已命名 item／demon／skill
-  source families 補齊有限 semantic ID／unit manifest，並以 control/layout contract
-  作為後續 ledger gate。
+
+## M1.34：bounded semantic ID／unit manifest
+
+- [x] 合併既有 item prefix 8、item equipment boundary 3、demon prefix 16、skill
+  prefix 32，形成 59 筆 metadata-only anchor manifest；item boundary 保留獨立
+  namespace，不把重疊 record 當成新 table extent。
+- [x] 每個 family 保留 table base、stride、field offset、stable-ID formula、field
+  hash、length/count、termination 與 identity status；四組 private identity hash
+  與 combined manifest hash 可重抽取，未輸出 unit value、原文或 raw field。
+- [x] 既有 item／demon／skill anchor 的日文 identity 已由各自多來源研究承接；本
+  回合只記 reference URL 與 hash，不建立 zh-TW translation ledger。
+- [~] 59 筆是 bounded evidence cohort，不是完整 item/demon/skill source table；
+  table extent、intervening semantics、complete codepage、runtime selection 與
+  unanchored Unicode 仍 unknown，M2 gate 維持 blocked。
+- [ ] 從每個已命名 family 選一個相鄰未 anchor record，確認 termination/field shape
+  與 stable ID 的連續性；遇到特殊 accessor 或 category boundary 即保留 negative。
 
 ## M2：可審核翻譯 ledger
 
