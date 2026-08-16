@@ -230,6 +230,27 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B \
 address／function hash／record hash／length／count，不輸出 bytes、完整原文、
 圖片、source table 或 translation ledger。
 
+M1.18 16-bit code-unit／font-bank／source pointer table（唯讀 bounded）:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m118_codeunit_font.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m118-codeunit-font.json
+```
+
+工具沿 `0x080ac3ac`／`0x080ac334` 的 `ldrh` reader 驗證 16-bit code-unit、
+`+2` advance、`0x0300` line break 與 `0x0301` terminator；再交叉
+`0x080abf24` 的 `0x0815ed88` font-bank pointer table、兩個 EWRAM scratch、
+`0x0815ee18` descriptor 與 OAM writer family。只輸出 function boundary、literal
+edge、address／hash／length／unit-class/control count；不輸出 source bytes、
+decoded text、raw font、圖片或 translation ledger。
+
+同一工具只審核 `0x085861c8` 的 28 筆、stride `0x08` bounded pointer prefix：
+保留 record ID、pointer、終止類別、長度、hash 與 `0x0300`／`0x0301` count，
+不把它升格為完整主劇情表。可用 `--output` 產生研究用 metadata；其 JSON 應留在
+`/private/tmp` 或 `work/`，不提交。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -239,9 +260,14 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.17 的第一條文字 edge，優先枚舉相同 reader family 的明確 table/category
-mapping，找到日文主文字的 source pointer／index、codepage、控制碼與長度規則；
-再建立可重抽取的 source table。不得再擴張 M1.15 resource set 或全 ROM glyph
-scan；`0x08163444` 的 bounded ASCII/padding prefix 也不可直接當翻譯來源。
-source table、ledger、翻譯與 patch 工程仍封鎖，直到日文 source 與可逆抽取契約
-被確認。
+沿 M1.18 的 named code-unit reader family，先枚舉 `0x080ac334`／`0x080ac3ac`
+的 direct callers 與 caller 形成的 stack／RAM source buffer，並對
+`0x085861c8` 以外的同類 pointer table 做明確 category boundary；目標是以
+scene／object state 證明一組 stable string ID 與 source table，而不是由地址形狀
+猜測語意。優先追到 ROM pointer、RAM table 或 code-unit/index 參數，再確認主劇情、
+惡魔、技能、道具與系統各自的資料家族。
+
+不得再擴張 M1.15 resource set、重做同一 OBJ hash 分類或全 ROM glyph scan；
+`0x08163444` 的 bounded ASCII/padding prefix 與 M1.18 的 28 筆 candidate 都
+不可直接當完整翻譯來源。source table、ledger、翻譯與 patch 工程仍封鎖，直到
+category mapping、codepage、控制碼、寬度與可逆抽取契約被確認。

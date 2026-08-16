@@ -181,6 +181,41 @@
 - [ ] 沿 reader family 找到日文主文字的 table/category mapping、source/index、
   codepage、控制碼與長度規則；在此之前不得建立 translation ledger 或回插資料。
 
+## M1.18：16-bit code-unit、font bank 與 bounded source pointer table
+
+- [x] 沿 `0x080ac3ac`／`0x080ac334` 完整確認 `ldrh`、16-bit unit、每 unit
+  `+2` bytes、`0x0300` line-break branch 與 `0x0301` terminator；保留 ARM7TDMI
+  function boundary、literal pool 與 hash metadata。
+- [x] 確認 `0x080abf24` 的 font staging edge：code-unit high byte 選取
+  `0x0815ed88` 的 `0x08`-stride bank pointer，low byte 使用
+  `((low >> 4) << 10) + ((low & 0x0f) << 5)`，輸出至 bounded EWRAM scratch
+  `0x020391e0`／`0x020395e0`，再經 `0x0815ee18` descriptor 進入 OAM writer family。
+- [x] 以 `0x080dd884` 的實際 pointer load／callsite 交叉確認
+  `0x085861c8 + signed_object_field_0x02 * 0x08 + 0x04`；只審核 28 筆 bounded
+  prefix，record ID 1–28、stride `0x08`、ROM pointer 與每筆 `0x0301` termination
+  均可重抽取，僅提交 hash／length／address／unit-class/control count。
+- [~] 28 筆是第一個 bounded Japanese encoded-string candidate，但 category
+  semantics、scene-to-record selection、Unicode identity 與完整主劇情／惡魔／
+  技能／道具表仍未知；font-bank 是 addressing evidence，不是已解出的 codepage。
+- [ ] 從 reader family 的自然 caller／RAM buffer 建立可命名 category boundary、
+  stable source ID 與 codepage/control/width contract；未完成前不得建立 ledger、
+  翻譯或回插資料。
+
+## M1.19：source-table family 與自然 category mapping
+
+- [ ] 對 `0x080ac334`／`0x080ac3ac` 直接 callers 各做一次 bounded static mapping，
+  只沿 caller 向上 1–3 層至 ROM pointer、RAM table 或 code-unit/index 參數；不重做
+  M1.15 resource classification、OBJ hash 或全 ROM glyph scan。
+- [ ] 以最多三個可重現的自然 scene／object transition 交叉 caller state、source
+  pointer／index、reader entry 與 terminator／line-break metadata；runtime 若受
+  GDB listener 阻擋，必須把 static 與 runtime evidence 分開，不以 synthetic state
+  代替自然命中。
+- [ ] 明確分離 28 筆 candidate 與 main/event、demon、skill、item、system data
+  families；每一族只保留 bounded record count、stride／pointer rule、hash、length、
+  control counts 與可回讀地址，不提交 raw source 或完整原文。
+- [ ] 只有在至少一族的 source table、stable ID、code-unit/codepage、control code
+  與 width rule 可重抽取後，才解除 M2 ledger gate；否則維持 blocked 並記錄最小缺口。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
