@@ -1,0 +1,151 @@
+{
+  "encoder_contract": {
+    "full_semantic_translation": false,
+    "narrow_target_identity": "accept only explicit 28-entry static allocation map",
+    "opaque_or_control": "reject",
+    "source_admissible_record_definition": "strict NUL record whose every character is in the target map and whose tokenization is supported",
+    "status": "fail_closed_narrow_plus_runtime_confirmed_wide_subset",
+    "unmapped_target": "reject_missing_glyph",
+    "variable_length": "reject",
+    "wide_new_slot": "reject_capacity_zero",
+    "wide_static_only": "reject_for_target_until_runtime_confirmation",
+    "wide_target_identity": "accept only existing identity with runtime_confirmed_bounded status"
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "narrow_map_28": true,
+    "rom_hash_match": true,
+    "rom_modified": false,
+    "runtime_wide_identity_1": true,
+    "source_no_op_2325": true,
+    "source_nul_2325": true,
+    "source_records_2325": true,
+    "source_strict_2325": true,
+    "source_text_emitted": false,
+    "wide_map_743": true,
+    "wide_new_slot_capacity_zero": true,
+    "wide_payload_24": true,
+    "wide_resource_stride_26": true
+  },
+  "inputs": {
+    "font_license_sha256": "869692af094c57fb7258c57fe26820c759319603321d0ffeb278de3651763ded",
+    "font_source_sha256": "c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53",
+    "narrow": {
+      "allocation_count": 28,
+      "identity_policy": "explicit_static_allocation_with_ROM_font_and_slot_gates"
+    },
+    "rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "wide_existing_identity_count": 743,
+    "wide_new_slot_capacity": 0,
+    "wide_resource": {
+      "end_exclusive": "0x0814F664",
+      "glyph_payload_bytes": 24,
+      "new_slot_capacity": 0,
+      "physical_slots": 7332,
+      "size": 190632,
+      "start": "0x08120DBC",
+      "stride": 26
+    },
+    "wide_runtime_confirmed_identity_count": 1,
+    "wide_static_only_identity_count": 742
+  },
+  "runtime_confirmed_wide_identity": {
+    "code_unit": "0xDA88",
+    "glyph_sha256": "14b957c056e66cdd282857d73cfa04df932fa7dcaaec7e4a9c026c24c8323515",
+    "identity_basis": "strict_shift_jis_source_context_plus_bounded_runtime_confirmation",
+    "slot": 905,
+    "static_only_identity_count": 742,
+    "unicode": "U+79FB"
+  },
+  "schema": "super-robot-taisen-d-m121-wide-encoder-capacity-v1",
+  "source_corpus": {
+    "nul_terminated_count": 2325,
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_category_counts": {
+      "admissible_narrow_only": 12,
+      "opaque_or_unaligned": 136,
+      "reject_static_only_wide": 1250,
+      "reject_unmapped_source_narrow": 927
+    },
+    "record_category_id_index_sha256": {
+      "admissible_narrow_only": "c28b3064d641ea2161154ca23e5585179422697be45d4992f742a0c8c884f068",
+      "opaque_or_unaligned": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc",
+      "reject_static_only_wide": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187",
+      "reject_unmapped_source_narrow": "81c3cb7060657ff1d80a19603c9f857976e368f2ec8450776905ca5dcb3f9739"
+    },
+    "record_count": 2325,
+    "record_digest_sha256": "712818382aefa3137afaf9c2f2dd3377823110e8b30426888a4593250651d10d",
+    "runtime_confirmed_wide_context": {
+      "occurrence_count": 23,
+      "record_count": 23,
+      "record_id_index_sha256": "010cd7f71209368d58f0abbd2053924e7e2fb6e3e37186093542ca98d910c9b2"
+    },
+    "source_glyph_class_occurrence_counts": {
+      "source_narrow": 11902,
+      "source_opaque": 2152,
+      "source_wide": 3983
+    },
+    "source_glyph_class_record_counts": {
+      "source_narrow": 1772,
+      "source_opaque": 136,
+      "source_wide": 1250
+    },
+    "source_glyph_class_record_id_index_sha256": {
+      "source_narrow": "3e2d855844030d610eecbfbf9ee62f777fe6b22fbc9727053c6eabcd6db5e93b",
+      "source_opaque": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc",
+      "source_wide": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187"
+    },
+    "source_text_emitted": false,
+    "source_wide_resource_context": {
+      "occurrence_count": 3983,
+      "occurrence_count_matches_wide_report": true,
+      "record_count": 1250,
+      "record_id_index_sha256": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187",
+      "resource_report_occurrence_count": 3983
+    },
+    "static_only_wide_context": {
+      "occurrence_count": 3813,
+      "record_count": 1250,
+      "record_id_index_sha256": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187"
+    },
+    "strict_source_count": 2325,
+    "target_identity_occurrence_counts": {
+      "target_missing": 13987,
+      "target_narrow_known": 214,
+      "target_wide_runtime_confirmed": 23,
+      "target_wide_static_only": 3813
+    },
+    "target_identity_record_counts": {
+      "target_missing": 1893,
+      "target_narrow_known": 162,
+      "target_wide_runtime_confirmed": 23,
+      "target_wide_static_only": 1250
+    },
+    "target_identity_record_id_index_sha256": {
+      "target_missing": "0069fe57b6882a2c5435a32d247f9da612b89cc806671410d45c61555987e51b",
+      "target_narrow_known": "862ad9d41463ae1b8293f46dae692de5daeb4347749cda6f9b96eff9dda0b288",
+      "target_wide_runtime_confirmed": "010cd7f71209368d58f0abbd2053924e7e2fb6e3e37186093542ca98d910c9b2",
+      "target_wide_static_only": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187"
+    },
+    "target_source_class_cross_counts": {
+      "target_missing|source_narrow": 11835,
+      "target_missing|source_opaque": 2152,
+      "target_narrow_known|source_narrow": 67,
+      "target_narrow_known|source_wide": 147,
+      "target_wide_runtime_confirmed|source_wide": 23,
+      "target_wide_static_only|source_wide": 3813
+    },
+    "token_encode_no_op_count": 2325
+  },
+  "source_policy": {
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false,
+    "static_source_context_is_not_runtime_proof": true,
+    "strict_source_table_read_in_memory_only": true
+  }
+}

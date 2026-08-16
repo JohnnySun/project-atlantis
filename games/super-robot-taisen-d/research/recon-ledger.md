@@ -1228,3 +1228,30 @@ partition、wide／mixed／opaque、newline／speaker／branch 與自然 mGBA sc
 3. 以 target／font／ROM hash、ledger restore／strip 與 BPS gate 維持可重現；
    只有 full-game encoder、容量與場景 QA 完成後才擴大翻譯批次。M4 inventory
    只把 939 筆全窄 record 標成結構入口，沒有替其他 1386 筆解除 opaque／wide gate。
+
+## 2026-08-16：M1.21 wide identity／resource 與 target encoder capacity boundary
+
+本輪停止新增 UI prompt，重用已審核的 `m4-batch5-reinsert-report.json`、
+`m4-wide-reuse-audit.json` 與 ignored strict source table；沒有重新掃描 pointer，也沒有
+修改 ROM、font resource 或 ledger。`tools/m121_wide_encoder_capacity.py` 先驗證
+ROM／Unifont／license hash，再把 target map 與 2325 筆 source record 在記憶體中 join，
+只輸出 hash／count／code-unit／slot／glyph hash metadata。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| target maps | narrow allocation `28`；wide existing identity `743`；runtime-confirmed wide `1`；static-only `742` |
+| runtime identity | `U+79FB`／`0xDA88`／slot `905`；24-byte glyph hash `14b957c0…`；code-unit→slot formula 通過 |
+| wide resource | `0x08120DBC..0x0814F664`；payload `24`／stride `26`；physical slots `7332`；new-slot capacity `0` |
+| source gates | strict `2325/2325`；NUL `2325/2325`；token encode no-op `2325/2325` |
+| source resource classes | narrow `11902`；wide `3983`；opaque `2152` |
+| target encoder cohorts | admissible narrow-only `12`；static-only wide reject `1250`；unmapped source-narrow reject `927`；opaque/unaligned `136` |
+| cross-class evidence | target identity occurrences：narrow-known `214`、runtime-wide `23`、static-wide `3813`、missing `13987`；其中 `147` 個 source-wide occurrence 對應 target narrow allocation，未混入 static-wide 計數 |
+| runtime status | 23 個 runtime identity source occurrences 分布在 23 筆 record，但沒有一筆同時滿足其餘 target identity／layout gates；不把 source appearance 當成 target render proof |
+
+M1.21 的 contract 是「28-entry explicit narrow map＋一個 bounded runtime-confirmed existing
+wide identity」；static-only wide、new wide slot、missing target、opaque/control 與變長
+仍 fail-closed。`research/m121-wide-encoder-capacity.json` 不保存 source text；這個 slice
+也不代表完整 Unicode encoder、完整 wide resource strategy、語意翻譯或自然 screen QA
+已完成。

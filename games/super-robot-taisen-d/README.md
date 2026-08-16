@@ -436,6 +436,16 @@ queue 觸發尚未取代這條受控驗證。
   unit／speaker 語意；全 corpus 仍 2325 筆、609 exact candidates／370 records／123
   cohorts，newline engine semantics、最大寬度、自然 screen 仍未證明。摘要在
   [`research/m120-semantic-caller-inventory.json`](research/m120-semantic-caller-inventory.json)。
+- [x] M1.21 完成 source-safe wide identity／target encoder capacity join：wide resource
+  `0x08120DBC..0x0814F664` 為 24-byte payload／26-byte stride、7332 physical slots，
+  new-slot capacity `0`；743 個既有 identity 中只有 `U+79FB`／`0xDA88`／slot `905`
+  有 bounded runtime confirmation，742 個 static-only 維持 reject。2325/2325 strict
+  source／NUL／token no-op 通過；source class 為 narrow `11902`、wide `3983`、opaque
+  `2152`。target map 分區為 12 筆窄字可接受、1250 筆含 static-only wide reject、927
+  筆缺 identity、136 筆 opaque；147 個 source-wide occurrence 被 target narrow
+  allocation 重新映射，與 resource class 分欄保存。摘要在
+  [`research/m121-wide-encoder-capacity.json`](research/m121-wide-encoder-capacity.json)，
+  工具在 [`tools/m121_wide_encoder_capacity.py`](tools/m121_wide_encoder_capacity.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

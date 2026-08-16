@@ -92,6 +92,17 @@
   做 hash／指令驗證。這些不是 scene semantics；story／branch／battle／unit／speaker、
   newline engine semantics、engine width limit 與 natural screen 均維持 `unconfirmed`。
   摘要在 `research/m120-semantic-caller-inventory.json`。
+- [x] M1.21 將寬字 identity／resource 與 target encoder boundary 做 source-safe
+  full-corpus join：確認 wide resource `0x08120DBC..0x0814F664` 為 24-byte payload／
+  26-byte stride、7332 physical slots、new-slot capacity `0`；743 個既有 identity
+  中只有 `U+79FB`／`0xDA88`／slot `905`／glyph hash 有 bounded runtime confirmation，
+  其餘 742 個 static-only 維持 reject。2325/2325 strict、NUL、token no-op 通過；
+  source glyph class 為 narrow `11902`、wide `3983`、opaque `2152`，target-map
+  cohort 為 12 筆窄字可接受、1250 筆含 static-only wide reject、927 筆缺 target
+  identity、136 筆 opaque。另分開記錄 147 個 source-wide occurrence 被 target
+  narrow allocation 覆蓋，避免混淆 source resource class 與 target encoder class。
+  工具與摘要在 `tools/m121_wide_encoder_capacity.py`、
+  `research/m121-wide-encoder-capacity.json`；full semantic translation 仍未完成。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
