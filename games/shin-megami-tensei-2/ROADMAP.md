@@ -18,6 +18,16 @@
 - [ ] 分別定位惡魔、技能、道具、系統與劇情資料，並建立本作 decoder 及本機 `research/*-decoded.jsonl`。
 - [ ] 以未修改資料重新抽取驗證可逆回插路徑。
 
+## M1.5：OBJ 字型來源有界分析
+
+- [x] 使用 `core/gba/` 工具和本作 bounded analyzer 重現 Start 後畫面，解析 46 個 active OAM sprite、84 個 unique 4bpp/1D OBJ tile，保留位置、tile index、hash 與計數，不提交 raw dump。
+- [x] 對 ROM 做完整 2×2 sprite glyph exact search，以及 hflip/vflip/rotate180/nibble-swap 的有界變形 search；完整 glyph 命中為 0，沒有候選 font base/stride。
+- [x] 把 IWRAM、有效分塊讀取的完整 EWRAM、固定 OAM source 與 ROM 分開比對；IWRAM/EWRAM 都沒有完整 sprite glyph 命中，零 tile match 另列為反例。
+- [x] 以 4-byte 對齊、bounded output/candidate 的標準 GBA LZ77/RL scan 檢查完整 glyph；valid stream 中沒有命中，不能因此宣稱文字已壓縮格式化。
+- [x] 確認一條較早的 OAM consumer：IWRAM `0x030033f0` 的 OAM buffer 由 DMA3 搬到 `0x07000000`；這是 OAM source 證據，不等於 OBJ glyph source。
+- [~] 固定 OBJ-DMA routine（file `0x0baecc`，候選 source `0x02001000`、destination `0x06013000`、control `0x84000700`）已靜態收斂，但在本回合 reset→Start bounded execute trace 未命中；列為下一個精確追蹤點，不作 confirmed 結論。
+- [~] M1.5 的結果是「來源範圍已縮小但尚未建立 source table」；因此 codepage、stable string ID、控制碼與翻譯仍保持封鎖。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
