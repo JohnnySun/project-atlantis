@@ -1,0 +1,126 @@
+{
+  "format_version": 1,
+  "case_id": "b3tj.m2.glyph-vram-capture.20260817",
+  "rom": {
+    "title": "TOWNARIKIRI3",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "crc32": "1867CCEF",
+    "sha256": "d083d66b818b1353a449af7f1dd4232b490c254a4107951a3749973d03a0a394"
+  },
+  "listener": {
+    "host": "127.0.0.1",
+    "port": 39123,
+    "compiled_port": true,
+    "process_pid": 38379,
+    "process_scope": "fresh-own-mGBA",
+    "client_connections": 1,
+    "process_stopped_after_run": true
+  },
+  "common_tools": {
+    "rom_identity": {
+      "tool": "scripts/gba-rom-identity.py",
+      "exit_code": 0,
+      "status": "pass",
+      "header_complement": "pass",
+      "size": "pass",
+      "game_code": "pass",
+      "crc32": "pass",
+      "sha256": "pass"
+    },
+    "runtime_session_preflight": {
+      "tool": "scripts/gba-runtime-session.py preflight",
+      "port": 39123,
+      "sandbox_attempt": {
+        "exit_code": 2,
+        "status": "unknown",
+        "error_type": "PermissionError"
+      },
+      "escalated_attempt": {
+        "exit_code": 0,
+        "status": "pass",
+        "listener": "free"
+      }
+    }
+  },
+  "selected_record": {
+    "string_id": "sjis:0x140D68",
+    "file_offset": "0x140D68",
+    "gba_address": "0x08140D68",
+    "region": "text-pool",
+    "raw_length": 28,
+    "allocated_length": 29,
+    "source_span_sha256": "2dc05858bd37ff9a2e829aafded4f7ab9bfa6c5ff37eb9a66dbcb3f627ac8ac5"
+  },
+  "probe": {
+    "evidence_level": "argument-injected",
+    "max_stops": 128,
+    "stops": 25,
+    "parser_hits": 2,
+    "source_read_hits": 1,
+    "output_write_hits": 1,
+    "output_read_hits": 1,
+    "glyph_asset_read_hits": 1,
+    "glyph_destination_write_hits": 1,
+    "termination": "glyph-transform-return-capture",
+    "register_injection": {
+      "register": "r1",
+      "value": "0x08140D68",
+      "ack": "OK",
+      "status": "argument-injected-parser-source"
+    },
+    "confirmed_edge": {
+      "source_reader_pc": "0x080027F4",
+      "source_reader_lr": "0x08001651",
+      "parser_output": "0x03001468",
+      "parser_output_writer_pc": "0x080027EE",
+      "formatted_buffer_reader_pc": "0x08001504",
+      "glyph_entry": "0x08001414",
+      "codepoint_index": "0x44A0",
+      "glyph_asset_address": "0x081670C4",
+      "glyph_asset_reader_pc": "0x080011D6",
+      "glyph_asset_caller_lr": "0x08001459",
+      "glyph_destination_watch_address": "0x030007A0",
+      "glyph_destination_register": "0x030007A0",
+      "glyph_destination_writer_pc": "0x080011F8",
+      "glyph_destination_length": 32,
+      "glyph_destination_sha256": "2995cde83880681e9bac9f023b689a45abdd135876ba39eb69671e0d9aa9512a",
+      "transform_return_breakpoint": "0x08001458",
+      "return_pc_after_step": "0x0800145A"
+    },
+    "vram_transform_return": {
+      "address": "0x06000000",
+      "length": 98304,
+      "sha256": "73ee17fe8ae2b5fb6d1eeb9de9e798ac8031f23f037698d51deacb7f179aec72",
+      "nonzero_bytes": 62716,
+      "exact_match_offsets": [],
+      "capture_fallback_used": false
+    },
+    "post_capture": {
+      "available": false,
+      "status": "unavailable-after-bounded-retry",
+      "response_class_diagnostic": ["S02", "S05k"],
+      "hash_change": null
+    }
+  },
+  "evidence_boundary": {
+    "confirmed": [
+      "argument-injected strict source to parser/output/formatter/glyph asset edge",
+      "runtime write watch r1 exact match at IWRAM 0x030007A0",
+      "transform return 0x08001458 and post-step PC 0x0800145A",
+      "complete transform-return VRAM hash and deterministic exact-match negative"
+    ],
+    "provisional": [
+      "IWRAM-to-VRAM transfer mechanism is not identified",
+      "glyph identity, complete codepage, width and control semantics remain unknown",
+      "natural menu/event pointer provenance remains unproven"
+    ],
+    "negative": [
+      "no exact 0x20-byte destination match in transform-return VRAM snapshot",
+      "post-capture VRAM sample unavailable after return-breakpoint re-entry"
+    ],
+    "translation_started": false,
+    "reinsert_proven": false
+  }
+}

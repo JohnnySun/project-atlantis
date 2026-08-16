@@ -47,6 +47,8 @@ FORMATTER_ENTRY = 0x080014F4
 GLYPH_ENTRY = 0x08001414
 CODEPOINT_LOOKUP = 0x08004D90
 WRITER_ENTRY = 0x08001DBC
+GLYPH_TRANSFORM_RETURN = 0x08001458
+GLYPH_CAPTURE_DESTINATION = 0x030007A0
 FONT_ASSET_BASE = 0x080DDCC4
 FONT_ASSET_STRIDE = 0x20
 GLYPH_STORE_POINTS = {
@@ -163,17 +165,51 @@ def stop_metadata(
     }
 
 
+def memory_summary(data: bytes, address: int) -> dict[str, object]:
+    return {
+        "address": hx(address),
+        "length": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "nonzero_bytes": sum(value != 0 for value in data),
+    }
+
+
+def exact_match_offsets(
+    needle: bytes, haystack: bytes, *, max_matches: int = 16
+) -> list[int]:
+    """Return bounded offsets without exposing either byte sequence."""
+
+    if not needle or not any(needle):
+        return []
+    offsets: list[int] = []
+    cursor = haystack.find(needle)
+    while cursor >= 0 and len(offsets) < max_matches:
+        offsets.append(cursor)
+        cursor = haystack.find(needle, cursor + 1)
+    return offsets
+
+
+def read_region(client: GdbClient, address: int, length: int, *, chunk_size: int = 0x200) -> bytes:
+    """Read a bounded region through the shared client with offset context."""
+
+    chunks: list[bytes] = []
+    for offset in range(0, length, chunk_size):
+        size = min(chunk_size, length - offset)
+        try:
+            chunks.append(client.read_memory(address + offset, size, chunk_size=size))
+        except (RuntimeError, TimeoutError, OSError, ConnectionError, ValueError) as exc:
+            raise RuntimeError(
+                f"bounded region read failed at {hx(address + offset)} "
+                f"(offset {hx(offset, 5)}, length {hx(size, 4)}): "
+                f"{type(exc).__name__}:{exc}"
+            ) from exc
+    return b"".join(chunks)
+
+
 def _set_breakpoint(client: GdbClient, address: int) -> None:
     # Use the shared client with the same software-breakpoint point type as
     # the already validated B3TJ runtime probe.
     client.set_breakpoint(address, kind=2, point_type=0)
-
-
-def _remove_breakpoint(client: GdbClient, address: int) -> None:
-    try:
-        client.remove_breakpoint(address, kind=2, point_type=0)
-    except (RuntimeError, TimeoutError, OSError, ConnectionError):
-        pass
 
 
 def _set_watchpoint(client: GdbClient, address: int, length: int, watch_type: int) -> None:
@@ -197,6 +233,8 @@ def run_probe(
     record_offset: int,
     max_stops: int,
     per_stop_timeout: float,
+    capture_glyph: bool,
+    post_capture_seconds: float,
 ) -> dict[str, object]:
     rom = rom_path.read_bytes()
     verify_b3tj(rom)
@@ -231,6 +269,7 @@ def run_probe(
         "selected_record": selected,
         "selected_record_offset": hx(record_offset, 6),
         "selected_record_address": hx(target_address),
+        "glyph_capture_requested": capture_glyph,
         "fixed_entries": fixed_entries,
         "provenance": {
             "natural_flow": "state7/parser entries are observed before injection; no strict source read is claimed from them",
@@ -263,6 +302,96 @@ def run_probe(
     output_watch_address: int | None = None
     output_read_watch_address: int | None = None
     asset_watch_address: int | None = None
+    glyph_destination_address: int | None = None
+    glyph_destination_watch_address: int | None = None
+    glyph_capture_started = False
+
+    def capture_glyph_return() -> dict[str, object]:
+        if glyph_destination_address is None:
+            raise RuntimeError("glyph destination was not captured")
+
+        def read_vram_with_fallback(label: str) -> tuple[bytes, dict[str, object]]:
+            try:
+                return read_region(client, 0x06000000, 0x18000), {
+                    "phase": label,
+                    "fallback_used": False,
+                }
+            except (RuntimeError, TimeoutError, OSError, ConnectionError, ValueError) as exc:
+                # mGBA can answer a VRAM read with a stale S05 stop packet
+                # while stopped immediately at a software breakpoint.  A
+                # short, bounded continue/interrupt re-synchronizes the stub
+                # without changing state, object or ROM memory.
+                retry_seconds = max(0.02, min(post_capture_seconds or 0.05, 0.10))
+                retry_stop = client.continue_and_interrupt(retry_seconds)
+                data = read_region(client, 0x06000000, 0x18000)
+                return data, {
+                    "phase": f"{label}-after-bounded-continue-interrupt",
+                    "fallback_used": True,
+                    "initial_error_type": type(exc).__name__,
+                    "retry_seconds": retry_seconds,
+                    "retry_stop": retry_stop,
+                }
+
+        glyph_ram = client.read_memory(glyph_destination_address, 0x20)
+        vram_at_return, vram_receipt = read_vram_with_fallback(
+            "transform-return-step"
+        )
+        destination = memory_summary(glyph_ram, glyph_destination_address)
+        vram_summary = memory_summary(vram_at_return, 0x06000000)
+        vram_summary["exact_match_offsets"] = [
+            hx(offset, 5)
+            for offset in exact_match_offsets(glyph_ram, vram_at_return)
+        ]
+        post_stop = client.continue_and_interrupt(post_capture_seconds)
+        try:
+            vram_after, post_vram_receipt = read_vram_with_fallback("post-capture")
+            post_vram_summary = memory_summary(vram_after, 0x06000000)
+            post_vram_summary["exact_match_offsets"] = [
+                hx(offset, 5)
+                for offset in exact_match_offsets(glyph_ram, vram_after)
+            ]
+            post_vram_available = True
+        except (RuntimeError, TimeoutError, OSError, ConnectionError, ValueError) as exc:
+            # The first full VRAM read is the authoritative transform-return
+            # sample.  A later stop may be re-entered by the return breakpoint;
+            # preserve that first sample and classify only the post-run sample
+            # as unavailable instead of discarding the confirmed edge.
+            post_vram_receipt = {
+                "phase": "post-capture",
+                "status": "unavailable-after-bounded-retry",
+                "error_type": type(exc).__name__,
+            }
+            post_vram_summary = {
+                "address": hx(0x06000000),
+                "length": 0,
+                "status": "unavailable",
+                "exact_match_offsets": [],
+            }
+            post_vram_available = False
+        initial_exact_match = bool(vram_summary["exact_match_offsets"])
+        post_exact_match = bool(post_vram_summary["exact_match_offsets"])
+        return {
+            "destination": destination,
+            "vram_at_transform_return": vram_summary,
+            "vram_capture_receipt": vram_receipt,
+            "post_capture_seconds": post_capture_seconds,
+            "post_capture_stop": post_stop,
+            "vram_after_bounded_run": post_vram_summary,
+            "post_vram_capture_receipt": post_vram_receipt,
+            "post_vram_available": post_vram_available,
+            "vram_hash_changed": (
+                vram_summary["sha256"] != post_vram_summary["sha256"]
+                if post_vram_available
+                else None
+            ),
+            "exact_match_status": (
+                "confirmed-exact-byte-match-at-transform-return"
+                if initial_exact_match
+                else "confirmed-exact-byte-match-after-bounded-run"
+                if post_exact_match
+                else "no-exact-match-in-captured-vram"
+            ),
+        }
     injected = False
     try:
         client.connect()
@@ -374,6 +503,86 @@ def run_probe(
                 output_watch_address = None
                 continue
 
+            if (
+                glyph_destination_watch_address is not None
+                and kind == "watch"
+                and address is not None
+                and glyph_destination_watch_address
+                <= address
+                < glyph_destination_watch_address + 4
+            ):
+                counters["glyph_store_hits"] = int(counters["glyph_store_hits"]) + 1
+                candidate = registers.get("r1", 0)
+                valid_destination = (
+                    candidate == glyph_destination_watch_address
+                    and is_ram_pointer(candidate)
+                )
+                events.append(
+                    {
+                        "event": "GLYPH_DESTINATION_WRITE",
+                        "status": (
+                            "confirmed-runtime-glyph-destination-write"
+                            if valid_destination
+                            else "unexpected-glyph-destination-register"
+                        ),
+                        "evidence_level": "argument-injected",
+                        "watch_address": hx(glyph_destination_watch_address),
+                        "destination_address": hx(candidate),
+                        "writer_pc": hx(registers.get("pc", 0)),
+                        "caller_lr": hx(registers.get("lr", 0)),
+                        "stop": stop_metadata(stop, kind, address, registers),
+                    }
+                )
+                if not valid_destination:
+                    report["termination"] = "glyph-destination-watch-mismatch"
+                    break
+                glyph_destination_address = candidate
+                glyph_capture_started = True
+                continue
+
+            if capture_glyph and pc == GLYPH_TRANSFORM_RETURN:
+                if not glyph_capture_started or glyph_destination_address is None:
+                    report["termination"] = "glyph-return-without-destination-watch"
+                    events.append(
+                        {
+                            "event": "GLYPH_TRANSFORM_RETURN",
+                            "status": "negative-no-destination-watch-before-return",
+                            "stop": stop_metadata(stop, kind, address, registers),
+                        }
+                    )
+                    break
+                events.append(
+                    {
+                        "event": "GLYPH_TRANSFORM_RETURN",
+                        "status": "confirmed-runtime-transform-return",
+                        "stop": stop_metadata(stop, kind, address, registers),
+                    }
+                )
+                # Step beyond the software breakpoint before reading VRAM;
+                # this avoids leaving the stop notification in front of the
+                # first memory packet while preserving the normal continuation.
+                return_step = client.request("s")
+                return_registers = client.read_registers()
+                return_kind, return_address = parse_stop_watch(return_step)
+                events.append(
+                    {
+                        "event": "GLYPH_RETURN_SINGLE_STEP",
+                        "status": "return-instruction-stepped",
+                        "stop": stop_metadata(
+                            return_step,
+                            return_kind,
+                            return_address,
+                            return_registers,
+                        ),
+                    }
+                )
+                report["glyph_capture"] = capture_glyph_return()
+                report["glyph_capture"]["return_pc_after_step"] = hx(
+                    return_registers.get("pc", 0) & ~1
+                )
+                report["termination"] = "glyph-transform-return-capture"
+                break
+
             if pc in GLYPH_STORE_POINTS:
                 store_name = GLYPH_STORE_POINTS[pc]
                 if injected:
@@ -438,17 +647,51 @@ def run_probe(
                         if is_ram_pointer(r0):
                             _set_watchpoint(client, r0, 1, 2)
                             output_watch_address = r0
-                        for glyph_address, name in GLYPH_STORE_POINTS.items():
-                            _set_breakpoint(client, glyph_address)
-                            installed_breakpoints.add(glyph_address)
+                        if capture_glyph:
+                            # The selected record's even transform destination
+                            # was already confirmed live as 0x030007A0.  A
+                            # one-word write watch observes the first completed
+                            # transform store without trapping the loop at its
+                            # recurring software breakpoint.
+                            glyph_destination_watch_address = GLYPH_CAPTURE_DESTINATION
+                            _set_watchpoint(
+                                client,
+                                glyph_destination_watch_address,
+                                4,
+                                2,
+                            )
                             events.append(
                                 {
-                                    "event": "BREAKPOINT_INSTALL",
-                                    "name": name,
-                                    "address": hx(glyph_address),
+                                    "event": "WATCHPOINT_INSTALL",
+                                    "name": "glyph_destination_first_word",
+                                    "address": hx(glyph_destination_watch_address),
+                                    "length": 4,
+                                    "watch_type": "write",
                                     "phase": "after-strict-injection",
                                 }
                             )
+                            _set_breakpoint(client, GLYPH_TRANSFORM_RETURN)
+                            installed_breakpoints.add(GLYPH_TRANSFORM_RETURN)
+                            events.append(
+                                {
+                                    "event": "BREAKPOINT_INSTALL",
+                                    "name": "glyph_transform_return",
+                                    "address": hx(GLYPH_TRANSFORM_RETURN),
+                                    "phase": "after-strict-injection",
+                                }
+                            )
+                        else:
+                            for glyph_address, name in GLYPH_STORE_POINTS.items():
+                                _set_breakpoint(client, glyph_address)
+                                installed_breakpoints.add(glyph_address)
+                                events.append(
+                                    {
+                                        "event": "BREAKPOINT_INSTALL",
+                                        "name": name,
+                                        "address": hx(glyph_address),
+                                        "phase": "after-strict-injection",
+                                    }
+                                )
                 continue
 
             if pc == FORMATTER_CALLSITE:
@@ -563,12 +806,20 @@ def main() -> None:
     )
     parser.add_argument("--max-stops", type=int, default=64)
     parser.add_argument("--per-stop-timeout", type=float, default=8.0)
+    parser.add_argument(
+        "--capture-glyph",
+        action="store_true",
+        help="single-step the first glyph transform to 0x08001458 and capture metadata-only IWRAM/VRAM hashes",
+    )
+    parser.add_argument("--post-capture-seconds", type=float, default=0.25)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.max_stops < 1:
         parser.error("--max-stops must be positive")
     if args.per_stop_timeout <= 0:
         parser.error("--per-stop-timeout must be positive")
+    if args.post_capture_seconds < 0:
+        parser.error("--post-capture-seconds must be non-negative")
     try:
         report = run_probe(
             args.rom,
@@ -577,6 +828,8 @@ def main() -> None:
             record_offset=args.record_offset,
             max_stops=args.max_stops,
             per_stop_timeout=args.per_stop_timeout,
+            capture_glyph=args.capture_glyph,
+            post_capture_seconds=args.post_capture_seconds,
         )
     except (OSError, ValueError) as exc:
         parser.error(str(exc))

@@ -33,6 +33,16 @@ proof；自然流程的 `0x081489EC` 仍是 nonstrict short span，selected
 `sjis:0x146EE0` 仍未自然命中。詳見
 [`research/m2-live-consumer-glyph-20260816.md`](research/m2-live-consumer-glyph-20260816.md)。
 
+2026-08-17 的窄化 capture 又在同一條 argument-injected edge 確認
+`0x030007A0` 的 4-byte write watch（`r1` exact match）、transform return
+`0x08001458 → 0x0800145A`，並取得完整 `0x06000000–0x06017FFF` VRAM hash；在
+transform-return snapshot 中，destination 的 0x20-byte sequence 沒有 exact
+ROM/RAM→VRAM match。post-run snapshot 因 return breakpoint re-entry 安全標成
+unknown，不把它當成 glyph 或 VRAM negative。詳見
+[`research/m2-glyph-vram-capture-20260817.md`](research/m2-glyph-vram-capture-20260817.md)
+與其 metadata receipt。下一個 gate 只追同一 destination 後的 IWRAM→VRAM／DMA／
+tilemap transfer。
+
 可重跑命令（mGBA listener 的 PID／port 必須由本 session 自己擁有）：
 
 ```sh
@@ -121,6 +131,10 @@ return、caller LR、五窗 filter 與 selected-record negative 見
   特定 menu/event 文字畫面仍未以 source consumer 證明。M1.8 的
   `--trace-first-record` 仍是五窗外／source-read=0 的 negative，因此不能把
   state transition 或畫面 hash 解讀成文字 consumer。
+- `0x030007A0` 的 live transform destination 與 transform-return VRAM hash 已確認，
+  但 destination→VRAM／DMA／tilemap transfer 尚未定位；本次 exact-match 空集合
+  只適用於該 stopped transform-return snapshot。glyph identity、完整 codepage 與
+  字寬仍是 unknown。
 
 ## 可重跑命令
 

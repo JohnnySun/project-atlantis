@@ -16,6 +16,8 @@ class LiveConsumerProbeTests(unittest.TestCase):
         self.assertEqual(live_consumer_probe.PARSER_ENTRY, 0x080025CC)
         self.assertEqual(live_consumer_probe.FORMATTER_ENTRY, 0x080014F4)
         self.assertEqual(live_consumer_probe.GLYPH_ENTRY, 0x08001414)
+        self.assertEqual(live_consumer_probe.GLYPH_TRANSFORM_RETURN, 0x08001458)
+        self.assertEqual(live_consumer_probe.GLYPH_CAPTURE_DESTINATION, 0x030007A0)
         self.assertEqual(
             live_consumer_probe.GLYPH_STORE_POINTS,
             {
@@ -63,6 +65,23 @@ class LiveConsumerProbeTests(unittest.TestCase):
         rendered = repr(row)
         self.assertNotIn("bytes", rendered)
         self.assertNotIn("raw", rendered)
+
+    def test_exact_match_reports_offsets_without_exposing_bytes(self):
+        needle = bytes(range(32))
+        haystack = b"prefix" + needle + b"middle" + needle + b"suffix"
+        self.assertEqual(
+            live_consumer_probe.exact_match_offsets(needle, haystack),
+            [6, 44],
+        )
+        self.assertEqual(live_consumer_probe.exact_match_offsets(b"\0" * 32, haystack), [])
+
+    def test_memory_summary_is_hash_only(self):
+        row = live_consumer_probe.memory_summary(bytes(range(32)), 0x030007A0)
+        self.assertEqual(row["address"], "0x030007A0")
+        self.assertEqual(row["length"], 32)
+        self.assertNotIn("data", row)
+        self.assertNotIn("raw", row)
+        self.assertNotIn("data", repr(row))
 
 
 if __name__ == "__main__":
