@@ -2,6 +2,7 @@
 """Offline tests for the bounded M1.8 A1AC probe."""
 
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 import sys
 
@@ -12,6 +13,39 @@ import m18_a1ac_probe  # noqa: E402
 
 
 class M18A1ACProbeTests(unittest.TestCase):
+    def test_setup_failure_is_bounded_metadata(self):
+        class FailingClient:
+            def __init__(self, *_args, **_kwargs):
+                self.closed = False
+
+            def connect(self):
+                raise OSError("synthetic socket failure")
+
+            def close(self):
+                self.closed = True
+
+        with patch.object(m18_a1ac_probe, "GdbClient", FailingClient):
+            with patch.object(Path, "read_bytes", return_value=b"rom"):
+                with patch.object(
+                    m18_a1ac_probe,
+                    "b3tj_identity",
+                    return_value={"game_code": "B3TJ"},
+                ):
+                    result = m18_a1ac_probe.run_probe(
+                        Path("synthetic.gba"),
+                        host="127.0.0.1",
+                        port=2345,
+                        per_stop_timeout=0.1,
+                        max_stops=1,
+                        max_edge_checks=1,
+                        release_reads=1,
+                        max_steps=1,
+                    )
+
+        self.assertEqual(result["termination"], "setup-error")
+        self.assertEqual(result["error_type"], "OSError")
+        self.assertEqual(result["error_message"], "synthetic socket failure")
+
     def test_fixed_edge_and_return_addresses_are_narrow(self):
         self.assertEqual(m18_a1ac_probe.STATE4_A050, 0x0800A050)
         self.assertEqual(m18_a1ac_probe.A1AC_CALLSITE, 0x0800A3E6)

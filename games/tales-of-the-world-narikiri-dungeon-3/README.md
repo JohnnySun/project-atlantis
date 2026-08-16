@@ -349,11 +349,14 @@ state/object/save。測試見
 
 這個 probe 的 offline contract 與目前狀態見
 [`research/m2-format-record-runtime-20260816.md`](research/m2-format-record-runtime-20260816.md)。
-目前沒有新的 live record hit：一次 bounded invocation 保留 ROM identity
-`B3TJ`／CRC32 `1867CCEF`、strict count `8938`，但 listener setup 以
-`PermissionError` 結束，format hits、source read、lookup、asset 與 scratch hits
-均為 `0`；先前獨立 mGBA 啟動也沒有形成可連線的 B3TJ listener。這是 runtime/setup
-negative，不是 renderer 或 codepage 的 negative proof。
+目前沒有 selected strict record 的 live hit：乾淨 standard mGBA listener 從 reset
+實際跑過 72 個 bounded KEYINPUT events，ROM identity `B3TJ`／CRC32 `1867CCEF`、
+strict count `8938` 通過，但 `0x080014F4` format hits、source read、lookup、asset
+與 scratch hits 均為 `0`。先前受 sandbox 限制的 invocation 則是
+`PermissionError` setup negative；另一次在 M1.8 正常 state 4→7 後重新連線時，
+mGBA 0.10 對第二個 GDB client 的 `qSupported` timeout。兩者都不能當成 renderer
+或 codepage 的 negative proof；下一步須在同一 GDB connection 合併 navigation 與
+formatter trace。
 
 2026-08-16 的 port `24387` setup receipt 仍是 runtime negative：ROM identity／strict
 count `8938` 通過，但 sandbox 回報 `PermissionError: [Errno 1] Operation not

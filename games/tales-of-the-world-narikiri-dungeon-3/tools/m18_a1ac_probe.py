@@ -277,6 +277,8 @@ def run_probe(
         "a2c0_caller_after": False,
     }
     key_watch = False
+    completion_watch = False
+    completion_watch_address: int | None = None
     report: dict[str, object] = {
         "mode": "m1.8-live-a1ac-single-pulse",
         "rom": str(rom_path),
@@ -353,7 +355,13 @@ def run_probe(
         return row
 
     try:
-        client.connect()
+        try:
+            client.connect()
+        except (RuntimeError, TimeoutError, OSError, ConnectionError) as exc:
+            report["termination"] = "setup-error"
+            report["error_type"] = type(exc).__name__
+            report["error_message"] = str(exc)
+            return report
         report["supported"] = client.request("qSupported:multiprocess+")
         report["initial_stop"] = client.request("?")
         report["initial_registers"] = register_snapshot(client.read_registers())
@@ -393,8 +401,6 @@ def run_probe(
         stop_count = 0
         normal_return = False
         stop_reason = "stop-limit"
-        completion_watch = False
-        completion_watch_address: int | None = None
 
         while stop_count < max_stops:
             try:

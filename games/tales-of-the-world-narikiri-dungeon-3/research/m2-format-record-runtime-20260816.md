@@ -53,12 +53,18 @@ ignored work 或 `/private/tmp`。
 
 ### Negative / unknown
 
-- 一次可重跑的 bounded invocation 載入 identity 與 strict metadata 後，在 GDB
-  socket setup 收到 `PermissionError`；報告為 `termination=setup-error`、
-  `format_hits=0`、source/lookup/asset/scratch hits 全為 `0`。因此沒有 live
-  `0x080014F4` hit，也沒有 source read、decoder、glyph 或 VRAM 證據。
-- 本回合兩次明確指向 B3TJ 的新 mGBA 啟動沒有形成可連線 listener；失敗 process
-  已停止。其他遊戲的 listener 未接管、未停止。
+- 早先受 sandbox 限制的 bounded invocation 在 GDB socket setup 收到
+  `PermissionError`；報告為 `termination=setup-error`、`format_hits=0`、
+  source/lookup/asset/scratch hits 全為 `0`。這不是 runtime code path negative。
+- 以乾淨 standard SDL/GDB mGBA、明確自有的 `127.0.0.1:2345` listener 從 reset
+  實際重跑 formatter sequence：initial stop `S02`、KEYINPUT events `72`
+  （start 12、none 48、A 12）、`termination=sequence-exhausted-without-strict-record-format-hit`，
+  `format_hits=0`。這是該 bounded startup sequence 的 confirmed runtime
+  negative，但不是 state 7 全部畫面的 negative。
+- 另以同一 standard process 先完成 M1.8 正常 state 4→7，再開第二個 GDB
+  connection 執行 formatter；mGBA 0.10 stub 對 `qSupported` timeout，沒有取得
+  formatter hit。這是 known single-client lifecycle limitation，不是 source
+  read／decoder／glyph 的 negative；其他遊戲 listener 未接管、未停止。
 - 目前不能宣稱 Shift-JIS 是 runtime codepage、不能確認 glyph identity／寬度、
   不能把 asset read 當成文字 record 消費，也不能開始翻譯。
 
@@ -80,3 +86,9 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 仍只接受實際命中的 strict record。只有取得 source read hit 後，才可把下一個最小
 切片縮到該次 source reader 的 caller／RAM decoder；在此之前不增加 geometry、
 pointer scan 或翻譯工作。
+
+注意：mGBA 0.10.x 常在第一個 GDB client disconnect 後不接受第二個 connection。
+要驗證「正常 state 4→7 後的 formatter」時，下一個 harness 必須在同一 GDB
+connection 內完成 A1AC navigation，再於 `0x08005E12` return 後安裝本 probe 的
+formatter breakpoint；單獨先跑 `m18_a1ac_probe.py` 再重新連線，不足以構成該
+state 7 trace。
