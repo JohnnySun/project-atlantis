@@ -1,0 +1,17 @@
+id: sangokushi-eiketsuden
+platform: gba
+titles:
+  ja: "三國志英傑伝"
+  en: "Sangokushi Eiketsuden"
+  zh-Hans: "三国志 英杰传"
+  zh-TW: "三國志英傑傳"
+source:
+  region: JP
+  product_code: B3EJ
+  revision: unknown
+  header_game_code: unknown
+  maker_code: unknown
+targets:
+  - zh-Hans
+  - zh-TW
+status: research
