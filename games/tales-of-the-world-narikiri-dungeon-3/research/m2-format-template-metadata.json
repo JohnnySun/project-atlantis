@@ -1,0 +1,48 @@
+{
+  "adjacent_strict_record": {
+    "end_offset_exclusive": "0x1474D9",
+    "file_offset": "0x1474C4",
+    "gba_address": "0x081474C4",
+    "raw_length": 21,
+    "region": "text-pool",
+    "string_id": "sjis:0x1474C4"
+  },
+  "classification": {
+    "control_only_template": "confirmed-static-template",
+    "runtime_source_record_edge": "unconfirmed",
+    "runtime_template_read": "unconfirmed",
+    "static_parser_edge": "confirmed-static",
+    "strict_ledger_membership": "negative-by-boundary",
+    "template_token_semantics": "unconfirmed"
+  },
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  },
+  "static_provenance": {
+    "caller": "0x080AEEE0",
+    "caller_to_format": "0x08001640",
+    "caller_to_wrapper": "0x08001660",
+    "format_to_parser": "0x080025CC",
+    "parser_entry": "0x080025CC",
+    "pointer_literal_file_offset": "0x0AEF1C",
+    "pointer_reference_count_in_reviewed_literal": 1,
+    "pointer_value": "0x081474C0",
+    "strict_record_boundary": false,
+    "wrapper_to_format": "0x08001640"
+  },
+  "template": {
+    "control_tokens": [
+      "%k"
+    ],
+    "file_offset": "0x1474C0",
+    "gba_address": "0x081474C0",
+    "nul_terminated": true,
+    "raw_length_without_nul": 2,
+    "raw_sha256": "e38e31eded6e70c6f711ba56dcab8bf0322b731aee9a50a1a54467da18fe0db6",
+    "token_count": 1
+  }
+}

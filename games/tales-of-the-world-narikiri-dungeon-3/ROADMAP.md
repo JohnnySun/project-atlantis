@@ -70,6 +70,19 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 對固定 `0x080025CC` parser 做 bounded static contract verify：`%` dispatch、
   84-entry jump table、IWRAM cursor、NUL output 與 width-helper candidate；仍未升格
   成 live source consumer
+- [x] 對 parser 的 4 個 direct callsite 做 bounded chain verify；確認
+  `0x08001E26→0x08001DBC` 的 IWRAM tilemap writer，以及
+  `0x080014F4→0x08001414→0x080DDCC4+index*0x20` 的 glyph source candidate；
+  明確保留 IWRAM→VRAM 與 runtime source edge 為 unknown
+- [x] 重新驗證既有 `0x0DD1B84–0x0DD1BB4` 12-entry direct table：12/12 strict
+  `text-pool` targets 與 selected `sjis:0x146EE0` provenance；容量／類別／rewrite
+  規則仍未確認
+- [x] 分離固定 caller 發現的 control-only `format:0x1474C0` `%k` template，與
+  後面的 `sjis:0x1474C4` strict record；template semantics／runtime read／ledger
+  pairing 仍未確認
+- [x] 固定驗證 `0x08004D90` 的 2 個 direct callsite 與 5 個 ROM lookup pointer
+  slots；只升格為 static codepoint-lookup，保留完整 codepage／glyph／字寬為
+  provisional 或 unknown
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構

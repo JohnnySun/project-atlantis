@@ -1,0 +1,181 @@
+{
+  "classification": {
+    "font_asset_identity": "unconfirmed",
+    "parser_to_stack_buffer": "confirmed-static",
+    "roundtrip_insertion": "unconfirmed",
+    "runtime_glyph_vram_edge": "unconfirmed",
+    "runtime_source_record_edge": "unconfirmed",
+    "sjis_like_double_byte_arithmetic": "confirmed-static",
+    "stack_buffer_to_ram_tilemap_writer": "confirmed-static"
+  },
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  },
+  "parser_callsites": {
+    "all_direct_targets_match": true,
+    "count": 4,
+    "rows": [
+      {
+        "file_offset": "0x00164C",
+        "gba_address": "0x0800164C",
+        "output_buffer": "0x03001468",
+        "parser_target": "0x080025CC",
+        "post_parser_call": "0x080014F4"
+      },
+      {
+        "file_offset": "0x001D92",
+        "gba_address": "0x08001D92",
+        "output_buffer": "0x03001468",
+        "parser_target": "0x080025CC",
+        "post_parser_call": "0x08001A10"
+      },
+      {
+        "file_offset": "0x001E26",
+        "gba_address": "0x08001E26",
+        "output_buffer": "stack+0x00 (bounded 0x20-byte caller frame)",
+        "parser_target": "0x080025CC",
+        "post_parser_call": "0x08001DBC",
+        "renderer_consumer": "0x08001DBC"
+      },
+      {
+        "file_offset": "0x00281C",
+        "gba_address": "0x0800281C",
+        "output_buffer": "caller-provided",
+        "parser_target": "0x080025CC",
+        "post_parser_call": "return-wrapper"
+      }
+    ],
+    "target": "0x080025CC"
+  },
+  "static_chain": {
+    "bounded_spans": [
+      {
+        "byte_length": 322,
+        "file_end_exclusive": "0x001636",
+        "file_start": "0x0014F4",
+        "name": "format-loop",
+        "sha256": "dbdddf7897e51443e83dbd36316b35caef5d3c218e634be3f683a17d8d8ac459"
+      },
+      {
+        "byte_length": 76,
+        "file_end_exclusive": "0x001460",
+        "file_start": "0x001414",
+        "name": "font-map",
+        "sha256": "90c62efb593c2a5eef01d12a751dbdccdc0057989a5a7321ea31624caa88cbe0"
+      },
+      {
+        "byte_length": 88,
+        "file_end_exclusive": "0x001200",
+        "file_start": "0x0011A8",
+        "name": "glyph-transform-a",
+        "sha256": "fac0865e873a094f6df0d98ef0f2fb36d2e0c2775343b0234c7050b33c7bf5b3"
+      },
+      {
+        "byte_length": 304,
+        "file_end_exclusive": "0x001410",
+        "file_start": "0x0012E0",
+        "name": "glyph-transform-b",
+        "sha256": "efe192bd00e346b3c3147bf61a5715247c4434dd47acdf0fbb7a466711c67b60"
+      },
+      {
+        "byte_length": 90,
+        "file_end_exclusive": "0x001E16",
+        "file_start": "0x001DBC",
+        "name": "ram-tilemap-writer",
+        "sha256": "4cf77460dff024d2dc7b3fa8165b5bc0f013e21599ffa0008bc82e1327846fdc"
+      },
+      {
+        "byte_length": 162,
+        "file_end_exclusive": "0x004E32",
+        "file_start": "0x004D90",
+        "name": "codepoint-lookup",
+        "sha256": "cd2117b94f5ce712d8f591e10adc095f172ac2e229a6cee120f4f926ce398f9c"
+      }
+    ],
+    "codepoint_lookup": {
+      "entry": "0x08004D90",
+      "interpretation": "static-character-index-candidate"
+    },
+    "formatted_buffer": "0x03001468",
+    "glyph_transform": {
+      "interpretation": "static-packed-glyph-to-IWRAM-candidate",
+      "lookup_table": "0x03001464",
+      "transform_entries": [
+        "0x080011A8",
+        "0x080012E0"
+      ]
+    },
+    "literal_checks": {
+      "font_asset_base_literal": {
+        "expected": "0x080DDCC4",
+        "matches": true,
+        "value": "0x080DDCC4"
+      },
+      "font_scratch_literal": {
+        "expected": "0x03000560",
+        "matches": true,
+        "value": "0x03000560"
+      },
+      "format_state_literal": {
+        "expected": "0x03000040",
+        "matches": true,
+        "value": "0x03000040"
+      },
+      "formatted_buffer_literal_1646": {
+        "expected": "0x03001468",
+        "matches": true,
+        "value": "0x03001468"
+      },
+      "formatted_buffer_literal_1D8E": {
+        "expected": "0x03001468",
+        "matches": true,
+        "value": "0x03001468"
+      },
+      "glyph_lookup_table_literal": {
+        "expected": "0x03001464",
+        "matches": true,
+        "value": "0x03001464"
+      },
+      "ram_tilemap_base_literal": {
+        "expected": "0x03000060",
+        "matches": true,
+        "value": "0x03000060"
+      },
+      "ram_tilemap_writer_flags_literal": {
+        "expected": "0x03001461",
+        "matches": true,
+        "value": "0x03001461"
+      },
+      "tile_attribute_literal": {
+        "expected": "0xFFFFE000",
+        "matches": true,
+        "value": "0xFFFFE000"
+      }
+    },
+    "parser_cursor_global": "0x03001588",
+    "sjis_like_format_path": {
+      "asset_status": "static-glyph-source-candidate",
+      "double_byte_index_formula": "(lead-adjusted)*3*0x40 + trail - 0x40",
+      "font_asset_base": "0x080DDCC4",
+      "font_asset_stride_bytes": 32,
+      "font_map_entry": "0x08001414",
+      "font_scratch_base": "0x03000560",
+      "format_entry": "0x080014F4",
+      "lead_adjustment_boundary": "0x87"
+    },
+    "stack_buffer_to_ram_tilemap_writer": {
+      "address_formula": "0x03000060 + y*0x40 + x*2",
+      "buffer_size_bytes": 32,
+      "consumer": "0x08001DBC",
+      "entry_size_bytes": 2,
+      "parser_callsite": "0x08001E26",
+      "ram_tilemap_base": "0x03000060",
+      "row_stride_bytes": 64,
+      "writer_status": "confirmed-static-IWRAM-writer"
+    }
+  }
+}

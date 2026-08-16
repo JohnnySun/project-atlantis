@@ -236,6 +236,37 @@ signatures、target 範圍與 hash；這是 **confirmed-static control parser**�
 live source consumer、日文 codepage、glyph identity 或回插證明。下一步仍是
 在可重現 runtime 流程取得 parser entry 的 source pointer／caller receipt。
 
+進一步的 direct-callsite receipt 見
+[`research/m2-renderer-chain-20260816.md`](research/m2-renderer-chain-20260816.md)。
+它確認全 ROM 只有 4 個 parser direct callsite，其中
+`0x08001E26 → 0x080025CC → 0x08001DBC` 使用 bounded stack buffer 並寫入
+IWRAM `0x03000060 + y*0x40 + x*2`；同一 static 區段的
+`0x080014F4 → 0x08001414 → 0x080DDCC4 + index*0x20` 是 glyph source
+candidate。`0x08001DBC` 不是 VRAM writer，後續搬運與 runtime source record 仍未
+確認。可重跑工具是 [`tools/renderer_chain_probe.py`](tools/renderer_chain_probe.py)。
+
+已知的 12-entry direct record table 另由
+[`research/m2-record-table-20260816.md`](research/m2-record-table-20260816.md)
+與 [`tools/direct_record_table_probe.py`](tools/direct_record_table_probe.py) 固定
+驗證：12/12 target 都是 strict `text-pool` record，包含 selected
+`sjis:0x146EE0`；但 target spacing 不等於容量證明，仍不可據此回寫或分類事件／
+角色／服裝／技能／戰鬥／選單。
+
+固定 caller 另揭出 control-only template `format:0x1474C0`：
+[`research/m2-format-template-20260816.md`](research/m2-format-template-20260816.md)
+記錄 code literal `0x0AEF1C → 0x081474C0 → 0x08001640 → 0x080025CC`；它只含
+`%k` token、不是 strict record 起點，後面的 `sjis:0x1474C4` 才是另一筆
+strict record。這類 template 不加入 8,938 筆 ledger，直到 template extractor、
+token semantics 與 runtime read edge 都被證明。工具是
+[`tools/format_template_probe.py`](tools/format_template_probe.py)。
+
+`0x080014F4` 的另一條固定 byte→halfword lookup 邊由
+[`research/m2-codepoint-lookup-20260816.md`](research/m2-codepoint-lookup-20260816.md)
+記錄：`0x08004D90` 只由兩個 direct callsite 使用，並透過五個 ROM pointer slot
+選取 bounded lookup windows。這是 codepoint lookup 的 static 證據，不是完整
+日文 codepage、glyph identity、字寬或 runtime source edge；工具是
+[`tools/codepoint_lookup_probe.py`](tools/codepoint_lookup_probe.py)。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \

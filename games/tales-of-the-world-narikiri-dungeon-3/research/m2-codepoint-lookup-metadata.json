@@ -1,0 +1,110 @@
+{
+  "classification": {
+    "glyph_identity": "unconfirmed",
+    "rom_table_pool": "confirmed-static",
+    "runtime_glyph_vram_edge": "unconfirmed",
+    "runtime_source_record_edge": "unconfirmed",
+    "static_codepoint_lookup": "confirmed-static",
+    "width_semantics": "provisional-static"
+  },
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  },
+  "lookup": {
+    "direct_callsite_count": 2,
+    "direct_callsites": [
+      "0x080015C4",
+      "0x08004D60"
+    ],
+    "entry": "0x08004D90",
+    "pointer_pool": [
+      {
+        "literal_file_offset": "0x741D80",
+        "matches_expected": true,
+        "value": "0x080FFE80"
+      },
+      {
+        "literal_file_offset": "0x741D84",
+        "matches_expected": true,
+        "value": "0x080FFF40"
+      },
+      {
+        "literal_file_offset": "0x741D88",
+        "matches_expected": true,
+        "value": "0x080FFFBC"
+      },
+      {
+        "literal_file_offset": "0x741D8C",
+        "matches_expected": true,
+        "value": "0x080FFFF4"
+      },
+      {
+        "literal_file_offset": "0x741D90",
+        "matches_expected": true,
+        "value": "0x08100070"
+      }
+    ],
+    "table_window_bytes": 256,
+    "tables": [
+      {
+        "file_offset": "0x0FFE80",
+        "gba_address": "0x080FFE80",
+        "halfword_count": 128,
+        "nonzero_bytes": 254,
+        "sha256": "cb893bcaed0a165462fd2a3d73a16e50dfe3233f189b28a6eb71610cfe565ccd",
+        "signed_halfword_max": 31873,
+        "signed_halfword_min": -32383,
+        "unique_halfword_count": 125,
+        "window_bytes": 256
+      },
+      {
+        "file_offset": "0x0FFF40",
+        "gba_address": "0x080FFF40",
+        "halfword_count": 128,
+        "nonzero_bytes": 250,
+        "sha256": "ac8e75b6ab744905b7544c94873c452fc32697fd5dce79efad02a3d92e0d2793",
+        "signed_halfword_max": 32387,
+        "signed_halfword_min": -32637,
+        "unique_halfword_count": 120,
+        "window_bytes": 256
+      },
+      {
+        "file_offset": "0x0FFFBC",
+        "gba_address": "0x080FFFBC",
+        "halfword_count": 128,
+        "nonzero_bytes": 246,
+        "sha256": "c914baa226e5e88ea226f370a5d9e23c20154cd158a5e7b8787135e386df9c3a",
+        "signed_halfword_max": 31875,
+        "signed_halfword_min": -27517,
+        "unique_halfword_count": 124,
+        "window_bytes": 256
+      },
+      {
+        "file_offset": "0x0FFFF4",
+        "gba_address": "0x080FFFF4",
+        "halfword_count": 128,
+        "nonzero_bytes": 229,
+        "sha256": "f8fabc5ad4c795aad829533f64ede3d0fced76d7d9b956fd1ad179c4ab219aec",
+        "signed_halfword_max": 31059,
+        "signed_halfword_min": -32637,
+        "unique_halfword_count": 114,
+        "window_bytes": 256
+      },
+      {
+        "file_offset": "0x100070",
+        "gba_address": "0x08100070",
+        "halfword_count": 128,
+        "nonzero_bytes": 152,
+        "sha256": "10fdccda2bbeaf26e106712351b6118ce0e3721194c2e6b94cdd63d65d8a3ef7",
+        "signed_halfword_max": 31059,
+        "signed_halfword_min": -32637,
+        "unique_halfword_count": 84,
+        "window_bytes": 256
+      }
+    ]
+  }
+}

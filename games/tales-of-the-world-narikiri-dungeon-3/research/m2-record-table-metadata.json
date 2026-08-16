@@ -1,0 +1,172 @@
+{
+  "bounded_table": {
+    "file_end_exclusive": "0xDD1BB4",
+    "file_start": "0xDD1B84",
+    "gba_end_exclusive": "0x08DD1BB4",
+    "gba_start": "0x08DD1B84",
+    "summary": {
+      "direct_absolute": true,
+      "entry_count": 12,
+      "records": [
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146F17",
+          "file_offset": "0x146F10",
+          "gba_address": "0x08146F10",
+          "newline_units": 0,
+          "raw_length": 7,
+          "region": "text-pool",
+          "string_id": "sjis:0x146F10"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146F0C",
+          "file_offset": "0x146F08",
+          "gba_address": "0x08146F08",
+          "newline_units": 0,
+          "raw_length": 4,
+          "region": "text-pool",
+          "string_id": "sjis:0x146F08"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146F04",
+          "file_offset": "0x146F00",
+          "gba_address": "0x08146F00",
+          "newline_units": 0,
+          "raw_length": 4,
+          "region": "text-pool",
+          "string_id": "sjis:0x146F00"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EFD",
+          "file_offset": "0x146EF8",
+          "gba_address": "0x08146EF8",
+          "newline_units": 0,
+          "raw_length": 5,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EF8"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EF4",
+          "file_offset": "0x146EF0",
+          "gba_address": "0x08146EF0",
+          "newline_units": 0,
+          "raw_length": 4,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EF0"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EEF",
+          "file_offset": "0x146EE8",
+          "gba_address": "0x08146EE8",
+          "newline_units": 0,
+          "raw_length": 7,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EE8"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EE4",
+          "file_offset": "0x146EE0",
+          "gba_address": "0x08146EE0",
+          "newline_units": 0,
+          "raw_length": 4,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EE0"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EDC",
+          "file_offset": "0x146ED8",
+          "gba_address": "0x08146ED8",
+          "newline_units": 0,
+          "raw_length": 4,
+          "region": "text-pool",
+          "string_id": "sjis:0x146ED8"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146ED5",
+          "file_offset": "0x146ED0",
+          "gba_address": "0x08146ED0",
+          "newline_units": 0,
+          "raw_length": 5,
+          "region": "text-pool",
+          "string_id": "sjis:0x146ED0"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146ECC",
+          "file_offset": "0x146EC8",
+          "gba_address": "0x08146EC8",
+          "newline_units": 0,
+          "raw_length": 4,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EC8"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EC4",
+          "file_offset": "0x146EBC",
+          "gba_address": "0x08146EBC",
+          "newline_units": 0,
+          "raw_length": 8,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EBC"
+        },
+        {
+          "control_units": 0,
+          "end_offset_exclusive": "0x146EBA",
+          "file_offset": "0x146EB4",
+          "gba_address": "0x08146EB4",
+          "newline_units": 0,
+          "raw_length": 6,
+          "region": "text-pool",
+          "string_id": "sjis:0x146EB4"
+        }
+      ],
+      "strict_target_count": 12,
+      "target_delta_counts": {
+        "0x0008": 10,
+        "0x000C": 1
+      },
+      "target_offsets": [
+        "0x146F10",
+        "0x146F08",
+        "0x146F00",
+        "0x146EF8",
+        "0x146EF0",
+        "0x146EE8",
+        "0x146EE0",
+        "0x146ED8",
+        "0x146ED0",
+        "0x146EC8",
+        "0x146EBC",
+        "0x146EB4"
+      ],
+      "target_order": "descending-file-offset",
+      "target_order_sha256": "5e51f8cd78a6fe405d4639d756fbdbe4ebeef0c8741af87d0a4e599ac81a6042"
+    },
+    "table_byte_length": 48,
+    "table_sha256": "43f4e47173af72cf8b14aff2f5dba479e015e8035f9f780a1da624b2de93179a"
+  },
+  "classification": {
+    "capacity_and_slot_size": "unconfirmed",
+    "direct_pointer_provenance": "confirmed-static",
+    "pointer_rewrite_rule": "unconfirmed",
+    "record_category": "unclassified-text-pool-subtable",
+    "runtime_consumer": "unconfirmed",
+    "strict_record_targets": "confirmed-static"
+  },
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  }
+}
