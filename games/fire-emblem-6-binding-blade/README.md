@@ -183,6 +183,21 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
   --output /private/tmp/afej-m116-natural-generic-allocator-schema.json
 ```
 
+M1.17 對實際 text consumer `0x08098c00–0x08098c8c` 做 static branch gate：`0x08098c24: ldrb r0,[r6]` 後，signed-byte branch `0x08098c28 → 0x08098c3c`、`value <= 1` branch `0x08098c2c → 0x08098c78`、`value != 4` branch `0x08098c30 → 0x08098c3c`，而 `0x08098c7a` 呼叫 `0x08003e60`。工具把這些只記為 opaque branch topology，不為 `0x00`／`0x01` 建立語義名稱。
+
+先前成功完成的 natural `title → Start → A` receipt（`/private/tmp/afej-m117-natural-selector-consumer.json`）在 `0x08098c24` 讀到 opaque `0x01`、buffer pointer `0x0202940c`／offset `8`，隨後取得 `0x08098c78` branch receipt；同一路徑 selector／loader hit count 是 `1/1`，第二 caller 是 `0`，只保存 hash、位址與 offset。新增的 compare-instruction receipt 會另外記錄 branch compare 當下的 `r0`，但本輪三次 fresh retry 都在 mGBA stale packet 的 bounded point/register transport 層失敗（`0e16`、無完整 `g` response、`P1` 無 `OK`），沒有把失敗重試冒充 positive runtime 證據。
+
+M1.17 的 static／natural consumer 命令（先啟動自己的 mGBA；完整 JSON 留在 ignored `/private/tmp`）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m19_natural.py \
+  roms/base/AFEJ.gba --port 23901 --source-port 25047 \
+  --route-name m117-natural-selector-compare \
+  --sequence start,a --max-records 2 --max-consumer-reads 32 \
+  --no-display --output /private/tmp/afej-m117-natural-selector-compare.json \
+  --static-output /private/tmp/afej-m117-static-compare.json
+```
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：

@@ -54,10 +54,42 @@ class AfejM19StaticTests(unittest.TestCase):
     def test_runtime_breakpoints_include_consumer_and_actual_cpu_writer(self) -> None:
         client = object.__new__(trace.NaturalTrace)
         self.assertIn(trace.CONSUMER_BYTE_READ, client.runtime_breakpoints)
+        self.assertIn(trace.CONSUMER_LOW_COMPARE_BRANCH, client.runtime_breakpoints)
         self.assertIn(trace.CONSUMER_CONTROL_BRANCH, client.runtime_breakpoints)
         self.assertIn(trace.RENDERER_KERNEL, client.runtime_breakpoints)
         self.assertIn(trace.RENDERER_WRITE, client.runtime_breakpoints)
         self.assertEqual(trace.RENDERER_WRITE, 0x080995A6)
+
+    def test_consumer_branch_gate_keeps_opaque_conditions_and_targets(self) -> None:
+        gate = self.report["consumer_branch_gate"]
+        self.assertEqual(gate["function_start"], "0x08098c00")
+        self.assertEqual(gate["function_return"], "0x08098c8c")
+        self.assertEqual(gate["byte_read_instruction"], "0x08098c24: ldrb r0, [r6]")
+        rows = {row["classification"]: row["target"] for row in gate["branch_rows"]}
+        self.assertEqual(rows["byte_less_or_equal_one"], "0x08098c78")
+        self.assertEqual(rows["byte_not_equal_four"], "0x08098c3c")
+        self.assertEqual(rows["control_handler_call"], "0x08003e60")
+        self.assertEqual(
+            [row["target"] for row in gate["opaque_branch_map"]],
+            ["0x08098c3c", "0x08098c78", "0x08098c80", "0x08098c3c"],
+        )
+        self.assertFalse(gate["semantic_name_assigned"])
+
+    def test_opaque_byte_branch_target_is_structural_only(self) -> None:
+        self.assertEqual(trace._opaque_byte_branch_target(0x01), "0x08098c78")
+        self.assertEqual(trace._opaque_byte_branch_target(0x00), "0x08098c78")
+        self.assertEqual(trace._opaque_byte_branch_target(0x04), "0x08098c80")
+        self.assertEqual(trace._opaque_byte_branch_target(0x82), "0x08098c3c")
+        self.assertIsNone(trace._opaque_byte_branch_target(None))
+        self.assertEqual(
+            trace._consumer_compare_branch_target(trace.CONSUMER_LOW_COMPARE_BRANCH),
+            "0x08098c78",
+        )
+        self.assertEqual(
+            trace._consumer_compare_branch_target(trace.CONSUMER_SIGNED_COMPARE_BRANCH),
+            "0x08098c3c",
+        )
+        self.assertIsNone(trace._consumer_compare_branch_target(0x08098C24))
 
     def test_source_window_and_gba_ram_validation_are_bounded(self) -> None:
         self.assertTrue(trace._valid_region(0x080F2256, 0x100))
@@ -87,6 +119,10 @@ class AfejM19StaticTests(unittest.TestCase):
             FakeClient(["S05", "aabb"]), 0x02029404, 2
         )
         self.assertEqual(memory, b"\xaa\xbb")
+        self.assertEqual(
+            trace.request_ok_after_stop(FakeClient(["0e16", "OK"]), "Z3,4000130,2"),
+            "OK",
+        )
 
 
 if __name__ == "__main__":

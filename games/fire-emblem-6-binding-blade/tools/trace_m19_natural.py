@@ -99,7 +99,14 @@ CANDIDATE_ENTRIES = (CANDIDATE_CALLER, CANDIDATE_CALLER_ALT, HIGH_CALLER)
 # 0x080995a6 instruction is ``str r1,[r2]`` in this ARM7TDMI Thumb image.
 CONSUMER_ENTRY = 0x08098C00
 CONSUMER_BYTE_READ = 0x08098C24
+CONSUMER_SIGNED_COMPARE_BRANCH = 0x08098C28
+CONSUMER_LOW_COMPARE_BRANCH = 0x08098C2C
+CONSUMER_FOUR_COMPARE_BRANCH = 0x08098C30
+CONSUMER_SIGNED_BRANCH = 0x08098C3C
 CONSUMER_CONTROL_BRANCH = 0x08098C78
+CONSUMER_SKIP_LOOP = 0x08098C80
+CONSUMER_FUNCTION_RETURN = 0x08098C8C
+CONSUMER_CONTROL_HANDLER_CALL = 0x08098C7A
 GLYPH_READER_ENTRY = 0x08098F68
 GLYPH_FIELD_READ = 0x08098F78
 COMPOSER_ENTRY = 0x08099424
@@ -193,6 +200,66 @@ def static_candidate_report(rom: bytes) -> dict[str, object]:
             "selector_reference": hex32(HIGH_CALLSITE),
             "no_state_or_index_write": True,
         },
+        "consumer_branch_gate": _consumer_branch_report(rom),
+    }
+
+
+def _consumer_branch_report(rom: bytes) -> dict[str, object]:
+    """Record byte-compare branch topology without assigning token meaning."""
+
+    instructions = _capstone_instructions(
+        rom,
+        CONSUMER_ENTRY,
+        CONSUMER_FUNCTION_RETURN + 2,
+    )
+    rows_by_address = {int(row["address"]): row for row in instructions}
+
+    def text(address: int) -> str:
+        row = rows_by_address[address]
+        return f"{hex32(address)}: {row['mnemonic']} {row['op_str']}".rstrip()
+
+    branch_rows = [
+        {
+            "instruction": text(address),
+            "target": hex32(target),
+            "classification": classification,
+        }
+        for address, target, classification in (
+            (0x08098C28, 0x08098C3C, "signed_byte_less_than_zero"),
+            (0x08098C2C, 0x08098C78, "byte_less_or_equal_one"),
+            (0x08098C30, 0x08098C3C, "byte_not_equal_four"),
+            (0x08098C7A, 0x08003E60, "control_handler_call"),
+        )
+    ]
+    return {
+        "function_start": hex32(CONSUMER_ENTRY),
+        "function_return": hex32(CONSUMER_FUNCTION_RETURN),
+        "byte_read_instruction": text(CONSUMER_BYTE_READ),
+        "branch_rows": branch_rows,
+        "opaque_branch_map": [
+            {
+                "byte_condition": "value & 0x80 != 0",
+                "target": hex32(CONSUMER_SIGNED_BRANCH),
+                "semantic_name_assigned": False,
+            },
+            {
+                "byte_condition": "value <= 0x01",
+                "target": hex32(CONSUMER_CONTROL_BRANCH),
+                "semantic_name_assigned": False,
+            },
+            {
+                "byte_condition": "value == 0x04",
+                "target": hex32(CONSUMER_SKIP_LOOP),
+                "semantic_name_assigned": False,
+            },
+            {
+                "byte_condition": "otherwise",
+                "target": hex32(CONSUMER_SIGNED_BRANCH),
+                "semantic_name_assigned": False,
+            },
+        ],
+        "control_handler_callsite": hex32(CONSUMER_CONTROL_HANDLER_CALL),
+        "semantic_name_assigned": False,
     }
 
 
@@ -215,6 +282,28 @@ def _read_summary(client: GdbClient, address: int, length: int) -> Optional[dict
         return summarize(read_memory_after_stop(client, address, length), address)
     except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
         return None
+
+
+def _opaque_byte_branch_target(value: Optional[int]) -> Optional[str]:
+    """Map a read byte to the static branch target, never to a token meaning."""
+
+    if value is None:
+        return None
+    if value & 0x80:
+        return hex32(CONSUMER_SIGNED_BRANCH)
+    if value <= 0x01:
+        return hex32(CONSUMER_CONTROL_BRANCH)
+    if value == 0x04:
+        return hex32(CONSUMER_SKIP_LOOP)
+    return hex32(CONSUMER_SIGNED_BRANCH)
+
+
+def _consumer_compare_branch_target(pc: int) -> Optional[str]:
+    return {
+        CONSUMER_SIGNED_COMPARE_BRANCH: hex32(CONSUMER_SIGNED_BRANCH),
+        CONSUMER_LOW_COMPARE_BRANCH: hex32(CONSUMER_CONTROL_BRANCH),
+        CONSUMER_FOUR_COMPARE_BRANCH: hex32(CONSUMER_SIGNED_BRANCH),
+    }.get(pc)
 
 
 def _dma3_receipt(client: GdbClient) -> dict[str, object]:
@@ -242,14 +331,14 @@ def _dma3_receipt(client: GdbClient) -> dict[str, object]:
 def read_registers_after_stop(client: GdbClient) -> dict[str, int]:
     """Read registers while tolerating mGBA's duplicate watch-stop reply.
 
-    With a read watchpoint, the reviewed mGBA build can return the same
-    ``T05rwatch`` stop packet once more in response to the first ``g`` query.
-    Drain at most two such packets; an unbounded retry would hide a broken
-    connection or turn a runtime receipt into an implicit wait loop.
+    With breakpoints and read watchpoints, the reviewed mGBA build can leave
+    several short stop/memory packets queued before the register response.
+    Drain at most twelve bounded packets; an unbounded retry would hide a
+    broken connection or turn a runtime receipt into an implicit wait loop.
     """
 
     expected_length = len(REG_NAMES) * 8
-    for _ in range(5):
+    for _ in range(12):
         response = client.request("g")
         if response.startswith(("T", "S")):
             continue
@@ -266,16 +355,19 @@ def read_registers_after_stop(client: GdbClient) -> dict[str, int]:
 
 
 def request_ok_after_stop(client: GdbClient, payload: str) -> str:
-    """Send a point-management request while draining one stale GDB reply."""
+    """Send a point-management request with bounded stale-packet draining."""
 
     expected_register_length = len(REG_NAMES) * 8
-    for _ in range(5):
+    for _ in range(8):
         response = client.request(payload)
         if response == "OK":
             return response
+        if response.startswith("E"):
+            raise RuntimeError(f"GDB point request failed for {payload!r}: {response!r}")
         if response.startswith(("T", "S")) or len(response) == expected_register_length:
             continue
-        raise RuntimeError(f"unexpected GDB response for {payload!r}: {response!r}")
+        # The reviewed mGBA stub can leave a short memory/stop packet queued
+        # after adding a breakpoint.  Drain it, but never retry unboundedly.
     raise RuntimeError(f"no OK response for {payload!r}")
 
 
@@ -370,6 +462,8 @@ class NaturalTrace:
         self.events: list[dict[str, object]] = []
         self.loader_records: list[dict[str, object]] = []
         self.consumer_reads: list[dict[str, object]] = []
+        self.consumer_branch_receipts: list[dict[str, object]] = []
+        self.consumer_compare_receipts: list[dict[str, object]] = []
         self.renderer_events: list[dict[str, object]] = []
         self.writer_receipts: list[dict[str, object]] = []
         self.caller_hits: list[dict[str, object]] = []
@@ -378,6 +472,7 @@ class NaturalTrace:
         self._last_loader: Optional[dict[str, object]] = None
         self._last_kernel: Optional[dict[str, object]] = None
         self._last_writer: Optional[dict[str, object]] = None
+        self._last_consumer_byte_read: Optional[dict[str, object]] = None
         self._ewram_watch_armed = False
         self._ewram_watch_eligible = False
         self._dynamic_watch: Optional[tuple[int, int, int]] = None
@@ -398,6 +493,9 @@ class NaturalTrace:
             LOADER_RETURN,
             CONSUMER_ENTRY,
             CONSUMER_BYTE_READ,
+            CONSUMER_SIGNED_COMPARE_BRANCH,
+            CONSUMER_LOW_COMPARE_BRANCH,
+            CONSUMER_FOUR_COMPARE_BRANCH,
             CONSUMER_CONTROL_BRANCH,
             GLYPH_READER_ENTRY,
             GLYPH_FIELD_READ,
@@ -530,17 +628,56 @@ class NaturalTrace:
                 "token_class": None if value is None else (
                     "opaque_0x01" if value == 0x01 else "opaque_byte"
                 ),
+                "static_branch_target": _opaque_byte_branch_target(value),
             })
             if value is not None:
                 event["buffer_offset_if_base"] = (
                     pointer - BUFFER if BUFFER <= pointer < BUFFER + BUFFER_SIZE else None
                 )
+            self._last_consumer_byte_read = {
+                "byte_value": value,
+                "buffer_pointer": pointer,
+                "buffer_offset_if_base": (
+                    pointer - BUFFER if BUFFER <= pointer < BUFFER + BUFFER_SIZE else None
+                ),
+                "static_branch_target": _opaque_byte_branch_target(value),
+            }
             self.consumer_reads.append(event.copy())
             if len(self.consumer_reads) >= self.max_consumer_reads:
                 self._remove_ewram_watch()
+        elif pc in (
+            CONSUMER_SIGNED_COMPARE_BRANCH,
+            CONSUMER_LOW_COMPARE_BRANCH,
+            CONSUMER_FOUR_COMPARE_BRANCH,
+        ):
+            compare_value = regs["r0"] & 0xFF
+            event.update({
+                "consumer": "compare_before_branch",
+                "compare_instruction": hex32(pc),
+                "compare_value_r0": hex32(compare_value),
+                "static_branch_target": _consumer_compare_branch_target(pc),
+                "semantic_name_assigned": False,
+            })
+            self.consumer_compare_receipts.append(event.copy())
+            if len(self.consumer_reads) < self.max_consumer_reads:
+                self.consumer_reads.append(event.copy())
         elif pc == CONSUMER_CONTROL_BRANCH:
             event["consumer"] = "control_branch_unclassified"
             event["control_value_register_r0"] = hex32(regs["r0"])
+            prior = self._last_consumer_byte_read
+            event["branch_target"] = hex32(CONSUMER_CONTROL_BRANCH)
+            event["branch_source_byte"] = (
+                None if prior is None or prior.get("byte_value") is None
+                else hex32(int(prior["byte_value"]))
+            )
+            event["branch_source_pointer"] = (
+                None if prior is None else hex32(int(prior["buffer_pointer"]))
+            )
+            event["branch_source_offset_if_base"] = (
+                None if prior is None else prior.get("buffer_offset_if_base")
+            )
+            self.consumer_branch_receipts.append(event.copy())
+            self._last_consumer_byte_read = None
             if len(self.consumer_reads) < self.max_consumer_reads:
                 self.consumer_reads.append(event.copy())
         elif pc in (CONSUMER_ENTRY, GLYPH_READER_ENTRY, GLYPH_FIELD_READ):
@@ -726,7 +863,16 @@ class NaturalTrace:
                 "buffer": buffer_summary(read_memory_after_stop(self.client, BUFFER, BUFFER_SIZE)),
             })
             self._record_loader_return(event["buffer"])
-        elif pc in (CONSUMER_ENTRY, CONSUMER_BYTE_READ, CONSUMER_CONTROL_BRANCH, GLYPH_READER_ENTRY, GLYPH_FIELD_READ):
+        elif pc in (
+            CONSUMER_ENTRY,
+            CONSUMER_BYTE_READ,
+            CONSUMER_SIGNED_COMPARE_BRANCH,
+            CONSUMER_LOW_COMPARE_BRANCH,
+            CONSUMER_FOUR_COMPARE_BRANCH,
+            CONSUMER_CONTROL_BRANCH,
+            GLYPH_READER_ENTRY,
+            GLYPH_FIELD_READ,
+        ):
             event["kind"] = "natural_text_consumer"
             self._handle_consumer(pc, regs, event)
         elif pc in (COMPOSER_ENTRY, COMPOSER_CALL, RENDERER_ENTRY, RENDERER_KERNEL, RENDERER_WRITE):
@@ -877,6 +1023,8 @@ def _route_report(
         "caller_hits": [],
         "loader_records": [],
         "consumer_reads": [],
+        "consumer_branch_receipts": [],
+        "consumer_compare_receipts": [],
         "renderer_events": [],
         "writer_receipts": [],
     }
@@ -922,6 +1070,8 @@ def _route_report(
         runtime["caller_hits"] = trace.caller_hits
         runtime["loader_records"] = trace.loader_records
         runtime["consumer_reads"] = trace.consumer_reads
+        runtime["consumer_branch_receipts"] = trace.consumer_branch_receipts
+        runtime["consumer_compare_receipts"] = trace.consumer_compare_receipts
         runtime["renderer_events"] = trace.renderer_events
         runtime["writer_receipts"] = trace.writer_receipts
         runtime["events"] = trace.events
