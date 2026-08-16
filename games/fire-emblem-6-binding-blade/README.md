@@ -36,6 +36,8 @@ M1.32 已新增 full-table content gate：重用已驗證 worker 對 3342 筆表
 
 M1.33 已把 full-table 的 leaf width／terminator／marker boundary 固化：3203 筆 supported records 全部是原始 leaf decode→encode byte-identical，尾端 exact single-byte `0x00` 為 3203/3203；兩位元組 code-unit 共 227,209，one-byte leaves 49,742，其中已知 marker occurrences `0x00/0x01/0x04/0xff = 3,203/19,585/136/0`，其餘 26,818 保持 opaque single-byte。strict Shift-JIS 只通過 3,081/3,203 records，122 筆 negative；因此仍不能建立 game-wide Unicode/codepage、控制碼語義或 translation-ready ledger。no-op encoder 僅允許原始 leaf sequence，不允許任意 Unicode、marker 改寫或 ROM insertion。
 
+M1.34 已新增第一個不依賴 index 鄰接命名的 bounded content-class gate：`tools/analyze_m134_title_contract.py` 將自然 `start,a` 的 index 3087 loader 與 `[3080,3088)` 的 8 筆 intro/title resource 接到 ROM map `0x08691644`、glyph index 與 initializer 的 LZ77 source contract。這 8 筆共 131 個 two-byte code units 的集合恰等於 map 前 80 個 strict Shift-JIS-compatible entries；`0x08099424` formula 的 80 個 input 也恰是 expanded `0x2800` source 在四個 plane word read（`0x00/0x40/0x80/0xc0`）下的完整 in-bounds prefix。兩份 ignored natural receipts 的 index 3087 source pointer／buffer hash 為 2/2 相等，map input hash 與 map index→glyph index 為 16/16；這足以標出 `title_splash_bounded_candidate`，但仍是 provisional，不能宣稱畫面截圖、game-wide codepage、Unicode 或 font bitmap identity。M1.34 source-slot composite hash 只有 67/80 unique，重複槽位保留為事實，不把每個 slot 猜成不同字形；`0x01`、`0x00` 與其他 token 仍 opaque。
+
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
@@ -250,6 +252,29 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m133_text_structure.py \
 ```
 
 輸出只含 leaf width、terminator/marker offset histogram、opaque counts、strict candidate aggregate 與 hash；122 個 strict Shift-JIS negative records 會以 index hash 保存，不輸出解碼文字。`round_trip` 的 encoder guard 僅涵蓋原始 leaf sequence。
+
+要重跑 M1.34 的 title／map／font-source bounded contract（report 應留在 ignored `/private/tmp`）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m134_title_contract.py \
+  roms/base/AFEJ.gba \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --runtime-report /private/tmp/afej-m119-natural-long-menu.json \
+  --output /private/tmp/afej-m134-title-contract.json
+```
+
+在 extractor 前先使用共用 ROM identity guard；本作 expected 值留在 `game.yml`／本 README，exit `0` 才能把本輪 report 當作 AFEJ positive：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/gba-rom-identity.py \
+  "$(pwd)/roms/base/AFEJ.gba" \
+  --expect-size 8388608 --expect-game-code AFEJ \
+  --expect-crc32 d38763e1 \
+  --expect-sha256 e62288883544705b18f1a0753896fdd865a628fb4589135813b16a972a4c1557 \
+  --output /private/tmp/afej-m134-rom-identity.json
+```
+
+M1.34 report 只保存 title record／map／source-slot hash、地址、長度與 receipt；不保存 code-unit bytes、完整日文、compressed/expanded/font/bitmap payload。共用 identity `status=pass`／exit `0` 是 ROM 身分 gate，不等於 runtime QA pass；`start,a` receipt 的 title class、renderer source bytes 與 writer receipt 仍分開記錄。
 
 要重跑 M1.11 的 static caller／callback gate report：
 
