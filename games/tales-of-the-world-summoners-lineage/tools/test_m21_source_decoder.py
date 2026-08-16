@@ -13,8 +13,11 @@ sys.path.insert(0, str(TOOLS))
 from m21_source_decoder import (  # noqa: E402
     KNOWN_UI_MAPPING,
     KNOWN_UI_ROWS,
+    STATIC_PHRASE_MAPPING,
+    STATIC_UI_ROWS,
     build_keyboard_map,
     decode_known_ui_rows,
+    decode_known_static_ui_rows,
     decode_units,
     keyboard_labels,
 )
@@ -84,6 +87,48 @@ class M21SourceDecoderTests(unittest.TestCase):
     def test_known_ui_decoder_rejects_non_a9pj_input(self) -> None:
         with self.assertRaises(ValueError):
             decode_known_ui_rows(bytes(0x100))
+
+    def test_static_phrase_rows_are_fixed_and_ineligible(self) -> None:
+        self.assertEqual(len(STATIC_UI_ROWS), 3)
+        self.assertEqual(STATIC_PHRASE_MAPPING[0x0003], "。")
+        self.assertEqual(STATIC_PHRASE_MAPPING[0x000C], "ー")
+        self.assertEqual(STATIC_PHRASE_MAPPING[0x028B], "最")
+        self.assertEqual(STATIC_PHRASE_MAPPING[0x0311], "初")
+        self.assertEqual(STATIC_PHRASE_MAPPING[0x03A8], "選")
+        self.assertFalse(any("eligible_for_ledger" in row for row in STATIC_UI_ROWS))
+        mapping = {
+            **{0x008F: {"text": "す", "mapping_status": "keyboard"},
+               0x0073: {"text": "か", "mapping_status": "keyboard"},
+               0x00EF: {"text": "ら", "mapping_status": "keyboard"},
+               0x00F3: {"text": "る", "mapping_status": "keyboard"},
+               0x00E8: {"text": "ユ", "mapping_status": "keyboard"},
+               0x00B4: {"text": "ニ", "mapping_status": "keyboard"},
+               0x00AE: {"text": "ト", "mapping_status": "keyboard"},
+               0x009C: {"text": "タ", "mapping_status": "keyboard"},
+               0x008B: {"text": "し", "mapping_status": "keyboard"},
+               0x00D9: {"text": "ま", "mapping_status": "keyboard"},
+               0x007B: {"text": "く", "mapping_status": "keyboard"},
+               0x0087: {"text": "さ", "mapping_status": "keyboard"},
+               0x0062: {"text": "い", "mapping_status": "keyboard"},
+               0x007C: {"text": "ク", "mapping_status": "keyboard"},
+               0x00F0: {"text": "ラ", "mapping_status": "keyboard"},
+               0x0090: {"text": "ス", "mapping_status": "keyboard"}},
+            **{unit: {"text": text, "mapping_status": "static"}
+               for unit, text in STATIC_PHRASE_MAPPING.items()},
+        }
+        first = decode_units(list(STATIC_UI_ROWS[0]["units"]) + [0], mapping)
+        second = decode_units(list(STATIC_UI_ROWS[1]["units"]) + [0], mapping)
+        third = decode_units(list(STATIC_UI_ROWS[2]["units"]) + [0], mapping)
+        self.assertEqual(first["text"], "攻撃するユニットを選んでください。")
+        self.assertEqual(second["text"], "クラスを選んでください。")
+        self.assertEqual(third["text"], "最初からスタートします")
+        self.assertTrue(first["complete_codepage"])
+        self.assertTrue(second["complete_codepage"])
+        self.assertTrue(third["complete_codepage"])
+
+    def test_known_static_ui_decoder_rejects_non_a9pj_input(self) -> None:
+        with self.assertRaises(ValueError):
+            decode_known_static_ui_rows(bytes(0x100))
 
 
 if __name__ == "__main__":

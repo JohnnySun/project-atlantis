@@ -5,7 +5,12 @@ from __future__ import annotations
 
 import unittest
 
-from m20_text_runtime_probe import memory_region, screen_gate_metadata, summarize_window
+from m20_text_runtime_probe import (
+    memory_region,
+    screen_gate_metadata,
+    static_render_path,
+    summarize_window,
+)
 
 
 class M20TextRuntimeProbeTests(unittest.TestCase):
@@ -18,8 +23,27 @@ class M20TextRuntimeProbeTests(unittest.TestCase):
         self.assertTrue(summary["terminated_by_0000"])
         self.assertEqual(summary["control_candidate_count"], 1)
         self.assertEqual(summary["font_record_index_count"], 2)
+        self.assertEqual(
+            summary["static_render_path_counts"],
+            {
+                "font-record-consumer-080049a0": 2,
+                "line-advance-ff70": 1,
+                "terminator-0000": 1,
+            },
+        )
         self.assertNotIn("code_units", summary)
         self.assertNotIn("text", summary)
+
+    def test_static_dispatch_model_keeps_nonzero_units_on_font_path(self) -> None:
+        self.assertEqual(static_render_path(0x0000), "terminator-0000")
+        self.assertEqual(static_render_path(0xFF70), "line-advance-ff70")
+        self.assertEqual(static_render_path(0x0003), "font-record-consumer-080049a0")
+
+    def test_static_dispatch_model_is_explicitly_not_runtime_evidence(self) -> None:
+        summary = summarize_window((0x0003).to_bytes(2, "little"))
+        model = summary["static_path_model"]
+        self.assertFalse(model["runtime_observed"])
+        self.assertEqual(model["record_stride"], "0x18")
 
     def test_window_summary_marks_cap_without_terminator(self) -> None:
         summary = summarize_window((0x005E).to_bytes(2, "little") * 4)

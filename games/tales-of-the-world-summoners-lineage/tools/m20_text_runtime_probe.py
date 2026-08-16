@@ -43,6 +43,12 @@ from m20_text_record_probe import (  # noqa: E402
 
 TEXT_STREAM_NULL_ENTRY = 0x080063E0
 TEXT_STREAM_FIXED_READ = 0x080063B6
+STATIC_RENDERER_ENTRY = 0x080049A0
+STATIC_RENDERER_RECORD_BASE = 0x08089E00
+STATIC_RENDERER_RECORD_STRIDE = 0x18
+STATIC_TERMINATOR_COMPARE = 0x08006404
+STATIC_LINE_ADVANCE_COMPARE = 0x0800640C
+STATIC_PATH_MODEL_VERSION = "m37-static-control-boundary-20260816.v1"
 ROM_BASE = 0x08000000
 ROM_END = 0x0A000000
 EWRAM_BASE = 0x02000000
@@ -85,6 +91,21 @@ def memory_region(address: int) -> str:
     return "other"
 
 
+def static_render_path(code_unit: int) -> str:
+    """Classify the proven 0x080063E0 dispatch path without naming glyphs.
+
+    The caller checks ``0x0000`` and ``0xFF70`` before invoking the shared
+    font-record renderer.  This is a static control-flow model, not a claim
+    that every stream has been observed at runtime.
+    """
+
+    if code_unit == NULL_CODE_UNIT:
+        return "terminator-0000"
+    if code_unit == LINE_ADVANCE_CODE_UNIT:
+        return "line-advance-ff70"
+    return "font-record-consumer-080049a0"
+
+
 def summarize_window(data: bytes) -> dict[str, object]:
     """Return bounded stream facts without returning unit values."""
 
@@ -95,10 +116,13 @@ def summarize_window(data: bytes) -> dict[str, object]:
     min_index: int | None = None
     max_index: int | None = None
     classes: dict[str, int] = {}
+    render_paths: dict[str, int] = {}
     for index in range(units):
         code_unit = int.from_bytes(data[index * 2:index * 2 + 2], "little")
         kind = code_unit_class(code_unit)
         classes[kind] = classes.get(kind, 0) + 1
+        path = static_render_path(code_unit)
+        render_paths[path] = render_paths.get(path, 0) + 1
         if code_unit == NULL_CODE_UNIT:
             terminated = True
             break
@@ -121,6 +145,16 @@ def summarize_window(data: bytes) -> dict[str, object]:
         "font_record_index_min": None if min_index is None else f"0x{min_index:04X}",
         "font_record_index_max": None if max_index is None else f"0x{max_index:04X}",
         "class_counts": dict(sorted(classes.items())),
+        "static_render_path_counts": dict(sorted(render_paths.items())),
+        "static_path_model": {
+            "version": STATIC_PATH_MODEL_VERSION,
+            "renderer_entry": hex32(STATIC_RENDERER_ENTRY),
+            "record_base": hex32(STATIC_RENDERER_RECORD_BASE),
+            "record_stride": f"0x{STATIC_RENDERER_RECORD_STRIDE:X}",
+            "terminator_compare": hex32(STATIC_TERMINATOR_COMPARE),
+            "line_advance_compare": hex32(STATIC_LINE_ADVANCE_COMPARE),
+            "runtime_observed": False,
+        },
         "source_text_emitted": False,
     }
 

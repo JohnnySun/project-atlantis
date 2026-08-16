@@ -26,6 +26,22 @@ M36 完成目前兩條 known-screen 人名 row 的官方／獨立來源稽核；
 或巴哈姆特的直接角色條目，因此工作目標保留官方 Latin、狀態維持
 `terminology-pending`，不自行創造漢字音譯。完整稽核見
 [`research/terminology-audit-20260816.md`](research/terminology-audit-20260816.md)。
+M37 再把既有 `0x080063E0` consumer 的靜態 dispatch 固定成 `0x0000` terminator、
+`0xFF70` line advance、其他非零 unit→`0x080049A0` font-record consumer 三條路徑，
+並以固定 UI raster 取得兩個 bounded CJK mapping；這不是 general codepage、非 UI
+scene proof 或 runtime reader receipt。23901 的一次 fresh A9PJ mGBA 啟動在 socket
+建立階段失敗，沒有把該環境失敗當成文字路徑陰性。詳見
+[`research/m37-static-renderer-control-boundary-20260816.md`](research/m37-static-renderer-control-boundary-20260816.md)。
+M38 以同一個 M34 known-screen proof 把第二條人名 row 的私有 working record 經
+`strip_translations.rb` 接成 `translations/m34-ui-row.jsonl`；目前兩條 ledger row
+都只含 `source_hash`，不含 source。巴哈姆特 GNN 的臺灣報導採用 `Fulein Lester`，
+所以 bounded `zh-TW` target 暫保留官方 Latin，不自行造漢字音譯；一般碼頁、非 UI
+scene、patched runtime QA 與完整術語表仍未完成。詳見
+[`research/m38-bounded-ledger-terminology-20260816.md`](research/m38-bounded-ledger-terminology-20260816.md)。
+M39 又以本機既有 standard mGBA／SDL binary 和兩個獨立 port shim 做一次 bounded
+listener fallback；24567／25351 都在 GDB socket 建立階段失敗，未送出 packet，也
+沒有把它誤寫成 text-reader negative。2345 的其他 mGBA 未觸碰。詳見
+[`research/m39-mgba-runtime-port-boundary-20260816.md`](research/m39-mgba-runtime-port-boundary-20260816.md)。
 M1.7 的完整 writer／DMA／BG1 negative receipt 見
 [`research/m17-font-record-to-vram-20260816.md`](research/m17-font-record-to-vram-20260816.md)。
 M1.8 從 reset 觀察 BG1CNT、BG1 tile 與 DMA control：證明一個 reset-stage BIOS copy
@@ -154,6 +170,59 @@ semantic／glyph identity 尚未完成。
   `bounded-known-screen-only`、general codepage、control semantics 與 runtime context
   仍未確認。詳見
   [`research/m35-known-ui-decoder-20260816.md`](research/m35-known-ui-decoder-20260816.md)。
+- M45 的 `--known-static-ui-only` 是另一個 fail-closed fixed mode；它把 M37 的
+  `0x1FA35E` start-menu raster 納入，A9PJ clean ROM 上固定 rows 為 `3/3` terminated、
+  `3/3` complete，並只新增 `U+6700`、`U+521D`、`U+30FC` 的 bounded static phrase
+  identity。此 mode 明確維持 `eligible_for_ledger=false`，不改變 broad candidate 或
+  M32/M34 ledger gate。
+- M37 重用既有 M20 probe 加入 static dispatch metadata；`0x0000`、`0xFF70` 與
+  `0x080049A0` record path 明確分欄，純測試不輸出 code units 或 source。固定
+  `0x1FA35E` raster 只提供兩個 CJK static-context mapping，非 UI／general codepage
+  仍關閉；23901 startup socket failure 只記為 infrastructure boundary。詳見
+  [`research/m37-static-renderer-control-boundary-20260816.md`](research/m37-static-renderer-control-boundary-20260816.md)。
+- M38 將 M34 第二條 known-screen 人名 row 以 strip 後格式加入
+  `translations/m34-ui-row.jsonl`，與 M32 共同形成兩列最小 ledger POC；restore／strip
+  保留 stable ID／source hash 且不帶 `source`。Bahamut GNN 的臺灣來源與官方 Latin
+  一致，故 bounded target 暫保留 `Fulein`／`Lester`，不是完整術語核定。詳見
+  [`research/m38-bounded-ledger-terminology-20260816.md`](research/m38-bounded-ledger-terminology-20260816.md)。
+- M39 以既有 standard mGBA／SDL 與兩個獨立 port fallback 做 runtime startup boundary：
+  24567／25351 均無 listener，2345 其他 session 未觸碰；沒有宣稱 reader、DMA 或
+  VRAM negative。詳見
+  [`research/m39-mgba-runtime-port-boundary-20260816.md`](research/m39-mgba-runtime-port-boundary-20260816.md)。
+- M40 重用既有 headless mGBA Lua bridge，以 fresh process 與單一 bounded key schedule
+  穩定重現 name-entry keyboard：`DISPCNT=1B40`、`BG1CNT=0106`、tilemap `8/8`、
+  runtime tile hash `2/2`，並觀察 `0x005E→0x0062→0x0066` code-unit sequence。Lua
+  watchpoint registration `0/3` 的陰性只代表未載入 debugger module；既有 M1.7 BG0
+  font-record consumer 與 M40 BG1 keyboard asset 維持 independent renderers。詳見
+  [`research/m40-headless-keyboard-gate-20260816.md`](research/m40-headless-keyboard-gate-20260816.md)。
+- M41 沿既有 46 筆 direct rows 只重畫兩條固定 UI selection prompt，以共同 raster 片段
+  交叉確認 9 個 bounded code-unit→Unicode identity，並把 `0x0003` 判為字型句點、
+  與 `0x0000` terminator／`0xFF70` line advance 分開。這是 static UI mapping，沒有
+  新 ledger row 或 general codepage 宣稱。詳見
+  [`research/m41-static-ui-phrase-mapping-20260816.md`](research/m41-static-ui-phrase-mapping-20260816.md)。
+- M42 將 M41 mapping 接回既有 M21 decoder 的 `--known-static-ui-only` 固定模式；
+  clean A9PJ 上 `2/2` rows、terminator、complete mapping 均通過，但
+  `eligible_for_ledger=false`，不改變 M32/M34 兩列 gate。詳見
+  [`research/m42-fixed-static-ui-decoder-20260816.md`](research/m42-fixed-static-ui-decoder-20260816.md)。
+- M43 建立術語矩陣：主角沿官方 Latin／巴哈姆特臺灣用法保留 `Fulein`／`Lester`，
+  `クラース` 的社群分歧、其他角色與本作專名均保留 pending，不把簡中攻略或近年
+  AI 故事文當 zh-TW 翻譯來源。詳見
+  [`research/terminology-matrix-20260816.md`](research/terminology-matrix-20260816.md)。
+- M44 在同一 headless fresh process 對 `0x080063E0` 做單一 software breakpoint
+  註冊；Lua id `-1`、hits `0`，但 M40 keyboard gate 與 tile hash 仍重現。這是
+  debugger capability boundary，不是 text-consumer negative；停止重試同一路徑。
+  詳見 [`research/m44-headless-breakpoint-boundary-20260816.md`](research/m44-headless-breakpoint-boundary-20260816.md)。
+- M45 重用同一個 fixed static decoder，將 M37 已核對的 `0x1FA35E` start-menu
+  raster 接回；A9PJ clean ROM 上 `3/3` rows terminated、`3/3` complete，新增
+  bounded `0x028B→U+6700`、`0x0311→U+521D`、`0x000C→U+30FC`。這仍是 static
+  phrase context，不是 general CJK codepage、non-UI scene、live reader 或 ledger
+  row。詳見 [`research/m45-fixed-static-start-menu-20260816.md`](research/m45-fixed-static-start-menu-20260816.md)。
+- M46 以官方角色／產品頁補齊 research-only 系統詞與職業候選矩陣；`ユニット`、
+  `召喚術`、`召喚士`、`遺品`、`クラスチェンジ` 與職業名都保留 pending／candidate，
+  尚未因外部頁面直接建立 A9PJ translation row；同輪重跑 M32/M34 target profiles，
+  BPS apply `2/2` byte-identical。詳見
+  [`research/terminology-matrix-20260816.md`](research/terminology-matrix-20260816.md)
+  與 [`research/m46-terminology-bps-regression-20260816.md`](research/m46-terminology-bps-regression-20260816.md)。
 
 ## ROM 基準
 

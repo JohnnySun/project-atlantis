@@ -219,10 +219,137 @@
   音譯，也不把這個結果外推成完整術語表。詳見
   [`research/terminology-audit-20260816.md`](research/terminology-audit-20260816.md)。
 
+## 里程碑 2A.1：靜態 renderer／控制碼邊界（M37）
+
+- [x] 重用既有 M20 probe 與 `0x080063E0`／`0x080049A0` disassembly，固定
+  `0x0000` terminator、`0xFF70` line-advance 與其他非零 unit→font-record consumer
+  的 dispatch model；`0x0003` 等 unit 不再因頻率直接標成 control。
+- [x] 以既有 `0x1FA35E` bounded UI raster 對兩個 CJK record 做 static-context
+  mapping receipt；不建立新 candidate layer、不增加 ledger eligible row，general
+  codepage、非 UI scene 與 runtime reader 仍未完成。
+- [x] 一次有界 fresh A9PJ mGBA 啟動在 `23901` socket startup 失敗；保留為
+  infrastructure boundary，不冒充 runtime path negative。
+
+## 里程碑 2B.1：bounded ledger／臺灣 Latin 術語切片（M38）
+
+- [x] 重用 M34 fixed source-pointer／record-raster／BG0 tilemap proof，把第二條
+  known-screen 人名 row 經 `strip_translations.rb` 寫入
+  `translations/m34-ui-row.jsonl`；提交列只有 `source_hash`，沒有 `source`。
+- [x] 以 Wikipedia zh-tw、巴哈姆特 GNN、官方頁面與獨立資料重新核對 bounded 人名；
+  臺灣 GNN 與官方一致採用 `Fulein Lester`，因此 `zh-TW` 目前保留官方 Latin，
+  不自行創造漢字音譯。完整術語表仍未完成。
+- [x] 在本機重新執行 M35 known-screen decoder、restore／strip 與 schema／safety
+  檢查；兩列 stable ID／source hash 可重建，提交檔不含 source。
+
+## 里程碑 2B.2：runtime listener fallback boundary（M39）
+
+- [x] 只啟動本 session 指向 A9PJ 的既有 standard mGBA／SDL process；確認 2345
+  為其他 session listener，未連線、未停止、未重用。
+- [x] 以既有 `/private/tmp` port shim 做一次有界 `24567`／`25351` fallback；兩者
+  都在 GDB socket 建立階段失敗，自己的 process 已停止，沒有把它寫成 text-reader
+  或 VRAM consumer negative。
+- [x] 固定 runtime unavailable boundary：不再盲試同一 listener；回到 M32/M34
+  fixed known-screen source／ledger 證據，existing eligible rows 維持 `2`。
+
+## 里程碑 2A.3：headless keyboard gate／code-unit correlation（M40）
+
+- [x] 重用既有 headless mGBA Lua bridge，在 fresh A9PJ process 以 bounded key schedule
+  重現 `DISPCNT=0x1B40`、`BG1CNT=0x0106`、BG1 keyboard tilemap `8/8`，並以 runtime
+  tile SHA-256 `b5ae4440…c1ff39c2`／`924e2894…293c19f7` 與既有 keyboard asset
+  交叉；raw log／Lua 腳本仍在 `/private/tmp`。
+- [x] 以 EWRAM polling 取得同一畫面的 `0x005E→0x0062→0x0066` sequence，分開記錄
+  code-unit、glyph asset hash、keyboard position 與 renderer path；未把 polling
+  callback PC/LR 當成文字 caller。
+- [x] 明確保留 Lua watchpoint registration `-1/-1/-1` 的精確陰性：headless 未附
+  debugger module，不能據此宣稱無 reader／CPU writer／DMA。
+- [x] 將 M40 BG1 asset 與 M1.7 `0x080063C7`→BG0 font-record CPU renderer 分類為
+  `independent-renderers-correlated-by-code-unit-only`；沒有 shared caller 或
+  source→VRAM receipt，不合併 codepage。
+- [ ] 取得 direct reader／consumer 或獨立 non-UI scene／control consumer；在此之前
+  M40 不增加 general codepage、control schema、candidate layer 或 ledger row。
+
+## 里程碑 2A.4：bounded static UI phrase mapping（M41）
+
+- [x] 重用既有 M24/M27 direct rows 與 M23 16×12 renderer，只對 `0x1FAA24`／
+  `0x1FA1DC` 兩列做固定 raster cross；兩列各自 terminated、raster hash 與
+  source-stream hash 可重算。
+- [x] 以兩條獨立 prompt 的重複片段固定 9 個 static phrase mapping：攻、撃、ッ、を、
+  選、ん、で、だ、。；不把不同 code unit 的 record 靜默合併，也不把這些 mapping
+  外推成 general codepage。
+- [x] 將 `0x0003` 從這兩列的 unresolved control candidate 分類為
+  `static-glyph-punctuation`；`0x0000` terminator 與 `0xFF70` line advance 維持
+  獨立欄位。
+- [x] 兩個 caller 只提升為 `ui-selection-prompt-static`；new ledger-eligible rows
+  `0`，existing M32/M34 `2` 不變，沒有建立 source table／翻譯 row。
+- [ ] 取得獨立 non-UI（地圖／事件、角色或戰鬥資料）scene role，或 live reader／
+  consumer receipt，才可把 bounded mapping 接入更大的 source table。
+
+## 里程碑 2A.5：fixed static UI decoder（M42）
+
+- [x] 直接擴充既有 `m21_source_decoder.py`，加入 `--known-static-ui-only`；只接受
+  A9PJ hash、兩個固定 offset／unit sequence／terminator／source hash，不增加新的
+  broad candidate 或 provisional overlay。
+- [x] clean ROM receipt 為 rows `2/2`、terminated `2/2`、complete mapping `2/2`、
+  `eligible_for_ledger=false`；M32/M34 的 known-screen ledger gate 保持 `2`。
+- [x] 為 fixed mapping／ROM drift／ineligible boundary 補 game-specific tests；含
+  source 的 decoder output 仍只在 ignored／`/private/tmp`。
+- [ ] 取得 non-UI scene 或 live reader／consumer receipt；完成前不把 M41/M42
+  static UI mapping 當成 general codepage 或完整 source table。
+
+## 里程碑 2C：術語矩陣與翻譯準備（M43）
+
+- [x] 以官方 Bandai Namco 日文角色頁、巴哈姆特臺灣報導／系列資料、臺灣玩家論壇
+  與其他旁證建立專名矩陣；每項記錄來源、zh-TW 工作值與分歧，不把英文攻略當原文
+  翻譯來源。
+- [x] `Fulein`／`Lester` 的 bounded Latin target 維持既有決策；`クラース` 的
+  `古拉斯`／`克拉斯` 分歧與 `マカロン` 等未形成臺灣多數者維持 pending。
+- [x] generic term `契約の指輪` 只列 `契約戒指` translation candidate，尚未因術語
+  表而建立 ledger row 或回插。
+- [ ] 完成角色、地名、職業、技能、道具、戰鬥與地圖術語的逐項 source-row 對照；
+  需先有 non-UI scene／完整 codepage 或 runtime reader proof。
+
+## 里程碑 2A.6：headless software-breakpoint boundary（M44）
+
+- [x] 在與 M40 相同的 fresh headless A9PJ process 只設一個 `0x080063E0` software
+  breakpoint；Lua registration id `-1`、hit `0`，未送 GDB packet、未寫遊戲 memory。
+- [x] 同一 run 的 keyboard gate、`8/8` tilemap、`2/2` tile hash 與
+  `0x005E→0x0062→0x0066` sequence 可重現；callback PC/LR 不誤列為 caller。
+- [x] 將 M39 listener startup failure、M40 polling gate 與 M44 debugger capability
+  negative 分欄；停止盲目重試同一 headless breakpoint，不增加候選層。
+- [ ] 取得真正 direct reader／consumer receipt；若仍不可用，必須以獨立 static
+  source／target／round-trip 證據逐步擴大翻譯，而不能把 M44 當成 runtime QA 完成。
+
+## 里程碑 2A.7：fixed static start-menu source slice（M45）
+
+- [x] 重用 M21 `--known-static-ui-only`，把既有 M37 `0x1FA35E`／`0x0801A2B0`
+  raster 固定接回 decoder；沒有新增 pointer scan、provisional overlay 或候選 row。
+- [x] 以 source-stream SHA、M23 raster SHA、固定 `0x0000` terminator 與 record
+  arithmetic fail-closed；fixed static rows 為 `3/3` terminated、`3/3` complete。
+- [x] 在該短句的已知假名 anchor 與 record raster context 下，新增 bounded
+  `0x028B→U+6700`、`0x0311→U+521D`、`0x000C→U+30FC`；status 仍是
+  `confirmed-static-phrase`，不是 general CJK codepage 或 runtime identity。
+- [x] decoder version 升至 `m45-known-static-ui-decoder-20260816.v1`；含 source 的
+  output 仍只留 `/private/tmp`，tracked research 只存 hash／offset／mapping status。
+- [ ] 取得 non-UI scene／live reader，或建立可獨立核對的 zh-TW target glyph/font
+  policy 與 bounded target round-trip；M45 不增加 ledger row。
+
+## 里程碑 2C.1：官方系統詞準備矩陣（M46）
+
+- [x] 以官方角色／產品頁補齊目前可確認的角色、職業與系統短詞 research-only
+  entries；每項保留 `candidate`／`pending` 狀態，不把官方日文頁當成 A9PJ source row。
+- [x] 將 `ユニット`、`召喚術`、`召喚士`、`遺品`、`クラスチェンジ` 與官方職業名分開
+  記錄，避免把術語候選、專名與 glyph identity 混成同一層。
+- [x] 重跑既有 M32/M34 bounded Latin target profiles：BPS `2/2` apply 後 image
+  byte-identical，保留原 source span 與 terminator；這是 plumbing regression，不是
+  CJK encoder 或 patched runtime QA。
+- [ ] 為每個候選取得 A9PJ non-UI source offset／code-unit sequence、臺灣多來源核對與
+  寬度／控制碼 receipt；M46 不建立 ledger 或翻譯 row。
+
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
-- [x] 先完成目前已證實人名 row 的 Wikipedia zh-tw、Bahamut 可用性與其他獨立來源
-  稽核；沒有形成臺灣主流多數時保留官方 Latin 工作名並記錄分歧，不自行定案。
+- [x] 先完成目前已證實人名 row 的 Wikipedia zh-tw、Bahamut GNN 可用性與其他獨立
+  來源稽核；臺灣來源採用官方 Latin、沒有形成漢字主流多數時保留 Latin 工作名並
+  記錄分歧，不自行定案。
   完整角色／地圖／技能術語仍待一般文字覆蓋率。
 - [ ] 建立人名、地名、角色、職業、技能、道具、戰鬥與地圖術語表。
 - [ ] 以 `restore_translations.rb` 產生本機工作記錄，逐條補上 `zh-TW` 譯文、
