@@ -1,0 +1,543 @@
+{
+  "bounded_caller_cohorts": [
+    {
+      "anchored_function_start": false,
+      "caller_function_start": null,
+      "candidate_count": 300,
+      "candidate_instruction_index_sha256": "4abb18f3b18dfca12b5768a4293863875a59549e2a05bda04411bbc86039fd3d",
+      "cohort_id": "unanchored",
+      "record_count": 203,
+      "record_id_index_sha256": "ba5b6793411d3650dd4adc09c0342c3ee5f3653477bf61e9ef9b2060f8fd5b48",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 60,
+        "glyph_only_narrow": 74,
+        "glyph_only_wide": 112,
+        "opaque_or_unaligned": 54
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08031EB0",
+      "candidate_count": 10,
+      "candidate_instruction_index_sha256": "222acce4877d9e522f645fa14f71a71f7adc84c1c0183d6b41cbae4c8358f017",
+      "cohort_id": "0x08031EB0",
+      "record_count": 10,
+      "record_id_index_sha256": "4d1e73cef8f079ba34585dafbdee1c330f2def4631583874427541d406195af7",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_narrow": 2,
+        "glyph_only_wide": 8
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080438A8",
+      "candidate_count": 9,
+      "candidate_instruction_index_sha256": "54cb7e7941a77862e293211189ce63d913768fe8b06de5d198ddc8e230359cf2",
+      "cohort_id": "0x080438A8",
+      "record_count": 9,
+      "record_id_index_sha256": "1b02b099ecd42bdab715c793dde6789767daa4985e8437b9b9a4bc04fa741431",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 3,
+        "glyph_only_wide": 6
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08043FD4",
+      "candidate_count": 9,
+      "candidate_instruction_index_sha256": "52b8b7962ce5ec36a25ca1f32381a4907c97e8556761c6ca35974d304c340ee2",
+      "cohort_id": "0x08043FD4",
+      "record_count": 9,
+      "record_id_index_sha256": "ec1697855008690f86e99c1530d5fe9c72770105ac6742a769f01a5beb349df8",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 9
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08042A54",
+      "candidate_count": 8,
+      "candidate_instruction_index_sha256": "ba3d77ac0abc5cd9e61d1fbb10c9792db13dd209ecfade70090e9ee59d04b033",
+      "cohort_id": "0x08042A54",
+      "record_count": 8,
+      "record_id_index_sha256": "7f0b8ddb7846b658db249a9136528516e69f95dce52a0ae60970c4a2cb8f3bfa",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 2,
+        "glyph_only_narrow": 2,
+        "glyph_only_wide": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08065E14",
+      "candidate_count": 8,
+      "candidate_instruction_index_sha256": "1bfbbb7d96824f78db00c30cd8a2722b044a486b5d62d800d8396588b0a364fc",
+      "cohort_id": "0x08065E14",
+      "record_count": 8,
+      "record_id_index_sha256": "0df21d25e86441ec6c736e036460905ecd29b85aab7225bc31424f4075376062",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 4,
+        "glyph_only_narrow": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08034094",
+      "candidate_count": 7,
+      "candidate_instruction_index_sha256": "6ba7129d8ab8c5443726b517ba09c9787b20e617dd78a7a2e8b55de198d9b615",
+      "cohort_id": "0x08034094",
+      "record_count": 7,
+      "record_id_index_sha256": "6e395d13c69d0feda273dffb8cb6110d00f264c217aa78e1adc588b22c37eda9",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 6,
+        "glyph_only_narrow": 1
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0804C16C",
+      "candidate_count": 7,
+      "candidate_instruction_index_sha256": "dd4a8fedf280afa8677e9605fe83dbd132d6eadc3b4fa5d9d5388d803f78e687",
+      "cohort_id": "0x0804C16C",
+      "record_count": 6,
+      "record_id_index_sha256": "25e742de3f67d5ad55a6aa7434d0e348432d2bb549d197ffdb98703a3f6a1e4d",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_narrow": 6
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08064964",
+      "candidate_count": 7,
+      "candidate_instruction_index_sha256": "e13c60c7850c6376b2f7dd79e751ac4e49284a637fd2b0b4794cf32f9316e27b",
+      "cohort_id": "0x08064964",
+      "record_count": 7,
+      "record_id_index_sha256": "6ba9cc560b3f96d7d25a2f9eeb5d193e7c5f2fc805eb72926bda617d5dde2f87",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 2,
+        "glyph_only_narrow": 2,
+        "glyph_only_wide": 2,
+        "opaque_or_unaligned": 1
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0800F474",
+      "candidate_count": 6,
+      "candidate_instruction_index_sha256": "4c390932477939dd64726bf3b390e3e3ee061f895fb89c677d1923160116ddbb",
+      "cohort_id": "0x0800F474",
+      "record_count": 6,
+      "record_id_index_sha256": "1fa0d0b67b392b636d3639a347ecd65ca0df6801c52fa81d7e209d3cdd89394a",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_narrow": 6
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080373C0",
+      "candidate_count": 6,
+      "candidate_instruction_index_sha256": "e70088cda5ebfe814ae1879bb52d1f720dae2940065a7f18f72c6b0d8b74fc61",
+      "cohort_id": "0x080373C0",
+      "record_count": 6,
+      "record_id_index_sha256": "65c04709b8adbdf2f536b31c00b6b76c48ab2b0b88ccaea64225e44cd604a5f8",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_narrow": 1,
+        "glyph_only_wide": 5
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0803A7A8",
+      "candidate_count": 6,
+      "candidate_instruction_index_sha256": "8d8db65080ef2e04b12278b42dc0eecf32f43b79a0eb5c233c3dbcf9d03db07f",
+      "cohort_id": "0x0803A7A8",
+      "record_count": 6,
+      "record_id_index_sha256": "d7477cc140aa6da1d2f6b8ee5ca1320b3b0bcfff6aea558cd983c583bb1b1917",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_narrow": 1,
+        "glyph_only_wide": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08044538",
+      "candidate_count": 6,
+      "candidate_instruction_index_sha256": "5a2eff5f1c15d2c7b50ea1f8fe428ceb03be965c54e371dc2c2d4e30aad33660",
+      "cohort_id": "0x08044538",
+      "record_count": 5,
+      "record_id_index_sha256": "dd40c698e3048a24c59b45a1ab4f3d7f45f5b48e25e6bb89a0ae8c58512e768b",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_wide": 6
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080449AC",
+      "candidate_count": 6,
+      "candidate_instruction_index_sha256": "6d169b49991d0ecf5859d0c57b75987d9fffe4305879475fe5e9e13a5ad785ac",
+      "cohort_id": "0x080449AC",
+      "record_count": 6,
+      "record_id_index_sha256": "fb907609095a02781d427722c4fabd8e3ec32c9fab99cc5a4e9ddb055967b22d",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 4,
+        "glyph_only_wide": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0803B0AC",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "43cda705de7498910e2c08a95e05f9ad39d4fdc6f5e166504667721a9b4169b4",
+      "cohort_id": "0x0803B0AC",
+      "record_count": 5,
+      "record_id_index_sha256": "ca21ad3d09a5bf8b1d8113559c430c94fda5cad5ba7f4eb38ddab81452232bc5",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_narrow": 1,
+        "glyph_only_wide": 3
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080403C0",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "873d70359a78133379ad7f9c6964c142b75c6f018c7b1b251720c01710eb6e20",
+      "cohort_id": "0x080403C0",
+      "record_count": 5,
+      "record_id_index_sha256": "c944ed4d9bbd33e6a94dbf422a20667cd70a0456ff6564f99834f02a680eea39",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 2,
+        "glyph_only_narrow": 1,
+        "glyph_only_wide": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08040E98",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "d4353678b185bcec556e11aa5f51e881e30050999e58007a30a895ef76b6f3f1",
+      "cohort_id": "0x08040E98",
+      "record_count": 5,
+      "record_id_index_sha256": "aeecb40b045f9506478046ccb667ccde3988d4ff4b91994015876f6a1254f7b6",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 5
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0804167C",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "f56c2c246408886d48196af5394a973cd48ac3d7c1f14d891109acc5c50e866f",
+      "cohort_id": "0x0804167C",
+      "record_count": 5,
+      "record_id_index_sha256": "ce7eef6a2c29436878cf3e70f81200d59f106af5ded64d6898e449c3cb8c01ef",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_wide": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08041B34",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "d347ad36470a6efd0a929ac05b00de904facfaf31f1e77449651e0e396426ace",
+      "cohort_id": "0x08041B34",
+      "record_count": 5,
+      "record_id_index_sha256": "2f564f6b4abc128f9a63e52810c56d3c15e9b4840d458760a953bf0eb1e6c744",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 3,
+        "glyph_only_wide": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08041E58",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "6deaeab90a441f4ae751c8da2d5a8185f6a81000ca47ab3b10a052e7c96930b4",
+      "cohort_id": "0x08041E58",
+      "record_count": 5,
+      "record_id_index_sha256": "939a2dd29abf508bd83881e80ca11a328760dce0dd17d9822a0c29df03b30658",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_wide": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080661F0",
+      "candidate_count": 5,
+      "candidate_instruction_index_sha256": "f92c878bd92089632dc0a576162a3717dade25006ccb4fa0c7828e476582c5b3",
+      "cohort_id": "0x080661F0",
+      "record_count": 4,
+      "record_id_index_sha256": "788628118bbc4206688a564e6d24fc00b8871c210c998dcae40d0646f1b0ec2c",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 3,
+        "glyph_only_narrow": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080300A8",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "568c4efb48381b19f70039dcfcf79447450ec9352fa80b1bc963111ab1fdfbff",
+      "cohort_id": "0x080300A8",
+      "record_count": 3,
+      "record_id_index_sha256": "77b94bc465e9499e48dc6d9688f6e0897765a9e3cc62d31889b9fab4cbe9ab12",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_narrow": 1,
+        "glyph_only_wide": 3
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08030EA4",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "d60a51468771715d724c6351f42f1c8981160b48b79a8b8e759717949d72b65b",
+      "cohort_id": "0x08030EA4",
+      "record_count": 4,
+      "record_id_index_sha256": "d07e4b943fd4eb6e456020f6c8da41c8db0045095c4b03d1248c5bb329646106",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0803E730",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "da17f3091e4a2babcdc77c3e9f43efce7a300c9d7c2cd60e5ab3d3a96abd6371",
+      "cohort_id": "0x0803E730",
+      "record_count": 3,
+      "record_id_index_sha256": "c52bea5990d128e5af11c2b136d97b4f8f15d56517851219a026fe383733ed49",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x0803FB20",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "56eb73c45aceb389c8096be9f2cf2d705ec3fd367d4ebb1eb2758456f909f4a9",
+      "cohort_id": "0x0803FB20",
+      "record_count": 4,
+      "record_id_index_sha256": "c7aa3eacf60bb9e8ee331f8103661c1589645dca57687ce8ced9b0b626b4fe91",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_narrow": 1,
+        "glyph_only_wide": 3
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080401A8",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "c2c9923267040a12ed7f9258779ca882c71649bbe2b1db6e33067fd31d59a2ff",
+      "cohort_id": "0x080401A8",
+      "record_count": 4,
+      "record_id_index_sha256": "42dbc270ade9adef7f5f027722de0d6ad84985c4612aa9ecd5d58fb781630989",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 4
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08043294",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "af25e68f7ace3541f9c09f15b02d3f1a6601d2b266ac30c0a20220c2a254340b",
+      "cohort_id": "0x08043294",
+      "record_count": 4,
+      "record_id_index_sha256": "2d14ca605c63e62719ad0453f830e83bbee3f46132e2e6097be631d9ce84bdcb",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_narrow": 2,
+        "glyph_only_wide": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08043DFC",
+      "candidate_count": 4,
+      "candidate_instruction_index_sha256": "f4214d4b5d4db4b25235d3efd0f6d167881bfb3dbea2150812293534f2386557",
+      "cohort_id": "0x08043DFC",
+      "record_count": 4,
+      "record_id_index_sha256": "fd95c40465841c72b4faf75f25224e8103c0ebf13d7ef18e920cb0ead21063c2",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 2,
+        "glyph_only_wide": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08006490",
+      "candidate_count": 3,
+      "candidate_instruction_index_sha256": "d940062bb60374ce15bf63dfb4519b4f2c9e6db172cb798063a48b3df8ad8210",
+      "cohort_id": "0x08006490",
+      "record_count": 3,
+      "record_id_index_sha256": "5bfa2f3ebd4bd6a7485e0b00088350eba4d227909b28552a22a533d44fc8865f",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "opaque_or_unaligned": 3
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080310C8",
+      "candidate_count": 3,
+      "candidate_instruction_index_sha256": "5ae495a0f2af419e9e3a705dba267bfc7675fd18afd38a25b3fe7ac07d4f2168",
+      "cohort_id": "0x080310C8",
+      "record_count": 3,
+      "record_id_index_sha256": "0c3606015da6eb6bea6da95f9c0bc65b223e220c50660a8d11d3dcc6a8eb195e",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_wide": 3
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x080391AC",
+      "candidate_count": 3,
+      "candidate_instruction_index_sha256": "77dc41a94d45dd0140a2fc9c849ff410093d5ed18d70a804358bb28e79540f67",
+      "cohort_id": "0x080391AC",
+      "record_count": 3,
+      "record_id_index_sha256": "42129ef9f471cb78e625cfe8d285537c9b2828a57d7edf720ca02532b3533f9a",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_narrow": 2
+      }
+    },
+    {
+      "anchored_function_start": true,
+      "caller_function_start": "0x08039F78",
+      "candidate_count": 3,
+      "candidate_instruction_index_sha256": "f1c5e80a5c550178abf436172f39ac40b81fde86d35fdf1917cab2fa11d23e22",
+      "cohort_id": "0x08039F78",
+      "record_count": 3,
+      "record_id_index_sha256": "406a85fddad3c2701e450978282ee961a4b22bc5a40a3be5e4b0e7dabafed8a1",
+      "semantic_label": "unconfirmed",
+      "structural_partition_counts": {
+        "glyph_only_mixed": 1,
+        "glyph_only_wide": 2
+      }
+    }
+  ],
+  "game_code": "A6SJ",
+  "gate": {
+    "all_exact_candidates_partitioned": true,
+    "pointer_report_reused_without_rescan": true,
+    "rom_hash_match": true,
+    "semantic_translation_complete": false,
+    "source_record_count_2325": true,
+    "source_text_emitted": false
+  },
+  "partition_coverage": {
+    "glyph_only_mixed": {
+      "exact_pointer_occurrence_count": 160,
+      "exact_pointer_record_count": 126,
+      "exact_record_id_index_sha256": "c4c95dfe05bd0662e3aa77c9deb1d2b162502afb5fc06b88762eef4e8b0e97dd",
+      "total_record_count": 833,
+      "uncovered_record_count": 707
+    },
+    "glyph_only_narrow": {
+      "exact_pointer_occurrence_count": 180,
+      "exact_pointer_record_count": 83,
+      "exact_record_id_index_sha256": "3db5fe56c80e4d829e19169d246bc7b6e4c1b4d2fd5f50f93895e00d0d49416e",
+      "total_record_count": 939,
+      "uncovered_record_count": 856
+    },
+    "glyph_only_wide": {
+      "exact_pointer_occurrence_count": 206,
+      "exact_pointer_record_count": 101,
+      "exact_record_id_index_sha256": "707f8fed940ec3948a19956110d75f7677051acb9b166e550729da80cab350c5",
+      "total_record_count": 417,
+      "uncovered_record_count": 316
+    },
+    "opaque_or_unaligned": {
+      "exact_pointer_occurrence_count": 63,
+      "exact_pointer_record_count": 60,
+      "exact_record_id_index_sha256": "3308ac459650fe32764a23f54ad698faf4291e1a212be3c37fadd18b76652486",
+      "total_record_count": 136,
+      "uncovered_record_count": 76
+    }
+  },
+  "pointer_join": {
+    "all_cohort_candidates_covered": true,
+    "anchored_candidate_count": 309,
+    "caller_cohort_count": 123,
+    "caller_cohort_index_sha256": "e1f752dd12ca488277abf3d50a1e1d4dcfc9333d43ad633ae089b1f465a8dbfd",
+    "exact_candidate_instruction_index_sha256": "05900b4abab03b5655c09569e6d84145f9638e69e7404852021f9875b753d27e",
+    "exact_source_candidate_count": 609,
+    "exact_source_record_count": 370,
+    "exact_source_record_id_index_sha256": "8edd85cb32f2486acdf1858dc4308e2ddb171d5d23b7b3db2eda11b5cd370fd6",
+    "unanchored_candidate_count": 300
+  },
+  "returned_cohort_limit": 32,
+  "rom": {
+    "expected_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "hash_match": true,
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84"
+  },
+  "runtime_coverage": {
+    "controlled_positive_source_record_count": 2,
+    "natural_caller_status": "not_observed",
+    "natural_screen_status": "pending",
+    "target_consumer_runtime_status": "not_proven"
+  },
+  "schema": "super-robot-taisen-d-m117-corpus-coverage-v1",
+  "semantic_partition": {
+    "battle_dialogue": "unconfirmed",
+    "branch": "unconfirmed",
+    "controlled_runtime_positive_is_not_semantic_label": true,
+    "natural_caller_coverage": "not_observed",
+    "story": "unconfirmed",
+    "ui": "unconfirmed",
+    "unit_pilot_weapon_spirit": "unconfirmed"
+  },
+  "source_corpus": {
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_count": 2325,
+    "record_id_index_sha256": "9525ea0db01754260c57d64746d2c2bc665b5239494526d3eb5d6371b42a831d",
+    "source_range": {
+      "end_exclusive": "0x08082490",
+      "start": "0x08076000"
+    }
+  },
+  "source_policy": {
+    "pointer_report_reused_without_rescan": true,
+    "semantic_labels_inferred": false,
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false
+  }
+}

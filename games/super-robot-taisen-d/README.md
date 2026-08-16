@@ -409,6 +409,12 @@ queue 觸發尚未取代這條受控驗證。
   315 筆窄字但超過 cap、833 mixed、417 wide、136 opaque／unaligned 仍拒絕。64px
   是 POC allocation cap，不是 engine 最大寬度證明；newline／speaker／branch／變長
   仍 opaque/reject，沒有因此新增翻譯。摘要在 [`research/m116-layout-safe-contract.json`](research/m116-layout-safe-contract.json)。
+- [x] M1.17 將既有 pointer-caller report 與全 corpus 做 source-safe coverage join：
+  2325/2325 structural partitions、609 exact candidates／370 records、123 caller
+  cohorts（309 anchored／300 unanchored）全數以 hash/count 覆蓋；各 partition 的
+  exact pointer coverage 分開保存，story／branch／battle／unit／UI 與 natural caller
+  仍 `unconfirmed`／`not_observed`。不重新掃描 pointer、不新增翻譯。摘要在
+  [`research/m117-corpus-coverage.json`](research/m117-corpus-coverage.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

@@ -711,6 +711,32 @@ runtime transport 捕捉 entry LR／r0，再以該 caller 做受控 source queue
 把 64px 外的窄字直接判定為引擎不支援；下一步仍需 caller／自然畫面或明確 callee
 state 證明實際 line layout，再決定是否能安全放寬 cap。
 
+## 2026-08-16：M1.17 full-corpus pointer／caller coverage matrix
+
+本輪只重用 ignored `work/pointer-caller-report.json` 與已提交的 M1.12 semantic report，
+沒有重新掃描 pointer。`tools/m117_corpus_coverage.py` 先重讀 clean ROM／strict source
+的 2325 筆 structural partition，再將 609 個 exact source candidates／370 個 records
+按 partition 與 function-start cohort join；完整 join 由 ID／instruction／cohort hash
+保存，tracked output 不含 source text。
+
+### 可重現結果
+
+| partition | total records | exact pointer records | exact occurrences | uncovered records |
+| --- | ---: | ---: | ---: | ---: |
+| glyph-only narrow | 939 | 83 | 180 | 856 |
+| glyph-only mixed | 833 | 126 | 160 | 707 |
+| glyph-only wide | 417 | 101 | 206 | 316 |
+| opaque／unaligned | 136 | 60 | 63 | 76 |
+
+全體 exact candidates 是 `609`、exact records `370`、caller cohorts `123`，其中
+anchored candidates `309`、unanchored `300`；所有 candidate 都落入某個 cohort，
+但 `natural_caller_status=not_observed`。story、branch、battle dialogue、
+unit/pilot/weapon/spirit、UI 全部保持 `unconfirmed`；controlled runtime positive
+只作 runtime evidence，不作語意標籤。
+
+這個 matrix 補的是覆蓋缺口與下一個 caller work queue，不是話數／分支／戰鬥／機體語意
+完成，也沒有解除 opaque／wide／newline／speaker／最大寬度的 fail-closed 邊界。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

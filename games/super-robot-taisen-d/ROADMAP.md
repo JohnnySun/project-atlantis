@@ -68,6 +68,12 @@
   筆 narrow over-cap、833 mixed、417 wide、136 opaque／unaligned 明確 reject。64px
   只是保守 static POC cap，`engine_width_limit_proven=false`；newline／speaker／branch
   與變長仍 reject，未開始新翻譯。摘要在 `research/m116-layout-safe-contract.json`。
+- [x] M1.17 重用既有 `pointer-caller-report.json`（不重新掃描）完成 full-corpus
+  coverage matrix：609 exact candidates 對應 370 records，123 caller cohorts（309
+  anchored／300 unanchored），2325 筆 structural partition 全數計入；各 partition 的
+  exact／uncovered record hash 分欄。story／branch／battle／unit／UI 與 natural caller
+  不由 pointer 命中推定，仍 `unconfirmed`／`not_observed`。摘要在
+  `research/m117-corpus-coverage.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
