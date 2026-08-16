@@ -444,6 +444,78 @@ category 的漢字字型表）與 `tools/render_string_glyphs.py`（渲染任意
 完整句子，套用全部已確認的 category 0/1/2/3 表）；用法見上方本節與
 `research/obj-sentence-kanji-categories.md`「證據與可重跑步驟」。
 
+## 第十一輪偵察（`category` 4 解出，`category` 5–15 確認為「未接上字形池」——任務指定的優先缺口已完成）
+
+完整分析、方法、逐點驗證與可重跑步驟見專門的 `research/
+obj-sentence-category4-and-dispatch-table.md`（分析結論，只列少量抽樣文字供人工核對，
+不含大段原文，可提交），此處只摘要重點。本輪目標：解出 session 10 明確留下的
+`category` 4（語料庫次高頻率，19 次，僅一個未驗證資料點）與 `category` 6–15
+（各 1–3 次出現，樣本太少）。
+
+**`category` 4：已解出，雙重獨立驗證，達到與 category 1/2/3 相同的嚴謹度**：
+
+1. **定址公式**：`glyph_rom_offset(index) = 0x4913e4 + index * 0x80`（與其他
+   四個 category 完全相同公式，只是 base 不同）。
+2. **方法 A（即時讀取 IWRAM 查表）**：反組譯字串走訪函式（`0x0800e8bc`）發現它
+   實際查詢一張存在 **IWRAM**（`0x030065f0`，執行期資料，純靜態分析找不到）的
+   16 格「category→per-category 結構指標」表，用新增工具
+   `tools/dump_category_dispatch_table.py` 連上執行中的 mGBA 直接讀出：
+   category 0–4 是非零指標，5–15 全部是 `0x00000000`。用 category 1/2/3 已知的
+   像素表 base 反推「表項 + `0x1820`＝像素表 base」，三點零自由參數精確吻合，
+   套用到 category 4 表項預測 base 為 `0x4913e4`。
+3. **方法 B（劫持字串指標＋即時擷取）**：新增工具
+   `tools/hijack_and_capture_glyph_sources.py`，對已知會反覆呼叫字串渲染的
+   職業選擇畫面攔截字串走訪呼叫，動態把 `r0` 覆寫成任意真實語料庫字串位址，
+   借用既有渲染管線處理任意輸入，不需要找到/導覽到真正顯示該句子的畫面。用
+   兩個完全獨立的真實語料庫 `category 4` 字元（`idx=16`、`idx=18`）測試，兩者
+   來源位址精確等於 `0x4913e4 + idx*0x80`，零自由參數，兩點完全吻合，與方法 A
+   互相印證（同一批擷取還順帶再次驗證了 category 3 的既有公式）。
+4. **視覺核對**：渲染 40 格（`research/obj-kanji-cat4-table.png`），index 1–15
+   是清楚的 RPG 屬性縮寫（RES／ATK／DEF／DEX／STR／VIT／INT）與狀態圖示、HP／SP，
+   index 16 起是複雜度與 category 1/2/3 一致的真正漢字，在 index 39 後乾淨截止，
+   與語料庫實際觀察到的最大 index（30）吻合，暗示這可能是系統／狀態選單專用的
+   字形池（推測，未從程式碼側驗證）。
+5. **語料庫驗證**：5 句先前完全無法閱讀的真實句子全部渲染成零缺口、完全通順的
+   日文，例如「ゲームを終了するとセーブされます」（結束遊戲時會自動存檔）、
+   「攻撃を仕掛ける事が難しくなります」（會變得難以發動攻擊），每個新解出的
+   漢字（了／失／別／妨／害／難）都精確落在語意合理的位置。
+
+**`category` 5–15：確認為「這個 JP ROM 版本沒有接上任何字形池」，不是「樣本不足」
+——任務明確歡迎的 pattern-breaks 負面結果**：
+
+- 方法 A 的 IWRAM 查表在標題畫面與姓名輸入畫面（相隔多個畫面切換）兩個時間點
+  讀出完全相同：只有 category 0–4 非零，5–15 恆為 `0x00000000`。
+- 全 ROM（`0x000000`–`0x660000`）套用與官方覆蓋率統計同一套可讀性篩選重新掃描，
+  category 5–15 唯一「像真文字」的例外落在 ROM `0x4a3202`／`0x4a3320` 這兩個
+  獨立條目（`cat7` 兩個條目各一次，合計 2 次；`cat15` 只在 `0x4a3202` 出現
+  1 次），內容都是內部五十音／片假名完整性核對用除錯字串（「こあこいこうこえ
+  こお…わをん」這種系統性版面），不是真對話；其餘全部落在已知真實文字區
+  （對話池、怪物名稱表）**以外**，且內容明顯是規律遞增的雜訊。
+- 兩種完全獨立方法（執行期記憶體讀取 vs. 全 ROM 靜態語料掃描）指向同一結論：
+  這些代碼值在這個 JP 版本裡是保留／未使用值，不是還沒找到定址公式的字形表，
+  不需要下一輪繼續嘗試湊公式。
+
+**語料庫覆蓋率**：對兩個已知真實文字區重新統計（新增可重用工具
+`tools/scan_category_stats.py`），`category` 0/1/2/3/4 合計涵蓋
+**8,723／8,726＝99.97%**（保守值，複用的既有 `hiragana_ratio()` 篩選器對片假名重
+的句子有假陰性，實際涵蓋率應更高），剩餘 0.03%（3 個代碼：`category` 7 兩次、
+`category` 15 一次）本身就是上述已確認的非對話除錯字串，不是還沒解出的真實
+內容缺口。
+
+**未解決（誠實記錄）**：category 4 表的精確上界未窮舉（視覺渲染窗口內乾淨截止於
+index 39，但有一個離群的 index 259 非空、內容未核實）；表項到像素表 base 之間
+`+0x1820` 偏移量代表的完整資料結構本輪未展開研究；category 4 疑似系統選單用途
+的推測未從程式碼側驗證。
+
+本輪新增三支工具：`tools/dump_category_dispatch_table.py`（讀取 IWRAM
+category 查表，純讀取／唯一寫入是按鍵注入用於導覽到更深畫面）、
+`tools/hijack_and_capture_glyph_sources.py`（劫持字串指標＋擷取逐字元來源位址，
+可重用於任何 category／任何語料庫字串，非 category 4 專用）、
+`tools/scan_category_stats.py`（含 `--readability-filter`，全 ROM 或指定範圍的
+category 頻率統計＋指定 category 的逐一命中列表）；`render_string_glyphs.py`／
+`extract_kanji_fonttable.py` 已加入 category 4 的表 base。用法見上方本節與
+`research/obj-sentence-category4-and-dispatch-table.md`「證據與可重跑步驟」。
+
 ## 中文譯名核對
 
 `game.yml` 的 `zh-Hans`／`zh-TW` 標題採用「光明之魂」，依專案「專有名詞音譯政策」核對後決定：巴哈姆特 ACG 資料庫（`acg.gamer.com.tw`，條目 `s=3915`）明確使用「光明之魂」；另有多個獨立中文遊戲站台（`indienova.com`、`99danji.com`、`sptuner.blogspot.com` 等）不約而同使用同一譯名，未發現任何分歧版本。維基百科中文版似乎沒有這款遊戲的獨立條目（查詢「光明與黑暗系列」條目及站內搜尋皆未命中），因此本次未能取得政策要求的「Wikipedia＋巴哈姆特」雙來源中的 Wikipedia 那一份；但多個獨立巴哈姆特以外站台一致無異議，已達到政策「不只看單一來源」的精神，故採用「光明之魂」而非留白或自創音譯。目錄檔名本身也是「光明之魂1」，與此結果一致（但目錄檔名本身不算獨立來源，只是佐證）。
@@ -600,6 +672,34 @@ python3 games/shining-soul-1/tools/render_string_glyphs.py \
   --out /tmp/sent.png --palette /tmp/<dump-dir>/04_after_file1_a.pal.bin --palbank 15
 ```
 
+第十一輪新增三支工具（用法與方法論見上方「第十一輪偵察」一節、`research/
+obj-sentence-category4-and-dispatch-table.md`、各自 docstring）：
+
+```sh
+# 讀取 IWRAM 裡的 category 查表（唯讀記憶體讀取；--screen name-entry 需要按鍵注入導覽，
+# 純讀取本身不寫 ROM 檔案），確認哪些 category 實際接有字形池
+/usr/bin/python3 games/shining-soul-1/tools/dump_category_dispatch_table.py --screen title
+# 需先背景啟動：/opt/homebrew/bin/mgba -g games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba &
+
+# 劫持職業選擇畫面的字串渲染呼叫，強迫渲染任意真實語料庫字串，擷取逐字元來源位址
+# （可重用於驗證任何 category，不限 category 4；--target 需為「行」起始位址，
+# marker>1 的多行條目需先用 extract_string_pool.walk_pool() 算出各行起點）
+/usr/bin/python3 games/shining-soul-1/tools/hijack_and_capture_glyph_sources.py \
+  games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba --target 0x08499e1a
+# 需先背景啟動全新的 mgba -g <rom>
+
+# category 頻率統計＋指定 category 逐一命中列表（純靜態，--readability-filter
+# 套用與官方覆蓋率統計同一套可讀性篩選，過濾掉 session 9 已知的假陽性雜訊）
+python3 games/shining-soul-1/tools/scan_category_stats.py \
+  games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba \
+  --ranges 0x499000-0x500000,0x460000-0x470000 --min-chain 3 --readability-filter
+
+# 擷取／渲染 category 4 字型表；render_string_glyphs.py 現在也支援 category 4
+python3 games/shining-soul-1/tools/extract_kanji_fonttable.py \
+  games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba --category 4 --count 40 \
+  --out-png /tmp/cat4.png --palette /tmp/<dump-dir>/04_after_file1_a.pal.bin --palbank 15
+```
+
 ## 下一步（供下一輪偵察或動手解碼參考）
 
 **已確認、不必重做**：BIOS 壓縮呼叫候選已用反組譯覆核過，全部無法確認為真指令；title／模式選擇／存檔選擇三個畫面的渲染，GBA 4bpp/32-bytes-per-tile 格式假設，OBJ 字形資料在 ROM `0x62AA44`–`0x62B8E4` 附近的位置，都已用視覺渲染＋逐位元組比對確認（見上方「第二輪偵察」「第三輪偵察」）。直接寫 `KEYINPUT` 記憶體無效的根因已對照 mGBA 0.10.5 原始碼確認（`GBAIORead` 每次讀取都會用 `keysActive`／`keyCallback` 覆寫該位址，架構性地不可能用純記憶體寫入模擬按鍵）；改用讀取 watchpoint＋暫存器覆寫已能穩定跳過標題畫面並推進到存檔選擇畫面（`navigate_and_dump.py` 已把整套流程寫成可重跑腳本）。渲染時務必先分清 VRAM offset 落在 charblock（像素）還是 screenblock（tilemap）範圍。**第四輪**：存檔選擇畫面 BG 文字用的 1024 格字型表本體已定位在 ROM `0x1398e8`–`0x1418e8`（窮舉逐格比對確認，見「第四輪偵察」），約 32 個相異字符的部分 codepage 已建立（見 `research/bg-fonttable-codepage-partial.md`）；這與 OBJ 字型（`0x62AA44`–`0x62B8E4`）是兩套獨立系統。**第五輪新增**：已推進並確認職業選擇／顏色選擇／姓名輸入三個新畫面（`navigate_to_char_create.py` 已把整套流程寫成可重跑腳本，含這三步）；姓名輸入畫面找到第二張 1024 格 BG 字型表（ROM `0x1316e8`–`0x1396e8`，987 格非空），並藉由其標準五十音鍵盤版面一次核對出 71 個高信心平假名字符＋3 個模式切換圖示字符（あ／ア／A）（見 `research/name-entry-hiragana-codepage.md`）——**首次涵蓋平假名**；同時確認 VRAM charbase 0 不是全域固定表，會依畫面切換內容，第四輪「tile-index 即字符代碼」結論僅在單一畫面內成立。另外**已直接驗證**職業選擇／顏色選擇畫面沿用存檔選擇畫面的 `0x1398e8` 字型表（1024 格逐位元組完整比對通過），是「跨畫面共通 codepage」問題的第一個正面證據；但第四輪「tile 96–108 疑似キャラクタ／カラーセンタク」的目測猜想在這兩個畫面**未獲支持**（該畫面 BG0 實際內容是稀疏的邊框裝飾，tile-index 集中在 1–6，與 96–108 無關），已誠實記錄為負面結果。
@@ -654,10 +754,22 @@ python3 games/shining-soul-1/tools/render_string_glyphs.py \
 `0x474584`／`0x47dfa4`／`0x4879c4` + `index*0x80`，各用兩個獨立資料點零自由參數
 驗證，見上方「第十輪偵察」與 `research/obj-sentence-kanji-categories.md`），取代
 了本節第 1 項原本列出的「漢字 `glyph_entry_index` 定址機制」待辦；六句從未見過的
-真實對話池句子驗證讀出通順日文，語料庫覆蓋率達 99.6%。仍未解決：`category`
-4（語料庫次高頻率，19 次，仍缺獨立驗證用的第二個資料點）與 6–15（樣本太少）；
-三張新表的精確上界未窮舉；`0x084d26c4` 系列／`0x085df744` 兩個 sprite 來源仍未
-識別身分。
+真實對話池句子驗證讀出通順日文，語料庫覆蓋率達 99.6%。`0x084d26c4` 系列／
+`0x085df744` 兩個 sprite 來源仍未識別身分（本輪未處理，優先度低於文字系統本身）。
+
+**第十一輪已解決，不必重做**：`category` 4 的定址公式已解出（`0x4913e4 +
+index*0x80`，同樣公式），用即時讀取 IWRAM 查表（`0x030065f0`）與劫持字串指標
+擷取兩種完全獨立方法交叉驗證（各自零自由參數），5 句真實語料句子讀出完全通順、
+零缺口的日文（見上方「第十一輪偵察」與 `research/
+obj-sentence-category4-and-dispatch-table.md`），取代了本節「`category`
+4（語料庫次高頻率）」待辦；`category` 5–15 已確認為這個 JP ROM 版本沒有接上任何
+字形池（IWRAM 查表在 5–15 恆為 NULL，全 ROM 重新掃描也確認真實文字區內查無此類
+代碼，唯一例外是已識別的內部除錯字串），不是「樣本不足待補」的狀態，**不需要
+下一輪繼續嘗試解出 category 5–15 的定址公式**——除非未來有理由懷疑其他語言版本
+／地區版 ROM 接上了更多 category（本輪只檢查了這一份 JP ROM）。語料庫覆蓋率
+（0/1/2/3/4 合計）達 99.97%（保守值，見 research 文件「篩選器的已知限制」）。
+三張（連同本輪的四張）漢字表的精確上界仍未窮舉；category 4 表項到像素表 base
+的 `+0x1820` 偏移量代表的完整資料結構未展開研究。
 
 ## skill 使用備註（`gba-localization`）
 
@@ -702,6 +814,26 @@ python3 games/shining-soul-1/tools/render_string_glyphs.py \
   是對的，但也連帶讓「剣士」這種 2 字短標籤的字串代碼從未被看到過，直到本輪寫一個
   不過濾長度的變體才第一次捕捉到。重用既有的中斷點／追蹤腳本前，先確認它的過濾／
   篩選邏輯是否符合這一輪真正想找的東西，而不是預設「反正之前能用，這次應該也能用」。
+- 第十一輪心得（game-agnostic，本輪最重要的方法論收穫）：**反組譯出一段「查表」
+  邏輯後，繼續往下解讀之前，先確認查表目標位址本身是否落在 ROM 位址空間
+  （GBA 是 `0x08000000`–`0x09FFFFFF`）**——如果落在 EWRAM（`0x02000000`起）或
+  IWRAM（`0x03000000`起），代表這張表是開機才初始化好的執行期資料，不管反組譯
+  多仔細都不可能在 ROM 位元組裡直接看到它的內容，唯一辦法是連上執行中的模擬器
+  直接讀那個位址。這次能解出 category 4 的關鍵正是先注意到 `ldr r1,[pc,#imm]`
+  算出的常數是 `0x030065f0`（IWRAM）而非 `0x08xxxxxx`（ROM），才知道該去讀
+  記憶體而不是繼續在 ROM 裡找。另一個心得：**已經找到「消費某種資料的呼叫點」
+  時，與其去找/導覽到會自然觸發目標資料的畫面，不如直接劫持一次已知會正常運作
+  的呼叫（在該函式入口設中斷點，命中後用 `write_register` 覆寫參數暫存器指向
+  任意想測試的資料），借用整條已經驗證正確的處理管線**——這比「往上追呼叫鏈
+  找資料來源」（session 8 的心得）更進一步：不是找來源，是**主動餵給下游任意
+  輸入**，兩者互補、適用情境不同（不知道資料哪來 vs. 知道資料在哪但難以觸發
+  使用它的畫面）。最後，**「找不到公式」與「這個值根本沒有被使用」是兩種不同的
+  負面結果，前者需要更多資料點，後者需要獨立的「這確實沒被接上」證據（例如查表
+  結構本身是 NULL，或大範圍語料掃描確認真實文字區內查無此類代碼）才能放心停止
+  嘗試，不能只因為「樣本少、湊不出公式」就假設是後者**——本輪能夠自信地對
+  category 5–15 下「不需要繼續嘗試」的結論，關鍵是同時有執行期查表（NULL）與
+  全 ROM 靜態語料掃描（真實文字區內查無）兩種獨立證據互相印證，不是單純因為
+  樣本少而放棄。
 
 ## 合規邊界
 

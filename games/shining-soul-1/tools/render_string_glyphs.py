@@ -40,6 +40,13 @@ TABLES = {
     1: (0x474584, False),
     2: (0x47dfa4, False),
     3: (0x4879c4, False),
+    # session 11: base found via two independent zero-free-parameter methods -
+    # (a) live IWRAM category-dispatch table (0x030065f0 + category*4) plus the
+    #     same "+0x1820" struct-to-pixel-table offset validated on categories
+    #     1/2/3, (b) live enqueue-source-pointer capture for two real corpus
+    #     glyphs (idx 16 and 18), both exactly matching 0x4913e4 + idx*0x80.
+    # See research/obj-sentence-category4-and-dispatch-table.md.
+    4: (0x4913e4, False),
 }
 
 

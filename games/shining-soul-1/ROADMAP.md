@@ -24,15 +24,33 @@
   0/1/2/3 四類已涵蓋 99.6%。新增兩支唯讀工具（`extract_kanji_fonttable.py`／
   `render_string_glyphs.py`）。見 `games/shining-soul-1/research/
   obj-sentence-kanji-categories.md`。仍未解決：`category` 4（次高頻率但只有單一
-  資料點）與 6–15（樣本太少）；三張新表的精確上界未窮舉。
+  資料點）與 6–15（樣本太少）。
+- [x] **第十一輪已完成**：解出 `category` 4 的字型表定址公式（`0x4913e4 +
+  index*0x80`，同一公式），用兩種完全獨立方法交叉驗證——(a) 反組譯字串走訪函式
+  發現它實際查詢一張存在 **IWRAM**（`0x030065f0`，執行期資料，純靜態分析找不到）
+  的 category 查表，連上執行中的 mGBA 直接讀出後，用已知 category 1/2/3 的像素表
+  base 反推出「表項 + `0x1820`＝像素表 base」（三點零自由參數），套用到 category
+  4 預測 base；(b) 劫持職業選擇畫面的字串渲染呼叫，強迫渲染任意真實語料庫字串，
+  擷取逐字元來源位址，用兩個獨立真實語料庫字元（idx16/idx18）驗證，兩點零自由
+  參數精確吻合方法 (a) 的預測值。5 句先前無法閱讀的真實句子渲染成完全通順、零
+  缺口的日文。**同時確認 `category` 5–15 是這個 JP ROM 版本沒有接上任何字形池**
+  （IWRAM 查表在兩個相隔多畫面的時間點皆恆為 NULL；全 ROM 重新掃描確認真實文字區
+  內查無此類代碼，唯一例外是已識別的內部除錯字串）——這是任務明確允許的
+  pattern-breaks 負面結果，不是「樣本不足待補」，不需要下一輪繼續嘗試。語料庫
+  覆蓋率（0/1/2/3/4）達 99.97%（保守值）。新增三支工具
+  （`dump_category_dispatch_table.py`／`hijack_and_capture_glyph_sources.py`／
+  `scan_category_stats.py`）。見 `games/shining-soul-1/research/
+  obj-sentence-category4-and-dispatch-table.md`。仍未解決：四張漢字表（cat1-4）
+  的精確上界未窮舉；category 4 表項到像素表 base 的 `+0x1820` 偏移代表的完整
+  資料結構未展開研究。
 
 ## 里程碑 1：文字系統與可逆試補丁
 
 - [x] 反組譯覆核 BIOS 解壓縮呼叫候選——結論是全部候選都無法確認為真指令，「文字經 BIOS 常式解壓縮」目前沒有直接證據（但也未被排除，需要更完整的控制流重建才能真正排除）。
-- [~] 找到字型／字形點陣資料——**部分完成，第七輪有重大新推進**：OBJ 字型（title／模式選擇畫面，`0x62AA44`–`0x62B8E4`）位置與可重用性第二、三輪已確認（見上）。**第四輪新增**：找到並完整確認了第二張、獨立的 BG 字型表本體——ROM `0x1398e8`–`0x1418e8`（1024 格、`0x8000` bytes），存檔選擇畫面的 BG2／BG3 內容經窮舉逐格比對，與這整段 ROM 範圍逐位元組完全相同，涵蓋 tile-number 欄位能定址的全部範圍；tile-index 直接對應表內位址，這條渲染路徑上不存在需要另外尋找的間接 codepage 層。**第七輪新增**：找到並確認第四張、規模最大的字型表——ROM `0x46abe4` 起，`index*0x80` 線性定址，涵蓋平假名／片假名／Latin／數字／符號（至少 260 格），是職業選擇畫面完整句子「職業を選んでください」的字形來源，7 點零自由參數驗證，並用即時追蹤確認了完整的單字元繪製呼叫鏈（BIOS `CpuSet`/`CpuFastSet`→共用 enqueue 函式 `0x08001154`→唯一呼叫點 `0x080034d0` 的共用 sprite 繪製迴圈），見 `games/shining-soul-1/research/obj-sentence-glyph-loader.md`。四張表（OBJ 標題、BG×2、OBJ 主表）位置皆不同、彼此獨立，對話文字用哪一套仍未知；漢字的定址機制仍未解（不套用主表的 `index*0x80` 公式）。**第十輪新增**：解出三張獨立漢字表（`category` 1/2/3，base 分別 `0x474584`／`0x47dfa4`／`0x4879c4`，同一 `index*0x80` 公式），對話池文字現在絕大多數（99.6%）可完整渲染，見 `research/obj-sentence-kanji-categories.md`。`category` 4/6–15 仍未解，但已知數量遠小於 0/1/2/3。
+- [x] 找到字型／字形點陣資料——**第十一輪完成，OBJ-sentence 系統的全部有效 category 已解出**：OBJ 字型（title／模式選擇畫面，`0x62AA44`–`0x62B8E4`）位置與可重用性第二、三輪已確認（見上）。**第四輪新增**：找到並完整確認了第二張、獨立的 BG 字型表本體——ROM `0x1398e8`–`0x1418e8`（1024 格、`0x8000` bytes），存檔選擇畫面的 BG2／BG3 內容經窮舉逐格比對，與這整段 ROM 範圍逐位元組完全相同，涵蓋 tile-number 欄位能定址的全部範圍；tile-index 直接對應表內位址，這條渲染路徑上不存在需要另外尋找的間接 codepage 層。**第七輪新增**：找到並確認第四張、規模最大的字型表——ROM `0x46abe4` 起，`index*0x80` 線性定址，涵蓋平假名／片假名／Latin／數字／符號（至少 260 格），是職業選擇畫面完整句子「職業を選んでください」的字形來源，7 點零自由參數驗證，並用即時追蹤確認了完整的單字元繪製呼叫鏈（BIOS `CpuSet`/`CpuFastSet`→共用 enqueue 函式 `0x08001154`→唯一呼叫點 `0x080034d0` 的共用 sprite 繪製迴圈），見 `games/shining-soul-1/research/obj-sentence-glyph-loader.md`。四張表（OBJ 標題、BG×2、OBJ 主表）位置皆不同、彼此獨立，對話文字用哪一套仍未知；漢字的定址機制仍未解（不套用主表的 `index*0x80` 公式）。**第十輪新增**：解出三張獨立漢字表（`category` 1/2/3，base 分別 `0x474584`／`0x47dfa4`／`0x4879c4`，同一 `index*0x80` 公式），對話池文字現在絕大多數（99.6%）可完整渲染，見 `research/obj-sentence-kanji-categories.md`。**第十一輪完成**：解出第五張、最後一張有效表（`category` 4，base `0x4913e4`），並用即時讀取 IWRAM category 查表（`0x030065f0`）確認 `category` 5–15 這個 JP ROM 版本根本沒有接上任何字形池（不是「未解出」，是「不存在」），OBJ-sentence 系統的字形資料定位工作到此完整結束，見 `research/obj-sentence-category4-and-dispatch-table.md`。
 - [~] 建立 provisional 碼表——**第四輪已建立部分**：直接反查存檔選擇畫面 BG2／BG3 tilemap tile-index，取得約 32 個相異字符的 confirmed／中信心／低信心分級碼表，見 `games/shining-soul-1/research/bg-fonttable-codepage-partial.md`。**第五輪大幅擴充**：姓名輸入畫面的標準五十音鍵盤版面一次核對出 71 個高信心平假名字符（見 `games/shining-soul-1/research/name-entry-hiragana-codepage.md`），總計兩張 BG 表加起來已有 100+ 個相異字符的 confirmed／中信心分級碼表，但**分屬兩張不同的 ROM 表**，尚未合併成單一系統碼表（因為 tile-index 本身不是全域穩定的，同一數字在不同表代表不同字符，見第五輪「重大結構修正」）。**第七輪新增**：OBJ 主表（`0x46abe4`）額外貢獻約 260 個相異字符（平假名／片假名／Latin／數字／符號），是目前規模最大的一張，但同樣是獨立於前兩張 BG 表的第三套碼表，尚未合併。OCR 路線目前仍判斷不需要，因為已知文字＋直接讀 tilemap／算式反推比 OCR 更精確。
 - [~] 定位字串數量、分段方式與（若存在）指標表結構，寫出本遊戲專屬的抽取器——**第八輪重大推進**：已找到「哪個字元代碼對應哪個字形位址」的算式（`0x46abe4+index*0x80`）、「誰把字形搬進 VRAM」的完整呼叫鏈，**以及句子本身的字元代碼序列儲存格式**——NUL 結尾的 16-bit 代碼陣列，`category`＋`glyph_entry_index` 兩欄位解碼公式，已用兩個獨立畫面交叉驗證（見 `research/obj-sentence-string-format.md`）。**第九輪重大推進**：確認字串排列成連續可枚舉的**字串池**（標頭＋內容＋終止碼＋零填充），指標表明確搜尋為零命中（不存在或未找到，但不影響枚舉），寫出三支正式抽取／掃描工具（`scan_sentence_strings.py`／`extract_string_pool.py`／`scan_string_pools.py`，可從任一位址走訪整池或對全 ROM 做鏈式掃描），找到並人工核對約 862 個字串條目（對話池 620＋怪物名稱表 242），見 `research/obj-sentence-string-pool.md`。**尚未完成**：漢字與其餘 13 種 `category` 值的定址規則；`id`-前綴標頭的語意；對話池內部穿插結構與怪物名稱表精確邊界；把掃描結果正式轉成 `research/*-decoded.jsonl` 供帳本使用（目前輸出仍是掃描腳本的終端文字，未落成結構化原文表）。
-- [ ] 建立本機原文表 `research/shining-soul-1-decoded.jsonl`（`{"string_id", "locale", "text", "provenance"}`），供 `core/ledger/restore_translations.rb` 使用。**第十輪之後可行性大幅提高**（codepage 已涵蓋 99.6% 語料庫代碼），但任務約束明確要求本輪不建立——這仍是下一輪或之後才做的決定，且落成 decoded.jsonl 前應先確認 `category` 4 等剩餘缺口是否值得補齊，或先以「已知字元用 Unicode、未知字元留佔位符」的形式起步。
+- [ ] 建立本機原文表 `research/shining-soul-1-decoded.jsonl`（`{"string_id", "locale", "text", "provenance"}`），供 `core/ledger/restore_translations.rb` 使用。**第十一輪之後可行性已接近完整**（codepage 涵蓋語料庫 99.97%，剩餘缺口`category` 5–15 已確認是這個 ROM 版本未使用的保留值，不是待補的解碼缺口），但任務約束明確要求本輪不建立——這仍是下一輪或之後才做的決定，是專案owner的決策點，不是技術瓶頸。
 
 ## 里程碑 2：可審核翻譯資料（帳本方案）
 

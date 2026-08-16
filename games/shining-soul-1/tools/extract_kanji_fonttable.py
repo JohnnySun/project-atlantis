@@ -65,6 +65,8 @@ CATEGORY_BASES = {
     1: 0x474584,   # session 10: 剣=idx7, 士=idx8
     2: 0x47dfa4,   # session 10: 職=idx137, 色=idx138
     3: 0x4879c4,   # session 10: 業=idx234, 選=idx12
+    4: 0x4913e4,   # session 11: idx16, idx18 (live enqueue-capture, see
+                    # research/obj-sentence-category4-and-dispatch-table.md)
 }
 
 
