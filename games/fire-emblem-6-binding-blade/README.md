@@ -4,18 +4,17 @@
 
 ## 目前狀態
 
-截至 2026-08-16，工作樹中尚未有 `roms/base/AFEJ.gba`，因此以下項目尚未被本機 ROM 證實：
+截至 2026-08-16，已由使用者提供的本機日版 ZIP 唯讀解出一份 8 MiB ROM 到被忽略的 `roms/base/AFEJ.gba`，並完成 GBA 標頭、CRC32、SHA-1／SHA-256 與 `recon_afej.py` 核對。ROM 未加入 Git。
 
-- ROM 標頭身分、實際 revision、CRC32、SHA-1／SHA-256。
-- 劇情、支援對話、章節事件、單位／武器／技能與圖像文字的實際位置。
-- 文本是否為固定表、指標表、腳本資料、壓縮資料或混合格式。
-- 字型資料、字元 codepage、控制碼、行寬限制與可逆回插路徑。
+目前已由 AFEJ 執行期確認一條文字路徑：EWRAM 文字緩衝區會被字元消費者讀取，經兩位元組碼表查找後，glyph index 會寫入 EWRAM 渲染物件。完整劇情／支援／事件表、控制碼、字型 bitmap 的 VRAM 搬運與可逆回插仍未完成。
+
+已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
 公開 FEBuilderGBA 與 `fireemblem6j` 資料只作為待驗證的逆向參考，不取代日版 ROM，也不把既有英譯或 `.tbl` 當作翻譯來源。已知外部參考與其限制見 `research/recon-20260816.md`。
 
 ## 唯讀偵察
 
-放入合法的本機 ROM 後，先執行：
+若要重跑本機唯讀偵察，執行：
 
 ```sh
 python3 tools/recon_afej.py roms/base/AFEJ.gba --json-out work/afej-recon.json
