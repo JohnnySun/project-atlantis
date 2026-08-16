@@ -19,10 +19,11 @@ SPEC.loader.exec_module(INSPECT_ROM)
 class InspectRomTest(unittest.TestCase):
     def test_gba_header_checksum_uses_a0_through_bc(self) -> None:
         data = bytearray(0x200)
-        data[0xA0:0xAC] = b"CRAFTSWORD H"
-        data[0xAC:0xB0] = b"B3CJ"
-        expected = (0x19 - sum(data[0xA0:0xBD])) & 0xFF
-        self.assertEqual(INSPECT_ROM.gba_header_checksum(data), expected)
+        data[0xA0:0xBD] = bytes.fromhex(
+            "43 52 41 46 54 53 57 4f 52 44 20 48 "
+            "42 33 43 4a 44 39 96 00 00 00 00 00 00 00 00 00 00"
+        )
+        self.assertEqual(INSPECT_ROM.gba_header_checksum(data), 0x6B)
 
     def test_shift_jis_probe_reports_only_bounded_offsets(self) -> None:
         data = b"x" + "はい".encode("shift_jis") + b"y" + "はい".encode("shift_jis")

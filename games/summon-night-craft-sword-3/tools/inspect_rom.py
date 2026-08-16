@@ -49,7 +49,7 @@ def gba_header_checksum(data: bytes) -> int:
 
     if len(data) < 0xBE:
         raise ValueError("ROM is too short to contain a GBA header")
-    return (0x19 - sum(data[0xA0:0xBD])) & 0xFF
+    return (0x100 - 0x19 - sum(data[0xA0:0xBD])) & 0xFF
 
 
 def _find_offsets(data: bytes, needle: bytes, limit: int = MAX_OFFSETS_PER_SCAN) -> List[int]:

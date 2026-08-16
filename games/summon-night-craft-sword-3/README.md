@@ -6,27 +6,29 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已完成工作區 bootstrap、外部工程線索登錄與唯讀 ROM 檢查器；本機常見工作區、掛載磁碟與暫存目錄沒有找到 `B3CJ` 或本作檔名，因此尚未完成 ROM header／CRC／SHA-256 readback，也沒有宣稱文字系統或翻譯可行。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。已完成有界的 halfword-aligned Shift-JIS 形狀、指標 run 與 LZ77／RLE decoder-candidate 掃描；這些結果仍只是文本／資料候選，尚未證實字串邊界、控制碼、字型或回插路徑。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md) 與 [`ROADMAP.md`](ROADMAP.md)。
 
-### 外部候選 metadata（未經本機驗證）
+### ROM metadata／外部比對
 
 | 欄位 | 公開參考值 | 本專案狀態 |
 | --- | --- | --- |
-| Game code | `B3CJ` | 目標候選，待 header readback |
-| Header title | `CRAFTSWORD H` | 待本機 readback |
-| ROM size | 32 MiB | 待本機檔案確認 |
-| CRC32 | `12AFAE5D` | 待本機檔案確認 |
-| GBA header checksum | `6B` | 待本機檔案確認 |
+| Game code | `B3CJ` | 本機 header 已確認 |
+| Header title | `CRAFTSWORD H` | 本機 header 已確認 |
+| ROM size | 32 MiB | 本機檔案已確認 |
+| CRC32 | `12AFAE5D` | 本機檔案已確認 |
+| GBA header checksum | `6B` | stored／calculated 均為 `6B` |
+| 本機 SHA-256 | `39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d` | 已確認 |
 | 公開反編譯 build/reference SHA-1 | `3f5253fcf57e07ce52472bd29a61d16b98a12376` | 只作外部比對，不能代替本機 clean ROM |
 
 這些值來自 [Data Crystal 遊戲頁](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi) 與 [csm3 反編譯專案](https://github.com/jiangzhengwenjz/csm3)。若本機檔案不一致，必須保留實際 hash 並標記版號差異，不得直接覆寫或把不同版本混為同一 revision。
 
 ## 唯讀偵察
 
-第一個遊戲專用工具只讀檔案，不產生或修改 ROM：
+遊戲專用工具只讀檔案，不產生或修改 ROM。ZIP 內的 ROM 已放在被 Git ignore 的 `roms/base/`，不會提交：
 
 ```sh
-python3 games/summon-night-craft-sword-3/tools/inspect_rom.py /path/to/legally-dumped-japanese-rom.gba
+python3 games/summon-night-craft-sword-3/tools/inspect_rom.py --strict \
+  games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba
 ```
 
 它會輸出：
@@ -36,7 +38,17 @@ python3 games/summon-night-craft-sword-3/tools/inspect_rom.py /path/to/legally-d
 - 有界的 Shift-JIS 常見詞 probe 命中位置；命中只算線索，不算日文文本。
 - ROM 位址指標 run、Thumb `swi` 候選與 GBA 壓縮 header 候選的摘要。
 
-靜態候選必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。尤其不能因為某段 bytes 能被 Shift-JIS 解碼，或某個半字看起來像 BIOS `swi`，就推論它是文本或壓縮器呼叫。
+有限量靜態掃描另用：
+
+```sh
+python3 games/summon-night-craft-sword-3/tools/scan_static.py \
+  games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba \
+  --output games/summon-night-craft-sword-3/work/static-report.json
+```
+
+它只保留候選 offset、長度、計數、pointer reference、decoder consumed size 與 SHA-256；預設掃描 halfword alignment `0`，Shift-JIS-shaped run 至少 8 個 16-bit units，LZ77／RLE 每種最多嘗試 2048 個 header 且 expanded size 上限為 `0x40000`。`work/static-report.json` 是重跑用 ignored 產物，不是提交內容。
+
+靜態候選必須再經反組譯、ROM-to-VRAM byte match 或 mGBA 執行期讀取確認。這次 bounded runtime 只取得一次 boot register／背景設定快照；mGBA CLI 不接受已安裝版本的 `--script`，且未建立文本或 VRAM 對應，因此不把候選升格為已證實文本。尤其不能因為某段 bytes 能被 Shift-JIS 解碼，或某個半字看起來像 BIOS `swi`，就推論它是文本或壓縮器呼叫。
 
 ## 文字系統研究邊界
 
@@ -70,4 +82,4 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 - 編碼器／回插器拒絕來源 hash、缺字、控制碼或長度不一致，而不是放寬檢查。
 - 重建 ROM 重新抽取吻合；BPS round-trip 與 mGBA 核心畫面回歸另有收據。
 
-目前只完成第一項的工具準備，尚無翻譯、ROM build、BPS 或 runtime QA 收據。
+目前已完成 clean 日版 ROM 身分／hash 與有限量靜態偵察；尚無文本 decoder、翻譯、ROM build、BPS 或 runtime QA 收據。

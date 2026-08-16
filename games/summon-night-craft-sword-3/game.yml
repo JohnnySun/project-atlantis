@@ -9,7 +9,17 @@ source:
   region: JP
   game_code: B3CJ
   revision: 0
-  verified: false
+  verified: true
+  observed:
+    title: "CRAFTSWORD H"
+    maker_code: D9
+    software_version: 0
+    size: 33554432
+    crc32: 12afae5d
+    md5: 6d676a8cb2d528a647e62110653418a8
+    sha1: 3f5253fcf57e07ce52472bd29a61d16b98a12376
+    sha256: 39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d
+    header_checksum: 6b
   external_reference:
     size: 33554432
     crc32: 12afae5d

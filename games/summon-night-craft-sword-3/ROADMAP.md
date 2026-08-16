@@ -5,16 +5,18 @@
 ## M0：工作區與來源邊界
 
 - [x] 只建立 `games/summon-night-craft-sword-3/` 內的 `game.yml`、README、ROADMAP、研究帳本與唯讀工具。
-- [x] 登錄 B3CJ、容量、CRC、header checksum、公開 SHA-1 為外部候選值，明確標為未驗證。
+- [x] 登錄 B3CJ、容量、CRC、header checksum、公開 SHA-1，並保留外部候選與本機 readback 的區分。
 - [x] 定義 `research` 原文表、`work` 工作檔與 `translations` 可提交 ledger 的分工。
-- [ ] 取得使用者自己的日版 ROM；未取得前不猜測本機 revision 或文本格式。
+- [x] 取得使用者提供的日版 ZIP，唯讀抽出單一 ROM 到 ignored `roms/base/`；未把 ROM 或 ZIP 納入 Git。
 
 ## M1：ROM 身分與唯讀偵察
 
-- [ ] 用 `tools/inspect_rom.py` 確認 header title、game code、maker code、revision byte 與 header checksum。
-- [ ] 記錄本機 size、CRC32、MD5、SHA-1、SHA-256；與外部候選值分開保存。
-- [ ] 對候選 Shift-JIS、指標 run、GBA 壓縮簽章與 Thumb `swi` 做有界掃描。
-- [ ] 對所有壓縮／指標候選做反組譯或執行期驗證，刪除／保留結論時記錄測試情境。
+- [x] 用 `tools/inspect_rom.py --strict` 確認 header title、game code、maker code、revision byte 與 header checksum。
+- [x] 記錄本機 size、CRC32、MD5、SHA-1、SHA-256；與外部候選值分開保存。
+- [x] 用 `tools/scan_static.py` 對 halfword-aligned Shift-JIS-shaped run、指標 run 與有界 LZ77／RLE decoder candidate 做掃描。
+- [~] 壓縮／指標候選仍只有靜態證據；mGBA scripting/headless 路徑受 CLI 能力限制，未把候選升格為文本或資料表結論。
+
+本里程碑的靜態報告只保留 offset、長度、計數、引用與 hash。一次性的 mGBA boot snapshot 已記在研究帳本，但不再重試 port shim，也不把未證明的 runtime 實驗工具納入本作工具集。
 
 ## M2：文本與字型格式
 
