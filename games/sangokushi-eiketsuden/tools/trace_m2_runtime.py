@@ -40,6 +40,11 @@ KEYINPUT_ADDRESS = 0x04000130
 NO_KEY = 0x03FF
 KEY_BITS = {"a": 0, "b": 1, "select": 2, "start": 3, "right": 4, "left": 5,
             "up": 6, "down": 7, "r": 8, "l": 9}
+# The title poll leaves the KEYINPUT value in r0.  The normal event poll
+# calls 0x0800C61C, whose ldrh stores KEYINPUT in r1 before deriving r0.
+# Watchpoint stops observed after that ldrh therefore need an r1 write.
+TITLE_INPUT_RESULT_PC = 0x0805CF5E
+EVENT_INPUT_RESULT_PC_RANGE = (0x0800C61E, 0x0800C624)
 
 # Table B in the research ledger: one short, valid-SJIS battle-effect record.
 CANDIDATE = {
@@ -132,6 +137,21 @@ def pressed_mask(name: str) -> int:
     """
 
     return NO_KEY ^ key_value(name)
+
+
+def input_write_register(pc: int) -> int:
+    """Return the register whose post-read value may be safely overridden.
+
+    The GDB watchpoint stops after the reviewed KEYINPUT load in both paths:
+    title polling uses ``r0`` at ``0x0805CF5E``; normal event polling uses
+    ``r1`` between ``0x0800C61E`` and ``0x0800C622``.  Unknown stops retain
+    the historical r0 default and are still reported for review.
+    """
+
+    normalized = pc & ~1
+    if EVENT_INPUT_RESULT_PC_RANGE[0] <= normalized < EVENT_INPUT_RESULT_PC_RANGE[1]:
+        return 1
+    return 0
 
 
 def candidate_addresses() -> dict[str, object]:
@@ -240,6 +260,23 @@ def vram_summary(before: bytes, after: bytes) -> dict[str, object]:
         "first_changed_4bpp_tiles": [f"0x{tile:04X}" for tile in changed_tiles[:32]],
         "changed_halfword_count": len(changed_halfwords),
     }
+
+
+def write_runtime_render_dump(dump_dir: Path, client: GdbClient) -> dict[str, object]:
+    """Write only renderer inputs to an explicitly ignored runtime directory."""
+
+    dump_dir.mkdir(parents=True, exist_ok=True)
+    regions = {
+        "vram": (0x06000000, 0x18000),
+        "palette": (0x05000000, 0x400),
+        "oam": (0x07000000, 0x400),
+    }
+    files: dict[str, str] = {}
+    for name, (address, length) in regions.items():
+        path = dump_dir / f"{name}.bin"
+        path.write_bytes(client.read_memory(address, length))
+        files[name] = str(path)
+    return {"directory": str(dump_dir), "files": files}
 
 
 def _in_runtime_ram(address: int) -> bool:
@@ -675,7 +712,9 @@ def _collect_pipeline_events(
             event["requested_keyinput"] = f"0x{key_value(desired):04X}"
             event["requested_pressed_mask"] = f"0x{pressed_mask(desired):04X}"
             events.append(event)
-            client.write_register(0, key_value(desired))
+            register = input_write_register(registers["pc"])
+            event["input_write_register"] = f"r{register}"
+            client.write_register(register, key_value(desired))
             continue
 
         event["watch"] = "unclassified"
@@ -697,6 +736,7 @@ def run_pipeline_trace(
     controlled_consumer: bool = False,
     allow_fixed_slot_variant: bool = False,
     path_label: str = "natural-path",
+    dump_dir: Path | None = None,
 ) -> dict[str, object]:
     """Trace natural reachability, then optionally inject B[0] at the wrapper.
 
@@ -846,6 +886,8 @@ def run_pipeline_trace(
             report["final_interrupt"] = client.interrupt(timeout=2.0)
             target_stopped = True
         after_vram = client.read_memory(0x06000000, 0x18000)
+        if dump_dir is not None:
+            report["render_dump"] = write_runtime_render_dump(dump_dir, client)
         report["vram_delta"] = vram_summary(before_vram, after_vram)
         report["screen_hash"] = {
             "settled_io": report.get("settled_io"),
@@ -1041,7 +1083,9 @@ def run_trace(
                 })
             elif address is not None and KEYINPUT_ADDRESS <= address < KEYINPUT_ADDRESS + 2:
                 event["requested_pressed_mask"] = f"0x{pressed_mask(desired):04X}"
-                client.write_register(0, key_value(desired))
+                register = input_write_register(registers["pc"])
+                event["input_write_register"] = f"r{register}"
+                client.write_register(register, key_value(desired))
             elif address is not None and pointer_address <= address < pointer_address + 4:
                 report["pointer_hits"].append({
                     "event_index": index,
@@ -1122,6 +1166,11 @@ def main() -> int:
     parser.add_argument("--controlled-events", type=int, default=32)
     parser.add_argument("--path-label", default="natural-path")
     parser.add_argument(
+        "--dump-dir",
+        type=Path,
+        help="write final VRAM/palette/OAM only to an explicitly ignored directory",
+    )
+    parser.add_argument(
         "--disable-wrapper-breakpoint",
         action="store_true",
         help="skip the static-chain 0x0800D8F0 breakpoint",
@@ -1160,6 +1209,7 @@ def main() -> int:
                 controlled_consumer=args.controlled_consumer,
                 allow_fixed_slot_variant=args.allow_fixed_slot_variant,
                 path_label=args.path_label,
+                dump_dir=args.dump_dir,
             )
         else:
             report = run_trace(

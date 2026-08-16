@@ -25,6 +25,10 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertEqual(TRACE.key_value("start"), 0x03F7)
         self.assertEqual(TRACE.pressed_mask("none"), 0)
         self.assertEqual(TRACE.pressed_mask("start"), 0x0008)
+        self.assertEqual(TRACE.input_write_register(TRACE.TITLE_INPUT_RESULT_PC), 0)
+        self.assertEqual(TRACE.input_write_register(0x0800C61E), 1)
+        self.assertEqual(TRACE.input_write_register(0x0800C620), 1)
+        self.assertEqual(TRACE.input_write_register(0x0800C625), 0)
 
     def test_candidate_addresses_use_rom_pointer_space(self) -> None:
         candidate = TRACE.candidate_addresses()
@@ -59,6 +63,18 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertEqual(summary["changed_bytes"], 2)
         self.assertEqual(summary["changed_4bpp_tile_count"], 2)
         self.assertNotIn("data", summary)
+
+    def test_runtime_render_dump_is_explicit_and_renderer_scoped(self) -> None:
+        class FakeClient:
+            def read_memory(self, address: int, length: int) -> bytes:
+                return bytes([address & 0xFF]) * length
+
+        with tempfile.TemporaryDirectory() as directory:
+            result = TRACE.write_runtime_render_dump(pathlib.Path(directory), FakeClient())
+            self.assertEqual(set(result["files"]), {"vram", "palette", "oam"})
+            self.assertEqual((pathlib.Path(directory) / "vram.bin").stat().st_size, 0x18000)
+            self.assertEqual((pathlib.Path(directory) / "palette.bin").stat().st_size, 0x400)
+            self.assertEqual((pathlib.Path(directory) / "oam.bin").stat().st_size, 0x400)
 
     def test_m22_breakpoints_normalize_thumb_addresses(self) -> None:
         self.assertEqual(TRACE.M22_BREAKPOINTS["output_writer"], 0x0800CAD8)

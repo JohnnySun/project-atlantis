@@ -37,3 +37,8 @@ patched ROM、BPS 和 extractor 輸出均留在 ignored／`/private/tmp`。
   支持，不能外推全 ROM。
 - 目前證明的是 selected D record／glyph-slot layer，不是完整 D pool、自然 runtime
   reachability、全遊戲字庫／版面或發布 patch。
+- M2.6 以 clean 與本批 patched ROM 各做一條 title→menu bounded path；兩者均到達
+  `DISPCNT=0x1F40` 的 OAM menu state，但 OAM／VRAM／composite render hash 完全相同，
+  且 D／B／E formatter pipeline 全 0。因此本批次目前沒有自然 D consumer 或已翻譯
+  menu 畫面 receipt，不能把三列 OAM menu 的文字 source 指派給 D:000／003／008／010／
+  013／021。
