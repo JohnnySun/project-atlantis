@@ -267,6 +267,14 @@ token semantics 與 runtime read edge 都被證明。工具是
 日文 codepage、glyph identity、字寬或 runtime source edge；工具是
 [`tools/codepoint_lookup_probe.py`](tools/codepoint_lookup_probe.py)。
 
+另以 selected `sjis:0x146EE0` 做一個 record-level static path receipt：該筆 strict
+record 只有 4 個 halfwidth units；固定 lookup helper（初始 lookup flag `0`）將其中
+3 個 lookup result 導向 `0x080DDCC4 + index*0x20`，另 1 個 result 為
+zero-combining／skip。這只確認 source-shaped bytes 在 ROM 靜態表上的 index／slot
+算術，不確認遊戲是否實際消費該 record、slot 的 glyph 身分或 VRAM；詳情與 hash-only
+輸出見 [`research/m2-static-record-font-path-20260816.md`](research/m2-static-record-font-path-20260816.md)
+與 [`tools/static_record_font_path_probe.py`](tools/static_record_font_path_probe.py)。
+
 固定的 asset／transform pipeline 另由
 [`research/m2-font-pipeline-20260816.md`](research/m2-font-pipeline-20260816.md)
 與 [`tools/font_pipeline_probe.py`](tools/font_pipeline_probe.py) 驗證：
