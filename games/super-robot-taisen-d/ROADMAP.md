@@ -132,6 +132,15 @@
   這仍是 transport negative，不是 ROM／譯文失敗；font-base、consumer、writer、
   cache／VRAM、screen 均未觀察。摘要在 `research/m125-runtime-transport-receipt.json`，
   不再重複無效 boot-window。
+- [x] M1.26 重算 M1.13 encoder、M1.21 wide-capacity 與 M4 full-corpus／round-trip
+  contract，逐筆核對目前 12 筆 source-safe ledger；2325/2325 source／token no-op、
+  ledger 12/12 accepted／same-length、target 12/12、untouched 2313/2313 與
+  outside-allowed-ranges equality 均重現。2313 筆其餘 record 仍依 narrow-untranslated
+  927、mixed 833、wide 417、opaque 136 fail-closed；743 個 wide identity 中 742
+  個 static-only，wide new-slot capacity 仍為 0。這是 coverage audit，不是完整語意
+  encoder 或完整翻譯；摘要在 `research/m126-full-encoder-ledger-audit.json`，工具／
+  測試在 `tools/m126_full_encoder_ledger_audit.py`／
+  `tools/test_m126_full_encoder_ledger_audit.py`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

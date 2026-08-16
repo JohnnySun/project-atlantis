@@ -1,0 +1,148 @@
+{
+  "encoder_status": {
+    "full_encoder_status": "fail_closed_subset_only",
+    "full_semantic_translation": false,
+    "missing_glyph": "reject",
+    "opaque_or_control": "reject",
+    "variable_length": "reject",
+    "wide_new_slot": "reject_capacity_zero",
+    "wide_static_only": "reject_for_target_until_runtime_confirmation"
+  },
+  "fail_closed_boundary": {
+    "policy": "accept only source-safe same-length records in the verified narrow map or bounded runtime-confirmed existing wide identity",
+    "rejected_mixed_count": 833,
+    "rejected_opaque_or_unaligned_count": 136,
+    "rejected_total_count": 2313,
+    "rejected_wide_count": 417,
+    "static_only_wide_target_record_count": 1250,
+    "translated_narrow_only_count": 12,
+    "unmapped_source_narrow_target_record_count": 927,
+    "untranslated_narrow_only_count": 927,
+    "wide_new_slot_capacity": 0,
+    "wide_static_only_identity_count": 742
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "font_hashes_match": true,
+    "full_semantic_translation": false,
+    "ledger_encoder_accepted_12": true,
+    "ledger_records_12": true,
+    "ledger_same_length_12": true,
+    "m113_report_reconciled": true,
+    "m121_report_reconciled": true,
+    "m4_full_corpus_reconciled": true,
+    "release_ready": false,
+    "rom_hash_match": true,
+    "roundtrip_outside_allowed_ranges_equal": true,
+    "roundtrip_target_exact": true,
+    "roundtrip_untouched_exact": true,
+    "source_no_op_2325": true,
+    "source_records_2325": true,
+    "source_text_emitted": false,
+    "target_text_emitted": false,
+    "wide_new_slot_capacity_zero": true
+  },
+  "inputs": {
+    "font_license_sha256": "869692af094c57fb7258c57fe26820c759319603321d0ffeb278de3651763ded",
+    "font_source_sha256": "c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53",
+    "narrow_allocation_count": 28,
+    "rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "wide_existing_identity_count": 743,
+    "wide_new_slot_capacity": 0,
+    "wide_runtime_confirmed_identity_count": 1,
+    "wide_static_only_identity_count": 742
+  },
+  "milestone": "M1.26",
+  "recomputed_contracts": {
+    "m113_stored_report_matches": true,
+    "m121_stored_report_matches": true,
+    "m4_stored_report_matches": true
+  },
+  "reinsert_roundtrip": {
+    "base_source_matches": 2325,
+    "record_count": 12,
+    "rom_outside_allowed_ranges_equal": true,
+    "source_records": 2325,
+    "target_exact_matches": 12,
+    "untouched_exact_matches": 2313,
+    "untouched_records": 2313
+  },
+  "schema": "super-robot-taisen-d-m126-full-encoder-ledger-audit-v1",
+  "source_corpus": {
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_category_counts": {
+      "admissible_narrow_only": 12,
+      "opaque_or_unaligned": 136,
+      "reject_static_only_wide": 1250,
+      "reject_unmapped_source_narrow": 927
+    },
+    "record_category_id_index_sha256": {
+      "admissible_narrow_only": "c28b3064d641ea2161154ca23e5585179422697be45d4992f742a0c8c884f068",
+      "opaque_or_unaligned": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc",
+      "reject_static_only_wide": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187",
+      "reject_unmapped_source_narrow": "81c3cb7060657ff1d80a19603c9f857976e368f2ec8450776905ca5dcb3f9739"
+    },
+    "record_count": 2325,
+    "source_glyph_class_occurrence_counts": {
+      "source_narrow": 11902,
+      "source_opaque": 2152,
+      "source_wide": 3983
+    },
+    "source_glyph_class_record_counts": {
+      "source_narrow": 1772,
+      "source_opaque": 136,
+      "source_wide": 1250
+    },
+    "source_glyph_class_record_id_index_sha256": {
+      "source_narrow": "3e2d855844030d610eecbfbf9ee62f777fe6b22fbc9727053c6eabcd6db5e93b",
+      "source_opaque": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc",
+      "source_wide": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187"
+    },
+    "source_record_id_index_sha256": "9525ea0db01754260c57d64746d2c2bc665b5239494526d3eb5d6371b42a831d",
+    "strict_source_count": 2325,
+    "target_identity_occurrence_counts": {
+      "target_missing": 13987,
+      "target_narrow_known": 214,
+      "target_wide_runtime_confirmed": 23,
+      "target_wide_static_only": 3813
+    },
+    "target_identity_record_counts": {
+      "target_missing": 1893,
+      "target_narrow_known": 162,
+      "target_wide_runtime_confirmed": 23,
+      "target_wide_static_only": 1250
+    },
+    "target_identity_record_id_index_sha256": {
+      "target_missing": "0069fe57b6882a2c5435a32d247f9da612b89cc806671410d45c61555987e51b",
+      "target_narrow_known": "862ad9d41463ae1b8293f46dae692de5daeb4347749cda6f9b96eff9dda0b288",
+      "target_wide_runtime_confirmed": "010cd7f71209368d58f0abbd2053924e7e2fb6e3e37186093542ca98d910c9b2",
+      "target_wide_static_only": "edc7148945484f02624fba3e19076546bc1fff3f79be63322966edfbaeac0187"
+    },
+    "token_encode_no_op_count": 2325
+  },
+  "source_policy": {
+    "raw_work_artifacts_tracked": false,
+    "rom_modified": false,
+    "source_safe_hashes_only": true,
+    "source_table_read_in_memory_only": true,
+    "source_text_emitted": false,
+    "target_text_emitted": false
+  },
+  "translation_ledger": {
+    "accepted_count": 12,
+    "encoded_mode_counts": {
+      "narrow": 48
+    },
+    "ledger_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+    "record_count": 12,
+    "rejected_counts": {},
+    "same_length_count": 12,
+    "source_hash_index_sha256": "ab466b0fc5cdc697517a654b497a9b484ab101ed52332de1cac17b84ac99269e",
+    "source_text_emitted": false
+  }
+}

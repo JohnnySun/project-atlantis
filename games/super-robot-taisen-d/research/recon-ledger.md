@@ -1357,3 +1357,29 @@ default `2345`，但該 executable 的 debugger source 直接呼叫
 可用 listener／ROM load。下一次 runtime gate 必須取得同時能開 ROM 且能 bind verified
 GDB port 的本機 mGBA process，再做一次 font-base guard 與 caller/source-pointer match；
 在此之前不把 static render 或 transport negative 升級成畫面 QA。
+
+## 2026-08-16：M1.26 full encoder／ledger coverage audit
+
+本輪依效率策略停止新增同類 UI prompt，只重用既有 ignored strict source table、M4
+batch-5 static reinsert／round-trip、M1.13 encoder input、M1.21 wide identity input 與
+目前六個 tracked ledger 檔。`tools/m126_full_encoder_ledger_audit.py` 在記憶體中重算
+三個 contract，並與已提交摘要逐段比對；任何 source／target text key、ledger duplicate、
+ROM／font hash mismatch、wide capacity mismatch 或 stored report drift 都 fail closed。
+輸出 `research/m126-full-encoder-ledger-audit.json` 僅含 hash、count、partition、mode、
+rejection 與 round-trip metadata，不含完整日文或 target text。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| source contract | `2325/2325` strict source；`2325/2325` token encode no-op；source ID index 與 M1.13/M1.21/M4 摘要一致 |
+| tracked ledger | `12/12` rows source-safe、encoder accepted、same-length；ledger ID／source-hash index 只保存摘要 hash |
+| structural boundary | translated narrow-only `12`；untranslated narrow `927`；mixed `833`；wide `417`；opaque／unaligned `136` |
+| target capacity | narrow allocation `28`；wide identity `743`；runtime-confirmed wide `1`；static-only `742`；new wide slot capacity `0` |
+| static round-trip | source `2325/2325`；target `12/12`；untouched `2313/2313`；outside allowed ranges equal |
+| completion boundary | `full_encoder_status=fail_closed_subset_only`；`full_semantic_translation=false`；`release_ready=false` |
+
+這個 milestone 證明的是目前 bounded static pipeline 的可重現 coverage，不是完整語意
+encoder、完整翻譯或 runtime screen QA。下一步仍須先取得可用的 verified mGBA/GDB
+transport，再收斂 newline／speaker／branch／最大寬度與自然 caller coverage；在此之前
+不擴大翻譯筆數，也不把 927/833/417/136 筆拒絕 cohort 偷換成可回插容量。

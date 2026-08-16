@@ -484,6 +484,15 @@ queue 觸發尚未取代這條受控驗證。
   [`research/m125-runtime-transport-receipt.json`](research/m125-runtime-transport-receipt.json)，
   工具／測試在 [`tools/m125_runtime_transport_receipt.py`](tools/m125_runtime_transport_receipt.py)
   與 [`tools/test_m125_runtime_transport_receipt.py`](tools/test_m125_runtime_transport_receipt.py)。
+- [x] M1.26 重跑既有 M1.13／M1.21／M4 contracts 並核對全部 12 筆 tracked ledger：
+  source／token no-op `2325/2325`、ledger encoder `12/12`、same-length `12/12`、
+  static reinsert target `12/12`、untouched `2313/2313` 均一致。coverage 仍是
+  fail-closed subset：未翻譯 narrow `927`、mixed `833`、wide `417`、opaque `136`；
+  wide static-only identity `742`、new-slot capacity `0`。報告只保存 hash/count/partition
+  metadata，`full_semantic_translation=false`、`release_ready=false`；摘要在
+  [`research/m126-full-encoder-ledger-audit.json`](research/m126-full-encoder-ledger-audit.json)，
+  工具／測試在 [`tools/m126_full_encoder_ledger_audit.py`](tools/m126_full_encoder_ledger_audit.py)
+  與 [`tools/test_m126_full_encoder_ledger_audit.py`](tools/test_m126_full_encoder_ledger_audit.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
