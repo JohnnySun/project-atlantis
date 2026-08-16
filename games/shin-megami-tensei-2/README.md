@@ -478,6 +478,24 @@ reference ID 與 match boolean，不輸出 anchor text、unit values、decoded t
 glyph、width/control 與 ledger 仍 provisional/blocked。詳見
 `research/m1.31-skill-crossmap-20260816.md`。
 
+M1.32 selected code-unit→font-bank→renderer provenance（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m132_font_edge.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m132-font-edge.json
+```
+
+工具只取 M1.30/M1.31 已 identity-anchored 的五個 field positions，重抽取
+`0x0815ed88` bank pointer、font source address、兩個 `0x20` source block、
+`0x080abf24` 的 `0x20→0x40` byte swizzle、`0x080ac218` renderer 與
+`0x080aa1f4` writer edge；五筆均通過 source/hash/inverse-transform contract。
+輸出只有 address、hash、length/count、reference ID 與 status，不輸出 unit、字元、
+raw font/source、圖片或 translation ledger。這是 static glyph addressing edge，
+不是自然 runtime 畫面像素 proof；完整 codepage、Unicode、width/control、回插與
+ledger 仍 provisional/blocked。詳見 `research/m1.32-font-edge-20260816.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -490,9 +508,10 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 沿 M1.29 固定的 item selector→`0x08198b74` record→fixed field→stack staging→
 16-bit reader path，補完剩餘 bounded subcategory boundary；M1.30 已對
 `0x0819cb74` demon accessor（stride `0x60`、field `+0x22`）建立獨立 anchor family，
-M1.31 再確認 `0x0819b9f4` skill prefix。下一步優先沿已命名 reader/font builder
-建立少量 code-unit→font-bank→renderer provenance；若 runtime listener 仍 blocked，
-最多沿同一 wrapper/direct caller 三層追 RAM object/table initializer。不能把
+M1.31 再確認 `0x0819b9f4` skill prefix，M1.32 已接通五筆
+code-unit→font-bank→renderer static edge。下一步優先解析 named writer 的
+width/control contract；若 runtime listener 仍 blocked，最多沿同一 wrapper/direct
+caller 三層追 RAM object/table initializer。不能把
 command pointer、font-bank shape 或人工 OCR 當成完整文字來源；item、skill、demon、
 劇情與系統 data families 必須分開記錄。
 

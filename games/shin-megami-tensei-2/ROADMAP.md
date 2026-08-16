@@ -427,6 +427,21 @@
   record field→font-bank block→renderer 的可重抽取 provenance；完成前維持 M2
   ledger、翻譯與 patch gate blocked，不再擴張 graphics/resource 分類。
 
+## M1.32：selected code-unit → font-bank → renderer provenance
+
+- [x] 只取 M1.30/M1.31 已 identity-anchored 的五個 field positions，驗證
+  `0x0815ed88` bank pointer、`((low>>4)<<10)+((low&0xf)<<5)` source address、
+  `0x20` source block 與 paired `+0x200` block；五筆均有可重抽取 address/hash。
+- [x] 完整交叉 `0x080abf24..0x080ac0d2` builder、`0x080ac218..0x080ac296`
+  renderer、literal edges、`0x080ac286`→`0x080aa1f4` writer call；實作
+  `0x20→0x40` byte swizzle 的 inverse，synthetic 與五筆實際 source block 均
+  round-trip 通過。
+- [~] 五筆的 selected semantic/unit identity 與 static font addressing edge 已
+  confirmed，但沒有 runtime VRAM/OAM pixel capture；完整 Unicode/codepage、glyph
+  set、width/control、font replacement 與回插仍 provisional/unknown。
+- [ ] 解析 named writer 的字寬／控制碼參數與可逆 layout contract；完成前維持
+  M2 ledger、翻譯與 patch gate blocked，不再擴張 graphics/resource 分類。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。
