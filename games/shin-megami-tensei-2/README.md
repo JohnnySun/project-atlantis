@@ -251,6 +251,38 @@ decoded text、raw font、圖片或 translation ledger。
 不把它升格為完整主劇情表。可用 `--output` 產生研究用 metadata；其 JSON 應留在
 `/private/tmp` 或 `work/`，不提交。
 
+M1.19 reader family／inline source family（唯讀 bounded）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m119_source_family.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m119-source-family.json
+```
+
+工具沿兩個已命名 reader 的 direct BL callers，保留最多三層 caller boundary、
+window hash 與 r0 setup 的 linear-bounded candidate；不把這些 candidate 當完整
+CFG/data-flow proof。`0x080b52c4` 內另有 15 個有序 ROM pointer，從
+`0x08162b0c` 到 `0x08162c26`，每筆以 `0x0000` 結束；工具只輸出 pointer、
+termination、length、unit class/count 與 hash，不輸出 source bytes、decoded text、
+圖片或 translation ledger。這個 family 與 M1.18 的 `0x085861c8`／`0x0301`
+candidate 分開，category 語意仍是 provisional。
+
+M1.20 inline selector／pointer route（唯讀 static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m120_inline_dispatch.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m120-inline-dispatch.json
+```
+
+工具只分析 `0x080b52c4`：確認 object `+0x24` primary field、primary-1 的
+`+0x14` halfword、`+0x0c` subselector、`0x080b53a0` 五筆 jump table 與 15 筆
+inline record ID route。輸出 field contract、jump target、address／hash／length／
+termination metadata，不輸出原文、raw bytes、glyph 或 translation ledger；selector
+語意與自然 scene 仍保持 provisional/unknown。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、

@@ -203,18 +203,38 @@
 
 ## M1.19：source-table family 與自然 category mapping
 
-- [ ] 對 `0x080ac334`／`0x080ac3ac` 直接 callers 各做一次 bounded static mapping，
+- [x] 對 `0x080ac334`／`0x080ac3ac` 直接 callers 各做一次 bounded static mapping，
+  以 64-callsite cap 保留 direct BL caller、function boundary/hash、r0 setup
+  candidate 與最多三層 caller edge；
   只沿 caller 向上 1–3 層至 ROM pointer、RAM table 或 code-unit/index 參數；不重做
   M1.15 resource classification、OBJ hash 或全 ROM glyph scan。
-- [ ] 以最多三個可重現的自然 scene／object transition 交叉 caller state、source
+- [~] 以最多三個可重現的自然 scene／object transition 交叉 caller state、source
   pointer／index、reader entry 與 terminator／line-break metadata；runtime 若受
-  GDB listener 阻擋，必須把 static 與 runtime evidence 分開，不以 synthetic state
-  代替自然命中。
-- [ ] 明確分離 28 筆 candidate 與 main/event、demon、skill、item、system data
+  GDB listener 阻擋，已把既有 socket failure 與 static evidence 分開，沒有以
+  synthetic state 代替自然命中。
+- [~] 明確分離 28 筆 candidate 與 main/event、demon、skill、item、system data
   families；每一族只保留 bounded record count、stride／pointer rule、hash、length、
-  control counts 與可回讀地址，不提交 raw source 或完整原文。
+  control counts 與可回讀地址，不提交 raw source 或完整原文。目前新增確認
+  `0x08162b0c`–`0x08162c26` 的 15 筆 zero-terminated inline family，但 category
+  語意仍 provisional。
 - [ ] 只有在至少一族的 source table、stable ID、code-unit/codepage、control code
   與 width rule 可重抽取後，才解除 M2 ledger gate；否則維持 blocked 並記錄最小缺口。
+
+## M1.20：自然 caller state 與 category boundary
+
+- [x] 從一個已確認的 direct caller 反組譯 object/state field、ROM literal 或 RAM
+  pointer 的實際選擇；沿向上最多三層直到可命名的 source/index，而不是把 pointer
+  形狀當語意。`0x080b52c4` 的 `+0x24`／`+0x14`／`+0x0c`、五筆 jump table 與
+  15 筆 inline route 已以 Thumb load／boundary 交叉驗證。
+- [~] 若 GDB listener 恢復，使用 fresh process、單一 connection 與最多三個自然
+  transition 交叉 reader entry、source pointer、terminator／line-break metadata；
+  目前仍受既有 socket blocker，保留精確環境陰性並以 static source boundary
+  繼續，未寫 selector/table/state。
+- [x] 至少為一個 family 建立 bounded addressing contract，分開 code-unit identity、
+  control code 與 route metadata；
+  Unicode identity 未確認前不建立翻譯 ledger。
+- [ ] 將 route 與自然 scene/category 交叉並建立可審核的 stable source ID；在
+  Unicode identity、width rule 與回插契約確認前不建立翻譯 ledger。
 
 ## M2：可審核翻譯 ledger
 
