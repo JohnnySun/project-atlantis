@@ -1,0 +1,80 @@
+{
+  "plan_version": 1,
+  "batch_id": "m5.2-reward-relocation",
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3",
+  "clean_rom_sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+  "font_source_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be",
+  "target_locale": "zh-TW",
+  "status": "ai_draft",
+  "context": {
+    "scene": "resource-24 reward label",
+    "max_width": 6,
+    "max_lines": 1,
+    "control_codes": ["0x0308", "0x0000"],
+    "notes": "One opaque-free six-code-unit reward label. It retains the existing M2.5 prize target in the same resource, adds one ore glyph, and uses a relocated resource span because the original 1392-byte span is full. No character/place proper noun occurs."
+  },
+  "control_contract": {
+    "following_opcodes": ["0x0308"],
+    "opaque_control_count": 0
+  },
+  "targets": {
+    "zh-Hans": {
+      "text": "特獎　重金礦",
+      "utf8_sha256": "d33cffd1cf2daff400bbbef4bcb86244f1c7ad7ac37e9630b799f2db2711129c"
+    },
+    "zh-TW": {
+      "text": "特獎　重金礦",
+      "utf8_sha256": "d33cffd1cf2daff400bbbef4bcb86244f1c7ad7ac37e9630b799f2db2711129c"
+    }
+  },
+  "target_contract": {
+    "byte_length": 12,
+    "code_units": ["93c1", "ec65", "8140", "8f64", "8be0", "ec6e"],
+    "extension_units": ["ec65", "ec6e"],
+    "inherited_extension_units": ["ec65"],
+    "record_terminator": "0x0000"
+  },
+  "allocations": [
+    {
+      "code_unit": "ec6e",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "礦",
+      "codepoint": "U+7926",
+      "glyph_id": "0x84d",
+      "status": "m5.2_ai_draft"
+    }
+  ],
+  "inherited_mappings": [
+    {
+      "code_unit": "ec65",
+      "unicode": "獎",
+      "glyph_id": "0x848",
+      "source_batch": "m2.5-prize-ui"
+    }
+  ],
+  "records": [
+    {
+      "string_id": "b3cj:t2:024:0x0078",
+      "resource_id": 24,
+      "decompressed_offset": "0x0078",
+      "raw_length": 12,
+      "source_hash": "cd5eb4f2833b81100caa4feb0ddd9a3a1d9ffeefa6f60fdf1a2a18ce3f33b329",
+      "source_raw_sha256": "8fb70998c6fa1b366fd8d3f669a0ce665fcac6c62bf7a91c44ec93847799a342",
+      "source_record_sha256": "489681ec757d3e47bd23be31d547ac26d4296367e54f2754c82ba0f926e31b2c"
+    }
+  ],
+  "adjacent_untouched_records": [
+    "b3cj:t2:024:0x0046",
+    "b3cj:t2:024:0x0088"
+  ],
+  "adjacent_untouched_glyph_id": "0x048",
+  "relocation": {
+    "destination_file_offset": "0x1fbb1fc",
+    "span_units": "0x60",
+    "span_bytes": 1536,
+    "pointer_unit_bytes": 16
+  },
+  "review_notes": "AI draft only. Target is a concise common reward label; no proper noun or external terminology choice is required. Resource 24 relocation is static-only; human review and runtime screen review remain pending."
+}

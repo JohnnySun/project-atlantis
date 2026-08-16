@@ -1,0 +1,64 @@
+{
+  "plan_version": 1,
+  "batch_id": "m4.3-ellipsis-label",
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3",
+  "clean_rom_sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+  "font_source_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be",
+  "target_locale": "zh-TW",
+  "status": "ai_draft",
+  "context": {
+    "scene": "resource-25 short ellipsis label",
+    "max_width": 4,
+    "max_lines": 1,
+    "control_codes": ["0x0308", "0x0000"],
+    "notes": "One opaque-free four-code-unit label; two full-width spaces preserve the 8-byte record contract. The first target character uses one new fail-closed opaque extension slot; no proper noun or game-specific term occurs."
+  },
+  "control_contract": {
+    "following_opcodes": ["0x0308"],
+    "opaque_control_count": 0
+  },
+  "targets": {
+    "zh-Hans": {
+      "text": "嗯…　　",
+      "utf8_sha256": "dcce820b61e9daf5afb6d2bc9868b3f5d9daad23d8374b6cb9300ace770224cd"
+    },
+    "zh-TW": {
+      "text": "嗯…　　",
+      "utf8_sha256": "dcce820b61e9daf5afb6d2bc9868b3f5d9daad23d8374b6cb9300ace770224cd"
+    }
+  },
+  "target_contract": {
+    "byte_length": 8,
+    "code_units": ["ec6d", "8163", "8140", "8140"],
+    "extension_units": ["ec6d"],
+    "record_terminator": "0x0000"
+  },
+  "allocations": [
+    {
+      "code_unit": "ec6d",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "嗯",
+      "codepoint": "U+55EF",
+      "glyph_id": "0x84c",
+      "status": "m4.3_ai_draft"
+    }
+  ],
+  "records": [
+    {
+      "string_id": "b3cj:t2:025:0x0b6e",
+      "resource_id": 25,
+      "decompressed_offset": "0x0b6e",
+      "raw_length": 8,
+      "source_hash": "edfe7b0a4cfae39281960bcfeb2592b66bbd47136d6b29c1bc2082dc5cf8e2c9",
+      "source_raw_sha256": "f65f5155c46f85aabe7c409dbb64ab192e4c7b75a55aac8189de7d4445f03c9d",
+      "source_record_sha256": "ee886da2321f2505df59e60b7bcacc4f37cd10e712e35d9274e0cd339c91f472"
+    }
+  ],
+  "adjacent_untouched_records": [
+    "b3cj:t2:025:0x0b7a"
+  ],
+  "adjacent_untouched_glyph_id": "0x0ac",
+  "review_notes": "AI draft only. This is a generic hesitation/ellipsis label with no proper noun or external terminology choice. The new glyph is restricted to the next allowed blank slot; human review and runtime screen review remain pending."
+}

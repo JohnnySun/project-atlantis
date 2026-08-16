@@ -1,0 +1,56 @@
+{
+  "plan_version": 1,
+  "batch_id": "m4.2-warning-label",
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3",
+  "clean_rom_sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+  "font_source_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be",
+  "target_locale": "zh-TW",
+  "status": "ai_draft",
+  "context": {
+    "scene": "resource-16 short warning label",
+    "max_width": 5,
+    "max_lines": 1,
+    "control_codes": ["0x0308", "0x0000"],
+    "notes": "One opaque-free five-code-unit label; two full-width spaces preserve the 10-byte record contract. No proper noun or game-specific term occurs. Existing mapped glyphs are reused; no new slot is allocated."
+  },
+  "control_contract": {
+    "following_opcodes": ["0x0308"],
+    "opaque_control_count": 0
+  },
+  "targets": {
+    "zh-Hans": {
+      "text": "警告！　　",
+      "utf8_sha256": "82084de19ef27142adb921372be32b2db589e7f6dc241f9abf294d8d39ad40e2"
+    },
+    "zh-TW": {
+      "text": "警告！　　",
+      "utf8_sha256": "82084de19ef27142adb921372be32b2db589e7f6dc241f9abf294d8d39ad40e2"
+    }
+  },
+  "target_contract": {
+    "byte_length": 10,
+    "code_units": ["8c78", "8d90", "8149", "8140", "8140"],
+    "extension_units": [],
+    "record_terminator": "0x0000"
+  },
+  "allocations": [],
+  "records": [
+    {
+      "string_id": "b3cj:t2:016:0x001e",
+      "resource_id": 16,
+      "decompressed_offset": "0x001e",
+      "raw_length": 10,
+      "source_hash": "0c7840a194483b36af7414a8e8624c93d3a3ae62e6167eb1040daaae317e33d8",
+      "source_raw_sha256": "d38b4bbf3979af195390a96f8eb265b8065a714b3fad3e140613f0f66eeb5349",
+      "source_record_sha256": "096cf71cc1be469b2eb3ef9683aff44fd0c09f408460648c45e587ef3adae241"
+    }
+  ],
+  "adjacent_untouched_records": [
+    "b3cj:t2:016:0x002c",
+    "b3cj:t2:016:0x004a"
+  ],
+  "adjacent_untouched_glyph_id": "0x096",
+  "review_notes": "AI draft only. This is a generic warning label with no proper noun or external terminology choice. Existing glyph mappings are used without allocation; human review and runtime screen review remain pending."
+}

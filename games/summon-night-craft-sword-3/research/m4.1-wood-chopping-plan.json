@@ -1,0 +1,73 @@
+{
+  "plan_version": 1,
+  "batch_id": "m4.1-wood-chopping-rank",
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3",
+  "clean_rom_sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+  "font_source_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be",
+  "target_locale": "zh-TW",
+  "status": "ai_draft",
+  "context": {
+    "scene": "resource-22 wood-chopping rank label",
+    "max_width": 6,
+    "max_lines": 1,
+    "control_codes": ["0x0308", "0x0000"],
+    "notes": "One opaque-free six-code-unit label; two full-width spaces are explicit text units to preserve the 12-byte record contract. No proper noun or glossary term occurs."
+  },
+  "control_contract": {
+    "following_opcodes": ["0x0003", "0x0002", "0x0308"],
+    "opaque_control_count": 0
+  },
+  "targets": {
+    "zh-Hans": {
+      "text": "劈柴新手　　",
+      "utf8_sha256": "08ba92f7bc07f05572058d320b790c8ba0cb9a0db1e018211a7ccbc18a12ad82"
+    },
+    "zh-TW": {
+      "text": "劈柴新手　　",
+      "utf8_sha256": "08ba92f7bc07f05572058d320b790c8ba0cb9a0db1e018211a7ccbc18a12ad82"
+    }
+  },
+  "target_contract": {
+    "byte_length": 12,
+    "code_units": ["ec67", "ec6c", "9056", "8ee8", "8140", "8140"],
+    "extension_units": ["ec67", "ec6c"],
+    "record_terminator": "0x0000"
+  },
+  "allocations": [
+    {
+      "code_unit": "ec67",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "劈",
+      "codepoint": "U+5288",
+      "glyph_id": "0x84a",
+      "status": "m4.1_ai_draft"
+    },
+    {
+      "code_unit": "ec6c",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "柴",
+      "codepoint": "U+67F4",
+      "glyph_id": "0x84b",
+      "status": "m4.1_ai_draft"
+    }
+  ],
+  "records": [
+    {
+      "string_id": "b3cj:t2:022:0x004e",
+      "resource_id": 22,
+      "decompressed_offset": "0x004e",
+      "raw_length": 12,
+      "source_hash": "956b323686afadc76cb837332e29e5a92db3d88a746c54f25a23d9a19b1d4f2c",
+      "source_raw_sha256": "137b9ac24fedbaecad30bb10ee9c4bba21f3186efced36c63278beb677e1c983",
+      "source_record_sha256": "0146e98d791c3f1692a33b980caa567c1d0264ab011cd95cc21d517b52d40541"
+    }
+  ],
+  "adjacent_untouched_records": [
+    "b3cj:t2:022:0x0072",
+    "b3cj:t2:022:0x0098"
+  ],
+  "adjacent_untouched_glyph_id": "0x84c",
+  "review_notes": "AI draft only. Target is a concise zh-TW rank label; no proper noun or external terminology lookup is required. Runtime screen and human review remain pending."
+}

@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Tests for the cumulative B3CJ M4.2 bounded batch builder."""
+
+from __future__ import annotations
+
+import importlib.util
+import pathlib
+import tempfile
+import unittest
+
+
+GAME_ROOT = pathlib.Path(__file__).parents[1]
+TOOL_PATH = GAME_ROOT / "tools" / "build_m4_2_batch.py"
+SPEC = importlib.util.spec_from_file_location("build_m4_2_batch", TOOL_PATH)
+if SPEC is None or SPEC.loader is None:
+    raise RuntimeError("cannot load build_m4_2_batch.py")
+BUILDER = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(BUILDER)
+
+PLAN_PATH = GAME_ROOT / "research" / "m4.2-warning-label-plan.json"
+SOURCE_PATH = GAME_ROOT / "research" / "summon-night-craft-sword-3-decoded.jsonl"
+ROM_PATH = GAME_ROOT / "roms" / "base" / "B3CJ-jp-from-zip.gba"
+M41_WORKING = GAME_ROOT / "work" / "m4.1-wood-chopping-working.jsonl"
+M25_WORKING = GAME_ROOT / "work" / "m2.5-prize-ui-working.jsonl"
+FONT_SOURCE = GAME_ROOT.parents[1] / "vendor" / "fonts" / "unifont" / "unifont-17.0.05.hex.gz"
+
+
+class BuildM42Test(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.available = all(path.is_file() for path in (PLAN_PATH, SOURCE_PATH, ROM_PATH, M41_WORKING, M25_WORKING, FONT_SOURCE))
+
+    def require_artifacts(self) -> None:
+        if not self.available:
+            self.skipTest("ignored ROM, source, M4.1/M2.5 working file, or licensed font source unavailable")
+
+    def test_plan_is_existing_mapping_only(self) -> None:
+        self.require_artifacts()
+        plan = BUILDER.load_plan(PLAN_PATH)
+        rows = BUILDER.load_source_rows(SOURCE_PATH)
+        row = BUILDER.validate_source_selection(plan, rows)
+        self.assertEqual(row["string_id"], BUILDER.M42_TARGET_ID)
+        self.assertEqual(plan["allocations"], [])
+        self.assertEqual(plan["target_contract"]["code_units"], ["8c78", "8d90", "8149", "8140", "8140"])
+
+    def test_cumulative_build_reextracts_three_targets(self) -> None:
+        self.require_artifacts()
+        plan = BUILDER.load_plan(PLAN_PATH)
+        with tempfile.TemporaryDirectory(prefix="b3cj-m4.2-build-test-"):
+            final_rom, summary = BUILDER.build_batch(
+                ROM_PATH.read_bytes(),
+                SOURCE_PATH,
+                plan,
+                GAME_ROOT / "work" / "m4.2-warning-label-working.jsonl",
+                M41_WORKING,
+                M25_WORKING,
+                FONT_SOURCE,
+            )
+        self.assertEqual(len(final_rom), 0x02000000)
+        self.assertEqual(summary["reextract"]["records_total"], 361)
+        self.assertEqual(summary["reextract"]["target_records"], 3)
+        self.assertEqual(summary["reextract"]["untouched_records"], 358)
+        self.assertEqual(summary["resource"]["new_compressed_size"], 180)
+        self.assertEqual(summary["resource"]["span_bytes"], 192)
+        self.assertEqual(summary["font"]["new_allocations"], [])
+        self.assertTrue(all(item["mapping_unchanged"] for item in summary["font"]["existing_mapped_glyphs"]))
+
+
+if __name__ == "__main__":
+    unittest.main()

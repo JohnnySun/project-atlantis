@@ -104,34 +104,96 @@ M2.6 已把 static target／adjacent proof 與 runtime transport failure 分開�
 
 M2.7 的 launcher、listener、single-connection error、safe alternatives 與重跑命令見 [`research/m2.7-runtime.md`](research/m2.7-runtime.md)。這個切片達到 transport evidence boundary 即停止，不把 `PermissionError` 解讀成 ROM／譯文失敗。
 
+## M2.8：靜態 pointer／record／layout contract audit
+
+- [x] 以固定 B3CJ ROM identity guard 重抽 13 個含文字 resource、361 筆 record，並確認 source Shift-JIS re-encode `361/361` 與 stable record-contract aggregate hash。
+- [x] 交叉驗證 type-2 pointer unit 為 16 bytes；13 個 pointer entry 收斂為 11 個 payload groups，resource `9`／`10` 是 resource `11` 的 zero-span alias，positive span 不重疊且 compressed size 不超過 span。
+- [x] 建立 `tools/audit_layout.py`／測試，輸出只含 offset、span、opcode 計數、length histogram、opaque count 與 hash 的 ignored summary；不輸出完整日文或 raw stream。
+- [~] record-level 只確認 `0x0308` inline segment／`0x0000` terminator 與相同 byte length 契約；line/page/wait、glyph width、變長／padding、LZ77／PSI3 container rebuild 與 runtime layout 仍 unknown。
+
+M2.8 的 pointer／record／layout 收據見 [`research/m2.8-layout.md`](research/m2.8-layout.md)。這個切片沒有擴大翻譯或宣稱完整 ROM 回插；opaque control 與 runtime transport boundary 仍分開保留。
+
 ## M2：文本與字型格式
 
 - [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。
 - [~] 已確認 type-2 pointer、GBA LZ77、script bytecode、record-level Shift-JIS 與部分 expression／control width；未知 VM opcode、完整換行／分頁語意仍待命名。
 - [x] 定位字型資料與渲染器；分開驗證 glyph addressing 與 glyph identity（static M2.2 範圍）。
 - [~] palette、writer output、VRAM/OAM layout 與 live screen 仍待 runtime 交叉驗證。
-- [ ] 確認字串 ID、指標、換行、控制碼、字寬／行數上限與未修改內容的回插契約。
+- [~] 確認 stable string ID、pointer alias／span、控制碼與相同 byte length 契約；line/page、字寬／行數上限及未修改內容的完整回插契約仍待證實。
 - [ ] 以 ROM-to-VRAM byte match、已知畫面內容或全語料庫上下文重讀交叉確認解碼。
 
 ## M3：原文表與可逆試驗
 
-- [~] 由遊戲專用 decoder 產生本機 ignored `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`source_text`、structured controls、length contract 與 `provenance`；尚未建立可提交 translation ledger。
+- [x] 由遊戲專用 decoder 產生本機 ignored `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`source_text`、structured controls、length contract 與 `provenance`；M2.5 已有 1 筆可提交 translation ledger，M3 validator 再以 source hash／stable ID／core restore-strip round-trip 重驗。
 - [x] 先選一個可達候選、短且有明確結構的 UI 批次，不一次處理全遊戲；M2.5 目前只固定一筆 static candidate，runtime 可達性仍 pending。
 - [x] 建立本機 `work/*.jsonl`，明寫 `zh-TW`、`ai_draft`、`context`、`terms` 與 byte/layout contract。
 - [x] 用 `core/ledger/restore_translations.rb` 與 `strip_translations.rb` 驗證 source hash 與帳本往返。
 - [x] 只提交不帶 `source` 的 `translations/*.jsonl`，並通過 `scripts/check-repository-safety.rb`；人工審核尚未完成。
 
+M3 ledger workflow 的 source adapter、hash guard、restore／strip receipt 與負面測試見 [`research/m3-ledger.md`](research/m3-ledger.md) 及 `tools/validate_ledger.py`。
+
+## M4.1：resource-22 bounded zh-TW static batch
+
+- [x] 從 361 筆 local source table 選出 resource 22 的一筆 12-byte／6-code-unit、無 opaque control 短 label；source hash、provenance、`0x0308`／`0x0000` 與後續 control shape 固定。
+- [x] 依 `restore → work → strip` 產生只含 hash 的 `translations/m4.1-wood-chopping.jsonl`；target 明寫 `zh-TW`、`ai_draft`，無專有名詞，未把 source text 寫入 tracked ledger。
+- [x] 只配置 `0x84a`／`0x84b` 的 `ec67`／`ec6c`，保留既有 mapping，拒絕 out-of-resource `ec68`；existing `新`／`手`／全形空白 mapping 與 adjacent glyph `0x84c` 通過 static proof。
+- [x] cumulative builder 先重建 M2.5，再加入 M4.1；全部 361 筆 re-extract 為 target `2`／untouched `359`，resource 22 compressed `485→493`／span `496`，BPS apply byte-identical。
+- [~] target 仍是 `ai_draft`；人工／術語／字型 review、runtime screen readability 與發布資格仍 pending。
+
+M4.1 的 source hash、glyph allocation、capacity、cumulative re-extraction 與 BPS 收據見 [`research/m4.1-wood-chopping.md`](research/m4.1-wood-chopping.md)。
+
+## M4.2：resource-16 bounded zh-TW static batch
+
+- [x] 從 361 筆 local source table 選出 resource 16 的一筆 10-byte／5-code-unit、無 opaque control 短警告標籤；source hash、provenance、`0x0308`／`0x0000` 與 following control shape 固定。
+- [x] 先以 resource 22 下一個候選的實際壓縮結果 `500/496` 做 capacity fail-closed，再收斂到 resource 16 的 `180/192` 原 span；不放寬容量、不做 pointer relocation。
+- [x] 依 `restore → work → strip` 產生只含 hash 的 `translations/m4.2-warning-label.jsonl`；target 為 `zh-TW`、`ai_draft`，沒有專有名詞或新增 glyph allocation。
+- [x] cumulative builder 先重建 M2.5／M4.1，再加入 M4.2；全部 361 筆 re-extract 為 target `3`／untouched `358`，existing glyph mapping／adjacent records 保持 byte/render identical，BPS apply byte-identical。
+- [~] target 仍是 `ai_draft`；三筆 target 的人工／術語／字型／版面 review、runtime screen readability 與發布資格仍 pending。
+
+M4.2 的 source hash、capacity rejection、existing-mapped-glyph proof、cumulative re-extraction 與 BPS 收據見 [`research/m4.2-warning-label.md`](research/m4.2-warning-label.md)。
+
+## M4.3：resource-25 bounded zh-TW static batch
+
+- [x] 從 361 筆 local source table 選出 resource 25 的一筆 8-byte／4-code-unit、無 opaque control 短語氣標籤；source hash、provenance、`0x0308`／`0x0000` 與 following control shape 固定。
+- [x] 配置唯一新增 `ec6d`→`0x84c`，保留既有 `8163`／`8140` mappings，拒絕 fallback、out-of-resource target、重複 slot／code unit 與容量超限；Unifont cell 與 adjacent `0x0ac` static proof 通過。
+- [x] 依 `restore → work → strip` 產生只含 hash 的 `translations/m4.3-ellipsis-label.jsonl`；target 為 `zh-TW`、`ai_draft`，沒有專有名詞。
+- [x] cumulative builder 先重建 M2.5／M4.1／M4.2，再加入 M4.3；全部 361 筆 re-extract 為 target `4`／untouched `357`，resource 25 compressed `1652→1655`／span `1664`，BPS apply byte-identical。
+- [~] target 仍是 `ai_draft`；四筆 target 的人工／術語／字型／版面 review、runtime screen readability 與發布資格仍 pending。
+
+M4.3 的 source hash、glyph allocation、cell／capacity、cumulative re-extraction 與 BPS 收據見 [`research/m4.3-ellipsis-label.md`](research/m4.3-ellipsis-label.md)。
+
 ## M4：有限量翻譯與術語
 
-- [ ] 依日文原文與上下文建立劇情、支線、夥伴、鍛造、戰鬥、道具的分批工作帳。
+- [~] 已建立四筆 M4 cumulative static target；M5.2 另加入第五筆 resource-24 capacity-expansion slice；仍需依日文原文與上下文完成劇情、支線、夥伴、鍛造、戰鬥、道具的完整分批工作帳。
 - [ ] 專有名詞以 Wikipedia zh-tw、巴哈姆特及其他獨立社群資料交叉核對；不把單一 patch 的譯名視為定論。
 - [ ] 建立 `translations/glossary.zh-TW.tsv`（只收已核對術語，不放完整原文段落）。
-- [ ] 逐批做字寬、行數、缺字、控制碼、簡繁混用與用語一致性 QA。
+- [x] 對目前四筆 M4 bounded batch 做字寬、行數、缺字、控制碼、簡繁漏入與 target metadata QA；M5.2 另由 relocation builder 做同等 fail-closed target contract；完整用語一致性與人工翻譯 review 仍待進行。
+
+M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](research/m4-batch-qa.md)。
 
 ## M5：回插、BPS 與 runtime QA
 
-- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。完整 resource／pointer rebuild 尚未建立。
-- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；尚非完整 ROM container coverage。
-- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；目前僅一筆 `ai_draft` static POC。
+- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成單一 resource 的 pointer relocation static slice，完整多 resource／alias policy 尚未建立。
+- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2 已涵蓋 resource-24 relocation，尚非完整 ROM container coverage。
+- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；目前為五筆 cumulative `ai_draft` static POC。
 - [ ] 以 mGBA 測試實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面，保留未測試範圍。
 - [ ] 只有完成上述收據後，才評估 zh-TW 發布。
+
+## M5.1：static type-2 pointer relocation POC
+
+- [x] 對 clean B3CJ resource 24 找到明確 zero-filled、16-byte table-relative aligned 的 ROM 目的區 `0x1fbb1fc`；目的區沒有 aligned ROM pointer reference，且不與已知 table/resource spans 重疊。
+- [x] 建立 `tools/relocate_resource_poc.py`／測試；只更新 resource 24 directory relative pointer/span，重導後 361 筆 stable records、decoded stream 與 record aggregate byte-identical。
+- [~] 這只證實單一 resource 的 static directory redirect；多 resource／alias、變長資源重建、ROM-level BPS policy、runtime 與發布資格仍 pending。
+
+M5.1 的目的區 guard、pointer receipt、重抽取 hash 與邊界見 [`research/m5.1-pointer-relocation.md`](research/m5.1-pointer-relocation.md)。
+
+## M5.2：resource-24 capacity-expansion translation slice
+
+- [x] 由 M5.1 的 zero-filled destination 建立 `b3cj:t2:024:0x0078` ledger；實際執行 `restore → work → strip`，tracked ledger 只有 source hash、target 與 review metadata，target 維持 `zh-TW`／`ai_draft`。
+- [x] 以 fail-closed encoder 保留既有 `ec65→0x848`，只配置 `ec6e→0x84d`；target 12 bytes／6 code units，拒絕 source／font／ROM hash drift、fallback／非空 cell、重複 slot／code unit 與容量超限。
+- [x] 將 resource 24 從 `0x17231fc`／`1392`-byte span 重導至 `0x1fbb1fc`／`1536`-byte span，pointer relative units `0xa20→0x8a220`；destination alignment、zero fill、pointer reference 與 overlap guards 通過。
+- [x] 累積重建 M2.5／M4.1／M4.2／M4.3 後完成 M5.2；361 筆 re-extract 為 target `5`／untouched `356`，resource 24 compressed `1392→1396`，local adjacent records／glyph 保持 byte/render identical。
+- [x] 產生 `4814`-byte BPS，套用後 ROM 與 target `da3b83b5470f278f455672021e2ae87452bc92d93fdbf1126c0e994dde757cb1` byte-identical；target CRC32 `c81e7eb5`，所有 ROM／BPS／summary 仍 ignored。
+- [~] 這是 static-only slice；五筆 target 仍需人工／術語／字型／版面 review，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending。
+
+M5.2 的 plan、ledger 分界、pointer／font／re-extract／BPS receipts 見 [`research/m5.2-reward-relocation.md`](research/m5.2-reward-relocation.md)。
