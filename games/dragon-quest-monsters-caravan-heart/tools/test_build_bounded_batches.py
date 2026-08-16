@@ -7,12 +7,14 @@ import patch_message_batch_3
 import patch_message_batch_4
 import patch_message_batch_5
 import patch_message_batch_6
+import patch_message_batch_7
 import verify_menu_patch
 import verify_message_batch_2
 import verify_message_batch_3
 import verify_message_batch_4
 import verify_message_batch_5
 import verify_message_batch_6
+import verify_message_batch_7
 
 
 class BoundedBatchBuildTest(unittest.TestCase):
@@ -93,9 +95,30 @@ class BoundedBatchBuildTest(unittest.TestCase):
             bytes((0, 0x11, 0, 0, 0, 0, 0x66, 0, 0x88, 0x99, 0xAA, 0xBB)),
         )
 
+    def test_merge_keeps_seventh_disjoint_batch_change(self) -> None:
+        clean = bytes(13)
+        menu = bytearray(clean)
+        message = bytearray(clean)
+        message_3 = bytearray(clean)
+        message_4 = bytearray(clean)
+        message_5 = bytearray(clean)
+        message_6 = bytearray(clean)
+        message_7 = bytearray(clean)
+        menu[1] = 0x11
+        message[6] = 0x66
+        message_3[8] = 0x88
+        message_4[9] = 0x99
+        message_5[10] = 0xAA
+        message_6[11] = 0xBB
+        message_7[12] = 0xCC
+        self.assertEqual(
+            module.merge(clean, bytes(menu), bytes(message), bytes(message_3), bytes(message_4), bytes(message_5), bytes(message_6), bytes(message_7)),
+            bytes((0, 0x11, 0, 0, 0, 0, 0x66, 0, 0x88, 0x99, 0xAA, 0xBB, 0xCC)),
+        )
+
     def test_message_ranges_are_disjoint(self) -> None:
         # Batch 5 intentionally reuses six exact authored glyph slots.  The
-        # sixth batch reuses four exact menu glyph slots as well.  The
+        # sixth and seventh batches reuse exact menu glyph slots as well.  The
         # fixed message spans themselves must remain disjoint; merge() still
         # rejects conflicting overlapping font bytes.
         ranges = [
@@ -105,6 +128,7 @@ class BoundedBatchBuildTest(unittest.TestCase):
             verify_message_batch_4.allowed_ranges()[0],
             verify_message_batch_5.allowed_ranges()[0],
             verify_message_batch_6.allowed_ranges()[0],
+            verify_message_batch_7.allowed_ranges()[0],
         ]
         for index, (start, end) in enumerate(ranges):
             for other_start, other_end in ranges[index + 1:]:
