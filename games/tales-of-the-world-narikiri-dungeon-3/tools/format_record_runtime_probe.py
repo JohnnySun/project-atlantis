@@ -323,6 +323,162 @@ def trace_record_format_hit(
             _remove_breakpoint(client, transform)
 
 
+def trace_after_navigation(
+    client: GdbClient,
+    records: dict[int, dict[str, object]],
+    *,
+    rom_size: int,
+    sequence: list[tuple[str, int]],
+    per_event_timeout: float,
+    stage_timeout: float,
+    max_events: int,
+    max_format_hits: int,
+    max_stage_stops: int,
+    trace_record_offset: int | None,
+    trace_first_strict: bool,
+) -> dict[str, object]:
+    """Trace formatter consumption on an already-connected post-navigation session."""
+
+    bounded_sequence: list[tuple[str, int]] = []
+    remaining = max_events
+    for name, count in sequence:
+        if remaining <= 0:
+            break
+        take = min(count, remaining)
+        bounded_sequence.append((name, take))
+        remaining -= take
+
+    result: dict[str, object] = {
+        "mode": "format-loop-strict-record-post-navigation",
+        "trace_request": {
+            "record_offset": None
+            if trace_record_offset is None
+            else _hex(trace_record_offset, 6),
+            "trace_first_strict": trace_first_strict,
+        },
+        "sequence": [
+            {"key": name, "events": count}
+            for name, count in bounded_sequence
+        ],
+        "format_hits": [],
+        "key_events": [],
+        "classification": {
+            "format_entry": "unconfirmed-until-runtime-breakpoint-hit",
+            "strict_record_source_read": "unconfirmed-until-exact-watch-hit",
+            "codepoint_lookup": "unconfirmed-until-runtime-breakpoint-hit",
+            "font_map_asset": "unconfirmed-until-runtime-breakpoint-hit",
+            "glyph_identity": "unconfirmed",
+            "scratch_to_vram": "unconfirmed",
+        },
+    }
+    format_breakpoint = False
+    key_watch = False
+    event_index = 0
+    try:
+        try:
+            client.set_breakpoint(FORMAT_ENTRY, kind=2)
+            format_breakpoint = True
+            client.set_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
+            key_watch = True
+        except (RuntimeError, TimeoutError, OSError, ConnectionError) as exc:
+            result["termination"] = "setup-error"
+            result["error_type"] = type(exc).__name__
+            result["error_message"] = str(exc)
+            return result
+
+        for phase_name, phase_count in bounded_sequence:
+            desired = key_value(phase_name)
+            for _ in range(phase_count):
+                if len(result["format_hits"]) >= max_format_hits:
+                    result["termination"] = "format-hit-limit"
+                    break
+                try:
+                    stop = client.continue_until_stop(per_event_timeout)
+                    registers = client.read_registers()
+                except TimeoutError:
+                    result["termination"] = "per-event-timeout"
+                    try:
+                        result["interrupt_stop"] = client.interrupt(timeout=2.0)
+                    except (TimeoutError, OSError, ConnectionError):
+                        result["interrupt_stop"] = None
+                    break
+                except (RuntimeError, OSError, ConnectionError) as exc:
+                    result["termination"] = "stop-error"
+                    result["error_type"] = type(exc).__name__
+                    result["error_message"] = str(exc)
+                    break
+
+                kind, stop_address = parse_stop_watch(stop)
+                pc = normalized_pc(registers)
+                if pc == FORMAT_ENTRY:
+                    source = classify_source_pointer(registers.get("r0", 0), records)
+                    hit: dict[str, object] = {
+                        "entry": _stop_row(stop, kind, stop_address, registers),
+                        "source": source,
+                        "caller_lr": _hex(registers.get("lr", 0)),
+                        "caller_callsite": (
+                            None
+                            if format_callsite_from_lr(registers.get("lr", 0)) is None
+                            else _hex(format_callsite_from_lr(registers["lr"]) or 0)
+                        ),
+                    }
+                    result["format_hits"].append(hit)
+                    is_target = source.get("status") == "strict-record-start" and (
+                        trace_record_offset is None
+                        or source.get("record", {}).get("file_offset")
+                        == _hex(trace_record_offset, 6)
+                        or trace_first_strict
+                    )
+                    if is_target:
+                        hit["pipeline"] = trace_record_format_hit(
+                            client,
+                            stop,
+                            registers,
+                            records,
+                            desired_key=desired,
+                            rom_size=rom_size,
+                            stage_timeout=stage_timeout,
+                            max_stage_stops=max_stage_stops,
+                        )
+                        result["termination"] = "strict-record-format-hit"
+                        return result
+                    continue
+
+                if stop_address is not None and KEYINPUT_ADDRESS <= stop_address < KEYINPUT_ADDRESS + 2:
+                    event = _stop_row(stop, kind, stop_address, registers)
+                    event.update(
+                        {
+                            "index": event_index,
+                            "phase": phase_name,
+                            "requested_keyinput": _hex(desired, 4),
+                            "write": _write_key(client, desired),
+                        }
+                    )
+                    result["key_events"].append(event)
+                    event_index += 1
+                    continue
+
+                result["unexpected_stop"] = _stop_row(stop, kind, stop_address, registers)
+                result["termination"] = "unexpected-stop"
+                return result
+            if result.get("termination") in {
+                "format-hit-limit",
+                "strict-record-format-hit",
+                "per-event-timeout",
+                "stop-error",
+                "unexpected-stop",
+            }:
+                break
+        if "termination" not in result:
+            result["termination"] = "sequence-exhausted-without-strict-record-format-hit"
+        return result
+    finally:
+        if format_breakpoint:
+            _remove_breakpoint(client, FORMAT_ENTRY)
+        if key_watch:
+            _remove_watchpoint(client, KEYINPUT_ADDRESS, 2, 3)
+
+
 def run_probe(
     rom_path: Path,
     *,

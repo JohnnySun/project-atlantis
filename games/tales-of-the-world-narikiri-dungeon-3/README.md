@@ -355,8 +355,10 @@ strict count `8938` 通過，但 `0x080014F4` format hits、source read、lookup
 與 scratch hits 均為 `0`。先前受 sandbox 限制的 invocation 則是
 `PermissionError` setup negative；另一次在 M1.8 正常 state 4→7 後重新連線時，
 mGBA 0.10 對第二個 GDB client 的 `qSupported` timeout。兩者都不能當成 renderer
-或 codepage 的 negative proof；下一步須在同一 GDB connection 合併 navigation 與
-formatter trace。
+或 codepage 的 negative proof；`m18_a1ac_probe.py --trace-format-after-return` 已
+在同一 GDB connection 合併 navigation 與 formatter trace，state 7 的
+`none:64,a:8,none:56`／128-event bounded sequence 仍是 format hit 0。下一個最小
+切片是固定 `0x080025CC` parser/caller，不再增加 formatter geometry。
 
 2026-08-16 的 port `24387` setup receipt 仍是 runtime negative：ROM identity／strict
 count `8938` 通過，但 sandbox 回報 `PermissionError: [Errno 1] Operation not

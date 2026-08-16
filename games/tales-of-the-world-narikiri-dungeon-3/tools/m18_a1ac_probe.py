@@ -32,7 +32,14 @@ from gdbstub_client import GdbClient, parse_stop_watch  # noqa: E402
 
 GAME_TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(GAME_TOOLS))
-from consumer_probe import b3tj_identity, key_value, register_snapshot  # noqa: E402
+from consumer_probe import (  # noqa: E402
+    b3tj_identity,
+    key_value,
+    parse_sequence,
+    register_snapshot,
+    strict_record_metadata,
+)
+from format_record_runtime_probe import trace_after_navigation  # noqa: E402
 from state_probe import state_metadata  # noqa: E402
 
 
@@ -258,9 +265,17 @@ def run_probe(
     max_edge_checks: int,
     release_reads: int,
     max_steps: int,
+    trace_format_after_return: bool = False,
+    format_sequence: list[tuple[str, int]] | None = None,
+    format_per_event_timeout: float = 5.0,
+    format_stage_timeout: float = 3.0,
+    format_max_events: int = 128,
+    format_max_hits: int = 8,
+    format_max_stage_stops: int = 12,
 ) -> dict[str, object]:
     rom = rom_path.read_bytes()
     identity = b3tj_identity(rom)
+    strict_records = strict_record_metadata(rom) if trace_format_after_return else None
     client = GdbClient(host, port, timeout=8.0, packet_delay=0.05, retry_delay=0.25)
     breakpoints = {
         "dispatcher": False,
@@ -737,6 +752,56 @@ def run_probe(
                 }
                 append_limited("state_returns", row, 2)
                 stop_reason = "normal-state-return"
+                if trace_format_after_return:
+                    for name, address in (
+                        ("a2c0_caller_after", A2C0_CALLER_AFTER),
+                        ("a2c0", A2C0_ENTRY),
+                        ("post_slot_store", POST_SLOT_STORE),
+                        ("edge_check", EDGE_CHECK),
+                        ("state4_a388", STATE4_A388),
+                        ("state4_a58c", STATE4_A58C),
+                        ("state4_a030", STATE4_A030),
+                        ("state4_a050", STATE4_A050),
+                        ("a1ac_callsite", A1AC_CALLSITE),
+                        ("a1ac", A1AC_ENTRY),
+                        ("state_return", STATE_RETURN),
+                        ("dispatcher", STATE_DISPATCHER),
+                    ):
+                        if breakpoints[name]:
+                            try:
+                                client.remove_breakpoint(address, kind=2)
+                            except (RuntimeError, TimeoutError, OSError, ConnectionError):
+                                pass
+                            breakpoints[name] = False
+                    if key_watch:
+                        try:
+                            client.remove_watchpoint(
+                                KEYINPUT_ADDRESS, kind=2, watch_type=3
+                            )
+                        except (RuntimeError, TimeoutError, OSError, ConnectionError):
+                            pass
+                        key_watch = False
+                    post_sequence = format_sequence or parse_sequence(
+                        "none:64,a:8,none:56"
+                    )
+                    post_trace = trace_after_navigation(
+                        client,
+                        strict_records or {},
+                        rom_size=len(rom),
+                        sequence=post_sequence,
+                        per_event_timeout=format_per_event_timeout,
+                        stage_timeout=format_stage_timeout,
+                        max_events=format_max_events,
+                        max_format_hits=format_max_hits,
+                        max_stage_stops=format_max_stage_stops,
+                        trace_record_offset=0x146EE0,
+                        trace_first_strict=True,
+                    )
+                    report["post_state7_format"] = post_trace
+                    stop_reason = (
+                        "post-state7-format-"
+                        + str(post_trace.get("termination", "unknown"))
+                    )
                 break
 
             report["unexpected_stop"] = {
@@ -845,11 +910,37 @@ def main() -> None:
     parser.add_argument("--max-edge-checks", type=int, default=8)
     parser.add_argument("--release-reads", type=int, default=3)
     parser.add_argument("--max-steps", type=int, default=12)
+    parser.add_argument(
+        "--trace-format-after-return",
+        action="store_true",
+        help="after normal state 4->7 return, trace formatter and first strict record on the same GDB connection",
+    )
+    parser.add_argument(
+        "--format-sequence", default="none:64,a:8,none:56"
+    )
+    parser.add_argument("--format-per-event-timeout", type=float, default=5.0)
+    parser.add_argument("--format-stage-timeout", type=float, default=3.0)
+    parser.add_argument("--format-max-events", type=int, default=128)
+    parser.add_argument("--format-max-hits", type=int, default=8)
+    parser.add_argument("--format-max-stage-stops", type=int, default=12)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    for name in ("max_stops", "max_edge_checks", "release_reads", "max_steps"):
+    for name in (
+        "max_stops",
+        "max_edge_checks",
+        "release_reads",
+        "max_steps",
+        "format_max_events",
+        "format_max_hits",
+        "format_max_stage_stops",
+    ):
         if getattr(args, name) < 1:
             parser.error(f"--{name.replace('_', '-')} must be positive")
+    format_sequence = (
+        parse_sequence(args.format_sequence)
+        if args.trace_format_after_return
+        else None
+    )
     result = run_probe(
         args.rom,
         host=args.host,
@@ -859,6 +950,13 @@ def main() -> None:
         max_edge_checks=args.max_edge_checks,
         release_reads=args.release_reads,
         max_steps=args.max_steps,
+        trace_format_after_return=args.trace_format_after_return,
+        format_sequence=format_sequence,
+        format_per_event_timeout=args.format_per_event_timeout,
+        format_stage_timeout=args.format_stage_timeout,
+        format_max_events=args.format_max_events,
+        format_max_hits=args.format_max_hits,
+        format_max_stage_stops=args.format_max_stage_stops,
     )
     output = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.output is None:

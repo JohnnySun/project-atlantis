@@ -65,6 +65,11 @@ ignored work 或 `/private/tmp`。
   connection 執行 formatter；mGBA 0.10 stub 對 `qSupported` timeout，沒有取得
   formatter hit。這是 known single-client lifecycle limitation，不是 source
   read／decoder／glyph 的 negative；其他遊戲 listener 未接管、未停止。
+- 修正後以 `m18_a1ac_probe.py --trace-format-after-return` 在**同一 GDB
+  connection**完成正常 state 4→7，再執行 `none:64,a:8,none:56`／128-event
+  formatter stage；`0x080014F4` hit、strict source read、lookup、asset、scratch
+  全為 `0`，termination 是 bounded sequence exhausted。這關閉了 second-client
+  lifecycle 缺口，但只是否定這一個 state 7 sequence，不是否定其他 menu/event。
 - 目前不能宣稱 Shift-JIS 是 runtime codepage、不能確認 glyph identity／寬度、
   不能把 asset read 當成文字 record 消費，也不能開始翻譯。
 
@@ -88,7 +93,7 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 pointer scan 或翻譯工作。
 
 注意：mGBA 0.10.x 常在第一個 GDB client disconnect 後不接受第二個 connection。
-要驗證「正常 state 4→7 後的 formatter」時，下一個 harness 必須在同一 GDB
-connection 內完成 A1AC navigation，再於 `0x08005E12` return 後安裝本 probe 的
-formatter breakpoint；單獨先跑 `m18_a1ac_probe.py` 再重新連線，不足以構成該
-state 7 trace。
+要驗證「正常 state 4→7 後的 formatter」時，使用 m18 的
+`--trace-format-after-return` 合併 mode；單獨先跑 m18 再重新連線不足以構成該
+state 7 trace。合併 mode 已取得上述 bounded negative，下一步不是增加 formatter
+events，而是窄追 `0x080025CC` parser/caller。
