@@ -123,6 +123,17 @@ def key_value(name: str) -> int:
     return NO_KEY & ~(1 << KEY_BITS[name])
 
 
+def pressed_mask(name: str) -> int:
+    """Return the active-high mask corresponding to a reported key value.
+
+    This is metadata for the input receipt.  The reviewed B3EJ poll stop at
+    ``0x0805CF5E`` is after ``ldrh r0, [r0]`` and before the following
+    ``eors r3, r0``; the harness supplies the active-low value in ``r0``.
+    """
+
+    return NO_KEY ^ key_value(name)
+
+
 def candidate_addresses() -> dict[str, object]:
     table_address = ROM_BASE + CANDIDATE["table_file_offset"]
     record_address = ROM_BASE + CANDIDATE["record_file_offset"]
@@ -503,6 +514,7 @@ def _collect_pipeline_events(
             "stop_address": None if address is None else f"0x{address:08X}",
             "pc": f"0x{registers['pc'] & ~1:08X}",
             "lr": f"0x{registers['lr']:08X}",
+            "registers": register_snapshot(registers),
         }
         if hit is not None:
             event.update(_pipeline_hit_metadata(client, hit, registers))
@@ -661,6 +673,7 @@ def _collect_pipeline_events(
         if address is not None and KEYINPUT_ADDRESS <= address < KEYINPUT_ADDRESS + 2:
             event["watch"] = "KEYINPUT"
             event["requested_keyinput"] = f"0x{key_value(desired):04X}"
+            event["requested_pressed_mask"] = f"0x{pressed_mask(desired):04X}"
             events.append(event)
             client.write_register(0, key_value(desired))
             continue
@@ -1027,6 +1040,7 @@ def run_trace(
                     "registers": register_snapshot(registers),
                 })
             elif address is not None and KEYINPUT_ADDRESS <= address < KEYINPUT_ADDRESS + 2:
+                event["requested_pressed_mask"] = f"0x{pressed_mask(desired):04X}"
                 client.write_register(0, key_value(desired))
             elif address is not None and pointer_address <= address < pointer_address + 4:
                 report["pointer_hits"].append({

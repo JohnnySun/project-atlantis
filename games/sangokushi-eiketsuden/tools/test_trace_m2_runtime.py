@@ -23,6 +23,8 @@ class TraceM2RuntimeTest(unittest.TestCase):
         self.assertEqual(TRACE.expand_sequence(phases), ["none", "none", "start", "start", "start", "none"])
         self.assertEqual(TRACE.key_value("none"), 0x03FF)
         self.assertEqual(TRACE.key_value("start"), 0x03F7)
+        self.assertEqual(TRACE.pressed_mask("none"), 0)
+        self.assertEqual(TRACE.pressed_mask("start"), 0x0008)
 
     def test_candidate_addresses_use_rom_pointer_space(self) -> None:
         candidate = TRACE.candidate_addresses()
