@@ -125,6 +125,13 @@
   consumer 的 RAM buffer mismatch 與 M1.22 GDB transport negative 分欄記錄。story／
   branch／battle／unit／UI／speaker／newline 語意仍 unconfirmed，不把 12 筆 static
   ledger 或 pointer 命中當成 scene coverage。摘要在 `research/m124-corpus-caller-coverage.json`。
+- [x] M1.25 針對 M1.22 的 port mismatch 做一次 corrected-port fresh mGBA attempt：
+  只讀確認本機 2348 build 的 source literal 為 `GDBStubListen(..., 2348, ...)`，
+  以 patched M1.8 ROM、單一 GDB connection probe 執行；process 沒有 TCP 2348
+  listener／ROM descriptor，probe `connection_refused`，並已乾淨停止自己的 process。
+  這仍是 transport negative，不是 ROM／譯文失敗；font-base、consumer、writer、
+  cache／VRAM、screen 均未觀察。摘要在 `research/m125-runtime-transport-receipt.json`，
+  不再重複無效 boot-window。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

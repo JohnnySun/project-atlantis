@@ -1332,3 +1332,28 @@ M1.24 的 coverage matrix 不是完整 caller map，也不批准第二輪翻譯�
 是同一個 exact source record 同時綁定到 verified consumer callsite、producer／queue
 context 與 screen／layout state；在此之前 12 筆 ledger、609 pointer candidate 與
 structural callsite 不能外推成場景覆蓋。
+
+## 2026-08-16：M1.25 corrected-port mGBA transport boundary
+
+M1.22 的 `24568` probe 暴露了本機 headless build 的參數陷阱：CLI help 宣稱 `-g`
+default `2345`，但該 executable 的 debugger source 直接呼叫
+`GDBStubListen(..., 39123, ...)`，`-C gdb.port=24568` 不會改變 listener。為遵守
+專用 port 規則，本輪改用現有本機 2348 build，並只讀確認其 source literal 為
+`GDBStubListen(..., 2348, ...)`；沒有修改 shared core 或建立 port rewrite infrastructure。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| build／port | local mGBA 2348 build；binary SHA `fe11732d…1cc9e`；source literal port `2348` |
+| process | fresh patched M1.8 ROM process；single GDB connection attempt；自己的 process cleanly stopped |
+| listener／ROM | TCP `2348` listener `false`；process observation 未見 ROM descriptor；launcher log 20 bytes／SHA `1cb2ae59…9986` |
+| probe | `connection_refused`；沒有 GDB connection、font-base、consumer、glyph、writer、cache／VRAM 或 screen event |
+| inherited static gate | base／patched／BPS hashes preserved；static BPS round-trip byte-identical；target `526424` 仍 `ai_draft` |
+| result | `transport_negative_after_port_correction`；`rom_or_translation_failure=false`；M1.9 target runtime proof 仍 pending |
+
+`tools/m125_runtime_transport_receipt.py` 只建立 metadata receipt，不追蹤 raw log。
+這次排除了「24568 並非 executable listener port」的誤因，但 2348 build 仍未提供
+可用 listener／ROM load。下一次 runtime gate 必須取得同時能開 ROM 且能 bind verified
+GDB port 的本機 mGBA process，再做一次 font-base guard 與 caller/source-pointer match；
+在此之前不把 static render 或 transport negative 升級成畫面 QA。

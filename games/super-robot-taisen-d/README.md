@@ -476,6 +476,14 @@ queue 觸發尚未取代這條受控驗證。
   [`research/m124-corpus-caller-coverage.json`](research/m124-corpus-caller-coverage.json)，
   工具／測試在 [`tools/m124_corpus_caller_coverage.py`](tools/m124_corpus_caller_coverage.py)
   與 [`tools/test_m124_corpus_caller_coverage.py`](tools/test_m124_corpus_caller_coverage.py)。
+- [x] M1.25 修正 M1.22 的 GDB port 假設後，以本機 2348 build 做一次 fresh patched
+  runtime attempt：只讀 source evidence 確認 `GDBStubListen(..., 2348, ...)`，但 process
+  沒有 TCP 2348 listener／ROM descriptor，唯一 probe `connection_refused`；自己的
+  process 已停止。font-base、consumer、glyph、writer、cache／VRAM、screen 都是
+  `not_observed`，`rom_or_translation_failure=false`。source-safe receipt 在
+  [`research/m125-runtime-transport-receipt.json`](research/m125-runtime-transport-receipt.json)，
+  工具／測試在 [`tools/m125_runtime_transport_receipt.py`](tools/m125_runtime_transport_receipt.py)
+  與 [`tools/test_m125_runtime_transport_receipt.py`](tools/test_m125_runtime_transport_receipt.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
