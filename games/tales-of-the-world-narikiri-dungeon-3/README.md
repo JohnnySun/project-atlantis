@@ -302,6 +302,28 @@ loader `r1`，loader 讀 `[r1]`／`[r1+1]` 後選取
 這仍是 source-pointer-shaped static edge；strict record membership、live read、
 glyph identity 與 VRAM destination 尚未確認。
 
+已另建立窄化的 runtime probe
+[`tools/font_record_runtime_probe.py`](tools/font_record_runtime_probe.py)：它從
+`0x080021A8` entry 只追該次 `r1` source pointer，在 `0x080021DA` 觀察計算完成的
+`r8`，再對單一 asset slot 設 read-watch。它重用五窗 strict metadata，不做 runtime
+pointer scan、不讀出 source／glyph bytes，也不寫 state、object、save 或 ROM。可在
+本作獨立 mGBA port 上重跑：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/font_record_runtime_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port <your-independent-gdb-port> --max-events 602 --max-stage-stops 12 \
+  --output /private/tmp/tow-nd3-m2-font-record-runtime.json
+```
+
+2026-08-16 的 port `24387` setup receipt 仍是 runtime negative：ROM identity／strict
+count `8938` 通過，但 sandbox 回報 `PermissionError: [Errno 1] Operation not
+permitted`，一次外部重試仍無 loader stop。詳情見
+[`research/m2-font-record-runtime-20260816.md`](research/m2-font-record-runtime-20260816.md)
+與 [`research/m2-font-record-runtime-metadata.json`](research/m2-font-record-runtime-metadata.json)。
+因此 M2 live renderer／decoder 項目仍未完成，不能開始翻譯或回插。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \

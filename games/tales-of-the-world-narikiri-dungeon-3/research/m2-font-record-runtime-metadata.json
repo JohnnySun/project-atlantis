@@ -1,0 +1,59 @@
+{
+  "identity": {
+    "title_ascii": "TOWNARIKIRI3",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "crc32": "1867CCEF"
+  },
+  "mode": "font-record-loader-live-consumer",
+  "fixed_entries": {
+    "font_loader": "0x080021A8",
+    "font_asset_ready": "0x080021DA",
+    "font_loader_callsite": "0x08015C26",
+    "font_asset_base": "0x080DDCC4",
+    "font_asset_stride": 32
+  },
+  "strict_record_count": 8938,
+  "sequence": [
+    {"key": "start", "events": 1},
+    {"key": "none", "events": 63}
+  ],
+  "runtime_attempts": [
+    {
+      "port": 24387,
+      "environment": "default-sandbox",
+      "termination": "setup-error",
+      "error_type": "PermissionError",
+      "error_errno": 1,
+      "loader_hits": 0,
+      "source_read_hits": 0,
+      "asset_read_hits": 0
+    },
+    {
+      "port": 24387,
+      "environment": "permitted-external-retry",
+      "termination": "setup-error",
+      "error_type": "OSError",
+      "loader_hits": 0,
+      "source_read_hits": 0,
+      "asset_read_hits": 0
+    }
+  ],
+  "offline_fake_pipeline": {
+    "source_read": true,
+    "asset_ready": true,
+    "asset_read": true,
+    "source_bytes_emitted": false,
+    "asset_bytes_emitted": false
+  },
+  "classification": {
+    "tooling_contract": "confirmed-bounded",
+    "runtime_loader_entry": "unconfirmed-setup-negative",
+    "strict_record_source_read": "unconfirmed",
+    "asset_read": "unconfirmed",
+    "decoder_output_or_vram": "unconfirmed",
+    "glyph_identity": "unconfirmed",
+    "roundtrip_and_insertion": "unconfirmed"
+  }
+}

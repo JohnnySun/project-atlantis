@@ -1,0 +1,61 @@
+# M2 source-shaped font-loader runtime slice（2026-08-16）
+
+## 範圍
+
+本回合沒有擴大 pointer scan，也沒有修改 state、object、save 或 ROM。可重跑工具
+是 [`tools/font_record_runtime_probe.py`](../tools/font_record_runtime_probe.py)，只
+重用 [`core/gba/gdbstub_client.py`](../../../core/gba/gdbstub_client.py) 的既有
+GDB transport。工具在 loader entry `0x080021A8` 取得該次呼叫的 `r1`，只對該
+位址設一個 byte read-watch；到固定的 `0x080021DA`（`r8` 已完成 asset address
+計算後的下一個 Thumb 指令）再對該次 `r8` asset slot 設一個 byte read-watch。
+輸出只有位址、strict record metadata、寄存器、stop metadata 與計數，不包含 source
+或 glyph bytes。
+
+strict record classification 直接重用本作 `consumer_probe.py` 的五個已核准資料窗
+與本機 strict extractor；因此只有 `r1 ==` 某一筆 strict record 起點時，才會保留
+`string_id`。window 內非起點、RAM input、ROM window 外位址都維持各自 negative
+分類，不會被高位 asset address 取代。
+
+## runtime receipt
+
+本日對本作獨立 port `24387` 做了一次 bounded setup 嘗試，ROM 只讀驗證仍通過：
+
+| 欄位 | 結果 |
+| --- | --- |
+| ROM | `TOWNARIKIRI3` / `B3TJ` / `AF` / 16 MiB |
+| CRC32 | `1867CCEF` |
+| strict record count | `8938` |
+| sequence | `start:1,none:63`（最多 64 event） |
+| loader entry hits | `0` |
+| source read hits | `0` |
+| asset read hits | `0` |
+| default sandbox setup | `PermissionError`，`[Errno 1] Operation not permitted` |
+| one permitted external retry | `OSError`，仍無 loader stop |
+
+因此本回合沒有 live source consumer、strict record provenance 或 glyph read 證據。
+這是 **runtime setup negative**，不是 `0x080021A8` consumer 的 runtime negative；
+不能把 fake client 測試中的合成 stop 當成遊戲命中，也不能宣稱 codepage、glyph
+identity、RAM decoder、VRAM writer 或回插成立。另一個權限重試在工具審核串流中斷後
+未被允許，沒有再使用其他 process、port 或 transport workaround。
+
+## offline contract
+
+`tests/test_font_record_runtime_probe.py` 以 fake client 重演三個 bounded stop：
+
+1. strict `sjis:0x146EE0` 的 source read；
+2. `0x080021DA` 的 `r8=0x080E00C4` asset address-ready；
+3. 該單一 asset slot 的 read watch。
+
+測試只驗證 probe 的清理、分類與 metadata 欄位，不提供 runtime evidence。新增的
+source-shaped loader harness 為 **confirmed tooling contract**；以下工程邊界仍是
+**unconfirmed**：
+
+- live strict source read、RAM decoder/output buffer、glyph identity；
+- codepage、字寬、控制碼語義、文字 VRAM destination；
+- event／角色／服裝／技能／戰鬥／選單分類；
+- 容量、指標重寫、壓縮邊界、round-trip、BPS 與翻譯。
+
+下一個最小切片是取得一個可連線的本作獨立 mGBA session 後，重跑同一工具並只沿
+第一個 loader hit 的 source watch 往下一個 decoder/output stop；在此之前 M2 的
+live renderer 項目保持未完成，M3 不得開始填入譯文。
+

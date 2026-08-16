@@ -92,6 +92,8 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
   edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
   仍保留為 unknown
+- [x] 建立只對 `0x080021A8`→`r1`→`0x080021DA`→`r8` 的 bounded runtime probe；
+  offline pipeline 通過，實際 mGBA setup negative 已留 receipt，未冒充 live hit
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構
