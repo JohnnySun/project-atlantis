@@ -34,6 +34,7 @@
 | ROM 身分 | `confirmed-static` | header `EIKETSUDEN`／`B3EJ`／`C8`／revision `0`，大小與 hash 已記錄 | header complement 異常要保留，不能當作 clean dump 證明 |
 | codepage | `confirmed-static` | 多個集中區可直接以標準 Shift-JIS 解出日文；probe 命中 `策略`、`劉備`、`援軍`、選單詞等 | 尚未把每一池與遊戲畫面／呼叫點逐字串對應 |
 | 文本候選區 | `confirmed-static / provisional-map` | `0x075a80–0x077100`、`0x078528–0x0786fc`、`0x07880c–0x078848`、`0x079764–0x0797e4` 有可讀 Shift-JIS／系統或事件候選 | 尚未區分完整劇情、武將、地名、官職、策略和戰役 event 的所有池 |
+| 四池 decoder | `confirmed-static / source-local` | `tools/extract_text_pools.py` 對 A `183/183`、B `44/44`、C `4/4`、D `28/28` 做 bounded absolute-pointer、NUL、Shift-JIS 驗證；A 有 `177` 筆 LF，四池均無 opaque control byte；完整原文只寫 ignored decoded JSONL | pool A/C/D 的自然畫面／劇情語意與完整 runtime glyph identity 尚未逐池核對；D 有 6 筆空字串，保留為資料而不臆測 |
 | 終止與排版 | `confirmed-static / provisional` | 多個候選字串以 `0x00` 結束，觀察到 `0x0a` LF、全形空白 `81 40` | 最大行寬、游標語意、續行規則尚未驗證 |
 | 控制／格式 | `provisional-static` | 觀察到 `ESC C6 %s` 候選序列與 `%s`／`%d`／`%u`／`%%` 參數 | `ESC C6` 是否為遊戲控制碼、參數消費規則和插入限制尚未證實 |
 | pointer width／形態 | `confirmed-static` | 32-bit little-endian absolute GBA ROM pointers；target = `0x08000000 + file offset` 的表格可重跑 | 不是所有 aligned pointer 都是文本；事件／map struct 仍需 code-flow 核對 |

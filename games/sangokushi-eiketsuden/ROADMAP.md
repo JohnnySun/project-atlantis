@@ -37,9 +37,9 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
 - [x] M2.3 補上 listener／process／port readiness check、原生 mGBA direct 對照與 transport negative 記錄；只保存 metadata／hash，不提交 runtime artifacts。
 - [x] M2.4 以兩條 fresh-process、single-connection 的 bounded natural path 取得可重現負證據，並由 `tools/m2_4_static.py` 固定 initializer → state gate `r4+0x14` → event poll → descriptor function-pointer → `0x08026054` 的正常 caller chain；自然 cohort 仍明確為 0，controlled fixture 不併入。
 - [ ] 收集自然 consumer cohort 並證明自然 event index `<44`；controlled `0 < 44` 只關閉受控 fixture 的局部 gate，不是全域證明。
-- [ ] 分別確認完整字串結構、指標／池、壓縮、控制碼、換行和其餘 runtime glyph identity；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
+- [x] 分別確認四組 bounded candidate pool 的完整 NUL／Shift-JIS／LF／控制碼統計；A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未把 noisy compression signature 當成文本壓縮。各池完整畫面語意與其餘 runtime glyph identity 仍分開 pending；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。
-- [ ] 寫出 `games/sangokushi-eiketsuden/tools/` 下的唯讀 decoder／renderer，輸出本機原文表。
+- [x] 寫出 `tools/extract_text_pools.py` 唯讀 decoder，輸出 ignored `research/sangokushi-eiketsuden-decoded.jsonl` 本機原文表與不含原文的 pool metadata；renderer 仍只使用共用 `core/gba` 工具。
 - [ ] 只有在未修改內容可抽出再回插後逐 byte 一致，才宣稱回插路徑可行。
 
 M2.3 的 evidence ledger 與 hash-only runtime receipt 見
