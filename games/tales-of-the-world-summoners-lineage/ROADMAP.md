@@ -83,8 +83,9 @@
 - [x] 擴充 `m17_font_tile_probe.py` 與 5 個純算術測試；重用 `core/gba` capture 與
   `render_vram.py`，raw／圖片／ROM 均留 private／ignored。
 - [ ] 定位 BG1 keyboard 資產初始化自己的 source／DMA／copy caller，證明它與
-  `0x005E`／`0x0066` path 的共同關係；目前 confirmed identity `0`、provisional `2`，
-  其他 code units unknown，控制碼與 source table gate 維持關閉。
+  `0x005E`／`0x0066` path 的共同關係；keyboard table identity 已分別確認為
+  `0x005E=あ`、`0x0066=う`，但 renderer transfer 仍 provisional，其他 code units
+  unknown，控制碼與 source table gate 維持關閉。
 
 ## 里程碑 1.8：BG1 keyboard asset provenance 有界切片
 
@@ -127,14 +128,56 @@
 
 ## 里程碑 2A：文字 record／codepage／控制碼研究（持續清單）
 
-- [ ] 從 `0x02004014` code-unit consumer 與 `0x08089E00 + unit*0x18` arithmetic
-  建立只輸出 metadata 的日版 record extractor；區分劇情、地圖／事件、角色、戰鬥、
-  UI／字型資源，不把候選壓縮表當文字。
+- [x] 從 `0x02004014` code-unit consumer 與 `0x08089E00 + unit*0x18` arithmetic
+  建立只輸出 metadata 的日版 record extractor；固定 `0x18` record geometry、完整
+  16-bit table bounds、record hash 與 parser provenance，不輸出原文。
+- [ ] 以 runtime pointer／caller／畫面語境把候選分離為劇情、地圖／事件、角色、戰鬥、
+  UI／字型；pointer geometry 或候選壓縮表不得單獨標成文字。
+- [x] 把 glyph addressing、glyph identity、codepage、terminator／control candidate
+  分欄；目前是 `16-bit width confirmed`、兩個 runtime-backed keyboard identity
+  confirmed（`0x005E=あ`、`0x0066=う`），另三個 row-0 table mapping confirmed，
+  renderer transfer gate 仍 provisional；`0x0000` terminator parser branch 與
+  `0xFF70` line-advance behavior candidate。
 - [ ] 以 runtime reader／consumer 的 code-unit 序列與 clean-ROM hash 交叉確認 record
-  邊界、終止、換行、變數／姓名／道具插值與 control code；glyph addressing、glyph
-  identity、codepage、control code 分欄保存。
-- [ ] 建立可重跑 `research/summoners-lineage-decoded.jsonl` 本機輸出與 source hash／
-  decoder version；完整 source 與 raw 仍 ignored，不在此階段翻譯。
+  邊界、終止、換行、變數／姓名／道具插值與 control code；`m20` 只完成靜態 parser
+  evidence，runtime sequence 與語境仍待補。
+- [x] 對 M1.7 的兩個 font consumer 建立 metadata-only BG0 tilemap cross-check：四個
+  destination tile ID 與 screenblock 座標可對齊，並保留 8×16 ink-mask hash、CPU writer
+  receipt 與 keyboard input provenance；沒有把 final hash mismatch 誤升格成 identity。
+- [x] 建立 `0x080063E0`／`0x0800638C`／`0x0800644C` 的 static Thumb BL callsite index，
+  保存 caller／literal pointer／bounded hash metadata；所有 126／10／83 個 caller
+  仍標為 `unclassified`，沒有把 pointer geometry 當成 scene role。
+- [ ] 在同一個 renderer store stop 同步取得目的 tile hash／BG0 entry，消除 immediate
+  post-store 與 final VRAM 的時間差；完成前 `0x005E`／`0x0066` 維持 provisional。
+- [x] 建立可重跑 `research/summoners-lineage-decoded.jsonl` 本機輸出與 decoder version；
+  M21 private receipt 為 7,553 個 NUL 結尾候選 row，但 6,782 個仍含 unresolved unit，
+  其餘也沒有 runtime scene context，全部 `eligible_for_ledger=false`。source text 與
+  raw 仍 ignored，不在此階段翻譯。
+- [x] 以去重候選 target 做 bounded control／blank-record frequency audit；M22 將 `0x0000`、
+  `0xFF70`、`0x0001` 與一般 font-record index 分欄，但未擅自命名 semantic 或 scene role。
+- [x] 建立 16×12 font-record static renderer；M23 以已知鍵盤假名確認 MSB-first bit order，
+  可在 private／ignored 路徑輸出 PGM 供 OCR／人工 context cross-check，不輸出 source。
+- [x] 建立 direct `0x080063E0` static caller candidate decoder；M24 僅保留 46 個 ROM-literal
+  caller rows／28 個 distinct targets，仍不賦予 runtime scene role 或 ledger eligibility。
+- [x] 將 context-derived glyph candidate 與 confirmed map 分開；M25 審計 `0x000C→ー`、
+  `0x00A8→ッ` 的 table slot／record hash／direct target counts，confirmed identity 增量為 0。
+- [x] 審計 keyboard punctuation cluster；M26 固定 `0x0006/08/09/0A/0C/0D` 的 layout
+  candidate、record metadata 與 direct occurrence counts，confirmed identity 增量仍為 0。
+- [x] 建立只供本機閱讀的 provisional overlay decoder；M27 產生 46 個 direct rows，其中
+  1 row 暫無 unresolved unit，但仍無 runtime scene proof，不進 ledger。
+- [x] 建立 source checksum／duplicate／schema drift audit；M28 對 46 個 private rows 得到
+  0 hash mismatch、0 duplicate，但因 0 runtime／eligible row，ledger gate 保持關閉。
+- [x] 以 M19 clean keyboard gate 的 BG0/BG1 hash、core renderer 與 static caller 交叉出一條
+  `ui-name-entry` candidate（M29）；仍保留 `reader_breakpoint_hit=false`、mapping provisional。
+- [x] 對既有 direct target `0x1FA616` 以 M20 parser branch、`0x0000` terminator 與 M23
+  private render layout 交叉確認 `0xFF70` 僅代表 line advance（M30）；其他 control、
+  general codepage 與 ledger gate 仍關閉。
+- [x] 以既有 headless BIOS trace 盤點 39 組 `SWI 0x12` source→VRAM tuples（M31）；
+  沒有任何解壓輸出匹配 keyboard tile-1/2，`0x1EB044→0x06004020` 只對應 reset-stage
+  hash，故仍是獨立 ROM→VRAM negative，不冒充 keyboard provenance。
+- [ ] 為每個可進 ledger 的穩定 row 產生 source checksum，讓 restore／round-trip 能
+  偵測 ROM、codepage、控制碼或 decoder drift；M21 只有 local candidate text，尚未有
+  stable translation row。
 
 ## 里程碑 2B：最小 zh-TW ledger／回插 POC
 

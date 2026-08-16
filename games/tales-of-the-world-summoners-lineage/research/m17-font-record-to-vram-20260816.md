@@ -107,6 +107,14 @@ units。三方 gate（table arithmetic、runtime tile bytes/hash、BG1 keyboard 
 沒有同時成立，所以不建立 source-table POC；codepage 與控制碼仍是獨立未證明項目，沒有
 開始翻譯或建立 ledger。
 
+### M20 correction boundary
+
+上表是 M1.7 當時以 BG1 tile-byte equality 為唯一 identity gate 的歷史判定。M20
+`m20_keyboard_codepage_probe.py` 之後以實際 name-entry table 確認 row 0 前五項，
+所以 keyboard identity 維度可獨立寫成 `0x005E=あ`、`0x0066=う`；本文件的
+`M1.7 status=provisional` 仍正確描述 renderer store 到 same-time screen bytes 的
+未完成 transfer gate，不應解讀成否定 keyboard table mapping。
+
 ## 工具與重跑
 
 `tools/m17_font_tile_probe.py` 重用 `core/gba` GDB client／capture，新增：

@@ -150,6 +150,15 @@ The DMA/copy boundary therefore remains open. This milestone confirms a code-uni
 and font-record arithmetic, but not the final runtime-tile identity, controls, or a general
 script decoder.
 
+### M20 mapping correction
+
+The `a-row-2／い` label used above was a provisional input-layout annotation, not a codepage
+proof. M20 static control-flow evidence from the actual name-entry table at `0x0808884C`
+uses `0x08052B94`'s `row*65 + selection_index` formula and identifies row 0 as
+`0x005E=あ`、`0x0062=い`、`0x0066=う`、`0x006B=え`、`0x006F=お`. Thus the observed
+second-input unit `0x0066` is row-0 slot 2／`う`; the old label remains here only as the
+historical M1.6 annotation.
+
 ## Tooling and repeatability
 
 Game-specific additions:

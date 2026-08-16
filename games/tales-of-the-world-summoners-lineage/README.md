@@ -11,8 +11,10 @@
 開始有限量翻譯，也沒有可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
 以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
 read 與 renderer CPU VRAM store；但目的位址是 `0x060020xx/0x060023xx`，不是 BG1
-`0x06004020/0x06004040`，所以 glyph identity 仍是 provisional，沒有建立 source
-table／work ledger。詳見
+`0x06004020/0x06004040`，所以 renderer transfer identity 仍是 provisional，沒有建立
+source table／work ledger。M20 的 keyboard table 已另確認 row 0 首五個 mapping；其中
+`0x005E=あ`、`0x0066=う` 有 runtime-backed identity，一般 text stream mapping 仍未完成。
+詳見
 [`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
 M1.7 的完整 writer／DMA／BG1 negative receipt 見
 [`research/m17-font-record-to-vram-20260816.md`](research/m17-font-record-to-vram-20260816.md)。
@@ -28,8 +30,12 @@ M1.9 以 strict serialized GDB 在三個 fresh process 重現 keyboard gate；�
 source/destination，兩者都沒有形成可信 source→VRAM receipt。完整 metadata 與
 negative boundary 見
 [`research/m19-gate-transfer-20260816.md`](research/m19-gate-transfer-20260816.md)。
-下一個安全技術關卡是把 font-record／runtime tile 的關係、控制碼與劇情／地圖／事件、
-角色／戰鬥資料分離，再確認可逆回插規則。
+M20 已把 `0x08089E00 + unit*0x18` record geometry、16-bit stream reader、`0x0000`
+terminator 與 `0xFF70` parser behavior candidate 做成 metadata-only probe；另以 private
+M1.7 capture 對齊 BG0 destination tile 與 screenblock 座標。因 immediate post-store 與
+final VRAM hash 有三筆不一致，pointer pool 仍未分類，general codepage mapping／control
+semantic／glyph identity 尚未完成。
+完整結論見 [`research/m20-text-record-codepage-20260816.md`](research/m20-text-record-codepage-20260816.md)。
 
 - ROM 身分、大小與雜湊已記錄；標頭補數校驗不一致，這個異常必須保留在基準資料中。
 - 全 ROM 未找到常見日文 UI 詞的 literal Shift-JIS 命中，不能把一般 Shift-JIS 當成
@@ -61,6 +67,60 @@ negative boundary 見
   PC/LR/hash；該 tile hash 不等於已知 keyboard tile，DMA source/destination 因
   queued GDB payload 污染而維持 unknown。keyboard gate 未通過，confirmed identity
   仍為 `0`，font-record path 沒有共同 caller 證據，source table／ledger／翻譯仍關閉。
+- M20 的 `m20_text_record_probe.py` 只輸出 record／stream metadata：完整 16-bit
+  record table profile、`0x080063B6` 的 `ldrh` width evidence、另一路 `0x080048DC`
+  的 8-bit packed caller、`0x0000` terminator 與 `0xFF70` line-advance candidate。
+  8,066 個 pointer references／6,705 個 targets 仍標為 unclassified，沒有產生 source
+  text、source rows 或翻譯。
+- M20 的 `m20_glyph_screen_cross_probe.py` 確認 `0x005E`／`0x0066` 的四個 CPU-store
+  destination tile 分別出現在 BG0 `(14,4)/(14,5)/(15,4)/(15,5)`；但 final VRAM 與
+  store-stop hash 有三筆不同，故 renderer transfer gate 仍 provisional；keyboard
+  table identity 則由 `m20_keyboard_codepage_probe.py` 獨立確認為 `0x005E=あ`、
+  `0x0066=う`。
+- M20 的 `m20_text_runtime_probe.py` 已留下 reset→2 秒 `0x080063E0` 無命中的 bounded
+  negative；另一輪 fresh fixed-read 在初始 protocol 階段 connection failed，兩者都不
+  被冒充為事件／選單文字命中。詳見 [`research/m20-text-runtime-20260816.md`](research/m20-text-runtime-20260816.md)。
+- M21 的 `m21_source_decoder.py` 已能在本機從 clean A9PJ 產生被 ignore 的候選
+  `research/*-decoded.jsonl`；receipt 為 7,553 個 NUL 結尾 rows，但只含目前鍵盤候選
+  的 partial codepage，所有 row 仍 `eligible_for_ledger=false`，不代表翻譯已開始。詳見
+  [`research/m21-private-decoder-20260816.md`](research/m21-private-decoder-20260816.md)。
+- M22 對 6,705 個去重候選 target 做控制碼／空白 record aggregate audit：`0x0000`、
+  `0xFF70` 與 `0x0001` 分開計數，沒有把頻率當作 semantic 或 scene proof；M23 的
+  `m23_font_render.py` 已固定 16×12 record、MSB-first raster 與 line-advance layout，
+  圖片只在 private／ignored 路徑產生。source table、ledger 與翻譯 gate 仍關閉。詳見
+  [`research/m22-control-code-audit-20260816.md`](research/m22-control-code-audit-20260816.md)
+  與 [`research/m23-font-render-20260816.md`](research/m23-font-render-20260816.md)。
+- M24 將 broad pointer candidates 收窄成 46 個直接呼叫 `0x080063E0` 的 static caller rows，
+  供後續全字串 raster／runtime context 對齊；28 個 distinct targets 仍含 unresolved
+  halfword，全部 `eligible_for_ledger=false`。詳見
+  [`research/m24-direct-callsite-decoder-20260816.md`](research/m24-direct-callsite-decoder-20260816.md)。
+- M25 將 `0x000C→ー` 與 `0x00A8→ッ` 分開記為 context-provisional：分別有 table-slot、
+  record hash 與 8 個 direct target 的 occurrence evidence，但 confirmed identity 增量仍
+  為 0，沒有打開 source／ledger gate。詳見
+  [`research/m25-context-mapping-20260816.md`](research/m25-context-mapping-20260816.md)。
+- M26 審計 row 0 punctuation cluster `0x0006/08/09/0A/0C/0D`；table slot 都能重現，
+  但只有部分 direct candidate occurrence，全部仍是 keyboard-layout-provisional，不當作
+  control semantic 或 ledger-ready codepage。詳見
+  [`research/m26-punctuation-20260816.md`](research/m26-punctuation-20260816.md)。
+- M27 以 M25/M26 overlay 產生 46 個 local direct rows；只有 1 row 暫時沒有 unresolved
+  halfword，但所有 mapping 仍 provisional、scene 未分類且 `eligible_for_ledger=false`，
+  不會因此開始翻譯。詳見
+  [`research/m27-provisional-decoder-20260816.md`](research/m27-provisional-decoder-20260816.md)。
+- M28 已對 M27 的 46 個 private rows 驗證 schema、source hash 與 stable ID（0 mismatch、
+  0 duplicate），但 runtime rows／eligible rows 都是 0，故 checksum gate 仍關閉。詳見
+  [`research/m28-source-checksum-20260816.md`](research/m28-source-checksum-20260816.md)。
+- M29 以 M19 runtime gate 的 BG0/BG1 screen hashes 與 private render 對應到
+  `0x080526FE → 0x1FA4B4` 的 name-entry UI row；classification 只提升為
+  `ui-name-entry` context candidate，reader breakpoint 仍未命中、confirmed glyph 增量仍為 0。
+  詳見 [`research/m29-ui-row-cross-20260816.md`](research/m29-ui-row-cross-20260816.md)。
+- M30 將 `0x1FA616` 的 `0xFF70` 與 M20 parser branch、`0x0000` terminator 及 M23
+  private 16×12 render layout 交叉；只確認 line advance，其他 control、codepage general
+  mapping 與 ledger eligibility 仍關閉。詳見
+  [`research/m30-control-render-cross-20260816.md`](research/m30-control-render-cross-20260816.md)。
+- M31 以既有 headless BIOS trace 盤點 39 組 `SWI 0x12` ROM→VRAM resource tuple；所有
+  解壓輸出都沒有 keyboard tile-1/2 exact hash，`0x1EB044→0x06004020` 僅重現
+  reset-stage `02d449…`。沒有 listener 或 live reader，故不打開 source／ledger gate。
+  詳見 [`research/m31-bios-trace-rom-vram-20260816.md`](research/m31-bios-trace-rom-vram-20260816.md)。
 
 ## ROM 基準
 
