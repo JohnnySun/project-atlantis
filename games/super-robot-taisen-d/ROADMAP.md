@@ -119,6 +119,10 @@
   `string_id=512228` `ai_draft`「沒有」；依 restore→working→strip 建 ledger，並與
   M1.8／M2 三筆合併驗證 duplicate codepoint reuse（新增 unique glyph 0）。這是
   static POC，不代表全語料翻譯或 runtime screen QA。
+- [x] M4 bounded UI batch-3 完成 5 筆全窄、3 unit、24px、NUL、無 control 的一般
+  UI labels；seed ledger 由 source shape 計算實際 width，5 筆與前批合併為 8 records、
+  15 unique narrow allocations，`：` codepoint 跨 record 共用。static BPS／round-trip
+  通過；完整批次與 runtime QA 仍未完成。
 - [ ] 完成全語料 encoder／回插、重抽取 byte round-trip、BPS create/apply，並以
   target／untouched／font／ROM hash 及 changed-range audit 證明沒有旁改。
 - [ ] 以獨立 mGBA 覆蓋核心流程與 translated records，記錄自然／controlled 分欄、

@@ -1,0 +1,93 @@
+{
+  "schema": "super-robot-taisen-d-m4-ui-batch3-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "translation_status": "ai_draft"
+  },
+  "selection": {
+    "record_count": 5,
+    "records": [
+      {
+        "string_id": 512252,
+        "source_raw_sha256": "79fe1b32db5a737fc22cf35291b31b426a5254652560309ea918bed68afaa7f4",
+        "source_ledger_sha256": "572a6a52e9a6e8ae7e47849da19b36d05c97bf2b072078e01a9add4358604cd3",
+        "target_payload_sha256": "ace0642cdec837f070755b24981ca4a0735bf0c7e5969219034f8431f2bd0750",
+        "target_codepoints": ["U+985E", "U+578B", "U+FF1A"]
+      },
+      {
+        "string_id": 512308,
+        "source_raw_sha256": "7ffda0ad781f3cce436de831719686abd1b55c7bdacbbdcdfc9c3956a9ad6d3b",
+        "source_ledger_sha256": "4c14fd476de3b66d18d2e79072e1a5979f4fd0c97d02e1814f8e1780e69f4918",
+        "target_payload_sha256": "7b92569c1466ed876da24af4eab899aca19a640d175af27eee6004b412c0920e",
+        "target_codepoints": ["U+5C3A", "U+5BF8", "U+FF1A"]
+      },
+      {
+        "string_id": 513780,
+        "source_raw_sha256": "df7fc74ecad1954ffbb7c21bd1079f108befdd32d2dc152377f978c2141fe629",
+        "source_ledger_sha256": "16773842656e5304f2b4d9e8109ab8e981a87db72320700cd0be25219157cca8",
+        "target_payload_sha256": "5db30cdd2888d03f1f2174c338a0757319f42a41f8c545f0df45f8d1c47806f6",
+        "target_codepoints": ["U+8CC7", "U+6599", "U+FF1A"]
+      },
+      {
+        "string_id": 516716,
+        "source_raw_sha256": "af191c639a15b95cce0a5ca767a3d87ceddcd82f62b2e14b84dbc0c4060191b8",
+        "source_ledger_sha256": "fd094cd677b409c8877af8fef0b4beddc9cec737e4632cb9edec12996e2e90bc",
+        "target_payload_sha256": "666e3058072b57a53396a143f4b5f7194e8f204e96bce54939830769f7f19b3e",
+        "target_codepoints": ["U+6280", "U+80FD", "U+FF1A"]
+      },
+      {
+        "string_id": 517320,
+        "source_raw_sha256": "5c896984634df0f089897ec33c410d98611d2867da4918a942af64a5eb1474ce",
+        "source_ledger_sha256": "df8b14c87ba1216c7a8647bd525eb4b301c68cc4aeee3a04562ffc3632b1dffe",
+        "target_payload_sha256": "0edb69870a22534e4c0a96b436b23909a49a17a6b169a7941bd21b2f171acfa4",
+        "target_codepoints": ["U+5B8C", "U+6210", "U+FF1A"]
+      }
+    ],
+    "source_unit_count_each": 3,
+    "source_payload_length_each": 6,
+    "line_width": 24,
+    "terminator": "NUL",
+    "control_token_count": 0,
+    "glyph_class": "narrow_only",
+    "same_length": true
+  },
+  "static_reinsert": {
+    "combined_records": 8,
+    "combined_unique_allocations": 15,
+    "allocated_slot_range": [529, 543],
+    "shared_codepoint": "U+FF1A",
+    "protected_blank_slots_preserved": [0, 57, 58],
+    "wide_new_slots": 0,
+    "base_rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_rom_sha256": "4c840fec53de4569abf91feb3f603efd9d760538fc95bbd813b6eba8b5740b83",
+    "bps_size": 283,
+    "bps_sha256": "25546b61ebacf565fd0f4886a78637c37d2176c4e2d14a954a559186c97bfb49",
+    "bps_apply_byte_identical": true
+  },
+  "roundtrip": {
+    "source_records": 2325,
+    "base_source_matches": 2325,
+    "target_records": 8,
+    "target_exact_matches": 8,
+    "untouched_records": 2317,
+    "untouched_exact_matches": 2317,
+    "actual_changed_bytes": 199,
+    "allowed_range_count": 23,
+    "rom_outside_allowed_ranges_equal": true,
+    "runtime_status": "pending; static re-extraction only"
+  },
+  "gate": {
+    "source_hash_matches": true,
+    "narrow_only": true,
+    "nul_terminated": true,
+    "control_tokens_empty": true,
+    "same_length": true,
+    "line_width_verified": true,
+    "duplicate_codepoint_reuse": true,
+    "wide_new_slots_zero": true,
+    "source_text_emitted": false,
+    "runtime_screen_verified": false
+  }
+}

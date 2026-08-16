@@ -813,6 +813,29 @@ source object 仍只在 ignored working。target 是同長 zh-TW `沒有`，沒�
 這是 duplicate-codepoint／第二筆同長 UI 的 bounded POC，不是批量翻譯批准。mixed／
 wide／opaque、控制碼／newline／speaker、完整語意分區與 mGBA patched screen 仍未完成。
 
+## 2026-08-16：M4 bounded UI batch-3 24px source-shape POC
+
+為驗證不只 16px 短字，選取 5 筆已確認全窄 glyph-only、3 units、24px、NUL 終止、
+control token 0 的一般 UI label。target 為 source-safe ledger 中的「類型：」「尺寸：」
+「資料：」「技能：」「完成：」，沒有專有名詞。此前 `m18_narrow_allocator.py`
+`seed-ledger` 對所有 record 寫死 16px；本輪修正為 strict source tokenization 的
+實際 line width，並以 escaped synthetic test 固定 3 narrow units → 24px。source object
+仍只在 ignored working，tracked ledger 只保留 hash／target metadata。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| selection | 5 records；每筆 6-byte payload／3 units／24px／NUL；control 0；narrow-only |
+| combined static reinsert | 8 records；15 unique allocations；slots `529..543`；`U+FF1A` 跨 record reuse；protected `[0,57,58]` preserved |
+| BPS | 283 bytes／`25546b61…`；apply byte-identical；patched ROM `4c840fec…` |
+| re-extraction | source 2325/2325；target 8/8；untouched 2317/2317；changed bytes 199；outside allowed ranges equal |
+| runtime | `pending; static re-extraction only`；不把 static hash 當成畫面證據 |
+
+這個 slice 擴大的是已證明窄字／單行／無控制碼的 static label 覆蓋，不是完整翻譯。
+變長、wide、mixed、opaque、newline／speaker／branch semantics 與 natural mGBA screen
+仍維持 fail-closed／pending。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |
@@ -826,8 +849,8 @@ wide／opaque、控制碼／newline／speaker、完整語意分區與 mGBA patch
 | runtime 邊界 | ROM entry／VRAM transfer、font slot writer 與兩個 bounded glyph consumer 均有陽性；自然 boot／menu 覆蓋仍有限 |
 | 壓縮 | 只有 BIOS／簽章候選，未確認與文本相關 |
 | 控制碼／終止碼／行寬 | NUL／窄字 bounded width 已確認；newline／完整控制語意仍未確認 |
-| 可逆回插 | 三筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
-| 翻譯 | 三筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
+| 可逆回插 | 八筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
+| 翻譯 | 八筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
 
 ## 下一輪入口
 

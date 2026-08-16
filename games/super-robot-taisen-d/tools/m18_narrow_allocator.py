@@ -634,6 +634,13 @@ def emit_seed_ledger(source_table: Path, target_offset: int, output: Path) -> No
     records = read_source_records(source_table)
     record = _record_by_offset(records, target_offset)
     source_text = str(record["text"])
+    try:
+        source_payload_bytes = source_text.encode("shift_jis", errors="strict")
+    except UnicodeEncodeError as exc:
+        raise AllocatorReject("source_hash_mismatch", address(target_offset)) from exc
+    tokenization = tokenize_payload(source_payload_bytes)
+    if not tokenization.supported:
+        raise AllocatorReject("opaque_or_control", address(target_offset))
     row = {
         "game": "super-robot-taisen-d",
         "revision": "A6SJ",
@@ -642,7 +649,12 @@ def emit_seed_ledger(source_table: Path, target_offset: int, output: Path) -> No
         "source_hash": sha256(source_text.encode("utf-8")),
         "decoder_version": DECODER_VERSION,
         "targets": {"zh-Hans": {"text": ""}, "zh-TW": {"text": ""}},
-        "context": {"max_width": 16, "max_lines": 1, "control_codes": [], "notes": "M1.8 bounded short UI record"},
+        "context": {
+            "max_width": tokenization.line_width,
+            "max_lines": 1,
+            "control_codes": [],
+            "notes": "M1.8 bounded source-shape seed",
+        },
         "status": "untranslated",
         "review_notes": "M1.8 static POC seed; source remains local-only.",
     }
