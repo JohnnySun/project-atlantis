@@ -470,8 +470,18 @@
 - [~] 59 筆是 bounded evidence cohort，不是完整 item/demon/skill source table；
   table extent、intervening semantics、complete codepage、runtime selection 與
   unanchored Unicode 仍 unknown，M2 gate 維持 blocked。
-- [ ] 從每個已命名 family 選一個相鄰未 anchor record，確認 termination/field shape
-  與 stable ID 的連續性；遇到特殊 accessor 或 category boundary 即保留 negative。
+
+## M1.35：相鄰 record shape／termination 與 identity
+
+- [x] 從 item/demon/skill named prefix 各選下一筆 record（ordinal `8/16/32`），
+  驗證 table base、stride、field offset、16-byte bounded field 與 zero termination。
+- [x] 三筆相鄰 record 都以多來源日文 reference 做 private identity comparison；
+  field hash、observed unit count、termination、preceding stable ID 與 candidate ID
+  可重抽取，未提交 unit/raw/source。
+- [~] 三筆只證明 bounded adjacency，不證明完整 family extent、intervening semantics、
+  runtime selection 或 complete codepage；M2 ledger、翻譯與 patch gate 繼續 blocked。
+- [ ] 若有下一筆可多來源核對的 sparse anchor，選一個 category boundary 風險最低的
+  record；否則轉向自然 caller 的 source/index provenance，不以連續位址填補語意。
 
 ## M2：可審核翻譯 ledger
 

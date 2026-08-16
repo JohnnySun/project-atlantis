@@ -533,6 +533,23 @@ namespace 的 table base/stride 與 private identity hash、combined manifest ha
 translation ledger，也不宣稱完整 source table/codepage。M2 ledger、翻譯與 patch
 gate 仍 blocked。詳見 `research/m1.34-semantic-manifest-20260816.md`。
 
+M1.35 相鄰 record shape／termination（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m135_adjacent_records.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m135-adjacent.json
+```
+
+工具各選一筆 named prefix 後的 adjacent record：item ordinal 8、demon ordinal
+16、skill ordinal 32。三筆都是完整 16-byte field、固定最多 8 units、zero
+terminated，且 private multi-source identity comparison 全部 match；輸出只有
+stable-ID candidate、preceding ID、地址、field hash、length/count、termination
+與 status，不輸出 unit、日文、raw field、glyph 或 translation ledger。這只確認
+三個 bounded adjacency，沒有升格成完整 family extent/codepage。詳見
+`research/m1.35-adjacent-records-20260817.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -547,10 +564,11 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 `0x0819cb74` demon accessor（stride `0x60`、field `+0x22`）建立獨立 anchor family，
 M1.31 再確認 `0x0819b9f4` skill prefix，M1.32 已接通五筆
 code-unit→font-bank→renderer static edge，M1.33 已固定 reader control／cursor
-step 與 OAM layout contract，M1.34 已建立 59 筆 bounded semantic manifest。下一步
-各 family 只選一個相鄰未 anchor record，確認 termination／field shape／stable ID
-連續性；若 runtime listener 仍 blocked，最多沿同一 named source caller 三層追 RAM
-object/table initializer。不能把
+step 與 OAM layout contract，M1.34 已建立 59 筆 bounded semantic manifest，M1.35
+已確認三筆 adjacent record 的 shape／termination／identity。下一步只在有多來源
+reference 的 sparse record 或自然 caller source/index edge 上前進；若 runtime
+listener 仍 blocked，最多沿同一 named source caller 三層追 RAM object/table
+initializer。不能把
 command pointer、font-bank shape 或人工 OCR 當成完整文字來源；item、skill、demon、
 劇情與系統 data families 必須分開記錄。
 
