@@ -25,6 +25,12 @@
   render hash 與 clean 完全相同，因此這是 known-screen／state-change receipt 和 D
   consumer negative，不是已翻譯 menu QA 或自然 `<44` 證明；詳見
   `research/m2-6-natural-menu-runtime-20260816.md`。
+- **M2.7 menu-selection negative（2026-08-16）已完成有界收尾**：START 後等待、DOWN×4、
+  A×2 的第二條 32-event path 仍停在 `0x0805CF5E` title poll，沒有進入
+  `0x0800C61C` normal reader 或任何 B/D/E consumer；`DISPCNT`／VRAM／OAM menu receipt
+  與 M2.6 相同。下一步改做 `0x0805D10C` title menu owner／`0x0801A738` state gate
+  的 static 對應，不再盲目延長 title-only 導航；詳見
+  `research/m2-7-menu-selection-negative-20260816.md`。
 - **獨立 story-event pool E static consumer chain（2026-08-16）已建立**：`tools/analyze_story_pool.py` 固定 file `0x0CDB64`／GBA `0x080CDB64` 的 33 entries、33 unique targets（`0x077328–0x077E68`）、32/33 LF、33/33 strict Shift-JIS、0 opaque controls；`0x08011990` literal 與 caller span 的 27 個 entry-range slots 接到 `0x08011904` → `0x080118C8` → `0x0800CAD8`。這是 static-consumer-confirmed、natural-runtime-pending；story pool 與四池 custom-glyph audit 分離，因 E source 使用 `0x8141`／`0x8142`／`0x8148`／`0x8158`，不能盲套既有 17-map。
 - **E 已知結局流程交叉證據（2026-08-16）已建立**：日文 GBA 攻略 Wiki 的夷陵／劉備生死結局流程，和 E pool 的 hash-only record 分組相符；另有系列流程資料交叉支持史實／假想與生死差異。這只標為 `provisional-known-screen-cross`，不冒充自然 runtime glyph receipt；詳見 `research/m3-story-known-screen-cross-20260816.md`。
 - **E known-screen／codepage／layout bounded cross-check（2026-08-16）已建立**：E:000–E:032
