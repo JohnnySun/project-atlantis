@@ -46,7 +46,10 @@
 - [ ] M1.9 patched target runtime：在新的獨立 mGBA process／port 重新捕捉
   slots `543/542` 的 writer destination、cache／VRAM hash 與相鄰 record；自然
   menu／queue、newline branch 仍須分開驗證。已嘗試新 port `24731`：launcher 成功，
-  但 GDB socket／approval transport 未能提供 probe，維持 `not_observed`。
+  但 GDB socket／approval transport 未能提供 probe，維持 `not_observed`。另一次
+  自有 patched process `2346` 通過 font-base guard 卻在 target loop 只得到
+  `codepage=1/glyph=1`（預期 2），fail-closed；後續 trace 在 initializer 前
+  `S04/PC=0x4`，writer／tile／screen proof 仍 pending。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
@@ -121,6 +124,11 @@
   refs／915 literal candidates 中 609 個 exact source candidates 對應 370 筆 record，
   並按 structural partition 保存 caller／literal confidence 與 ID hash；semantic
   partition 仍明確標為 `unclassified`，不把 pointer 命中外推成話數／UI／劇情。
+- [x] M1.12 bounded semantic/caller boundary 重用同一 pointer report，不做新掃描；
+  609 exact candidates／370 records 形成 123 個 caller cohorts（輸出前 32），與
+  2325 structural partition、2 個 controlled runtime positive 的 overlap/hash 分欄。
+  story／branch／battle／unit／UI 語意仍 `unconfirmed`，newline／speaker／最大寬度
+  也不外推；摘要在 `research/m112-semantic-caller-boundary.json`。
 - [x] M4 full-corpus fail-closed gate 完成 2325/2325 strict source／NUL／token no-op
   重讀；12 筆 ledger 全在窄字 accepted subset，其餘 927 筆窄字尚未翻譯、833 筆混合、
   417 筆全寬、136 筆 opaque／unaligned 明確拒絕。`full_encoder_status` 維持

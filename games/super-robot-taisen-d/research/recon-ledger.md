@@ -577,6 +577,42 @@ session 的 process／port，也沒有把這次 transport negative 解讀成 ROM
 清理與 transport 結果；patched target、slot `543/542` writer／VRAM、screen layout、
 NUL／newline runtime branch 均維持 `not_observed`／pending。
 
+## 2026-08-16：M1.9 patched controlled retry／bounded runtime negative
+
+在自己的 headless mGBA PID／port `2346` 上，以 M1.8 patched ROM（SHA-256
+`b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce`）及既有 BPS
+（SHA-256 `4f694170e119fdf8a9f3113ddca9aec0850f07fdfd1adc75bfca46643a4e0f31`）做
+一次 single-connection controlled consumer。font-base nonzero guard 通過，表示
+這次確實走到已證明的初始化後 consumer setup；但 target `0x08080858` 的 static
+NUL／兩窄字 contract 預期兩個 unit，runtime probe 只得到一個 codepage lookup 與
+一個 narrow glyph event，於 `codepage=1/glyph=1/expected=2` fail-closed。沒有把
+未完成 loop 當成 target render proof；writer destination、tile/cache hash 與 screen
+均標為未捕捉。
+
+同一 session 的下一次 bounded metadata trace 在 initializer 前收到 `S04`、
+`PC=0x00000004`，也沒有產生 runtime evidence；兩個自己啟動的 process 都已停止，
+沒有使用其他 session 的 ROM／process／port。這兩次結果寫入
+`research/m19-runtime-qa.json` 的 `controlled_attempt_2346` 與 `trace_attempt_2346`，
+只代表 runtime／startup negative，不代表 ROM 或譯文失敗；本切片不再增加 restart。
+
+## 2026-08-16：M1.12 semantic/caller boundary
+
+`tools/m112_semantic_caller_boundary.py` 只重用 ignored `pointer-caller-report.json`，
+不重新做全 ROM pointer scan。它把 609 個 exact source candidates／370 個 source
+records 依 function-start 分成 123 個 caller cohorts，完整 coverage 由 candidate／
+record ID hash 保存，tracked report 只回傳前 32 個 bounded cohorts，並分列 300 個
+無 function-start anchor 的 exact candidates。每 cohort 只保存 caller address、
+literal/confidence、structural partition、following call-target count 與 hash，沒有
+原文或完整 source table。
+
+同一報告重讀 strict source／NUL／token shape 2325/2325，保留 939 narrow、833 mixed、
+417 wide、136 opaque 的 structural boundary；M1.6 的 2 個 controlled runtime
+positive 與 exact-pointer overlap（1 筆）分欄，natural caller／screen 仍
+`not_observed`。story、branch、battle dialogue、unit/pilot/weapon/spirit、UI、
+speaker、newline 與 engine width limit 全部 `unconfirmed`；wide existing-slot map
+仍為 743 identities、runtime confirmed 1、新 wide capacity 0。這是分類邊界與下一個
+runtime gate，不是語意分類或新增翻譯。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

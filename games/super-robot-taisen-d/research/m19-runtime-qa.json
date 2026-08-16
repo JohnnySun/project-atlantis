@@ -101,6 +101,36 @@
       "process_cleanup": "own mGBA process stopped cleanly",
       "rom_or_translation_failure": false
     },
+    "controlled_attempt_2346": {
+      "independent_port": 2346,
+      "fresh_process_started": true,
+      "rom_role": "patched M1.8 static POC",
+      "rom_sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce",
+      "bps_sha256": "4f694170e119fdf8a9f3113ddca9aec0850f07fdfd1adc75bfca46643a4e0f31",
+      "single_gdb_connection": true,
+      "font_base_nonzero_guard": true,
+      "consumer_pc": "0x08008724",
+      "target_source_address": "0x08080858",
+      "expected_static_narrow_unit_count": 2,
+      "observed_codepage_lookup_count": 1,
+      "observed_narrow_glyph_count": 1,
+      "probe_result": "fail_closed_unit_count_mismatch",
+      "error_metadata": "consumer unit count mismatch for target: codepage=1 glyph=1 expected=2",
+      "writer_destination_or_tile_hash": "not_captured_after_fail_closed_abort",
+      "patched_target_screen": "not_observed",
+      "rom_or_translation_failure": false,
+      "process_cleanup": "own mGBA process stopped cleanly"
+    },
+    "trace_attempt_2346": {
+      "independent_port": 2346,
+      "fresh_process_started": true,
+      "rom_role": "patched M1.8 static POC",
+      "metadata_probe": "m19_runtime_trace.py",
+      "initializer_stop": "S04 at PC 0x00000004 before both slot writes",
+      "runtime_evidence": "not_observed",
+      "process_cleanup": "own mGBA process stopped cleanly",
+      "rom_or_translation_failure": false
+    },
     "required_followup": [
       "fresh independent mGBA process and port",
       "base and patched controlled consumer captures",

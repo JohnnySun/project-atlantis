@@ -353,6 +353,11 @@ queue 觸發尚未取代這條受控驗證。
 - [ ] M1.9 follow-up 新啟動自己的 mGBA `24731`；launcher 成功但 unprivileged GDB
   socket 被 sandbox 拒絕，escalated probe 又遇 approval transport negative，沒有產生
   runtime evidence；不把它誤報成 ROM／譯文失敗。
+- [ ] 本輪以自己 PID／port `2346` 對 patched M1.8 ROM 重新進行 controlled consumer：
+  font-base nonzero guard 通過，但 target `0x08080858` 僅觀察到 1 個 codepage／narrow
+  glyph event（static NUL record 預期 2 個），probe fail-closed；writer／tile hash
+  與 screen proof 未產生。第二次 bounded trace 在 initializer 前停於 `S04/PC=0x4`，
+  兩個 process 都已清理，均不解讀成 ROM／譯文失敗。
 - [ ] 在新的獨立 mGBA process／port 完成 M1.9 patched target 與相鄰 record 的
   controlled writer/cache 或 VRAM hash proof；自然 menu／queue 仍不宣稱已達成。
 - [x] M1.10 完成 2325 筆 source record 的 NUL／ordering／overlap／ROM equality
@@ -375,6 +380,12 @@ queue 觸發尚未取代這條受控驗證。
   pointer refs、915 literal candidates、609 exact source candidates／370 records 的
   source-safe caller／literal metadata；semantic labels 保持 `unclassified`，未擴張成
   話數／UI／分支語意。摘要在 [`research/m4-source-provenance.json`](research/m4-source-provenance.json)。
+- [x] M1.12 建立 source-safe semantic/caller boundary：重用既有 4,947 pointer refs／
+  915 literal candidates，對 609 exact source candidates 分成 123 個 caller cohorts，
+  回傳前 32 個 bounded cohort 與完整 ID／instruction hashes；2325 筆 structural
+  partition、2 筆 controlled runtime positive 與 exact-pointer overlap 分開保存。
+  story／branch／battle／unit／UI、speaker、newline 與 engine width limit 均維持
+  `unconfirmed`，沒有新增翻譯。摘要在 [`research/m112-semantic-caller-boundary.json`](research/m112-semantic-caller-boundary.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
