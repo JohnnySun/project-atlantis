@@ -415,6 +415,14 @@ queue 觸發尚未取代這條受控驗證。
   exact pointer coverage 分開保存，story／branch／battle／unit／UI 與 natural caller
   仍 `unconfirmed`／`not_observed`。不重新掃描 pointer、不新增翻譯。摘要在
   [`research/m117-corpus-coverage.json`](research/m117-corpus-coverage.json)。
+- [x] M1.18 將已驗證的 `0x08008724` consumer 與 2325 筆 source 統一成
+  fail-closed control／layout contract：NUL terminator、two-byte narrow／wide glyph
+  與未知 unit 的 opaque/reject policy；source／NUL／token no-op 均 2325/2325，並
+  保存 narrow 11902、wide 3983、ASCII/format-like opaque 1032、unaligned tail 88
+  的 source-safe metadata。consumer 沒有 dedicated newline branch，但 newline、speaker、
+  branch 語意與 engine width limit 仍未證明；624 筆單行窄字 `<=64px` 只是保守
+  static subset，不解除其他 partition 的拒絕。摘要在
+  [`research/m118-control-layout-contract.json`](research/m118-control-layout-contract.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

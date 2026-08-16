@@ -737,6 +737,36 @@ unit/pilot/weapon/spirit、UI 全部保持 `unconfirmed`；controlled runtime po
 這個 matrix 補的是覆蓋缺口與下一個 caller work queue，不是話數／分支／戰鬥／機體語意
 完成，也沒有解除 opaque／wide／newline／speaker／最大寬度的 fail-closed 邊界。
 
+## 2026-08-16：M1.18 unified control／newline／branch／layout contract
+
+本輪沒有重新做廣泛 pointer scan，也沒有修改 ROM。`tools/m118_control_layout_contract.py`
+重用已驗證的 `0x08008724` consumer contract、strict source table 與 M1.16 layout-safe
+摘要；它只輸出 instruction/function hash、offset／ID digest、token class、count 與 gate，
+不把完整 source text 寫入 tracked report。
+
+### 可重現結果
+
+| gate／分類 | 結果 |
+| --- | --- |
+| source／NUL／token encode no-op | `2325/2325`、`2325/2325`、`2325/2325` |
+| consumer grammar | NUL terminator；兩 byte narrow／wide glyph；其他 unit `opaque_and_reject` |
+| glyph counts | narrow `11902`；wide `3983` |
+| opaque counts | ASCII／format-like `1032`；unaligned tail `88` |
+| observed width | `0..240px`；不是 engine maximum proof |
+| layout-safe subset | `624` 筆 glyph-only narrow、single-line、observed width `<=64px` |
+
+`0x08008724` 的 bounded disassembly gate 顯示沒有 dedicated newline branch；這只代表本輪
+靜態 consumer window 的 branch 結構，不代表整個引擎沒有以其他 caller／script 方式換行。
+newline、speaker、branch 語意與 engine width limit 仍標為 `unconfirmed`，unknown token
+維持 opaque/reject；因此 M1.18 沒有新增翻譯，也沒有解除 mixed／wide／opaque 或變長
+record 的 fail-closed 邊界。
+
+本輪驗收：工具輸出標籤明確標成 `static_no_newline_branch`，M1.18 單元測試與完整本作
+工具測試、core/gba、strict source、AST、ledger schema、repository safety 均需在 commit
+前重跑並保存命令／結果。下一步回到自然或 controlled caller/callsite 的 runtime reroute，
+並優先覆蓋 newline／speaker／branch／最大寬度與 story／battle／unit 分類；在沒有新語意
+或畫面證據前不擴張 static UI 翻譯批次。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

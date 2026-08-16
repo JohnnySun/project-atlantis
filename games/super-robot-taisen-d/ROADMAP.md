@@ -74,6 +74,13 @@
   exact／uncovered record hash 分欄。story／branch／battle／unit／UI 與 natural caller
   不由 pointer 命中推定，仍 `unconfirmed`／`not_observed`。摘要在
   `research/m117-corpus-coverage.json`。
+- [x] M1.18 由 `0x08008724` bounded consumer disassembly 與全 corpus 建立統一
+  control／layout fail-closed contract：NUL terminator、two-byte narrow／wide glyph、
+  unknown unit opaque/reject；source／NUL／token no-op 皆 2325/2325，並保存各 token
+  class 的 source-safe count/hash。已確認 consumer 沒有 dedicated newline branch，
+  但 newline／speaker／branch semantics 與 engine width limit 仍未確認；單行窄字
+  `<=64px` 的 624 筆只是保守 static subset。摘要在
+  `research/m118-control-layout-contract.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

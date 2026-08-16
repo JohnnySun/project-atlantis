@@ -1,0 +1,174 @@
+{
+  "consumer": {
+    "code_sha256": "b318d2b6e3dda2242397c61e2f9519114d7d898fe33c5475c93c99fa31abb613",
+    "consumer": "0x08008724",
+    "final_mode_branch": {
+      "compare": {
+        "mnemonic": "cmp",
+        "operands": "r0, #1",
+        "pc": "0x0800896C"
+      },
+      "equal_path": "bounded direct destination copy path",
+      "equal_value": 1,
+      "other_branch": {
+        "mnemonic": "bne",
+        "operands": "#0x80089c6",
+        "pc": "0x0800896E"
+      },
+      "other_branch_target": "0x080089C6",
+      "other_path": "opaque helper path; no speaker/newline name assigned",
+      "sign_extend": {
+        "mnemonic": "asrs",
+        "operands": "r0, r1, #0x10",
+        "pc": "0x08008968"
+      }
+    },
+    "glyph_units": {
+      "cursor_advance_pixels": "8 for low-byte <= 0x87; 12 otherwise",
+      "load": {
+        "mnemonic": "ldrh",
+        "operands": "r1, [r5]",
+        "pc": "0x08008774"
+      },
+      "loop_back": {
+        "mnemonic": "bne",
+        "operands": "#0x8008774",
+        "pc": "0x08008796"
+      },
+      "loop_back_target": "0x08008774",
+      "narrow_branch": {
+        "mnemonic": "bls",
+        "operands": "#0x8008788",
+        "pc": "0x0800877C"
+      },
+      "narrow_branch_target": "0x08008788",
+      "narrow_width_add": {
+        "mnemonic": "movs",
+        "operands": "r1, #8",
+        "pc": "0x08008788"
+      },
+      "source_cursor_advance_bytes": 2,
+      "verified_unit_bytes": 2,
+      "wide_width_add": {
+        "mnemonic": "add",
+        "operands": "sl, r0",
+        "pc": "0x08008780"
+      },
+      "width_compare": {
+        "mnemonic": "cmp",
+        "operands": "r0, #0x87",
+        "pc": "0x0800877A"
+      }
+    },
+    "line_layout": {
+      "accumulator_register": "sl",
+      "allocation_unit": 64,
+      "branch_state": "opaque; mode field is only compared, not semantically named",
+      "glyph_render_rows": 12,
+      "initial_value": 0,
+      "newline_branch": false,
+      "partial_tile_flag": "accumulated_pixel_width & 7 != 0",
+      "speaker_field": "opaque; not named by this function",
+      "tile_column_formula": "ceil(accumulated_pixel_width / 8)",
+      "tile_row_bytes": 32
+    },
+    "terminator": {
+      "compare": {
+        "mnemonic": "cmp",
+        "operands": "r0, #0",
+        "pc": "0x0800876E"
+      },
+      "exit": {
+        "mnemonic": "beq",
+        "operands": "#0x8008798",
+        "pc": "0x08008770"
+      },
+      "exit_target": "0x08008798",
+      "render_loop_exit": {
+        "mnemonic": "beq",
+        "operands": "#0x8008958",
+        "pc": "0x08008954"
+      },
+      "render_loop_exit_target": "0x08008958",
+      "render_loop_load": {
+        "mnemonic": "ldrb",
+        "operands": "r0, [r5]",
+        "pc": "0x08008950"
+      },
+      "source_byte_load": {
+        "mnemonic": "ldrb",
+        "operands": "r0, [r5]",
+        "pc": "0x0800876C"
+      },
+      "token": "NUL"
+    },
+    "unknown_semantics": [
+      "newline",
+      "speaker",
+      "branch mode meaning",
+      "full multi-line policy"
+    ]
+  },
+  "game_code": "A6SJ",
+  "gate": {
+    "engine_width_limit_proven": false,
+    "nul_2325": true,
+    "rom_hash_match": true,
+    "semantic_translation_complete": false,
+    "source_records_2325": true,
+    "source_text_emitted": false,
+    "static_no_newline_branch": true,
+    "token_encode_no_op_2325": true,
+    "unknown_tokens_fail_closed": true
+  },
+  "layout_safe_subset": {
+    "accepted_id_index_sha256": "f8695cb61bcaa2b5cf5068d93f4832cb0e866c260876799ab41a4a8b52110965",
+    "accepted_record_count": 624,
+    "max_lines": 1,
+    "width_cap_is_engine_limit": false,
+    "width_cap_pixels": 64
+  },
+  "rom": {
+    "expected_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "hash_match": true,
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84"
+  },
+  "schema": "super-robot-taisen-d-m118-control-layout-contract-v1",
+  "source_corpus": {
+    "nul_terminated_count": 2325,
+    "observed_width_maximum": 240,
+    "observed_width_minimum": 0,
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_count": 2325,
+    "record_id_index_sha256": "9525ea0db01754260c57d64746d2c2bc665b5239494526d3eb5d6371b42a831d",
+    "token_encode_no_op_count": 2325
+  },
+  "source_policy": {
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false
+  },
+  "token_policy": {
+    "all_other_units": "opaque_and_reject",
+    "branch_semantics": "unconfirmed",
+    "glyph_counts": {
+      "narrow": 11902,
+      "wide": 3983
+    },
+    "known": [
+      "NUL terminator",
+      "two-byte narrow glyph",
+      "two-byte wide glyph"
+    ],
+    "newline_semantics": "unconfirmed",
+    "opaque_counts": {
+      "opaque_ascii_or_format": 1032,
+      "opaque_unaligned_tail": 88
+    },
+    "speaker_semantics": "unconfirmed"
+  }
+}
