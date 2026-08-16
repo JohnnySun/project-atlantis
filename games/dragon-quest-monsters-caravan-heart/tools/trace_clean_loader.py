@@ -268,7 +268,13 @@ def main() -> None:
         if args.rom is None:
             parser.error("--rom is required with --mgba")
         emulator = subprocess.Popen(
-            [str(args.mgba), "-g", str(args.rom)],
+            [
+                str(args.mgba),
+                "-C",
+                f"ports.qt.gdbPort={args.port}",
+                "-g",
+                str(args.rom),
+            ],
             cwd=REPO_ROOT,
             env={**os.environ, "QT_QPA_PLATFORM": "offscreen"},
             stdout=subprocess.DEVNULL,

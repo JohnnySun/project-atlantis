@@ -11,12 +11,17 @@
 
 ## M1：文字與字型系統
 
+目前進度（尚未完成 M1）：clean ROM 已證明文本 consumer、三層 script pointer selection、`0x92`／`0x93` 雙 byte glyph 合成、`E0`／`E1` alternate-glyph 消費、glyph writer 的 32／64-byte stride／DMA3 路徑與可達 menu tilemap；codepage 完整 mapping、控制碼語義、字寬／VWF writer、所有 script 邊界與 round-trip 仍開放。
+
 - [ ] 找到文本的儲存形式：固定表、腳本 bytecode、壓縮 blob 或執行期生成資料。
-- [ ] 找到文本消費者、字型搬移與實際螢幕渲染路徑。
+- [x] 找到文本消費者、字型搬移與實際螢幕渲染路徑（clean `0x08012500`／`0x08013738`／`0x08013E00`／`0x08013E4C` 與 menu VRAM 已交叉驗證；`E0`／`E1` 指向 alternate pool `0x082E0BD4`）。
 - [ ] 追蹤 title／menu／事件畫面，區分 tile、bitmap、sprite 與可能的 VWF 路徑。
 - [ ] 確認指標／bank／壓縮格式與控制碼，不套用其他遊戲假設。
 - [ ] 建立可重跑的 `research/*-decoded.jsonl` 本機原文表。
-- [ ] 分別記錄 glyph addressing 與 glyph identity 的證據層級。
+- [x] 以 clean pointer spans 統計 `FF`／缺少 `FF`／`FF` 後資料，保留 terminator 僅為候選而不誤切 script boundary。
+- [x] 分別記錄 glyph addressing 與 glyph identity 的證據層級（目前已完成一筆 38-token exact output round-trip；全遊戲 mapping 仍是後續工作）。
+- [x] 固定 clean glyph writer／DMA3／layout 的可重跑靜態 receipt（完整 VWF 寬度與換行語義仍未完成）。
+- [x] 固定 `E0`／`E1` 一 byte look-ahead 與 alternate glyph pool 的 consumer receipt（索引到 Unicode 的 identity 仍未命名）。
 
 ## M2：帳本與有限翻譯
 
