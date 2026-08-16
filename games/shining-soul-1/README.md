@@ -47,10 +47,33 @@
 不改任何可執行碼。
 
 **容量**：每類 256 格（由 struct 前綴 `word[1]=0x9820` 宣告），category 5–15 共 11 類未用
-→ 最多 **2,816 格**。詳見 `SESSION-LOG.md` 第二十輪。
+→ 最多 **2,805 格**（每類可定址 255 格：代碼低位元組 0x01–0xFF ⇒ 索引 0–254，0x00 是字串終止碼；struct 宣告的第 256 格存在於儲存空間但無法被指名）。詳見 `SESSION-LOG.md` 第二十輪。
 
-**尚未做到**：這仍是驗證機制用的 POC，還不是通用編碼器——「翻譯批次→相異漢字集合→槽位分配」
-的系統化流程，以及字串變長時（本遊戲無指標表、字串池位置固定）的安置解法，都還沒有。
+### 通用編碼器：已可用（第二十輪，實機驗證通過）
+
+`tools/build_translation_rom.py` 把上面的機制從一次性 POC 變成完整管線：讀取帳本工作記錄
+（`work/*.jsonl`）→ 收集相異字元 → 配置到新 category 的槽位 → 插入字形點陣 → 就地改寫字串
+代碼陣列 → 輸出 ROM。
+
+```sh
+python3 games/shining-soul-1/tools/build_translation_rom.py \
+  --rom games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba \
+  --out games/shining-soul-1/roms/build/ss1-zh-tw.gba \
+  --locale zh-TW --batch 'games/shining-soul-1/work/*.jsonl'
+```
+
+目前實績：23 筆已翻譯記錄中 **21 筆成功寫入**（70 個相異字元，全部裝進 category 5，
+剩餘 2,735 格空間），mGBA 實機確認職業選擇畫面顯示「請選擇職業」、顏色選擇畫面顯示
+「請選擇顏色」。**fail-closed**：放不下的記錄一律跳過並列出原因，絕不溢出到下一個條目——
+本次 2 筆跳過（一筆 marker 宣告 2 行但譯文只有 1 行、一筆超出預算 2 bytes）。
+
+**字寬**：本輪量測發現遊戲自己的漢字墨水寬度上限恰為 13px，與 sprite 前進距離 13px 相同；
+GNU Unifont 的 CJK 字形是 15px，直接插入會讓每個字與鄰字重疊 2px（第一次端到端渲染已實際
+出現）。編碼器預設用 LANCZOS＋門檻把字形壓縮到 13px（`--ink-width`，設 0 可停用），壓縮後
+字距與原文一致且字形仍清晰。
+
+**尚未做到**：字串**變長**時的安置解法仍未解——本遊戲沒有指標表、字串池位置固定，
+目前只能在既有預算內改寫，譯文長於預算就只能跳過或改短。
 
 ### 已提交的翻譯帳本（4 批，23 筆）
 
@@ -83,7 +106,7 @@
 
 ## 工具清單
 
-全部在 `games/shining-soul-1/tools/`。純靜態（讀 ROM 檔案，不需模擬器）：`scan_compression_signatures.py`、`scan_swi_calls.py`、`scan_pointer_tables.py`、`scan_sjis_runs.py`、`disasm_swi_calls.py`（需要 `/usr/bin/python3`，capstone 只裝在這個直譯器上）、`scan_sentence_strings.py`、`extract_string_pool.py`、`scan_string_pools.py`、`scan_category_stats.py`、`decode_strings.py`（原文表抽取器）、`ocr_render_lines.py`／`ocr_prepare_corpus.py`／`ocr_align_vote.py`／`ocr_contact_sheet.py`（OCR＋投票管線）。**會寫出 ROM 檔案的兩支**（都只寫新的輸出檔，不改基準 ROM）：`build_cn_glyph_poc.py`（第十五輪，填 category 4 殘餘空格位）、`build_cn_glyph_category5_poc.py`（第二十輪，整類新增 category 5）。
+全部在 `games/shining-soul-1/tools/`。純靜態（讀 ROM 檔案，不需模擬器）：`scan_compression_signatures.py`、`scan_swi_calls.py`、`scan_pointer_tables.py`、`scan_sjis_runs.py`、`disasm_swi_calls.py`（需要 `/usr/bin/python3`，capstone 只裝在這個直譯器上）、`scan_sentence_strings.py`、`extract_string_pool.py`、`scan_string_pools.py`、`scan_category_stats.py`、`decode_strings.py`（原文表抽取器）、`ocr_render_lines.py`／`ocr_prepare_corpus.py`／`ocr_align_vote.py`／`ocr_contact_sheet.py`（OCR＋投票管線）。**會寫出 ROM 檔案的三支**（都只寫新的輸出檔，不改基準 ROM）：`build_translation_rom.py`（第二十輪，**通用編碼器，日常構建用這支**）、`build_cn_glyph_poc.py`（第十五輪，填 category 4 殘餘空格位）、`build_cn_glyph_category5_poc.py`（第二十輪，整類新增 category 5 的機制驗證，同時是編碼器的字形／常數來源模組）。
 
 需要背景啟動 `mgba -g games/shining-soul-1/roms/base/Shining_Soul_JP_AHUJ8P.gba`（連線前先 `ps aux | grep mgba` 確認沒有殘留的孤兒行程）：`gdbstub_client.py`（GDB stub 用戶端函式庫）、`render_vram_tiles.py`、`navigate_and_dump.py`、`extract_bg_fonttable.py`、`navigate_to_char_create.py`、`extract_obj_kana_fonttable.py`、`trace_sentence_glyph_load.py`、`trace_glyph_source_array.py`、`trace_sentence_string_source.py`、`extract_kanji_fonttable.py`、`render_string_glyphs.py`、`dump_category_dispatch_table.py`、`hijack_and_capture_glyph_sources.py`、`render_oam_composite.py`、`trace_dispatch_table_init.py`（第十六輪，追 IWRAM 查表初始化）。
 

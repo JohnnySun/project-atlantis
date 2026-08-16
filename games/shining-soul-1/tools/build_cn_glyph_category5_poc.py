@@ -146,16 +146,34 @@ def load_unifont_glyph(codepoint, path=UNIFONT_PATH):
     raise KeyError("U+%04X not found in %s" % (codepoint, path))
 
 
-def hex_to_bits(hexstr, width=16, height=16):
+def hex_to_bits(hexstr, height=16):
+    """Decode a Unifont hex bitmap. Width is derived from the data, not
+    assumed: Unifont stores full-width glyphs as 2 bytes/row (16px) and
+    half-width ones as 1 byte/row (8px). Session 20's POC only ever used
+    full-width kanji and so hardcoded width=16, which raised a negative
+    shift count the first time the general encoder met a narrow glyph.
+    """
     nbytes = len(hexstr) // 2
     bytes_per_row = nbytes // height
+    width = bytes_per_row * 8
     rows = []
     for r in range(height):
         row_hex = hexstr[r * bytes_per_row * 2:(r + 1) * bytes_per_row * 2]
         val = int(row_hex, 16)
-        bits = [(val >> (bytes_per_row * 8 - 1 - b)) & 1 for b in range(width)]
-        rows.append(bits)
+        rows.append([(val >> (width - 1 - b)) & 1 for b in range(width)])
     return rows
+
+
+def pad_to_cell(bits, width=16):
+    """Centre a narrower glyph in the game's fixed 16px-wide cell."""
+    have = len(bits[0])
+    if have == width:
+        return bits
+    if have > width:
+        raise ValueError(f"glyph is {have}px wide, wider than the {width}px cell")
+    left = (width - have) // 2
+    right = width - have - left
+    return [[0] * left + row + [0] * right for row in bits]
 
 
 def bits_to_shaded_grid(bits):
@@ -187,7 +205,7 @@ def grid_to_glyph_bytes(grid):
 
 def codepoint_to_glyph_bytes(codepoint):
     bitmap = load_unifont_glyph(codepoint)
-    bits = hex_to_bits(bitmap)
+    bits = pad_to_cell(hex_to_bits(bitmap))
     grid = bits_to_shaded_grid(bits)
     return grid_to_glyph_bytes(grid)
 
