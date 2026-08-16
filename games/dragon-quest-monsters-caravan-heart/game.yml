@@ -1,0 +1,21 @@
+id: dragon-quest-monsters-caravan-heart
+platform: gba
+titles:
+  ja: "ドラゴンクエストモンスターズ キャラバンハート"
+  en: "Dragon Quest Monsters: Caravan Heart"
+  zh-TW: "勇者鬥惡龍怪獸篇 旅團之心"
+source:
+  region: JP
+  game_code: A9HJ
+  maker_code: "B4"
+  revision: 0
+  expected_clean:
+    size: 8388608
+    crc32: 3C24ABCC
+    md5: FC6A66C32B91FA0E526AE7782F29E86A
+    sha1: 430A7062844888E68BD5587ED53A769BA548ADB3
+    sha256: FB388539B95FDAF6009BAD879E9BBB25955DAF8D4D438486A9213D407B2B48CE
+    provenance: "GameBrew ROM information; independently consistent with the public No-Intro dat entry"
+targets:
+  - zh-TW
+status: research-blocked-clean-baseline
