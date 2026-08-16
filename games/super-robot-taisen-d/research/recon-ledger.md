@@ -1358,6 +1358,32 @@ default `2345`，但該 executable 的 debugger source 直接呼叫
 GDB port 的本機 mGBA process，再做一次 font-base guard 與 caller/source-pointer match；
 在此之前不把 static render 或 transport negative 升級成畫面 QA。
 
+## 2026-08-16：M1.27 mGBA/GDB transport／stop-protocol boundary
+
+本輪先用只讀 inventory 選擇未被其他 session 使用的候選，並逐一只啟動自己的 process；
+沒有終止或連線到其他 mGBA。0.11 headless 的 `39123` 與既有 0.10.5 SDL 的 `2349`
+均在授權 launcher 下成功 bind、local connect `0`，但使用既有 `m19_runtime_qa.py`
+的 bounded continue/stop 後，在任何 initializer／consumer breakpoint 前 timeout。0.11
+SDL candidate 在無 display 環境退出，另一個 0.11 headless literal candidate 只證明 ROM
+能載入但 bind negative。所有自有 process 均已乾淨停止；raw launcher log、memory、image
+與 ROM 留在 ignored／未保存。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| inherited static identity | base `12b706b6…0e84`；patched `b58ef432…42cce`；BPS `4f694170…0f31`／66 bytes；static round-trip byte-identical |
+| 0.11 headless | source literal port `39123`；listener／connect 成功；m19 stop protocol timeout；runtime data `not_observed` |
+| 0.10.5 SDL | source literal port `2349`；listener／connect 成功；m19 stop protocol timeout；runtime data `not_observed` |
+| alternatives | 0.11 SDL no-display；0.11 headless `40731` bind-negative；均未升格成 runtime evidence |
+| target coverage | font-base、consumer `0x08008724`、glyph、writer、cache／VRAM、screen 全 `not_observed`；target record `not_verified` |
+| failure separation | `rom_or_translation_failure=false`；外部 blocker=`runtime_stop_protocol_unavailable`；own process cleanup 已完成 |
+
+本輪只排除「沒有 listener」這一層，沒有證明 GDB stop protocol、字型初始化或 target
+glyph identity。下一個 runtime 入口必須是可執行 mGBA session 同時具備 0.10.5-compatible
+stop protocol 與 usable display/headless loop，再做一次 font-base-guarded target capture；
+在此之前保持 static POC／ai_draft 與 M1.26 fail-closed coverage，不擴大翻譯。
+
 ## 2026-08-16：M1.26 full encoder／ledger coverage audit
 
 本輪依效率策略停止新增同類 UI prompt，只重用既有 ignored strict source table、M4

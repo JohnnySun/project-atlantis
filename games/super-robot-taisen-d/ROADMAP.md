@@ -141,6 +141,16 @@
   encoder 或完整翻譯；摘要在 `research/m126-full-encoder-ledger-audit.json`，工具／
   測試在 `tools/m126_full_encoder_ledger_audit.py`／
   `tools/test_m126_full_encoder_ledger_audit.py`。
+- [x] M1.27 以自有 process／專用 port 依序驗證 runtime transport 候選：mGBA 0.11
+  headless `39123` 與既有 mGBA 0.10.5 SDL `2349` 都成功 bind／local connect，但
+  既有 bounded m19 GDB continue/stop 在 initializer／consumer event 前 timeout；
+  0.11 SDL 無 display、另一 headless literal candidate bind negative。font-base、
+  `0x08008724` consumer、glyph、writer、cache／VRAM／screen 均維持 `not_observed`，
+  不把 listener success 當 runtime positive；所有自有 process 已停止，ROM／譯文失敗
+  明確為 false。摘要在 `research/m127-runtime-transport-boundary.json`，工具／測試
+  在 `tools/m127_runtime_transport_boundary.py`／
+  `tools/test_m127_runtime_transport_boundary.py`；外部 blocker 是 stop protocol，
+  不是 source／encoder gate。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

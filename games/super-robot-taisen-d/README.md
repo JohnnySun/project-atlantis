@@ -493,6 +493,15 @@ queue 觸發尚未取代這條受控驗證。
   [`research/m126-full-encoder-ledger-audit.json`](research/m126-full-encoder-ledger-audit.json)，
   工具／測試在 [`tools/m126_full_encoder_ledger_audit.py`](tools/m126_full_encoder_ledger_audit.py)
   與 [`tools/test_m126_full_encoder_ledger_audit.py`](tools/test_m126_full_encoder_ledger_audit.py)。
+- [x] M1.27 完成自有 mGBA/GDB transport boundary：0.11 headless `39123` 與既有
+  0.10.5 SDL `2349` 均有 listener／authorized local connect，但 m19 bounded
+  continue/stop 在任何 verified initializer／consumer event 前 timeout；0.11 SDL
+  no-display 與另一 headless bind-negative 也已分欄。沒有 font-base、target source
+  read、glyph、writer、cache／VRAM 或 screen evidence，`rom_or_translation_failure=false`，
+  process 已清理。摘要在
+  [`research/m127-runtime-transport-boundary.json`](research/m127-runtime-transport-boundary.json)，
+  工具／測試在 [`tools/m127_runtime_transport_boundary.py`](tools/m127_runtime_transport_boundary.py)
+  與 [`tools/test_m127_runtime_transport_boundary.py`](tools/test_m127_runtime_transport_boundary.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
