@@ -57,6 +57,12 @@ initializer BL 0x0801a738
   -> 0x08026054 Table-B consumer
 ```
 
+initializer 在 `0x08026526` 先把 input structure `+0x02` 的 byte 經 `0x080241D0`
+取出，與 `r1=0` 傳給 `0x08021A44`；該函式以 literal slot `0x08021A5C` 取得
+EWRAM state table `0x0203544C`，實際 predicate 為
+`nonzero([0x0203544C + u16(r1) + (u16(r0) << 3)])`，結果再寫入 `r6+0x14`。
+這確認了 state gate 的資料來源，但尚未替該 EWRAM table 賦予 menu／battle 語意。
+
 `0x0801A12C` 靜態返回值集合為 `0,4,5,6,7,8,9,10,11,12,13,14,15,16,17`；
 這是 input/poll selector evidence，不是 event array byte 的 Unicode 或 Table-B
 index identity。consumer 仍只保證 local `u16(r6+0x02)` 與 `event_byte & 0x7F`，

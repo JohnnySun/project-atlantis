@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import struct
 import sys
 from pathlib import Path
 
@@ -45,6 +46,7 @@ INITIALIZER_DATA_GAPS = (
 DESCRIPTOR_WRAPPER_SPAN = (0x01A4B8, 0x01A4CC)
 STATE_LOOP_SPAN = (0x01A738, 0x01A768)
 EVENT_POLL_SPAN = (0x01A12C, 0x01A1FC)
+STATE_OWNER_SPAN = (0x021A44, 0x021A5C)
 DISPATCH_WRAPPER_SPAN = (0x01A720, 0x01A738)
 DISPATCHER_CODE_SPANS = (
     (0x01A504, 0x01A51C),
@@ -58,6 +60,8 @@ DESCRIPTOR_COUNT_FIELD = 0x02
 DESCRIPTOR_EVENT_BUFFER_FIELD = 0x1C
 STATE_LOOP_ENTRY = 0x01A738
 EVENT_POLL_ENTRY = 0x01A12C
+STATE_OWNER_ENTRY = 0x021A44
+STATE_OWNER_TABLE = 0x0203544C
 DISPATCH_VENEER = ROM_BASE + 0x06ED80
 STATE_CHECK_VENEER = ROM_BASE + 0x06ED7C
 EVENT_SELECTOR_VALUES = (0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17)
@@ -136,6 +140,15 @@ def _require_branch(instruction: object, target: int, label: str) -> None:
         )
 
 
+def _literal_value(data: bytes, file_offset: int) -> tuple[int, int]:
+    halfword = struct.unpack_from("<H", data, file_offset)[0]
+    literal_address = common.thumb_literal_target(file_offset, halfword)
+    literal_offset = literal_address - ROM_BASE
+    if literal_offset < 0 or literal_offset + 4 > len(data):
+        raise common.StaticContractError(f"literal outside ROM at {_offset(file_offset)}")
+    return literal_address, common.read_u32(data, literal_offset)
+
+
 def _calls_to(instructions: dict[int, object], target: int) -> list[dict[str, str]]:
     rows = []
     for offset, instruction in sorted(instructions.items()):
@@ -167,6 +180,7 @@ def analyze_m2_4(data: bytes) -> dict[str, object]:
     wrapper = _instruction_map(data, (DESCRIPTOR_WRAPPER_SPAN,))
     state_loop = _instruction_map(data, (STATE_LOOP_SPAN,))
     event_poll = _instruction_map(data, (EVENT_POLL_SPAN,))
+    state_owner = _instruction_map(data, (STATE_OWNER_SPAN,))
     dispatch_wrapper = _instruction_map(data, (DISPATCH_WRAPPER_SPAN,))
     dispatcher = _instruction_map(data, DISPATCHER_CODE_SPANS)
 
@@ -175,6 +189,12 @@ def analyze_m2_4(data: bytes) -> dict[str, object]:
     _require_instruction(initializer, 0x02658A, "str", "[r6,#0x10]")
     _require_instruction(initializer, 0x02658E, "strh", "[r6,#2]")
     _require_instruction(initializer, 0x026598, "str", "[r6,#0x1c]")
+    input_selector_call = _require_instruction(initializer, 0x02651C, "bl")
+    _require_branch(input_selector_call, ROM_BASE + 0x0241D0, "input selector field call")
+    _require_instruction(initializer, 0x026522, "lsrs", "r0,#0x18")
+    _require_instruction(initializer, 0x026524, "movs", "r1,#0")
+    state_owner_call = _require_instruction(initializer, 0x026526, "bl")
+    _require_branch(state_owner_call, ROM_BASE + STATE_OWNER_ENTRY, "state-owner call")
     loop_call = _require_instruction(initializer, 0x0265D2, "bl")
     _require_branch(loop_call, ROM_BASE + STATE_LOOP_ENTRY, "initializer state-loop call")
 
@@ -205,6 +225,17 @@ def analyze_m2_4(data: bytes) -> dict[str, object]:
     _require_instruction(dispatcher, 0x01A518, "ldr", "[r0]")
     _require_instruction(dispatcher, 0x01A51A, "mov", "pc,r0")
 
+    _require_instruction(state_owner, 0x021A44, "lsls", "r0,r0,#0x10")
+    _require_instruction(state_owner, 0x021A48, "lsrs", "r1,#0x10")
+    state_literal_address, state_table_value = _literal_value(data, 0x021A4A)
+    if state_literal_address != ROM_BASE + 0x021A5C or state_table_value != STATE_OWNER_TABLE:
+        raise common.StaticContractError("state-owner table literal changed")
+    _require_instruction(state_owner, 0x021A4C, "lsrs", "r0,#0xd")
+    _require_instruction(state_owner, 0x021A50, "adds", "r1,r1,r2")
+    _require_instruction(state_owner, 0x021A52, "ldrb", "[r1]")
+    _require_instruction(state_owner, 0x021A58, "lsrs", "r0,#0x1f")
+    _require_instruction(state_owner, 0x021A5A, "bx", "lr")
+
     return {
         "read_only": True,
         "rom": {"size_bytes": len(data), "game_code": game_code},
@@ -224,6 +255,7 @@ def analyze_m2_4(data: bytes) -> dict[str, object]:
             "descriptor_wrapper": _instruction_report(data, *DESCRIPTOR_WRAPPER_SPAN),
             "state_loop": _instruction_report(data, *STATE_LOOP_SPAN),
             "event_poll": _instruction_report(data, *EVENT_POLL_SPAN),
+            "state_owner": _instruction_report(data, *STATE_OWNER_SPAN),
             "selector_dispatch_wrapper": _instruction_report(data, *DISPATCH_WRAPPER_SPAN),
             "selector_dispatcher": {
                 "spans": [_instruction_report(data, *span) for span in DISPATCHER_CODE_SPANS],
@@ -264,6 +296,16 @@ def analyze_m2_4(data: bytes) -> dict[str, object]:
                 "field": "r6+0x14",
                 "meaning": "value derived from initializer state call; checked before normal dispatch",
             },
+            "state_owner": {
+                "call_site": _offset(0x026526),
+                "target": _hex(ROM_BASE + STATE_OWNER_ENTRY),
+                "input_selector_source": "u8(input_structure+0x02) via 0x080241D0",
+                "second_argument": "0",
+                "state_table": _hex(STATE_OWNER_TABLE),
+                "literal_slot": _hex(state_literal_address),
+                "formula": "nonzero([0x0203544C + u16(r1) + (u16(r0) << 3)])",
+                "stored_as": "r6+0x14 after signed 16-bit normalization",
+            },
         },
         "normal_path_chain": {
             "steps": [
@@ -297,6 +339,7 @@ def analyze_m2_4(data: bytes) -> dict[str, object]:
                 "field": "u32(r4+0x14)",
                 "checked_at": _hex(ROM_BASE + 0x01A73C),
                 "nonzero_call_target": _hex(STATE_CHECK_VENEER),
+                "source": "0x08021A44 nonzero predicate over EWRAM state table 0x0203544C",
                 "status": "confirmed-static-gate; exact game-mode semantic remains unresolved",
             },
             "poll_gate": {

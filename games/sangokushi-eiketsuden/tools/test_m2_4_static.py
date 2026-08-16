@@ -35,6 +35,8 @@ class M24StaticTest(unittest.TestCase):
     def test_state_and_poll_gate_addresses_are_separate_from_table_index(self) -> None:
         self.assertEqual(STATIC.STATE_LOOP_ENTRY, 0x01A738)
         self.assertEqual(STATIC.EVENT_POLL_ENTRY, 0x01A12C)
+        self.assertEqual(STATIC.STATE_OWNER_ENTRY, 0x021A44)
+        self.assertEqual(STATIC.STATE_OWNER_TABLE, 0x0203544C)
         self.assertEqual(STATIC.DISPATCH_VENEER, 0x0806ED80)
         self.assertEqual(STATIC.STATE_CHECK_VENEER, 0x0806ED7C)
         self.assertEqual(STATIC.TABLE_B_COUNT, 44)
