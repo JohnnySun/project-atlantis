@@ -268,6 +268,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/extract_m123_bounded_corpus.py \
 
 目前 32/32 records 皆 decode→encode byte-identical、相鄰 source span 相等且通過 Shift-JIS candidate decode；index 3087 的 static output hash 與 natural loader buffer hash 相等。這是 bounded extractor/receipt 證據，不是劇情、支援、事件或選單分類；完整 `tokens`／原文仍只留 ignored research/work。
 
+M1.24 的兩條 natural route scene witness 可重跑如下；工具只 join caller/index/source/hash/display 摘要，不從 route 名稱猜 title、menu 或章節：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m124_scene_witness.py \
+  roms/base/AFEJ.gba \
+  /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  /private/tmp/afej-m119-natural-long-menu.json \
+  --output /private/tmp/afej-m124-scene-witness.json
+```
+
+短 route 只有 `0x08098b10`／3087；長 route 另到達 `0x08009252`／2678、2679，兩者均在同一 `[0,3342)` pointer domain，final display receipt hash 分別為 `0336199589aac65710b0ccc58897470bb9ce39787993b16be981b46d9c6234ff` 與 `22258df5305bbdb7970e4cdf62260e4e012f0291f046e375605028685cd7b4bc`。4 筆 loader receipt 中 3 筆 static/runtime buffer hash 相等；2679 的 full-buffer mismatch 保留為 negative，工具不猜是 tail 或 capture sequencing。scene/category、`0x01` 與 Unicode identity 仍 unknown/provisional。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
