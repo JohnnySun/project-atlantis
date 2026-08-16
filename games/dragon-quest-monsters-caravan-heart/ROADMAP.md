@@ -33,6 +33,7 @@
 - [x] 在 bounded menu row 保留 `zh-Hans`／`zh-TW`、狀態、術語、控制碼與寬度預算；全量 rows 仍待完成。
 - [x] 對 bounded menu work copy 以 `strip_translations.rb` 產生不含 `source` 的 ledger，並以 `cmp`／安全檢查驗證；全量 schema gate 仍待完成。
 - [x] 以 clean `g06:v00:m0001` 固定 span 建立第二筆 source-free ledger，保留 `FE E4 23 FB FF` 動態尾段並完成 restore／strip／schema 檢查；全量 ledger 仍待完成。
+- [x] 以 clean `g06:v00:m0006` 固定 span 建立第三筆 source-free ledger，保留 `FF` 尾段並完成 bounded restore／strip／schema 檢查；全量 ledger 仍待完成。
 
 ## M3：回插與發布前 QA
 

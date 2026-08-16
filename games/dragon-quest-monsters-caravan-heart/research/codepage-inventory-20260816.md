@@ -35,6 +35,11 @@
   不可由出現頻率直接推導語義。
 - direct single-byte path 使用 188 個已定義 atlas units，另有 33 個未定義的
   direct units；未定義 units 仍以 `{Uxx}` 保留在本機 source table。
+- v2 receipt 另外產生 83 個有未定義 direct unit 的 `group`／`variant` context buckets：
+  `g00` 的每 variant 為 136、`g01` 為 470／472、`g02` 為 113、`g03` 為 945、`g04`
+  為 24、`g05` 為 23、`g06` 為 82、`g07` 為 1,579。這些固定／重複的計數形狀把
+  `0xB8`／`0xBE`／`0xC0..0xDE` 限定為需要 context 的 pointer-pool residue；它是
+  結構性訊號，不是把該區間升格成 glyph identity 的依據。
 
 ## Direct codepage corroboration
 

@@ -42,6 +42,19 @@ class CodepageInventoryTest(unittest.TestCase):
         self.assertEqual(report["unique_pointers"], 1)
         self.assertEqual(report["single_byte"]["mapped_total"], 1)
         self.assertEqual(report["single_byte"]["unresolved_total"], 1)
+        self.assertEqual(
+            report["single_byte"]["unresolved_by_group_variant"],
+            [
+                {
+                    "group": 1,
+                    "variant": 2,
+                    "records": 1,
+                    "records_with_unresolved": 1,
+                    "unresolved_total": 1,
+                    "unresolved_units": {"0xC0": 1},
+                }
+            ],
+        )
         self.assertEqual(report["pair"]["resolved_total"], 1)
         self.assertEqual(report["alternate_glyph"]["unique_slots"], 1)
         self.assertEqual(report["alternate_glyph"]["lead_counts"], {"0xE1": 1})

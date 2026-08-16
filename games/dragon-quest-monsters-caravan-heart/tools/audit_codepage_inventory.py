@@ -102,6 +102,7 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
     pointers: set[str] = set()
     groups: set[int] = set()
     variants: set[tuple[int, int]] = set()
+    unresolved_by_group_variant: dict[tuple[int, int], dict[str, Any]] = {}
     terminated = 0
     truncated = 0
     record_count = 0
@@ -115,6 +116,19 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
         variant = int(record.get("variant", 0))
         groups.add(group)
         variants.add((group, variant))
+        context_key = (group, variant)
+        context = unresolved_by_group_variant.setdefault(
+            context_key,
+            {
+                "group": group,
+                "variant": variant,
+                "records": 0,
+                "records_with_unresolved": 0,
+                "unresolved_total": 0,
+                "unresolved_units": Counter(),
+            },
+        )
+        context["records"] += 1
         boundaries[str(record.get("boundary", "unknown"))] += 1
         if record.get("truncated_pair"):
             truncated += 1
@@ -122,6 +136,7 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
         if isinstance(control_values, list) and 0xFF in [int(value) for value in control_values]:
             terminated += 1
 
+        record_unresolved = Counter()
         for token in record["tokens"]:
             kind = str(token.get("kind"))
             kinds[kind] += 1
@@ -132,6 +147,7 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
                     direct_mapped[value] += 1
                 else:
                     direct_unresolved[value] += 1
+                    record_unresolved[value] += 1
             elif kind == "pair":
                 lead = int(token["lead"])
                 trail = int(token["trail"])
@@ -147,6 +163,11 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
             else:
                 raise ValueError(f"unknown token kind: {kind!r}")
 
+        if record_unresolved:
+            context["records_with_unresolved"] += 1
+            context["unresolved_total"] += sum(record_unresolved.values())
+            context["unresolved_units"].update(record_unresolved)
+
     alternate_leads = Counter()
     for (lead, _), count in alternates.items():
         alternate_leads[lead] += count
@@ -154,8 +175,23 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
         f"0x{lead:02X}": sorted(index for (current_lead, index) in alternates if current_lead == lead)
         for lead in sorted({lead for lead, _ in alternates})
     }
+    unresolved_context = []
+    for key in sorted(unresolved_by_group_variant):
+        context = unresolved_by_group_variant[key]
+        if not context["unresolved_total"]:
+            continue
+        unresolved_context.append(
+            {
+                "group": context["group"],
+                "variant": context["variant"],
+                "records": context["records"],
+                "records_with_unresolved": context["records_with_unresolved"],
+                "unresolved_total": context["unresolved_total"],
+                "unresolved_units": hex_counts(context["unresolved_units"]),
+            }
+        )
     return {
-        "schema": "dqmch-codepage-inventory-v1",
+        "schema": "dqmch-codepage-inventory-v2",
         "rom_sha256": EXPECTED_SHA256,
         "records": record_count,
         "unique_pointers": len(pointers),
@@ -172,6 +208,7 @@ def inventory(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
             "used_units": hex_counts(single),
             "mapped_units": hex_counts(direct_mapped),
             "unresolved_units": hex_counts(direct_unresolved),
+            "unresolved_by_group_variant": unresolved_context,
         },
         "pair": {
             "total": sum(pairs.values()),

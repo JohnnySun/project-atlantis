@@ -18,8 +18,8 @@
 
 目前可安全顯示的 glyph identity 僅限 clean atlas 已交叉核對的 ASCII、平假名區域、由
 atlas／名稱 context 交叉確認的 `0x59=を`、`0x5A=ん`、`0x90=ヲ`、`0x5B..0x8F` 的 katakana 順序、
-`0x91=ン`、對話語境中的 `0x94=。`／`0x9B=？`／`0x9C=！`、標題中的
-`0xA0=・`／`0xA1=ー`／`0xA2=～` 與空白 glyph。`0x92`／`0x93` 只有在 trail 對應已知可濁音／半濁音
+`0x91=ン`、公開 code table 與 clean atlas 共同核對的 `0x94..0xBD` direct punctuation／UI
+units（`0xB8` 除外），以及空白 glyph。`0x92`／`0x93` 只有在 trail 對應已知可濁音／半濁音
 假名 base 時，才依 clean pair writer 與多筆名稱／menu context 解出；其他 pair 仍輸出
 `{Uxxxx}`。其餘 `<0xDF` 單位輸出 `{Uxx}`，`0xDF..0xFF` 控制候選輸出大寫 `{HH}`。
 這種 placeholder 是刻意的 drift／誤翻譯防線，不是猜測的 Unicode mapping；glyph table
@@ -46,3 +46,13 @@ provenance gate，不能把 OCR 候選直接升成 ledger source。
 source text 已可供研究者檢視，也不能直接交給 `restore_translations.rb` 或建立
 `translations/*.jsonl`。只有達成上述 gate 後，才可建立 `work/*.jsonl`、填入已查核的
 `zh-TW`／`zh-Hans`，再用 `strip_translations.rb` 產生不含 `source` 的 ledger。
+
+## 未命名 direct units 的上下文盤點
+
+`tools/audit_codepage_inventory.py` 的 v2 receipt 另按 `group`／`variant` 聚合未命名
+direct units，不輸出 pointer、raw bytes 或文字。clean run 中 `0xB8`／`0xBE`／`0xC0..0xDE`
+並非只在單一事件字串出現，而是在多個 variant 重複出現相同的 unit 集合與固定計數形狀；
+`g00`、`g01`、`g02`、`g03`、`g07` 的重複池尤其明顯。這是 pointer pool／資料樣本的
+結構性訊號，不是 glyph identity 或語義的證明，因此這些 units 仍留在 `{Uxx}`，不得因
+頻率或 code table 相鄰性升格成可翻譯字元。完整 source-free 聚合可由上述命令重建，並與
+本文件的 clean hash 一起審核。
