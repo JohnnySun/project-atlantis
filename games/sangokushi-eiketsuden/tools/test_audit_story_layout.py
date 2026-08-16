@@ -95,6 +95,17 @@ class StoryLayoutAuditTest(unittest.TestCase):
         self.assertEqual([row["context"]["max_width"] for row in rows], [13, 13])
         self.assertEqual([row["context"]["max_lines"] for row in rows], [3, 3])
 
+    def test_batch13_ledger_is_source_free_and_bounded(self) -> None:
+        ledger_path = pathlib.Path(__file__).parents[1] / "translations" / "story-event-batch-13.jsonl"
+        rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertEqual(
+            [row["string_id"] for row in rows],
+            ["b3ej:story-event:022", "b3ej:story-event:023"],
+        )
+        self.assertTrue(all("source" not in row and row["status"] == "ai_review" for row in rows))
+        self.assertEqual([row["context"]["max_width"] for row in rows], [13, 13])
+        self.assertEqual([row["context"]["max_lines"] for row in rows], [2, 4])
+
 
 if __name__ == "__main__":
     unittest.main()
