@@ -442,6 +442,24 @@
 - [ ] 解析 named writer 的字寬／控制碼參數與可逆 layout contract；完成前維持
   M2 ledger、翻譯與 patch gate blocked，不再擴張 graphics/resource 分類。
 
+## M1.33：named writer、控制碼與 layout contract
+
+- [x] 完整驗證 `0x080aa1f4` writer、`0x080a9ea8` OAM allocator、small／large
+  renderer／reader 的 Thumb boundary、return candidate、bounded hash 與 selected
+  callsite；writer 的 47 筆 direct caller 只保留 metadata，不自動分類用途。
+- [x] 確認 descriptor `0x0815ee18` 的三個 halfword template，以及 writer 對
+  OAM `attr0/attr1/attr2` 的 mask、加法、mode、flags 與 palette/tile 欄位；以
+  synthetic modulo fixture 做 encoder-side inverse round-trip，未輸出 raw OAM。
+- [x] 確認兩個 named 16-bit reader 的 `0x0000`／`0x0301` termination、`0x0300`
+  line break、2-byte unit advance 與 caller-supplied fixed cursor step；這是
+  reader/layout evidence，不把 step 誤升格為完整 pixel width table。
+- [~] writer/layout contract 已 static confirmed，但 natural runtime arguments、
+  完整 codepage、scene-specific screen fit、font replacement 與主劇情 source
+  table 仍未知；M2 ledger、翻譯與 patch gate 保持 blocked。
+- [ ] 在不擴張 M1.15 graphics/resource class 的前提下，從已命名 item／demon／skill
+  source families 補齊有限 semantic ID／unit manifest，並以 control/layout contract
+  作為後續 ledger gate。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

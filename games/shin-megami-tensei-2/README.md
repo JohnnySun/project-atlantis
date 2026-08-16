@@ -496,6 +496,26 @@ raw font/source、圖片或 translation ledger。這是 static glyph addressing 
 不是自然 runtime 畫面像素 proof；完整 codepage、Unicode、width/control、回插與
 ledger 仍 provisional/blocked。詳見 `research/m1.32-font-edge-20260816.md`。
 
+M1.33 named writer／控制碼／layout contract（唯讀 bounded static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m133_writer_contract.py \
+  --rom /path/to/A5TJ.gba \
+  --output /private/tmp/smt2-m133-writer.json
+```
+
+工具完整驗證 `0x080aa1f4` writer、`0x080a9ea8` allocator、small／large
+renderer／reader 的 boundary、literal pool、callsite 與 function hash；確認
+descriptor `0x0815ee18` 三個 halfword 對 OAM `attr0/attr1/attr2` 的 bounded
+modulo field mapping，並以不含 ROM bytes 的 synthetic fixture 做 inverse
+round-trip。兩個 named reader 的 `0x0000`／`0x0301` termination、`0x0300` line
+break、16-bit/2-byte advance 與 caller-supplied fixed cursor step 也已確認。
+這是可供後續 encoder 使用的 layout/control contract，不是自然 runtime pixel
+capture，也不是完整 Unicode/codepage 或所有場景的像素字寬；source table、
+ledger、翻譯與 patch gate 仍 blocked。詳見
+`research/m1.33-writer-layout-20260816.md`。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -509,9 +529,10 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 16-bit reader path，補完剩餘 bounded subcategory boundary；M1.30 已對
 `0x0819cb74` demon accessor（stride `0x60`、field `+0x22`）建立獨立 anchor family，
 M1.31 再確認 `0x0819b9f4` skill prefix，M1.32 已接通五筆
-code-unit→font-bank→renderer static edge。下一步優先解析 named writer 的
-width/control contract；若 runtime listener 仍 blocked，最多沿同一 wrapper/direct
-caller 三層追 RAM object/table initializer。不能把
+code-unit→font-bank→renderer static edge，M1.33 已固定 reader control／cursor
+step 與 OAM layout contract。下一步優先擴張已命名 item／demon／skill families 的
+有限 semantic ID／unit manifest；若 runtime listener 仍 blocked，最多沿同一
+named source caller 三層追 RAM object/table initializer。不能把
 command pointer、font-bank shape 或人工 OCR 當成完整文字來源；item、skill、demon、
 劇情與系統 data families 必須分開記錄。
 
