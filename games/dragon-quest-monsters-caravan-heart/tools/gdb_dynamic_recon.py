@@ -165,6 +165,7 @@ def capture(args: argparse.Namespace) -> dict[str, object]:
         watch_stop = None
         watch_registers = None
         watch_address = None
+        watch_reply = None
         if args.watch_address is not None:
             watch_address = args.watch_address
             watch_reply = client.command(f"Z2,{watch_address:x},{args.watch_length:x}")
@@ -226,6 +227,7 @@ def capture(args: argparse.Namespace) -> dict[str, object]:
             "watch": {
                 "address": None if watch_address is None else f"0x{watch_address:08X}",
                 "length": args.watch_length if watch_address is not None else None,
+                "set_reply": watch_reply,
                 "stop": watch_stop,
                 "registers": watch_registers,
             },
