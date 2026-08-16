@@ -1255,3 +1255,29 @@ wide identity」；static-only wide、new wide slot、missing target、opaque/co
 仍 fail-closed。`research/m121-wide-encoder-capacity.json` 不保存 source text；這個 slice
 也不代表完整 Unicode encoder、完整 wide resource strategy、語意翻譯或自然 screen QA
 已完成。
+
+## 2026-08-16：M1.22 patched target runtime transport receipt
+
+完成 M1.21 後只做一個有界 runtime slice，不再新增 UI prompt。以 patched M1.8 static
+POC（SHA-256 `b58ef432…42cce`）啟動自己的 mGBA process，指定專用 GDB port `24568`，
+並限制為一次 connection probe。無 privileged socket 的 probe 在建立連線前回報
+`operation_not_permitted_before_connection`；獲授權的 probe 回報 `connection_refused`。
+process 由本 session 乾淨停止，沒有把別的 session 的 mGBA 當成替代證據。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| launcher | fresh patched process；port `24568`；single GDB connection attempt；own process cleanly stopped |
+| transport | sandbox `operation_not_permitted_before_connection`；authorized `connection_refused`；listener `false` |
+| runtime coverage | natural paths `0`；controlled consumer `false`；initializer／consumer／glyph／writer／cache／VRAM／screen `not_observed` |
+| static target | `526424` source offset `0x08080858`；2 units／16px／NUL／control 0；target／adjacent source-safe hashes preserved |
+| hashes | base `12b706b6…0e84`；patched `b58ef432…42cce`；BPS `4f694170…0f31`；static BPS round-trip byte-identical |
+| known trigger | M1.19 consumer `0x08008724`、caller callsite `0x08066050`／LR `0x08066055`；`r0` 是 RAM buffer，target pointer 尚未吻合 |
+| result | `transport_negative`；`rom_or_translation_failure=false`；M1.9 target screen proof 仍 pending |
+
+`tools/m122_runtime_receipt.py` 由已審核的 M1.9 source-safe report 產生
+`research/m122-runtime-receipt.json`，只複製 offset／hash／count／register metadata，
+不保存完整原文、raw memory、圖片或 work log。下一次 runtime 入口是取得可用的單一
+GDB 連線後，在已知 caller／callsite 檢查 source pointer 與兩-unit loop 同時吻合
+`0x08080858`；在此之前不宣稱字型、layout 或畫面 QA 通過。

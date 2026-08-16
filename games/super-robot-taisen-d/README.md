@@ -446,6 +446,16 @@ queue 觸發尚未取代這條受控驗證。
   allocation 重新映射，與 resource class 分欄保存。摘要在
   [`research/m121-wide-encoder-capacity.json`](research/m121-wide-encoder-capacity.json)，
   工具在 [`tools/m121_wide_encoder_capacity.py`](tools/m121_wide_encoder_capacity.py)。
+- [x] M1.22 對 patched M1.8 static POC 做一次 bounded fresh mGBA／GDB transport
+  attempt：專用 port `24568`，sandbox socket 在連線前回報
+  `operation_not_permitted_before_connection`，獲授權 probe 回報 `connection_refused`。
+  自有 process 已乾淨停止；listener、font-base、`0x08008724` consumer、glyph lookup、
+  tile writer、cache／VRAM 與 screen 均 `not_observed`，因此不把它當成 runtime failure
+  或 target proof。source-safe target／adjacent hashes、base／patched／BPS hash 與
+  M1.19 caller trigger 已收斂在
+  [`research/m122-runtime-receipt.json`](research/m122-runtime-receipt.json)，建置工具
+  為 [`tools/m122_runtime_receipt.py`](tools/m122_runtime_receipt.py)，測試為
+  [`tools/test_m122_runtime_receipt.py`](tools/test_m122_runtime_receipt.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

@@ -103,6 +103,13 @@
   narrow allocation 覆蓋，避免混淆 source resource class 與 target encoder class。
   工具與摘要在 `tools/m121_wide_encoder_capacity.py`、
   `research/m121-wide-encoder-capacity.json`；full semantic translation 仍未完成。
+- [x] M1.22 對 patched M1.8 static POC 開啟新的 mGBA process／專用 port `24568`，
+  僅做一次 GDB connection probe；sandbox probe 在建立連線前回報
+  `operation_not_permitted`，獲授權 probe 回報 `connection_refused`。自己的 mGBA
+  process 已乾淨停止，沒有 listener、font-base、consumer、glyph、writer、cache／
+  VRAM 或 screen 命中；ROM／譯文失敗與 transport negative 分開。target／相鄰的
+  source-safe static hash、BPS byte-identical 與 M1.19 已知 caller/callsite 仍保留在
+  `research/m122-runtime-receipt.json`；M1.9 patched target runtime QA 仍未完成。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。
