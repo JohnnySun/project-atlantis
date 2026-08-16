@@ -92,18 +92,13 @@ def is_rom_pointer(value: int) -> bool:
 
 
 def thumb_bl_target(first: int, second: int, address: int) -> int:
-    """Decode a Thumb-2 BL pair and return its absolute target."""
+    """Decode an ARM7TDMI two-halfword Thumb BL pair."""
 
-    sign = (first >> 10) & 1
-    imm10 = first & 0x03FF
-    j1 = (second >> 13) & 1
-    j2 = (second >> 11) & 1
-    i1 = (~(j1 ^ sign)) & 1
-    i2 = (~(j2 ^ sign)) & 1
-    imm11 = second & 0x07FF
-    offset = (sign << 24) | (i1 << 23) | (i2 << 22) | (imm10 << 12) | (imm11 << 1)
-    if sign:
-        offset -= 1 << 25
+    if first & 0xF800 != 0xF000 or second & 0xF800 != 0xF800:
+        raise ValueError("not an ARM7TDMI Thumb BL pair")
+    offset = ((first & 0x07FF) << 12) | ((second & 0x07FF) << 1)
+    if offset & (1 << 22):
+        offset -= 1 << 23
     return (address + 4 + offset) & 0xFFFFFFFF
 
 

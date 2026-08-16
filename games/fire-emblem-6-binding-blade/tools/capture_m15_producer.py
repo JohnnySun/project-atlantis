@@ -29,7 +29,8 @@ ENTRY = 0x080000C0
 # at 0x08013ad0 after two literal/data halfwords.
 LOADER_REGION_START = 0x08013ACC
 LOADER = 0x08013AD0
-# 0x08013b02 is the first halfword of the Thumb-2 BL to the copy wrapper.
+# 0x08013b02 is the first halfword of the ARM7TDMI two-halfword Thumb BL
+# to the copy wrapper.
 # 0x08013b04 is only its second halfword and is not a valid callsite stop.
 LOADER_CALL = 0x08013B02
 LOADER_RETURN = 0x08013B08

@@ -10,7 +10,9 @@
 
 M1.5 已再確認一個有限 producer：ROM pointer table `0x080f635c[index 3087]` 取出 `0x080f2256`，經 copy／IWRAM worker 寫入 `0x02029404`，並在 renderer 實際觀察到 `0x01` marker 與 payload 後的 `0x00` 邊界。M1.6 已反組譯實際 loader entry `0x08013ad0`、IWRAM worker 的 ROM 初始化來源，並建立 `index 3080..3095` 的 16 筆 opaque-token corpus；16/16 decode→encode source bytes 相等，index 3087 的固定 buffer hash 也與獨立 runtime receipt 相等。source encoding、`0x01` 的換行／等待／結束語義及完整表格仍屬 provisional；沒有開始大批翻譯。
 
-M1.7 已往上確認高階 caller：`0x08098afc` 以 selector 經 ROM table `0x08691738` 映射到 loader index，並在實際 `BL 0x08013ad0` callsite `0x08098b10` 觸發 index 3087。loader 的 copy-wrapper BL 真正起點是 `0x08013b02`；`0x08013b04` 是同一條 Thumb-2 BL 的第二個 halfword，不能用來命名 caller 或解讀 LR。Start 可自然到達不同的顯示狀態，但 bounded 觀察沒有再次命中 `0x08013ad0` 或 `0x02029404` write-watchpoint，因此第二場景尚不能歸入 3342-entry table；`0x01` 仍是 opaque。
+M1.7 已往上確認高階 caller：`0x08098afc` 以 selector 經 ROM table `0x08691738` 映射到 loader index，並在實際 `BL 0x08013ad0` callsite `0x08098b10` 觸發 index 3087。loader 的 copy-wrapper BL 真正起點是 `0x08013b02`；`0x08013b04` 是同一條 ARM7TDMI 雙半字 Thumb BL 的第二個 halfword，不能用來命名 caller 或解讀 LR。Start 可自然到達不同的顯示狀態，但 bounded 觀察沒有再次命中 `0x08013ad0` 或 `0x02029404` write-watchpoint，因此第二場景尚不能歸入 3342-entry table；`0x01` 仍是 opaque。
+
+M1.8 已靜態枚舉 AFEJ 全 ROM 163 個合法、對齊的 ARM7TDMI 雙半字 Thumb BL direct callsites，分成 104 個 bounded prologue/return caller group。不同於 selector table 的最佳候選是 `0x080985d8`–`0x08098620` 內的 `0x080985ec`：函式先把參數 `r0` 存入 stack，再載回作為 loader index。自然 `KEYINPUT` 導航仍只重現 `0x08098b10`／index 3087；因此另以真實 Thumb loader stop 為 state seed，對 `0x080985ec` 做明確標記為 controlled 的 index 3086 probe，取得 `lr=0x080985f1`、`0x080f9394` → `0x080f2241`、EWRAM hash `beef794a…f9376e11`、terminator 31、`0x01` offset 12。第二 caller 的內容類別與 renderer 消費仍 unknown；`0x06014000` sink 本輪新 watchpoint 零命中，`0x01` 仍 opaque。
 
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
@@ -63,6 +65,37 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m17_callers.py \
 ```
 
 它只輸出 Thumb callsite／LR、selector/index/table/source provenance、EWRAM／VRAM hash、marker offset 與顯示寄存器摘要；按鍵輸入透過 `KEYINPUT` read-watchpoint 注入，`work/afej-m17-runtime.json` 維持 ignored。M1.7 的第二場景沒有命中 loader 或 EWRAM buffer write-watchpoint 是 bounded negative result，不是已完成的內容分類。
+
+要重跑 M1.8 的全量 direct-callsite 靜態報告，不需啟動 mGBA：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m18_callers.py \
+  roms/base/AFEJ.gba --static-only \
+  --output work/afej-m18-static-calls.json
+```
+
+要重跑自然 caller／loader／renderer sink receipt，使用自己的 mGBA GDB port；`--no-display` 只略過昂貴的整屏 VRAM 讀取，仍保存每步 display registers：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m18_callers.py \
+  roms/base/AFEJ.gba --port 23901 \
+  --sequence start,a,a,a,a,a,a,a,a,down,a,a,start,a \
+  --no-display --watch-renderer \
+  --output work/afej-m18-natural.json
+```
+
+若自然導航未到達不同 caller，可明確重跑 controlled probe；它會先等真實 reset 路徑進入 Thumb loader stop，再暫時跳到已確認的 `0x080985ec`，不把結果冒充自然場景：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m18_callers.py \
+  roms/base/AFEJ.gba --port 23901 \
+  --force-callsite --probe-index 3086 \
+  --runtime-callsites 0x080985ec --max-records 1 \
+  --watch-renderer \
+  --output work/afej-m18-controlled-3086.json
+```
+
+M1.8 的完整 static JSON、runtime receipt 與任何 raw dump 都留在被忽略的 `work/`；提交只包含工具、測試與不含完整原文的研究方法／hash／位址摘要。
 
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
