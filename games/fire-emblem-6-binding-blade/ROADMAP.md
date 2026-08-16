@@ -25,6 +25,7 @@
 - [x] M1.15：對 natural generic route 的 EWRAM dispatch object `0x02024750` 做一次性 write-watch；命中後以 static boundary 對上實際 `str r1,[r0]` at `0x08003a18`（watch stop `0x08003a1a`），source `r1/after-value=0x08691858`、destination `r0=0x02024750`。同一路徑仍重現 dispatch table index 86→`0x08011779`，但 `0x08691858` 的更上游 initializer 與 flag 語義維持 unknown。
 - [x] M1.16：沿 `0x08003a0e → 0x08003c54` 反組譯 allocator-like helper；static 唯一 direct BL、function span `0x08003c54–0x08003c7e`、literal pool `0x08003c74 = 0x020258c8` 與 cursor `+4` flow 已固定。fresh mGBA route 取得 56 組 entry/return，所有組別都由 `LR=0x08003a13` 回推 `0x08003a0e`，且 `global_after = global_before + 4`、return `r0 = [cursor_before]` 全數相等；這只證明 opaque EWRAM cursor/value producer，不命名 allocator、object、場景或文本語義。
 - [x] M1.17：反組譯 `0x08098c00` consumer，固定 `ldrb 0x08098c24` 後的 signed／`<=1`／`==4` branch topology 與 `0x08003e60` callsite；既有成功的 natural receipt 觀察到 buffer offset 8 的 opaque `0x01` → `0x08098c78`，但未提升為換行／等待／結束。新增 compare-instruction tracer 的重跑受 mGBA stale packet／point request transport 阻塞，精確記為 negative，不以 target hit 過度配對 source byte。
+- [x] M1.18：把同一 consumer compare map 接到穩定的 `trace_m112_dispatch.py`／core GDB client；short／long natural routes 分別取得 loader return `1/3`，但 compare instruction 與 consumer breakpoint 都是 `0`。這是 route/instrumentation negative，與既有 EWRAM read-watch 觸發的 `0x01`→`0x08098c78` receipt 分開保存，不提升 `0x01` 語義。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。

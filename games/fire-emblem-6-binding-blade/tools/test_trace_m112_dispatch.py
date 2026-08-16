@@ -87,6 +87,21 @@ class AfejM112DispatchTests(unittest.TestCase):
             ["0x020258c8"] * 4,
         )
         self.assertEqual(allocator["semantic_name_assigned"], False)
+        consumer = dispatch._consumer_branch_report(ROM_PATH.read_bytes())
+        self.assertEqual(consumer["function_start"], "0x08098c00")
+        self.assertEqual(consumer["function_return"], "0x08098c8c")
+        self.assertEqual(
+            next(
+                row["target"]
+                for row in consumer["branch_rows"]
+                if row["classification"] == "byte_less_or_equal_one"
+            ),
+            "0x08098c78",
+        )
+        self.assertEqual(
+            dispatch.CONSUMER_COMPARE_BREAKPOINTS,
+            (0x08098c28, 0x08098c2c, 0x08098c30),
+        )
         entry = next(
             row for row in pointer["record_window"] if row["file_offset"] == "0x5c4414"
         )

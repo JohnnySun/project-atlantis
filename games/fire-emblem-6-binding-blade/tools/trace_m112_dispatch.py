@@ -65,6 +65,13 @@ from trace_m18_callers import (  # noqa: E402
     _capstone_instructions,
     u32,
 )
+from trace_m19_natural import (  # noqa: E402
+    CONSUMER_FOUR_COMPARE_BRANCH,
+    CONSUMER_LOW_COMPARE_BRANCH,
+    CONSUMER_SIGNED_COMPARE_BRANCH,
+    _consumer_branch_report,
+    _consumer_compare_branch_target,
+)
 
 
 CALLBACKS = {
@@ -114,6 +121,11 @@ RENDERER_BREAKPOINTS = (
 CONSUMER_ENTRY = 0x08098C00
 CONSUMER_BYTE_READ = 0x08098C24
 CONSUMER_CONTROL_BRANCH = 0x08098C78
+CONSUMER_COMPARE_BREAKPOINTS = (
+    CONSUMER_SIGNED_COMPARE_BRANCH,
+    CONSUMER_LOW_COMPARE_BRANCH,
+    CONSUMER_FOUR_COMPARE_BRANCH,
+)
 
 DISPLAY_IO = {
     "DISPCNT": 0x04000000,
@@ -506,6 +518,7 @@ def _route_report(
             ],
             "generic_loader_candidate": _generic_loader_gate(rom),
             "generic_call_chain_candidate": _generic_call_chain_gate(rom),
+            "consumer_branch_gate": _consumer_branch_report(rom),
         },
         "runtime": {
             "single_gdb_connection": True,
@@ -518,6 +531,7 @@ def _route_report(
             "dispatch_object_write_receipts": [],
             "dispatch_object_allocator_receipts": [],
             "dispatch_object_allocator_summary": {},
+            "consumer_compare_receipts": [],
             "renderer_events": [],
             "loader_records": [],
             "hit_counts": {},
@@ -546,6 +560,7 @@ def _route_report(
         LOADER_RETURN,
         CONSUMER_ENTRY,
         CONSUMER_BYTE_READ,
+        *CONSUMER_COMPARE_BREAKPOINTS,
         CONSUMER_CONTROL_BRANCH,
     )
     watchpoints = (
@@ -724,6 +739,16 @@ def _route_report(
                 "global_word_after": None if global_after is None else hex32(global_after),
             })
             runtime["dispatch_object_allocator_receipts"].append(event.copy())
+        elif pc in CONSUMER_COMPARE_BREAKPOINTS:
+            compare_value = regs["r0"] & 0xFF
+            event.update({
+                "kind": "consumer_compare_before_branch",
+                "compare_instruction": hex32(pc),
+                "compare_value_r0": hex32(compare_value),
+                "static_branch_target": _consumer_compare_branch_target(pc),
+                "semantic_name_assigned": False,
+            })
+            runtime["consumer_compare_receipts"].append(event.copy())
         elif pc == DISPATCH_THUNK:
             event.update({
                 "kind": "dispatch_bx_r1_thunk",

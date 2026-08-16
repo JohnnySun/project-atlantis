@@ -198,6 +198,19 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m19_natural.py \
   --static-output /private/tmp/afej-m117-static-compare.json
 ```
 
+M1.18 將相同 static map 與 compare breakpoints 接到 `trace_m112_dispatch.py` 的 core GDB client。`start,a` short route 的 loader return 是 `1`、compare／consumer hit 是 `0`；長序列 `start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a` 在較長 final window 得到 loader return `3`，compare／consumer hit 仍是 `0`。這是 bounded route/instrumentation negative，不能覆寫 M1.17 由 EWRAM read-watch 觸發的既有 `0x01` branch receipt，也不能替 `0x01` 命名語義。
+
+可重跑 stable-client capture（先啟動自己的 mGBA）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
+  roms/base/AFEJ.gba --port 23901 --source-port 25049 \
+  --route-name m118-natural-long-consumer-compare \
+  --sequence start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a \
+  --initial-seconds 2 --step-seconds 0.8 --final-seconds 4 \
+  --output /private/tmp/afej-m118-natural-long-consumer-compare.json
+```
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
