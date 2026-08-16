@@ -16,6 +16,7 @@ class ControlConsumptionTest(unittest.TestCase):
         self.assertEqual(MODULE.CONSUMPTION[0xF0], ("fixed-1", "source+18", "unconditional"))
         self.assertEqual(MODULE.CONSUMPTION[0xF4][0], "conditional-2")
         self.assertEqual(MODULE.CONSUMPTION[0xFA][0], "conditional-2")
+        self.assertEqual(MODULE.CONSUMPTION[0xF9][0], "fixed-1")
         self.assertEqual(MODULE.CONSUMPTION[0xFF][0], "none")
 
     def test_signature_audit_is_independent_of_script_bytes(self) -> None:
@@ -33,6 +34,22 @@ class ControlConsumptionTest(unittest.TestCase):
         data[offset:offset + len(expected)] = bytes([expected[0] ^ 0x01]) + expected[1:]
         with self.assertRaises(ValueError):
             MODULE.audit_signatures(bytes(data))
+
+    def test_context_signature_audit_is_independent_of_script_bytes(self) -> None:
+        data = bytearray(0x800000)
+        for address, expected, _label in MODULE.CONTEXT_SIGNATURES:
+            offset = address - MODULE.ROM_BASE
+            data[offset:offset + len(expected)] = expected
+        rows = MODULE.audit_context_signatures(bytes(data))
+        self.assertEqual(len(rows), len(MODULE.CONTEXT_SIGNATURES))
+
+    def test_context_signature_audit_rejects_drift(self) -> None:
+        data = bytearray(0x800000)
+        address, expected, _label = MODULE.CONTEXT_SIGNATURES[0]
+        offset = address - MODULE.ROM_BASE
+        data[offset:offset + len(expected)] = bytes([expected[0] ^ 0x01]) + expected[1:]
+        with self.assertRaises(ValueError):
+            MODULE.audit_context_signatures(bytes(data))
 
 
 if __name__ == "__main__":

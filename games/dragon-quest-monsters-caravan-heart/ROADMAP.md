@@ -24,6 +24,7 @@
 - [x] 固定 pair／single writer 的 output-slot `state+0x16` 每次 `+1` signatures，明確標記 clean fixed-cell 證據與 VWF 未證明邊界（`research/fixed-cell-vwf-risk-20260816.md`）。
 - [x] 固定 `E0`／`E1` 一 byte look-ahead 與 alternate glyph pool 的 consumer receipt（索引到 Unicode 的 identity 仍未命名）。
 - [x] 固定 `DF..FF` handler 的 source-parameter 消費形狀與 state-dependent read signatures（`tools/audit_control_consumption.py`；控制碼名稱、終止／換頁語義仍未完成）。
+- [x] 以 clean code signatures 固定 parser outer-loop continuation、`F9` 兩分支匯合到固定一 byte read，以及 `FF` 的 state-dependent flag clearing；不把它們升格為 terminator／控制碼語義（`research/control-consumption-20260816.md`）。
 - [x] 以 source-free aggregate receipt 盤點 clean code-unit 類別、pair 解出比例、alternate-glyph 使用 slots 與 control candidate 數量（`tools/audit_codepage_inventory.py`；未解 glyph identity 與控制碼語義仍未完成）。
 
 ## M2：帳本與有限翻譯

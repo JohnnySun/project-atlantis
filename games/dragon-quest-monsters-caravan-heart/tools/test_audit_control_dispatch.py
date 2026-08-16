@@ -34,6 +34,7 @@ class ControlDispatchTest(unittest.TestCase):
         self.assertEqual(rows[0], (0xDF, HANDLERS[0], PARAMETER_SHAPES[0]))
         self.assertEqual(rows[8][2], "may-read-1")
         self.assertEqual(rows[9][2], "conditional-2")
+        self.assertEqual(rows[0xF9 - CONTROL_FIRST][2], "read-1")
         self.assertEqual(rows[-1], (0xFF, HANDLERS[-1], PARAMETER_SHAPES[-1]))
 
 

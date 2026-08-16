@@ -51,7 +51,7 @@ PARAMETER_SHAPES = (
     "none", "none", "none", "none",
     "none", "read-1", "none", "none",
     "none", "conditional-2", "none", "none",
-    "none", "none", "conditional-1", "conditional-2",
+    "none", "none", "read-1", "conditional-2",
     "none", "none", "none", "none",
     "none",
 )

@@ -53,7 +53,10 @@ CONSUMPTION = {
     0xF6: ("none", "none", "unconditional"),
     0xF7: ("none", "none", "unconditional"),
     0xF8: ("none", "none", "unconditional"),
-    0xF9: ("conditional-1", "source+18", "state+10.bit7 == 1"),
+    # F9 has a state-dependent pre-read swap, but both branches fall through
+    # or branch to the same source read at 0x0801335A.  It therefore consumes
+    # one source byte on every handler entry; the bit does not gate the read.
+    0xF9: ("fixed-1", "source+18", "state+10.bit7 selects pre-read swap"),
     0xFA: ("conditional-2", "source+18 or state+22", "state+17 == 0"),
     0xFB: ("none", "none", "unconditional"),
     0xFC: ("none", "none", "unconditional"),
@@ -94,6 +97,34 @@ READ_SIGNATURES = (
     (0x08013380, bytes.fromhex("1078"), "FA high byte load"),
 )
 
+# These signatures capture the context that makes a raw source-read shape
+# safe to interpret.  They contain code only, never script bytes.  In
+# particular, F9's conditional branch and fall-through both meet at the same
+# source read, while the parser's outer loop and FF handler use state flags
+# to decide whether the consumer continues.
+CONTEXT_SIGNATURES = (
+    (
+        0x0801265A,
+        bytes.fromhex("217c08200840002800d0"),
+        "parser outer-loop tests state+10 bit3",
+    ),
+    (
+        0x0801334A,
+        bytes.fromhex("297c80200840002802d1e87ba97ba873aa691068e97be873"),
+        "F9 pre-read swap branch joins common source read",
+    ),
+    (
+        0x08013668,
+        bytes.fromhex("297c20200840002805d0297c21204042084028744ee0697c8022"),
+        "FF clears state+10 bits on bit5 path and branches to alternate path",
+    ),
+    (
+        0x08013694,
+        bytes.fromhex("297c0520404208402874297c0920404208402874297c101c"),
+        "FF alternate path clears state+10 bit3 before common flush",
+    ),
+)
+
 
 def cpu_to_file(address: int) -> int:
     if not ROM_BASE <= address < ROM_BASE + ROM_SIZE:
@@ -125,9 +156,24 @@ def audit_signatures(data: bytes) -> list[dict[str, str]]:
     return rows
 
 
+def audit_context_signatures(data: bytes) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    for address, expected, label in CONTEXT_SIGNATURES:
+        offset = cpu_to_file(address)
+        actual = data[offset:offset + len(expected)]
+        if actual != expected:
+            raise ValueError(
+                f"context signature changed at 0x{address:08X}: "
+                f"expected {expected.hex()}, got {actual.hex()}"
+            )
+        rows.append({"address": f"0x{address:08X}", "bytes": expected.hex(), "label": label})
+    return rows
+
+
 def audit(data: bytes) -> dict[str, object]:
     validate_rom(data)
     signatures = audit_signatures(data)
+    context_signatures = audit_context_signatures(data)
     shapes = {f"{control:02X}": {"shape": row[0], "read": row[1], "condition": row[2]}
               for control, row in sorted(CONSUMPTION.items())}
     counts = {shape: sum(row[0] == shape for row in CONSUMPTION.values())
@@ -138,6 +184,27 @@ def audit(data: bytes) -> dict[str, object]:
         "shape_counts": counts,
         "read_signature_count": len(signatures),
         "read_signatures": signatures,
+        "context_signature_count": len(context_signatures),
+        "context_signatures": context_signatures,
+        "f9_read_contract": {
+            "control": "F9",
+            "handler": "0x0801334A",
+            "source_read": "fixed-1",
+            "state_bit": "state+0x10.bit7",
+            "state_bit_role": "pre-read state+0x0E/state+0x0F swap selector",
+            "both_paths_reach_source_read": True,
+        },
+        "outer_loop_contract": {
+            "parser": "0x08012500",
+            "continue_test": "state+0x10.bit3",
+            "continue_branch": "0x0801265A -> 0x0801251A",
+        },
+        "ff_contract": {
+            "handler": "0x08013668",
+            "source_read": "none",
+            "state_effect": "state-dependent flag clearing; alternate path clears state+0x10.bit3",
+            "terminator_status": "not-proven",
+        },
         "extractor_policy": "retain-control-candidates-until-context-decoder-proven",
     }
 
@@ -153,10 +220,14 @@ def main() -> int:
         return 2
     print("rom-sha256", report["rom_sha256"])
     print("read-signatures", report["read_signature_count"])
+    print("context-signatures", report["context_signature_count"])
     print("shape-counts", report["shape_counts"])
     for control, row in report["controls"].items():  # type: ignore[union-attr]
         print(f"{control} shape={row['shape']} read={row['read']} condition={row['condition']}")
     print("extractor-policy", report["extractor_policy"])
+    print("f9-read-contract", report["f9_read_contract"])
+    print("outer-loop-contract", report["outer_loop_contract"])
+    print("ff-contract", report["ff_contract"])
     return 0
 
 
