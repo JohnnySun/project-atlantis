@@ -56,7 +56,7 @@ M2.3 的 evidence ledger 與 hash-only runtime receipt 見
   畫面可達性仍是 runtime QA 缺口，不在此批次冒充完成。
 - [x] 以 `restore_translations.rb` 產生本機 `work/*.jsonl`，保留來源 hash、上下文、譯文狀態和術語引用；
   兩批 restore input 與 work artifact 均 ignored。
-- [x] 以 `strip_translations.rb` 產生不含 `source` 的提交帳本；十八批共 88 筆已通過 schema、
+- [x] 以 `strip_translations.rb` 產生不含 `source` 的提交帳本；十九批共 90 筆已通過 schema、
   byte-identical restore→strip 比對和 repository safety。
 - [x] 建立 event-system pool D 的 bounded source-free ledger、strict font coverage、
   fixed-slot patch／re-extract verifier 和 78-byte BPS；9/9 selected records 相符，
@@ -80,11 +80,12 @@ M2.3 的 evidence ledger 與 hash-only runtime receipt 見
 - [x] 完成 pool A `system-item-class` batch 5 的 6 個通用戰鬥狀態效果 descriptions；
   existing codepage coverage `6/6`、selected re-extract／fixed-slot `6/6` 和 BPS round-trip
   通過，沒有新增 custom glyph；帶策略專名的戰鬥描述與自然戰役畫面仍待處理。
-- [x] 先完成 story-event E 的劇情小批次 `E:002`、`E:011`、`E:032`、`E:003`、`E:004`、`E:005`、`E:006`、`E:007`、`E:008`、`E:009`、`E:010`、`E:012`、`E:013`；
+- [x] 先完成 story-event E 的劇情小批次 `E:002`、`E:011`、`E:032`、`E:003`、`E:004`、`E:005`、`E:006`、`E:007`、`E:008`、`E:009`、`E:010`、`E:012`、`E:013`、`E:014`、`E:015`；
   前三筆為 existing-codepage，後六筆使用 E-specific 292-record source-use gate，均為
   source-safe ledger、control/LF invariant、fixed-slot re-extract 和 BPS apply round-trip。
-  batch 7 的兩筆 existing-codepage record 與 batch 8 的兩筆 E-specific custom record 也已通過相同 gate；
-  公開流程交叉證據已記錄，仍須取得自然 E writer／畫面證據與人工終審，不以 pool A 固定池覆蓋率代替全遊戲進度。
+  batch 7 的兩筆 existing-codepage record、batch 8 的兩筆 E-specific custom record 與 batch 9 的兩筆
+  E-specific custom record 也已通過相同 gate；公開流程交叉證據已記錄，仍須取得自然 E writer／畫面證據
+  與人工終審，不以 pool A 固定池覆蓋率代替全遊戲進度。
 
 ## 里程碑 4：構建、BPS 與執行期 QA
 
@@ -93,9 +94,9 @@ M2.3 的 evidence ledger 與 hash-only runtime receipt 見
 - [x] 從 clean ROM 建立兩個 existing-codepage Table B、兩個 existing-codepage pool-A、
   一個 existing-codepage event-system D，以及 custom Table B、custom event-system D、
   custom pool-A 三個 bounded BPS，以及 story-event E 三個 existing-codepage 加五個
-  E-specific custom bounded BPS；十八個 BPS 全部套用後 byte-for-byte equality，並由
+  E-specific custom bounded BPS；十九個 BPS 全部套用後 byte-for-byte equality，並由
   bounded verifier 重新抽取 6/6、19/19、9/9、1/1、12/12、5/5、6/6、12/12、31/31、
-  6/6、story E existing 2/2、1/1、2/2、custom 2/2、1/1、1/1、2/2、2/2 相符；全池／全 ROM
+  6/6、story E existing 2/2、1/1、2/2、custom 2/2、1/1、1/1、2/2、2/2、2/2 相符；全池／全 ROM
   round-trip 仍待完成。
 - [ ] 在 mGBA 驗證已翻譯的核心場景、戰役事件和選單；未測畫面必須明確列出。
 - [ ] 在所有必要 QA 通過前，維持 `status: research`，不發布 ROM，只發布可合法使用者套用的 patch。

@@ -87,6 +87,11 @@
   為 `2/2`，無新增 custom glyph，215-byte fixed-slot patch 與 252-byte BPS 套用逐 byte
   相同。自然 E writer／VRAM receipt 與人工終審仍 pending；詳見
   `research/m3-story-event-batch7-roundtrip-20260816.md`。
+- **story-event E batch 8／9 已建立**：batch 8 的 E:012／E:013 與 batch 9 的 E:014／E:015
+  分別覆蓋另一條結局敘事與夷陵／吳蜀衝突分支；兩批都是 2/2 layout／control／fixed-slot
+  round-trip，使用 E-specific custom-aware encoder，pointer／codepage table 維持不變。
+  batch 8 新增 `獻`／`亂` bounded slots；自然 E writer／VRAM receipt 與人工終審仍 pending；詳見
+  `research/m3-story-event-batch8-roundtrip-20260816.md`、`research/m3-story-event-batch9-roundtrip-20260816.md`。
 - **glyph format 已交叉核對**：`font_glyph_format.py` 依有效 Thumb expander 重現兩組
   `0x20`-byte source plane → `0x80`-byte cache；clean ROM codepage index `1301`／
   `0x9594`／selector `0` 的靜態 cache hash 與 controlled runtime cache hash 相同。
@@ -96,7 +101,7 @@
   mapping 已固定於 `research/m3-custom-glyph-map.json`；`custom_glyph_patch.py` 和
   `verify_custom_glyph_patch.py` 以 source-pool non-use、existing codepage slot、兩組
   glyph plane、fixed record span 和 hash-only re-extract 驗證 D batch 2 與 Table B batch 3。
-  E batch 3–6／8 另使用 `research/m3-story-custom-glyph-map.json` 與 292-record source-use
+  E batch 3–6／8／9 另使用 `research/m3-story-custom-glyph-map.json` 與 292-record source-use
   gate，現有 E-specific map 共 11 個 bounded slots。這不是全 ROM raw-code-unit non-use、自然 runtime、全字庫或發布 patch 的完成證明；
   詳見 `research/m3-custom-glyph-format-20260816.md`、`research/m3-batch3-roundtrip-20260816.md`
   、`research/m3-event-system-batch2-roundtrip-20260816.md` 和
