@@ -29,17 +29,28 @@
 
 M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉驗證的獨立 blocked 項，不是本里程碑的 gate。格式證據與重跑命令見 [`research/static-format.md`](research/static-format.md)。
 
+## M2.1：控制碼保真與解壓 stream round-trip
+
+- [x] 依固定 csm3 VM dispatch／handler callsite 結構化 `0x0308` text record、`0x0309` input/state、`0x030A` two-expression state handler，以及周邊 `0x0001/2/3/6` 的已證實參數形狀。
+- [x] expression parser 保留 `0x0000` terminator、已證實 operand width 與未知 expression word；未能由 callsite 命名的 `0x0302/4/16/0x047e` 以 opaque token 保存。
+- [x] stable `string_id`／pointer provenance 不變；ignored source table 新增 `control_structure`、`following_controls`、`record_sha256` 與 length-contract metadata。
+- [x] 對 13 個含 record 的 resource、361 筆 record 做 source Shift-JIS re-encode 與 decoded PSI3 stream no-op round-trip：`32092` bytes，original/encoded aggregate SHA-256 相同。
+- [x] 明確分類相同 byte length 可在 record/stream 層原地處理、zero padding 縮短 blocked、變長需 resource rebuild；未宣稱完整 ROM 回插。
+- [ ] 建立可修改翻譯的 codepage/font encoder、未知 VM handler、pointer relocation、LZ77/container rebuild 與 ROM-level verifier。
+
+M2.1 的完整 opcode／round-trip／length-contract 收據見 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。
+
 ## M2：文本與字型格式
 
-- [~] 定位已確認的 `PSI3` script resource 與 bounded text record；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。
-- [~] 已確認 type-2 pointer、GBA LZ77、script bytecode 與 record-level Shift-JIS；完整自訂 codepage／VM opcode 語意仍待命名。
+- [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。
+- [~] 已確認 type-2 pointer、GBA LZ77、script bytecode、record-level Shift-JIS 與部分 expression／control width；未知 VM opcode、完整換行／分頁語意仍待命名。
 - [ ] 定位字型資料與渲染器；分開驗證 glyph addressing 與 glyph identity。
 - [ ] 確認字串 ID、指標、換行、控制碼、字寬／行數上限與未修改內容的回插契約。
 - [ ] 以 ROM-to-VRAM byte match、已知畫面內容或全語料庫上下文重讀交叉確認解碼。
 
 ## M3：原文表與可逆試驗
 
-- [~] 由遊戲專用 decoder 產生本機 ignored `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`source_text`、`provenance`；尚未建立可提交 translation ledger。
+- [~] 由遊戲專用 decoder 產生本機 ignored `research/summon-night-craft-sword-3-decoded.jsonl`，每行含 `string_id`、`locale`、`source_text`、structured controls、length contract 與 `provenance`；尚未建立可提交 translation ledger。
 - [ ] 先選一個可達、短且有明確結構的 UI／道具／戰鬥批次，不一次處理全遊戲。
 - [ ] 建立本機 `work/*.jsonl`，明寫 `zh-TW`、`status`、`context`、`terms`。
 - [ ] 用 `core/ledger/restore_translations.rb` 與 `strip_translations.rb` 驗證 source hash 與帳本往返。
@@ -58,4 +69,4 @@ M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉�
 - [ ] 從重建 ROM 重新抽取，確認未修改字串與目標翻譯均吻合。
 - [ ] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256。
 - [ ] 以 mGBA 測試實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面，保留未測試範圍。
-- [ ] 只有完成上述收據後，才評估 zh-Hans／zh-TW 發布。
+- [ ] 只有完成上述收據後，才評估 zh-TW 發布。

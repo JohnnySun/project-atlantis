@@ -67,6 +67,45 @@ class ExtractStaticTest(unittest.TestCase):
         self.assertEqual(len(records), 3)
         self.assertEqual(records[0]["decompressed_offset"], 0x10)
 
+    def test_lossless_stream_parser_preserves_known_controls_and_opaque_words(self) -> None:
+        source = "ポータル".encode("shift_jis")
+        stream = bytearray(b"\x08\x03" + source + b"\x00\x00")
+        stream.extend(b"\x03\x00\xdc\x04")  # 0x0003 + one u16 offset
+        stream.extend(b"\x02\x00\x0c\x04")  # 0x0002 + one u16 target
+        stream.extend(b"\x02\x00\x18\x01\x01\x00\x02\x00\x8b\x00\x00\x00")
+        stream.extend(b"\x09\x03")  # 0x0309, no immediate stream parameter
+        stream.extend(b"\x16\x03")  # unreviewed opaque command boundary
+        decoded = b"PSI3" + bytes(12) + bytes(stream)
+
+        parsed = EXTRACT_STATIC.parse_script_stream(decoded, resource_id=12)
+        self.assertEqual(len(parsed["text_records"]), 1)
+        self.assertEqual(len(parsed["marker_candidates"]), 1)
+        record = parsed["text_records"][0]
+        self.assertEqual(record["source_text"], "ポータル")
+        self.assertEqual(record["following_controls"][0]["opcode"], "0x0003")
+        self.assertEqual(record["following_controls"][1]["opcode"], "0x0002")
+        self.assertEqual(record["following_controls"][2]["opcode"], "0x0309")
+        self.assertEqual(record["following_controls"][3]["kind"], "opaque")
+        self.assertEqual(EXTRACT_STATIC.encode_script_stream(parsed), decoded[0x10:])
+        self.assertEqual(
+            EXTRACT_STATIC.encode_text_record(record, source_text="ポータル"),
+            record["_raw_bytes"],
+        )
+
+    def test_invalid_marker_stays_opaque_and_does_not_change_string_ids(self) -> None:
+        invalid = b"\x08\x03\x02\x00\x7b\x01\x01\x00\x02\x00\x8b\x00\x00\x00"
+        valid = b"\x08\x03" + "はい".encode("shift_jis") + b"\x00\x00"
+        decoded = b"PSI3" + bytes(12) + invalid + valid
+        parsed = EXTRACT_STATIC.parse_script_stream(decoded, resource_id=14)
+        self.assertEqual(len(parsed["marker_candidates"]), 2)
+        self.assertEqual(
+            sum(c["status"] != "accepted" for c in parsed["marker_candidates"]),
+            1,
+        )
+        self.assertEqual(len(parsed["text_records"]), 1)
+        self.assertEqual(parsed["text_records"][0]["decompressed_offset"], 0x10 + len(invalid))
+        self.assertEqual(EXTRACT_STATIC.encode_script_stream(parsed), decoded[0x10:])
+
 
 if __name__ == "__main__":
     unittest.main()

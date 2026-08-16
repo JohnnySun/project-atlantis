@@ -1,4 +1,4 @@
-# B3CJ M1.5 靜態格式證據
+# B3CJ M1.5/M2.1 靜態格式證據
 
 本文件描述已由固定 B3CJ ROM 與 csm3 callsite 交叉驗證的最小格式，不保存日文原文。完整抽取結果只在 ignored 的 `research/summon-night-craft-sword-3-decoded.jsonl`。
 
@@ -21,11 +21,11 @@
 | string_id 群組 | 解壓 offset 例 | raw length 例 | raw SHA-256 前綴 | pointer／consumer／codepage 證據 |
 | --- | ---: | ---: | --- | --- |
 | `b3cj:t2:009:*` | `0x03b6` | 36 | `dce5f7e1ceb36900` | type-2 pointer + csm3 LZ77/stream consumer + strict Shift-JIS |
-| `b3cj:t2:012:*` | `0x00b6` | 22 | `eb8c824818ac004b` | type-2 pointer + csm3 consumer + strict Shift-JIS |
-| `b3cj:t2:014:*` | `0x0094` | 34 | `f0cd7c1b793a50c7` | type-2 pointer + csm3 consumer + strict Shift-JIS |
-| `b3cj:t2:018:*` | `0x0062` | 30 | `6f5372dc723e5325` | type-2 pointer + csm3 consumer + strict Shift-JIS |
+| `b3cj:t2:012:*` | `0x00a6` | 22 | `eb8c824818ac004b` | type-2 pointer + csm3 consumer + strict Shift-JIS |
+| `b3cj:t2:014:*` | `0x0084` | 34 | `f0cd7c1b793a50c7` | type-2 pointer + csm3 consumer + strict Shift-JIS |
+| `b3cj:t2:018:*` | `0x0052` | 30 | `6f5372dc723e5325` | type-2 pointer + csm3 consumer + strict Shift-JIS |
 
-抽取收據：361 筆、resource IDs `9,10,11,12,14,15,16,17,18,19,22,24,25`；ignored JSONL 的 SHA-256 為 `1d41a7b3cfd20c5f71eee9fdd2485074ff558459f393b6014b80422d8afcda86`。輸出欄位包含 stable `string_id`、resource directory offset、relative pointer units、payload offset/CPU address、compressed/decompressed size/hash、script magic 與 consumer evidence。
+抽取收據：361 筆、resource IDs `9,10,11,12,14,15,16,17,18,19,22,24,25`；M2.1 ignored JSONL 的 SHA-256 為 `a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3`。輸出欄位包含 stable `string_id`、resource directory offset、relative pointer units、payload offset/CPU address、compressed/decompressed size/hash、script magic、structured control data 與 consumer evidence。控制碼與 stream round-trip 的完整收據見 [`research/m2.1-control-roundtrip.md`](m2.1-control-roundtrip.md)。
 
 ## 重跑方式
 
@@ -39,8 +39,8 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract
 
 ## 尚未證實的部分
 
-- `0x0309` 等其他 VM opcode 的語意、換行／畫面控制與參數尚未完整命名。
+- `0x0302`、`0x0304`、`0x0316`、`0x047e` 等周邊 VM word 的 handler、參數寬度與語意仍保留 opaque；`0x0309`／`0x030A` 只有 callsite-level input/state 形狀。
 - 字型 tile 位址、glyph lookup、glyph identity 與 VRAM 對應尚未證實。
 - 字串修改後的長度契約、指標重建、編碼器與可逆回插路徑尚未建立。
 
-因此本里程碑只宣稱「受限 script text record 與 Shift-JIS decode 已可重抽」，不宣稱字型、完整 script VM、翻譯或 ROM 回插已完成。
+因此 M2.1 只宣稱「已命名控制形狀的 record/stream parser 與 no-op round-trip 已成立」，不宣稱完整 script VM、字型、翻譯或 ROM 回插已完成。

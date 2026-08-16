@@ -26,12 +26,15 @@
 | `STATIC-SCRIPT-001` | csm3 導向的 type-2 script resource table 與 16-byte pointer units | `confirmed` | `gUnk_09718FFC` 位於 file `0x1718ffc`、大小 `0x284`，解析 ID `0..78`；`src/main.c:480-505` 的 pointer resolver 與本機 table entries 共同重現 payload；`tools/extract_static.py` 對 resource 9、12、14、24 等成功落址 | 以固定 table 續分類劇情／支線／夥伴／鍛造／戰鬥／道具群組 |
 | `STATIC-SCRIPT-002` | LZ77 → `PSI3` → `+0x10` halfword stream | `confirmed` | csm3 `src/script.c:51-63` 呼叫 `LZ77UnCompWram`，`src/script.c:78-88` 消費 buffer `+0x10`；本機 bounded decoder 讀到 `PSI3` 並以 MSB-first flags 解壓 13 個 resource IDs | 繼續命名其他 VM opcode，不把 dispatch table 當文字指標表 |
 | `STATIC-CODEPAGE-001` | bounded `0x0308 ... 0x0000` record 的 codepage | `confirmed` | 13 個 resource IDs 共 361 筆；marker／terminator 以 little-endian halfword 識別，marker 後 raw bytes 以原始記憶體順序 strict Shift-JIS decode；多筆 raw length／SHA-256 可重現，並與固定 TBL 線索交叉核對 | 仍需獨立定位 font lookup／glyph identity，不把 record-level decode 擴大成完整字型結論 |
+| `CONTROL-001` | 已命名的 record 周邊 opcode／expression 形狀 | `confirmed`（bounded） | 固定 csm3 `sub_080127E4` dispatch 與 handler callsite 證實 `0x0308`、`0x0309`、`0x030A`、`0x0001/2/3/6` 的 parser shape；每筆最多向後解析 8 個 command，未知 `0x0302/4/16/0x047e` 留 opaque | 追查未知 handler；不把 `0x0309`／`0x030A` 猜成換行／分頁 |
+| `CONTROL-002` | PSI3 stream／record no-op round-trip | `confirmed`（decoded stream layer） | 13 resources、361 records、32092 stream bytes；source Shift-JIS re-encode `361/361`；original／encoded aggregate SHA-256 均為 `6fda79e61316e3e941e72bad156206bb855a352c546f95d3c1dba2a474025706`；opaque tokens `203`、rejected marker `1` | 仍未重建 LZ77 compressed bytes、resource pointer/span 或 ROM |
+| `LENGTH-001` | record payload 修改長度契約 | `partial-confirmed` | 相同 byte length：record/decoded stream 層可原地保留 offset；zero padding：blocked，因 `0x0000` 是 terminator；變長：需 resource rebuild／後續 jump relocation，尚無 builder | 先以相同 byte length 做最小 translation batch；未知 padding／font width 維持 blocked |
 | `RUNTIME-001` | mGBA boot snapshot 是否能直接證實文本渲染路徑 | `blocked` | 一次性 mGBA 0.10.5 GDB snapshot 讀到 `PC=0x03003652`、`DISPCNT=0x1140`、`BG0CNT=0x0088`、`KEYINPUT=0x03ff`；沒有文字 ROM-to-VRAM match | 不再嘗試 port shim；待有可重現 scripting/headless 路徑或明確 debug 入口再開 runtime |
 | `RUNTIME-002` | mGBA scripting/headless 文本偵察 | `blocked` | 已安裝 CLI 不接受 `--script`；未保留未驗證的 GUI／GDB 實驗工具 | 先解決工具能力與可重現入口，否則維持靜態候選狀態 |
 | `RUNTIME-003` | 共用 `core/gba` 標準 capture 是否能取得 B3CJ live RAM／VRAM／OAM | `blocked` | `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s core/gba/test -v` 的 6 項測試通過；B3CJ 自有 mGBA process 的 `-C ports.qt.gdbPort=25352` 未建立 listener，2345 已由其他 session 使用；一次重用 `/private/tmp` redirect dylib 也未建立 25351。沒有產生新的 raw dump | 待有不碰其他 session 的可用 GDB port 或明確 debug 入口，再用 `core/gba/capture_runtime.py`；不重寫遊戲專屬 client |
 | `FONT-001` | 字型位置、tile 格式、codepage 身分 | `blocked` | 尚無 glyph addressing／VRAM match；不能沿用其他遊戲格式 | 找到可重複 glyph 後，分開驗證 addressing 與 identity |
 | `SOURCE-001` | 可供帳本使用的 bounded 日文原文表 | `confirmed`（M1.5 範圍） | `tools/extract_static.py` 對固定 ROM 可重抽 361 筆 `string_id／locale／source_text／provenance`；ignored JSONL 不 stage，tracked 文件只留 hash／offset／control token | 完成 font／VM／回插契約後，才建立可翻譯的工作帳本；目前不宣稱全遊戲 source coverage |
-| `TRANSLATION-001` | 劇情、支線、夥伴、鍛造、戰鬥、道具的有限量翻譯 | `blocked` | 雖已有 bounded 本機原文表，但尚無完整 VM／字型／回插契約與可提交翻譯 ledger | 先完成一個可回插、可 restore／strip 往返的短批次；本里程碑不宣稱已開始翻譯 |
+| `TRANSLATION-001` | 劇情、支線、夥伴、鍛造、戰鬥、道具的有限量翻譯 | `blocked` | 雖已有 bounded 本機原文表與 M2.1 round-trip，但尚無完整 VM／字型／回插契約與可提交翻譯 ledger | 先選 1–2 筆、保持相同 Shift-JIS byte length、控制資料不變的短批次；本里程碑不宣稱已開始翻譯 |
 
 ## 第一個可重現檢查
 
@@ -45,7 +48,8 @@ python3 games/summon-night-craft-sword-3/tools/scan_static.py \
   --output games/summon-night-craft-sword-3/work/static-report.json
 PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract_static.py \
   games/summon-night-craft-sword-3/roms/base/B3CJ-jp-from-zip.gba \
-  --output games/summon-night-craft-sword-3/research/summon-night-craft-sword-3-decoded.jsonl
+  --output games/summon-night-craft-sword-3/research/summon-night-craft-sword-3-decoded.jsonl \
+  --verify-roundtrip
 ```
 
 `--strict` 會把 game code、header checksum、size、CRC32 與公開 reference SHA-1 一起作門檻。這次本機 readback 的 SHA-256 是 `39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d`；若其他 clean dump 不同，先保留完整 hash 與差異，不修改 ROM 或用補丁檔冒充來源 ROM。`static-report.json` 是 ignored 產物，只提交工具與本帳本的摘要。
@@ -54,7 +58,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/summon-night-craft-sword-3/tools/extract
 
 靜態掃描明確有界：Shift-JIS-shaped run 預設只掃 halfword alignment `0`、至少 8 個 units、最多保存 32 筆；LZ77／RLE 各最多嘗試 2048 個 header、展開上限 `0x40000`。因此「沒有候選」也不能視為全 ROM 證明；本次結果只足以把上述 offset 列為候選。
 
-M1.5 extractor 的固定收據是 `records=361`、resource IDs `9,10,11,12,14,15,16,17,18,19,22,24,25`；ignored JSONL SHA-256 為 `1d41a7b3cfd20c5f71eee9fdd2485074ff558459f393b6014b80422d8afcda86`。此輸出含日文 `source_text`，只可存在被 ignore 的 research 路徑，不得 stage。格式、sample provenance 與尚未證實邊界見 [`research/static-format.md`](static-format.md)。
+M2.1 extractor 的固定收據是 `records=361`、resource IDs `9,10,11,12,14,15,16,17,18,19,22,24,25`；ignored JSONL SHA-256 為 `a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3`。`--verify-roundtrip` 收到 `32092` decoded stream bytes、source re-encode `361/361`、opaque tokens `203`、rejected marker `1`，original／encoded aggregate SHA-256 同為 `6fda79e61316e3e941e72bad156206bb855a352c546f95d3c1dba2a474025706`。此輸出含日文 `source_text`，只可存在被 ignore 的 research 路徑，不得 stage；完整控制碼、opaque 與 length-contract 收據見 [`research/m2.1-control-roundtrip.md`](m2.1-control-roundtrip.md)。
 
 ## 外部資料索引
 
