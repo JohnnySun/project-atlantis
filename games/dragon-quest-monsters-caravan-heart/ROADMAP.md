@@ -13,7 +13,7 @@
 
 目前進度（尚未完成 M1）：clean ROM 已證明文本 consumer、三層 script pointer selection、`0x92`／`0x93` 雙 byte glyph 合成、`E0`／`E1` alternate-glyph 消費、glyph writer 的 32／64-byte stride／DMA3 路徑與可達 menu tilemap；另已建立只使用未佔用 E1 slot 的手繪字形與固定 menu span encoder proof。codepage 完整 mapping、控制碼語義、字寬／VWF writer、所有 script 邊界與全量 round-trip 仍開放。
 
-- [ ] 找到文本的儲存形式：固定表、腳本 bytecode、壓縮 blob 或執行期生成資料。
+- [x] 收斂文本的目前儲存形式為 clean ROM 三層 pointer pool 指向 mixed-byte stream；`tools/audit_storage_form.py` 已重現 pointer／parser direct-read 證據，但 compression absence 與真正 record boundary 仍未證明。
 - [x] 找到文本消費者、字型搬移與實際螢幕渲染路徑（clean `0x08012500`／`0x08013738`／`0x08013E00`／`0x08013E4C` 與 menu VRAM 已交叉驗證；`E0`／`E1` 指向 alternate pool `0x082E0BD4`）。
 - [ ] 追蹤 title／menu／事件畫面，區分 tile、bitmap、sprite 與可能的 VWF 路徑。
 - [ ] 確認指標／bank／壓縮格式與控制碼，不套用其他遊戲假設。

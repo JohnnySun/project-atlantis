@@ -24,7 +24,7 @@
 
 執行結果摘要：
 
-- 37,600 records、4,879 個 unique pointers、6 groups、36 variants。
+- 37,600 records、4,879 個 unique pointers、8 groups、83 variants（group `0..7`）。
 - 36,509 records 含 `FF` candidate；這只是統計，不把 `FF` 宣稱為通用終止碼。
 - 103,209 個 pair tokens；其中 98,108 個依目前已核對的假名濁音／半濁音表可解，
   5,101 個仍未解。
