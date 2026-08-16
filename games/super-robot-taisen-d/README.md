@@ -68,6 +68,16 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   或字型來源已證明。對文字池首字 `0x08076000` 設 read watchpoint，在 reset 後
   10 秒 bounded window 沒有命中；這只是否定該窗口內對「首字」的讀取，不能否定
   整個文字池被使用。完整 runtime 證據與限制記在 ledger。
+- M1.5 已用 `tools/classify_pointer_callers.py` 將有界池的 `4,947` 個 pointer
+  references、`195` 個 pointer runs 與 `915` 個 Thumb literal candidates 分類，
+  並以反組譯確認 pointer-table copy path 與直接 source-byte copy path。共用 core
+  GDB runtime capture 在 `0x0800f49a` -> `0x08007e04` 命中 source
+  `0x0807b3fc`、EWRAM buffer `0x02000d60` 與 bound `0x10`。
+- 反組譯另確認 `0x08008724` 是逐字讀取並分流單／雙位元組的 text consumer，
+  `0x080085fc` 做 codepage/glyph offset arithmetic，`0x080088c8` 做 glyph-base
+  加法，`0x08008650` 寫入 tile buffer；受控 GDB trace 已走通這條鏈。自然
+  reset/title window 尚未命中 renderer，且受控初始化時 `0x020131d0` glyph-base
+  slot 為 zero，所以 font resource initialization 與 glyph identity 仍未完成。
 - 回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 

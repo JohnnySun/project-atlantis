@@ -116,6 +116,115 @@ capture 的 raw dump 與 PPM／PNG 只留在 `/private/tmp`，不進 Git。
 本輪停止擴張 runtime port 基礎設施；後續若需要，應先以反組譯與 pointer caller
 分類縮小 renderer 候選，再開新的獨立 session。
 
+## 2026-08-16：M1.5 bounded pointer caller／text consumer
+
+### Pointer 所在位置分類
+
+新增遊戲專屬工具 `tools/classify_pointer_callers.py`，只在指定 code range
+反組譯 ARM／Thumb PC-relative literal load，並把 literal slot 與有界文字池內的
+連續絕對 pointer run 交叉分類。實際重跑命令如下；JSON 報告只放 ignored 的
+`work/`，不含解碼原文：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/classify_pointer_callers.py \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  --target-start 0x76000 --target-end 0x82490 \
+  --code-start 0x100 --code-end 0x76000 \
+  --minimum-pointer-run 4 \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --top 20 \
+  --json-output games/super-robot-taisen-d/work/pointer-caller-report.json
+```
+
+結果為 `4,947` 個 aligned pointer reference、`195` 個 pointer run、`915` 個
+Thumb literal candidate；literal slot 分成 `652` 個普通 `literal_pool` 與 `263`
+個 `pointer_table_member`，信心分數為 high `495`、medium `327`、low `93`，其中
+`609` 個 target offset 正好是 source table record。這是 bounded caller 的分類
+統計，不把分數當成 runtime reachability。
+
+高信度反組譯確認 `0x0762d0`、`0x0763c4`、`0x07683c` 是指向同一有界資料區的
+pointer table，不是直接的日文 source record。`0x08006b48`／`0x08006f10` 會把
+這些表格指向的資料以 `0x080075e30` bounded copy helper 複製到 stack；其 caller
+鏈為 `0x08007b7a -> 0x08006f10 -> 0x08006b48 -> 0x080075e30`。`0x08007b2a`
+讀取 `0x03003380` 的 dispatcher byte，只有值在 `0..7` 才進 jump table；值為
+`3` 時選到 `0x08007b7a` 這條 pointer-table path。這是目前可交付的精確觸發
+條件。對 reset 後 30 秒 bounded window 設 `0x080075e30` breakpoint 沒有命中，
+因此未把它宣稱為 boot/title consumer。
+
+另一條直接 source-record 路徑在 `0x0800f474`：literal load 後以
+`0x08007e04` NUL／bounded byte-copy helper 消費。共用 core GDB client 的正向
+capture 命中 callsite `0x0800f49a`：
+
+| 欄位 | runtime 值 |
+| --- | --- |
+| consumer entry | `pc=0x08007e04` |
+| caller return／callsite | `lr=0x0800f49f`／`BL` at `0x0800f49a` |
+| source | `r1=0x0807b3fc`（有界 source record） |
+| destination | `r0=0x02000d60`（EWRAM buffer） |
+| maximum length | `r2=0x10` |
+| stop | `S05k` |
+
+這組資料證明了至少一個實際 byte consumer、caller、LR 與 transient buffer；在
+同一次 copy 後對 `0x02000d60` 做 30 秒 read watchpoint 沒有命中，該結果只限於
+這個 buffer／時窗，不能否定後續其他 consumer。
+
+### Glyph／codepage consumer
+
+`0x08008724` 是比低階 tilemap helper 更高信度的文字 consumer。它逐 byte 判斷
+單／雙位元組記錄，雙位元組與單位元組路徑分別在 `0x0800880c`／`0x080088bc`
+呼叫 `0x080085fc`。後者讀取 16-bit code unit 與 mode flag，對 lead/trail byte
+做 bounded arithmetic，返回 glyph offset；這是 code-unit 到 glyph addressing
+的實際轉換，不把 offset 直接當作字元身分。窄字路徑再從 runtime slot
+`0x020131d0` 取 glyph base，於 `0x080088c8` 完成 base+offset，最後呼叫
+`0x08008650` 將 tile value 寫入目的 tile buffer；寬字路徑對應 runtime slot
+`0x020103ac`。`0x08008650` 的 `strh` index 由 row／column／stack 參數組成，
+因此不是單純的資料複製。
+
+已確認的靜態 caller／trigger：
+
+- `0x08008e04` 逐一掃描最多 `0x3c` 個 runtime queue entry；entry pointer
+  `r5` 非零時，`0x08008e1c` 以 `r0=r5+8`、`r1=[r5+4]`、`r2=[r5+0x46]`、
+  `r3=[r5]`、stack fifth argument `1` 呼叫 `0x08008724`。這是文字 queue 被
+  消費的精確條件。
+- `0x08066050`、`0x08066062` 是另一個雙 buffer UI routine 的兩個直接 callsite；
+  `0x0806e01c` 則從另一個 runtime object 取 input buffer 後呼叫同一 consumer。
+- `0x0800869e` 是 object 建立路徑在 fifth argument 為 zero 時的直接分支；
+  `0x08008e1c` 是 queue drain 路徑。這些 callsite 都比單獨的 pointer literal
+  更接近實際文字消費，但仍需由實際畫面／狀態觸發才能取得自然 runtime hit。
+
+runtime 以同一個 session-local mGBA、共用 `core/gba/gdbstub_client.py` 做一次
+受控驗證：先讓 ROM 初始化約一秒，於 EWRAM 寫入不提交的 Thumb trampoline，再
+由 ARM `bx` 轉入 `0x08008724`；沒有修改 ROM。以 `0x0807b3fc` 作為 source pointer
+並在 consumer entry 設 breakpoint 得到：
+
+| 停止點 | 觀察 |
+| --- | --- |
+| `0x080085fc` | `pc=0x080085fc`、`lr=0x080088c1`（callsite `0x080088bc`）、`r0=0x8983`、`r1=1`；`r5=0x0807b3fc` 保留 source buffer |
+| `0x080088c8` | `r4=0x1500`、`r0=0x1500`，即窄字 glyph base + codepage offset 的算術結果 |
+| `0x08008650` | `pc=0x08008650`、`lr=0x08008919`（tile-write callsite `0x08008914`）、`r0=0x02019010`（tile buffer） |
+
+這個 controlled trace 已證明 codepage lookup 與 glyph-address arithmetic 的
+可執行路徑，也證明 tile buffer consumer；但該初始化時點的窄字 glyph-base slot
+`[0x020131d0]` 仍為 zero，所以 `0x1500` 不是可接受的字型來源 identity 證據。
+自然 reset／title 20 秒 window 對 `0x08008724` 沒有命中；目前可審核的結論是
+「consumer 與精確 queue／dispatcher 觸發條件已定位，glyph addressing 已定位，
+font resource initialization 與 glyph identity 尚未完成」，不是翻譯或字型回插
+已完成。
+
+### M1.5 結論
+
+| 問題 | 狀態 |
+| --- | --- |
+| pointer table／literal pool 分類 | 已確認；tool report 給出 4,947／195／915 分類統計 |
+| 真實 source byte consumer | 已確認；`0x0800f49a -> 0x08007e04` runtime positive |
+| caller／LR／buffer | 已確認；`0x0800f49a`、`0x0800f49f`、`0x0807b3fc`、`0x02000d60` |
+| codepage lookup | 已確認；`0x080085fc`，受控 runtime `r0=0x8983`、`r1=1` |
+| glyph addressing | 已確認；`0x080088c8` base+offset、`0x08008650` tile write |
+| font base initialization／glyph identity | 未確認；窄字 slot 在受控初始化時點為 zero |
+| 自然 boot/title reachability | 未命中；精確 queue／dispatcher trigger 已記錄 |
+| 翻譯／可逆回插 | 尚未開始／未證明 |
+
 ### 第一輪結論
 
 | 問題 | 狀態 |

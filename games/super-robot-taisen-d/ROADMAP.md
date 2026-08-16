@@ -16,6 +16,11 @@
 - [x] 完成 bounded mGBA runtime 邊界檢查：ROM entry 與 VRAM transfer 有陽性命中，
   對文字池首字的 read watchpoint 在 bounded boot window 陰性；此結果不宣稱
   renderer／字型已證明。
+- [x] M1.5 完成 bounded pointer-caller／literal-pool 分類，並以 `0x0800f49a` ->
+  `0x08007e04` 確認一個真實 source-byte consumer；反組譯與受控 runtime 亦走通
+  `0x08008724` -> `0x080085fc` -> glyph-base arithmetic -> `0x08008650`。
+  自然畫面觸發與 font resource initialization 仍待完成，不能視為 glyph identity
+  或完整 renderer QA。
 - [ ] 由 runtime 或反組譯確認文字 renderer／decoder 的呼叫鏈。
 - [ ] 完整定位文本區與字串分區：話數、分支、機體／駕駛員／武器／精神、戰鬥
   對話及 UI；目前只完成靜態池的局部分類。
