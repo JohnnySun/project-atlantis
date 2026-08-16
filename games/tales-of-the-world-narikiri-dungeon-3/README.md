@@ -267,6 +267,24 @@ token semantics 與 runtime read edge 都被證明。工具是
 日文 codepage、glyph identity、字寬或 runtime source edge；工具是
 [`tools/codepoint_lookup_probe.py`](tools/codepoint_lookup_probe.py)。
 
+固定的 asset／transform pipeline 另由
+[`research/m2-font-pipeline-20260816.md`](research/m2-font-pipeline-20260816.md)
+與 [`tools/font_pipeline_probe.py`](tools/font_pipeline_probe.py) 驗證：
+`0x08001414` 以 `0x080DDCC4 + index*0x20` 選取固定 32-byte slot，依 parity
+呼叫 `0x080011A8`／`0x080012E0`，兩者都使用 `0x03001464` 的 `&0x03` lookup
+expansion 並寫向 `0x03000560` scratch。這是 confirmed-static transform shape，
+不是 live record→glyph、完整 codepage、字寬或 scratch→VRAM 證明；其安全
+receipt 只保留在 [`research/m2-font-pipeline-metadata.json`](research/m2-font-pipeline-metadata.json)。
+
+可重跑命令：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/font_pipeline_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --out /private/tmp/tow-nd3-font-pipeline.json
+```
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \

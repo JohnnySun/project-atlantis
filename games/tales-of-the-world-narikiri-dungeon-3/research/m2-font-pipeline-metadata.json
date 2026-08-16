@@ -1,0 +1,102 @@
+{
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  },
+  "fixed_entries": {
+    "format_entry": "0x080014F4",
+    "font_map_entry": "0x08001414",
+    "even_transform_entry": "0x080011A8",
+    "odd_transform_entry": "0x080012E0",
+    "codepoint_lookup_entry": "0x08004D90"
+  },
+  "direct_calls": {
+    "format_entry": {
+      "target": "0x080014F4",
+      "count": 6,
+      "file_offsets": ["0x001652", "0x008E16", "0x0167A6", "0x0A778E", "0x0BAC58", "0x0C6184"]
+    },
+    "font_map_entry": {
+      "target": "0x08001414",
+      "count": 2,
+      "file_offsets": ["0x001556", "0x0015F8"]
+    },
+    "even_transform_entry": {
+      "target": "0x080011A8",
+      "count": 1,
+      "file_offsets": ["0x001454"]
+    },
+    "odd_transform_entry": {
+      "target": "0x080012E0",
+      "count": 1,
+      "file_offsets": ["0x001440"]
+    },
+    "codepoint_lookup_entry": {
+      "target": "0x08004D90",
+      "count": 2,
+      "file_offsets": ["0x0015C4", "0x004D60"]
+    }
+  },
+  "literals": {
+    "font_asset_base": "0x080DDCC4",
+    "font_scratch_base": "0x03000560",
+    "transform_lookup_even": "0x03001464",
+    "transform_lookup_odd": "0x03001464"
+  },
+  "instruction_checks": {
+    "font_map_push": true,
+    "asset_stride_shift_left_5": true,
+    "font_map_parity_mask": true,
+    "even_transform_lookup_mask": true,
+    "odd_transform_lookup_mask": true
+  },
+  "font_asset_contract": {
+    "base": "0x080DDCC4",
+    "stride_bytes": 32,
+    "address_formula": "0x080DDCC4 + codepoint_index*0x20",
+    "source_span_per_index_bytes": 32,
+    "source_format_status": "static-2-bit-lookup-expansion-candidate"
+  },
+  "transform_contract": {
+    "lookup_table": "0x03001464",
+    "lookup_mask": "0x03",
+    "source_read": "bounded halfword rows with two-bit lookup selection",
+    "destination": "0x03000560",
+    "parity_dispatch": {
+      "even": "0x080011A8",
+      "odd": "0x080012E0"
+    },
+    "status": "confirmed-static-transform-shape"
+  },
+  "codepoint_lookup": {
+    "entry": "0x08004D90",
+    "pointer_slot_count": 5,
+    "tables": [
+      {"file_offset": "0x0FFE80", "gba_address": "0x080FFE80", "window_bytes": 256, "halfword_count": 128, "nonzero_bytes": 254, "unique_halfwords": 125, "min_halfword": "0x0000", "max_halfword": "0x9A82", "sha256": "cb893bcaed0a165462fd2a3d73a16e50dfe3233f189b28a6eb71610cfe565ccd"},
+      {"file_offset": "0x0FFF40", "gba_address": "0x080FFF40", "window_bytes": 256, "halfword_count": 128, "nonzero_bytes": 250, "unique_halfwords": 120, "min_halfword": "0x0000", "max_halfword": "0xF082", "sha256": "ac8e75b6ab744905b7544c94873c452fc32697fd5dce79efad02a3d92e0d2793"},
+      {"file_offset": "0x0FFFBC", "gba_address": "0x080FFFBC", "window_bytes": 256, "halfword_count": 128, "nonzero_bytes": 246, "unique_halfwords": 124, "min_halfword": "0x0000", "max_halfword": "0xF182", "sha256": "c914baa226e5e88ea226f370a5d9e23c20154cd158a5e7b8787135e386df9c3a"},
+      {"file_offset": "0x0FFFF4", "gba_address": "0x080FFFF4", "window_bytes": 256, "halfword_count": 128, "nonzero_bytes": 229, "unique_halfwords": 114, "min_halfword": "0x0000", "max_halfword": "0xF182", "sha256": "f8fabc5ad4c795aad829533f64ede3d0fced76d7d9b956fd1ad179c4ab219aec"},
+      {"file_offset": "0x100070", "gba_address": "0x08100070", "window_bytes": 256, "halfword_count": 128, "nonzero_bytes": 152, "unique_halfwords": 84, "min_halfword": "0x0000", "max_halfword": "0xDEC4", "sha256": "10fdccda2bbeaf26e106712351b6118ce0e3721194c2e6b94cdd63d65d8a3ef7"}
+    ]
+  },
+  "bounded_spans": [
+    {"name": "font-map-entry", "file_start": "0x001414", "file_end_exclusive": "0x001460", "byte_length": 76, "sha256": "90c62efb593c2a5eef01d12a751dbdccdc0057989a5a7321ea31624caa88cbe0"},
+    {"name": "glyph-transform-even", "file_start": "0x0011A8", "file_end_exclusive": "0x0012D4", "byte_length": 300, "sha256": "e516ea81a9750e5fa8ccd0dfe096f8b325f5a493a39f0a24ee7a0ab740c52e0d"},
+    {"name": "glyph-transform-odd", "file_start": "0x0012E0", "file_end_exclusive": "0x001410", "byte_length": 304, "sha256": "efe192bd00e346b3c3147bf61a5715247c4434dd47acdf0fbb7a466711c67b60"},
+    {"name": "codepoint-lookup-entry", "file_start": "0x004D90", "file_end_exclusive": "0x004E32", "byte_length": 162, "sha256": "cd2117b94f5ce712d8f591e10adc095f172ac2e229a6cee120f4f926ce398f9c"}
+  ],
+  "classification": {
+    "asset_stride_and_address_math": "confirmed-static",
+    "two_bit_lookup_expansion_shape": "confirmed-static",
+    "codepoint_lookup_entry_and_pool": "confirmed-static",
+    "complete_japanese_codepage_identity": "unconfirmed",
+    "glyph_identity_for_any_strict_record": "unconfirmed",
+    "width_semantics": "unconfirmed",
+    "live_source_record_to_font_asset": "unconfirmed",
+    "scratch_to_glyph_vram": "unconfirmed",
+    "capacity_and_roundtrip": "unconfirmed"
+  }
+}
