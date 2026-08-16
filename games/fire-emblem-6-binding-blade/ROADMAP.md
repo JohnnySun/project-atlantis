@@ -11,6 +11,7 @@
 
 - [x] 讀取合法 AFEJ ROM，確認標頭、game code、maker code、revision、CRC32 與 SHA-256。
 - [x] 以 mGBA/GDB 確認一條文字 buffer → 兩位元組碼表 → glyph index → VRAM bitmap composer 路徑。
+- [x] M1.5：以可重跑 loader breakpoint、copy-wrapper breakpoint 與 EWRAM write-watchpoint 證明 ROM pointer table → EWRAM code-unit buffer；記錄一個 `0x01` marker 與 payload 後的 `0x00` 邊界。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。
