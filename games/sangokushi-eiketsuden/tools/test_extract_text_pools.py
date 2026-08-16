@@ -43,6 +43,7 @@ class ExtractTextPoolsTest(unittest.TestCase):
         records = EXTRACT.decode_pool(synthetic_pool_rom(), "synthetic", 0x100, 2)
         self.assertEqual(records[0]["provenance"]["decoder_version"], EXTRACT.DECODER_VERSION)
         self.assertEqual(len(records[0]["provenance"]["source_hash"]), 64)
+        self.assertEqual(len(records[0]["provenance"]["source_text_hash"]), 64)
         self.assertNotIn("raw_bytes", records[0]["provenance"])
 
 

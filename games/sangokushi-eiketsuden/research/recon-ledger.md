@@ -206,6 +206,22 @@ M2.3 的 runtime gate 只對 controlled fixture 局部成立；自然 index boun
 path event source、U+306B／U+529B runtime identity 與 encoder／回插仍 pending。
 因此不建立翻譯 batch。
 
+## M3 bounded batch 1／fixed-slot round-trip（2026-08-16）
+
+完整欄位、命令和限制見 [`research/m3-batch1-roundtrip-20260816.md`](m3-batch1-roundtrip-20260816.md)。
+本帳只補充 hash／計數，不保存 B0–B5 的日文 source 或 work artifact。
+
+| 項目 | 狀態 | 已有證據 | 尚未證實／限制 |
+|---|---|---|---|
+| B0–B5 translation ledger | `confirmed-static / ai-review` | `translations/table-b-batch-1.jsonl` 有 6 筆 source-free rows；每筆有 string ID、source hash、`zh-TW` target、上下文、max width、控制碼清單和 `ai_review` 狀態；restore→strip 逐 byte 相同 | 不是完整劇情／戰役批次；尚未通過自然畫面與人工最終術語審核 |
+| strict encoder／font coverage | `confirmed-static / bounded` | 6/6 目標通過 Shift-JIS、1834-entry codepage、兩組 glyph bank 的 0x20-byte slot；missing codepage entry `0`、原 fixed span fit `6/6` | 僅限 B0–B5；不能外推 Table B 其餘 records 或 pool A/C/D |
+| fixed-slot Table B patch | `confirmed-static / bounded` | 44-entry pointer table unchanged；6 unique targets、changed bytes `42`；relocation disabled；selected re-extract `6/6`、fixed-slot `6/6`，unselected records byte-identical | 只證明選定 record/table layer，不是全 ROM relocation／encoder proof |
+| BPS build/apply | `confirmed-static / bounded` | BPS `109` bytes；source CRC32 `a4a1c956`、target CRC32 `83398341`、patch CRC32 `e65c22d2`；BPS SHA-256 `9a9d5ed9af847dbdf9dcaa48785be76eb5a107d41f3928711faabf2d7c20726e`；套用結果與 patched ROM `cmp` 相等 | 產物留 ignored／暫存，不把 ROM 或 BPS 提交；全池重抽取仍未完成 |
+| patched runtime QA | `pending / not-observed` | 尚未取得 patched B0–B5 的自然 menu／battle runtime receipt | M2.4 natural cohort 仍為 0；既有 M2.3 controlled receipt 不可冒充本批次自然 evidence |
+
+此 bounded batch 使「固定槽位的局部 encoder／BPS／re-extract」成立，但不解除自然
+event index `<44`、完整字型／版面、pool A/C/D 翻譯、全量回插或 mGBA QA 的缺口。
+
 ## 後續證據邊界
 
 1. 用 ROM-independent tests 保持 identity／pointer summary 工具可重跑。

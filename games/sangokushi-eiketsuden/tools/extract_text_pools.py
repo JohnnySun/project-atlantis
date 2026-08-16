@@ -10,6 +10,7 @@ therefore intended for the ignored ``research/*-decoded.jsonl`` path only.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from collections import Counter
@@ -63,12 +64,14 @@ def decode_pool(data: bytes, label: str, table_offset: int, count: int) -> list[
         pointer_value, target = _read_pointer(data, pointer_file_offset)
         payload, terminator = common.read_c_string(data, target)
         structure = common.record_structure(payload)
+        source_text = str(structure["text"])
+        source_text_hash = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
         records.append({
             "game": "sangokushi-eiketsuden",
             "revision": EXPECTED_GAME_CODE,
             "string_id": f"b3ej:{label}:{index:03d}",
             "locale": "ja-JP",
-            "text": structure.pop("text"),
+            "text": source_text,
             "provenance": {
                 "status": "confirmed-static",
                 "method": "bounded-absolute-pointer-table",
@@ -82,6 +85,7 @@ def decode_pool(data: bytes, label: str, table_offset: int, count: int) -> list[
                 "record_gba_address": _hex(pointer_value),
                 "terminator_file_offset": _offset(terminator),
                 "terminator": "0x00",
+                "source_text_hash": source_text_hash,
                 **structure,
             },
         })

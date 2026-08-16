@@ -13,7 +13,7 @@
 - [x] 以 `Z3,04000130,2` 讀取 watchpoint 確認 KEYINPUT 的執行期消費點（PC `0x080a9a0a`），並以 active-low 值完成一次 Start 狀態轉換。
 - [x] 記錄新畫面的 `DISPCNT`、BG 設定、VRAM/OAM 非零統計、OBJ tile 範圍與 46 個 active sprite 的可重現證據。
 - [x] 確認至少一個實際文字消費結果：OBJ sprite 合成影像中出現三行日文免責文字。
-- [~] 找到文字的實際儲存形式、字元代碼與 codepage；目前只有畫面消費證據，沒有把影像反推成原文表。
+- [~] M1.17 已確認一條 bounded ASCII/padding byte-table consumer 與 code-unit edge；這不是日文主文字表，也沒有把影像反推成原文表。
 - [ ] 確認字串池／指標／bank、壓縮、換行與控制碼；不套用 SMT I、黃金太陽或其他遊戲格式。
 - [ ] 分別定位惡魔、技能、道具、系統與劇情資料，並建立本作 decoder 及本機 `research/*-decoded.jsonl`。
 - [ ] 以未修改資料重新抽取驗證可逆回插路徑。
@@ -101,13 +101,85 @@
   三個 bounded scalar fields；只輸出 hash、length、count 與 region metadata。
 - [x] 交叉 `0x080bd0e0` resource initializer、`0x0813efb4` callback initializer、
   `0x080a9c40` registration target 與既知 `0x02001000 → 0x06010000` helper；
-  記錄 ROM source pointer candidates 與 source marker `0x24`，不視為標準壓縮
-  header 或 source table。
-- [~] 尚未找到這 16×8 candidates 的自然 indirect reader／BLX dispatch，也沒有
-  source/index/code-unit、glyph identity 或 runtime hit；listener blocker 仍與
-  遊戲 negative 分開記錄於 `research/m1.13-staging-resource-map-20260816.md`。
+  記錄 ROM source pointer candidates 與 source marker `0x24`；當時仍保守不命名
+  格式，後由 M1.15 bounded decoder 確認為 4-bit Huffman header。
+- [x] M1.14 已找到這 16×8 candidates 所在 command stream 的 bounded reader：
+  opcode `0x0c`、callback-table entry 12、source `+0x04` 與 argument `+0x08`；
+  static source→staging chain 見 `research/m1.14-resource-reader-20260816.md`。
+- [~] 仍沒有 natural runtime hit、code-unit、glyph identity 或文字用途；listener
+  blocker 與遊戲 negative 分開記錄，未建立翻譯 ledger。
 - [ ] 取得 reader 的實際參數並交叉 staging → OBJ VRAM → OAM；在此之前維持
   codepage、stable string ID、翻譯 ledger 與回插封鎖。
+
+## M1.14：descriptor reader／source-index provenance
+
+- [x] 解析 `0x0879243c` 8-entry state table、`0x0203b554` selector halfword、
+  Thumb pointer `0x0813f22d` 與長 handler `0x0813f22c` 的 prologue／first
+  return boundary／literal pool；確認 handler callsite `0x0813f242` 將
+  `0x08794e24` 與 `0x0000ffff` 送入 `0x080ad0fc`。
+- [x] 解析 queue drain 的 entry `+0x14` source／`+0x10` stream index、25×8
+  callback table、opcode `0x0c` 的 handler `0x080ad3cc` 與 `BX r3` trampoline；
+  確認 callback record `+0x04` → `r1` source pointer、`+0x08` → `r2` argument。
+- [x] 對 128 次 `0x0813ef65` pointer 建立可重抽取 metadata：每次 preceding
+  opcode `0x0c` match、16 組×8 callbacks、stride `0x18`、128/128 ROM source、
+  `r2=0..7` 各 16 次；前三筆 source window 僅保留 hash/length/address。
+- [x] 將前三筆 bounded source links 接到 writer `0x0813ef64` 的
+  Huff→LZ77 staging expression；`r2=0` 可與 M1.12 `0x02001000 → 0x06010000`
+  static edge 對接，但未宣稱畫面 glyph identity。
+- [~] static source/staging provenance 已確認，natural runtime capture 仍受
+  listener blocker；沒有 code-unit、string ID、Unicode identity、控制碼或
+  字寬，故 source table、codepage、ledger 與翻譯仍封鎖。
+- [ ] listener 恢復後只重跑同一條單一路徑，記錄 PC/LR、r1/r2、source/staging
+  hash 與 DMA/OAM consumer；若仍無文字 identity，對 `0x087a*` source class
+  做 bounded decoder，不再擴大全 ROM glyph scan。
+
+## M1.15：nested Huff/LZ77 source class decoder
+
+- [x] 只重放 M1.14 已確認的 `0x0813ef65` 16×8、128 筆 ROM source pointer；不做
+  全 ROM glyph pattern scan，不讀取未命名的其他 source region。
+- [x] 以本作工具重現 mGBA BIOS 的 GBA Huffman tree walk：128/128 header 是
+  `0x24`（4-bit），tree／stream boundary、consumed span、output length 與 hash
+  均可重抽取；decoder 有 synthetic 4-bit round-trip 測試。
+- [x] 以 Huff output 作 LZ77 input：128/128 都是有效 `0x10` stream，最終 output
+  皆為 `0x1000` bytes、128 個完整 4bpp tile block；只保留 hash、長度、entropy、
+  zero/FF count、tile count 與 unique hash count。
+- [~] 這批資料現可命名為 resource payload／staging-bank input class，與
+  `r2=0..7` 的 bank expression 相容；仍不能命名為文字、code-unit 或 glyph，
+  122 個 unique output hash 也不等於 122 個字元。
+- [ ] listener 恢復後，以同一路徑驗證自然 transition 是否真的把某一 bank
+  搬到 OBJ VRAM；若畫面仍只消費 resource asset，轉向尚未命名的 text/code-unit
+  consumer。source table、codepage、ledger 與翻譯仍封鎖。
+
+## M1.16：命名 resource 與實際 OBJ frame 交叉
+
+- [x] 只重放 M1.14 已確認的 `0x0813ef65` 16×8／128 筆 source records；不擴張
+  source set、不做全 ROM glyph scan、不輸出 raw payload、capture 或圖片。
+- [x] 以 M1.15 decoder 將 128/128 `0x24` Huff → `0x10` LZ77 payload 留在工具
+  記憶體，與 hash 固定的 Start-screen VRAM/OAM capture 交叉；capture 為 46 個
+  active sprite、84 個 unique tile、184 個 tile occurrences。
+- [x] 32-byte aligned exact sprite 與 hflip/vflip/rotate180/nibble-swap 變形均
+  0 hit；非零 tile 為 0/173 occurrences、0 個 unique non-zero tile hit。11 個
+  空白 tile occurrences 分開保留，不能被誤讀成文字證據。
+- [~] 這只證明「本次 capture 中，命名 resource set 不是直接 OBJ source」；不能
+  因此把 resource 全域分類成非文字，也沒有得到 code-unit、glyph identity 或
+  Unicode。
+- [x] 由已知 consumer 的靜態 caller/literal 線索轉入 M1.17 命名 text/code-unit
+  reader；source table、codepage、ledger、翻譯與回插仍封鎖。
+
+## M1.17：第一條命名文字／code-unit consumer edge
+
+- [x] 確認 ROM table base `0x08163444`、`index * 0x0a` addressing、object field
+  `+0x24` 的 index 來源，以及 `0x080b6460` 的 Thumb boundary/literal pool。
+- [x] 確認 reader 以 `ldrb` 消費 byte unit、在 `0x20` sentinel 停止，並以
+  `0x080b64e4` 的 Thumb BL 將固定 descriptor pointer `0x08163638` 送至
+  `0x080aa1f4`；function end/return candidate 與 literal load 交叉驗證。
+- [x] 只對 table 起點前 37 筆、每筆 10 bytes 的 ASCII/padding-class prefix 做
+  metadata-only 重抽取；不提交 raw bytes、完整原文或 decoded strings。
+- [~] 這是第一個 confirmed code-unit edge，但 bounded prefix 暫時只屬 UI/map-label
+  class；`0x080aa1f4` 仍是 OAM record writer candidate，未確認 glyph identity、
+  日文主劇情 source、codepage、control codes 或 staging→OBJ chain。
+- [ ] 沿 reader family 找到日文主文字的 table/category mapping、source/index、
+  codepage、控制碼與長度規則；在此之前不得建立 translation ledger 或回插資料。
 
 ## M2：可審核翻譯 ledger
 

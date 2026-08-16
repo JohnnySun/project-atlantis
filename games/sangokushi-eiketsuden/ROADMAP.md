@@ -40,22 +40,28 @@ tilemap writer；runtime reachability、實際 index `<44` 與 runtime glyph ide
 - [x] 分別確認四組 bounded candidate pool 的完整 NUL／Shift-JIS／LF／控制碼統計；A 183/183、B 44/44、C 4/4、D 28/28 可解，A 有 177 筆 LF，未把 noisy compression signature 當成文本壓縮。各池完整畫面語意與其餘 runtime glyph identity 仍分開 pending；M2.3 的 addressing 結論只限已驗證的 static／controlled path。
 - [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 runtime glyph pool 定位和 Unicode 身分確認。
 - [x] 寫出 `tools/extract_text_pools.py` 唯讀 decoder，輸出 ignored `research/sangokushi-eiketsuden-decoded.jsonl` 本機原文表與不含原文的 pool metadata；renderer 仍只使用共用 `core/gba` 工具。
-- [ ] 只有在未修改內容可抽出再回插後逐 byte 一致，才宣稱回插路徑可行。
+- [x] 以 B0–B5 的 fixed-slot bounded patch 做一次選定 record 的 extract→encode→patch→re-extract
+  round-trip；全池／全 ROM 的回插路徑仍保留到里程碑 4 驗收。
 
 M2.3 的 evidence ledger 與 hash-only runtime receipt 見
 [`research/m2-3-runtime-gate-20260816.md`](research/m2-3-runtime-gate-20260816.md)。
 
 ## 里程碑 3：有限量翻譯與 ledger
 
-- [ ] 從一個可達且結構完整的短批次開始，不先翻整部遊戲。
-- [ ] 以 `restore_translations.rb` 產生本機 `work/*.jsonl`，保留來源 hash、上下文、譯文狀態和術語引用。
-- [ ] 以 `strip_translations.rb` 產生不含 `source` 的提交帳本；通過 schema 與 `check-repository-safety.rb`。
+- [x] 從一個結構完整、固定槽位可容納且已通過 codepage coverage 的短批次開始；目前為
+  Table B B0–B5 六筆 battle-effect label。自然畫面可達性仍是 runtime QA 缺口，不在此批次冒充完成。
+- [x] 以 `restore_translations.rb` 產生本機 `work/*.jsonl`，保留來源 hash、上下文、譯文狀態和術語引用；
+  restore input 與 work artifact 均 ignored。
+- [x] 以 `strip_translations.rb` 產生不含 `source` 的提交帳本；B0–B5 已通過 schema、byte-identical
+  restore→strip 比對和 repository safety。
 - [ ] 先完成劇情／戰役事件小批次，再擴充武將、地名、官職、策略和道具；每批次記錄 string ID 集合。
 
 ## 里程碑 4：構建、BPS 與執行期 QA
 
-- [ ] 建立遊戲專用 encoder、字庫子集和嚴格的字寬／行數／控制碼檢查。
-- [ ] 從 clean ROM 建立 ROM、BPS，套用 BPS 後做 byte-for-byte round trip，並重新抽取比對。
+- [x] 建立受限於 Table B fixed-slot 的遊戲專用 encoder、codepage／字庫 coverage 和嚴格的
+  Shift-JIS／payload 長度／控制碼檢查；全遊戲字庫子集與版面規則仍待完成。
+- [x] 從 clean ROM 建立 B0–B5 的 BPS，套用 BPS 後做 byte-for-byte equality，並由 bounded
+  verifier 重新抽取 6/6 相符；全池／全 ROM round-trip 仍待完成。
 - [ ] 在 mGBA 驗證已翻譯的核心場景、戰役事件和選單；未測畫面必須明確列出。
 - [ ] 在所有必要 QA 通過前，維持 `status: research`，不發布 ROM，只發布可合法使用者套用的 patch。
 

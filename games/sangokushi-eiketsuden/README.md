@@ -17,7 +17,15 @@
 - **M2.3 runtime gate（2026-08-16）完成受控有界收據**：static upstream 已證實 `0x08026510 → 0x0801929C` builder、`r6+0x02` count 與 `r6+0x1C` event buffer；empty path 固定 44，normal path仍由 runtime table `0x02014E78` 的 `0xFF` 終止。32-event natural slice 沒有 consumer hit；一筆明確標記的 controlled consumer fixture 觀察到 actual index `0 < 44`，並以 B[0] `0x08078528` 取得 formatter `0x0800D3FC` → writer `0x0800CAD8` → glyph cache `0x02000000` → VRAM `0x0600C080`（128-byte hash 同值）→ tilemap `0x02013050` 收據。`0x9594` 的 runtime codepage index `1301`／Unicode identity `U+90E8` 已交叉核對；自然全域 index gate、U+306B／U+529B runtime identity 與 ROM 回插仍 pending。詳見 `research/m2-3-runtime-gate-20260816.md`。
 - **M2.4 natural cohort／state gate（2026-08-16）已完成有界負證據與靜態收尾**：兩條 fresh-process、single-connection 的 32-event natural paths（`none:8,start:4,none:20` 與 `none:4,start:8,none:20`）都停在 title/input-read loop；builder、consumer、formatter、writer 全為 0，VRAM before/after hash 相同，自然 cohort 為 0。`tools/m2_4_static.py` 進一步證實 initializer `r6+0x10` 的 consumer pointer 經 `0x0801A738` state gate、`0x0801A12C` poll，再由 `0x0806ED80: bx r2` 間接進入 `0x08026054`；`r6+0x14` 來自 `0x08021A44` 對 EWRAM table `0x0203544C` 的 nonzero predicate。確切 menu／battle 語意與自然 event index `<44` 仍 unknown。完整分欄與報告欄位見 `research/m2-4-natural-cohort-20260816.md`。
 - **公開術語研究已建立**：`translations/glossary.zh-TW.tsv` 是待 ROM 畫面／上下文核對的臺灣繁體候選表，涵蓋武將、地名、兵種／官職、策略和戰役事件用語；`research/term-sources.md` 記錄來源交叉核對與爭議項目。
-- **沒有翻譯批次**：`research/sangokushi-eiketsuden-decoded.jsonl` 只在本機 ignored 路徑作為 bounded extractor 輸出，含原文但不進 Git；沒有任何可提交 ledger 記錄，因此不能宣稱已完成劇情翻譯或可逆回插。
+- **第一個 bounded translation ledger（2026-08-16）已建立**：`translations/table-b-batch-1.jsonl`
+  只含 Table B B0–B5 六筆不含 `source` 的 `zh-TW`／schema ledger，狀態為 `ai_review`；
+  restore→strip 逐 byte 相同，未把 ignored 原文、work 或 ROM 納入 Git。這是結構完整的
+  fixed-slot 靜態批次，不宣稱自然畫面 reachability 或整部劇情翻譯完成。
+- **第一個 bounded insertion／BPS receipt 已完成**：`font_coverage.py` 對 6/6 目標通過
+  strict Shift-JIS、1834-entry codepage、兩組 0x20-byte glyph slot 和原槽位長度檢查；
+  `patch_table_b.py` 只改 6 個 unique Table B record、42 bytes，不移動 pointer table。
+  `verify_table_b_patch.py` 重新抽取 6/6 相符，BPS 套用結果與 patched ROM byte-for-byte
+  相同。完整 hash／CRC／限制見 `research/m3-batch1-roundtrip-20260816.md`。
 
 ## 可重現的唯讀工具
 
@@ -39,12 +47,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools -p 'test*.py' -v
 1. 以 `inspect_rom.py` 重跑 header、CRC32／MD5／SHA-1／SHA-256 和 bounded probes；產品候選與 ROM header 仍分開記錄。
 2. 以 `scan_text_pointers.py` 重跑已審核的指標池候選；每個候選都要記錄偏移和判定理由，不把合法位元組模式直接當成文字。
 3. 若要繼續，才以 mGBA／GDB 觀察實際文字渲染、VRAM tile／tilemap、字型搬移和執行期資料。需分開記錄「字型位址已定位」和「glyph identity 已確認」兩種進度。
-4. 解出一小段可重現的字串結構後，建立遊戲專用解碼器，輸出本機 `research/sangokushi-eiketsuden-decoded.jsonl`：每行至少含 `string_id`、`locale`、`text`、`provenance`，並標記 confirmed／provisional／unmapped 證據層級。
-5. 只從本機原文表透過 `core/ledger/restore_translations.rb` 產生 `work/` 工作記錄；翻譯完成後以 `core/ledger/strip_translations.rb` 產生可提交帳本，再跑 schema、安全檢查、重抽取和回插測試。
+4. 解出一小段可重現的字串結構後，建立遊戲專用解碼器，輸出本機 `research/sangokushi-eiketsuden-decoded.jsonl`：每行至少含 `string_id`、`locale`、`text`、`provenance`，並標記 confirmed／provisional／unmapped 證據層級。四池 decoder 已完成 bounded metadata；完整畫面語意仍待核對。
+5. 只從本機原文表透過 `core/ledger/restore_translations.rb` 產生 `work/` 工作記錄；翻譯完成後以 `core/ledger/strip_translations.rb` 產生可提交帳本，再跑 schema、安全檢查、重抽取和回插測試。B0–B5 已完成這條 bounded 流程；全量仍待完成。
 
 ## 控制碼、排版與回插邊界
 
-目前已由靜態資料支持標準 Shift-JIS、`0x00` 終止和 `0x0A` 換行；另觀察到候選 `ESC C6 %s` 格式序列及 `%s`／`%d`／`%u`／`%%` 參數。M2.3 已以 controlled call 確認一條 runtime formatter→glyph cache→128-byte VRAM copy→tilemap edge，並確認 U+90E8 的 codepage identity；M2.4 static caller chain 已把 normal dispatch 的 state gate 與 indirect consumer edge 固定，但兩條 bounded natural path 尚未跨過 gate。這不等於自然畫面 reachability、完整控制碼契約、最大寬度／行數、壓縮使用方式或回插位置。不套用黃金太陽或光明之魂的格式假設。
+目前已由靜態資料支持標準 Shift-JIS、`0x00` 終止和 `0x0A` 換行；另觀察到候選 `ESC C6 %s` 格式序列及 `%s`／`%d`／`%u`／`%%` 參數。M2.3 已以 controlled call 確認一條 runtime formatter→glyph cache→128-byte VRAM copy→tilemap edge，並確認 U+90E8 的 codepage identity；M2.4 static caller chain 已把 normal dispatch 的 state gate 與 indirect consumer edge 固定，但兩條 bounded natural path 尚未跨過 gate。B0–B5 的 encoder 只接受 strict Shift-JIS、既有 codepage entry、固定槽位與無控制碼目標；這不等於自然畫面 reachability、完整控制碼契約、最大寬度／行數、壓縮使用方式或全遊戲回插位置。不套用黃金太陽或光明之魂的格式假設。
 
 ## 公開研究的使用限制
 

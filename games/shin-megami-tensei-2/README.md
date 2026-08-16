@@ -2,7 +2,7 @@
 
 本目錄只處理日版 GBA《真・女神転生II》（A5TJ），目標為臺灣繁體 `zh-TW`。ROM、sav、完整解出的原文、VRAM／OAM dump、渲染圖片與暫存構建只保存在本機，不進 Git。
 
-## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10 基準狀態（2026-08-16）
+## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10/M1.11/M1.12/M1.13/M1.14/M1.15/M1.16/M1.17 基準狀態（2026-08-16）
 
 - ROM header 身分已確認：`DDS_2`、`A5TJ`、maker `EB`、revision `0`、8 MiB。
 - 本機候選的 ROM CRC32 為 `af40cc99`，SHA-256 為 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`；完整指紋和 header complement 異常見 `research/recon-20260816.md`。
@@ -35,6 +35,10 @@
 - M1.11 已把 OAM metadata consumer 與 OBJ VRAM destination family 分開：`0x030033f0 → DMA3 → 0x07000000` 的參數與 caller chain 已驗證；`0x06010000` 有 12 個 bounded literal consumers，8 個 `0x06013000` fixed-DMA pattern 仍有效。這些是 OAM／destination 證據，不是文字 source；證據見 `research/m1.11-obj-consumer-20260816.md`。
 - M1.12 static fallback 已在 12 個 OBJ-VRAM reference 中辨識 7 個 DMA3 source edges，其中 `0x02001000 → 0x06010000` 出現兩次；另 5 個因 arithmetic/shared control 保持 unresolved。自然 runtime probe 已建立，但本回合 GDB listener 在 attach 前受本機 socket／port 環境阻擋，沒有把它記成 runtime negative；證據見 `research/m1.12-obj-source-map-20260816.md`。
 - M1.13 已沿 `0x02001000` staging edge 完成 bounded static resource map：`0x0813ef64` 是 Huff→LZ77-WRAM transform，`0x0813ef65` callback pointer 形成 16×8、stride `0x18` 的 record candidates；每筆 `+4` 欄位是 ROM-pointer-shaped source。這仍不是文字表，尚未取得自然 source/index/code-unit argument；證據見 `research/m1.13-staging-resource-map-20260816.md`。
+- M1.14 已把 `0x0879243c[5] → 0x0813f22c → 0x08794e24 → opcode 0x0c → callback-table[12] → 0x0813ef65` 靜態接通：128 次 callback 前均有 `0x0c`，source `+0x04` 全為 ROM pointer，`r2=0..7` 各 16 次，並接到 Huff→LZ77 staging expression。這是 source/staging provenance，不是自然 runtime hit、文字表或 glyph identity；證據見 `research/m1.14-resource-reader-20260816.md`。
+- M1.15 對同一批、且只對這批 16×8 source candidates 做本作自有的 GBA Huff→LZ77 bounded decoder：128/128 是 `0x24`、4-bit Huffman，128/128 解出 `0x10` LZ77，最後 payload 皆為 4096 bytes（128 個完整 4bpp tile block），唯一輸出 hash 仍有 122 組。這確認它們是可重抽取的 resource payload class／staging bank input，不是文字 source table；沒有取得 code-unit、Unicode 或 glyph identity，證據見 `research/m1.15-source-class-20260816.md`。
+- M1.16 將同一批 128 筆 nested resource 與固定 hash 的 Start-screen capture 交叉：46 個 active sprite、84 個 unique tile、184 個 tile occurrences；32-byte aligned exact、hflip、vflip、rotate180、nibble-swap 的完整 sprite 都是 0 hit，非零 tile 也是 0/173 hit（另有 11 個空白 occurrence）。這是「本 capture 中不是該命名 resource set 的直接 OBJ source」的有界 negative，不把資源全域命名成非文字；證據見 `research/m1.16-resource-obj-cross-20260816.md`。
+- M1.17 已找到第一條命名的文字／code-unit consumer edge：ROM `0x08163444 + index*0x0a` → Thumb reader `0x080b6460`，以 `ldrb` 消費 byte unit 並以 `0x20` 停止，再由 `0x080b64e4` 將 descriptor `0x08163638` 送入 `0x080aa1f4`。只驗證前 37 筆 ASCII/padding-class record 的 address/hash/length/count metadata；`0x080aa1f4` 仍是 OAM record writer candidate，尚未證明日文主劇情、codepage、glyph identity 或 staging→OBJ 因果鏈。證據見 `research/m1.17-text-consumer-20260816.md`。
 
 ## 可重現入口
 
@@ -170,6 +174,62 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B \
 輸出 address／hash／length／count／region metadata，不輸出 raw record、解壓
 payload、glyph、完整原文或 source table。
 
+M1.14 descriptor reader／source provenance（唯讀 static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m114_resource_reader.py \
+  --rom /path/to/A5TJ.gba --output /private/tmp/smt2-m114-static.json
+```
+
+工具只追 `0x0879243c[5]` 的 indirect state handler、`0x08794e24` descriptor、
+opcode `0x0c` 的 callback-table reader、`0x0813ef65` source/argument fields 與
+既知 staging transform；輸出 PC／callsite／boundary／address／hash／length／
+count，不輸出 command bytes、source payload、glyph、完整原文或 source table。
+
+M1.15 source class／nested decoder（唯讀 static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m115_source_class.py \
+  --rom /path/to/A5TJ.gba --output /private/tmp/smt2-m115-static.json
+```
+
+工具只重放 M1.14 已確認的 `0x0813ef65` 128 筆 source pointer，不做全 ROM
+glyph scan；輸出 Huff/LZ77 header、tree／stream 長度、輸入／輸出 hash、解碼
+狀態、4bpp tile 對齊與 count，不輸出任何 compressed/decompressed bytes、字串、
+圖片或 source table。
+
+M1.16 resource→OBJ cross-check（只使用已命名 source set 與固定 capture）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m116_resource_obj_cross.py \
+  --rom /path/to/A5TJ.gba \
+  --vram /private/tmp/smt2-m15-start/vram.bin \
+  --oam /private/tmp/smt2-m15-start/oam.bin \
+  --output /private/tmp/smt2-m116-resource-obj.json
+```
+
+工具只重放已確認的 128 筆 resource payload，與一個有 hash 的 active OAM／OBJ
+capture 做 32-byte aligned exact 與小型可逆 transform 比對；輸出 address／hash／
+length／count／bounded offset metadata，不輸出 raw payload、tile、圖片、完整原文
+或 source table。
+
+M1.17 text/code-unit consumer（只驗證一條命名 reader 與有界 table prefix）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m117_text_consumer.py \
+  --rom /path/to/A5TJ.gba --output /private/tmp/smt2-m117-text-consumer.json
+```
+
+工具只讀 `0x08163444` 起始的 37 筆、stride `0x0a` bounded prefix，驗證
+`0x080b6460` 的 index×10 addressing、byte-unit/space terminator、
+`0x080b64e4 → 0x080aa1f4` descriptor dispatch 與 `0x08163638` literal；輸出
+address／function hash／record hash／length／count，不輸出 bytes、完整原文、
+圖片、source table 或 translation ledger。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -179,9 +239,9 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.13 的 16×8 record candidates 找 bounded indirect reader／BLX dispatch，
-取得 callback 的實際 source pointer、RAM table、index 或 code-unit argument；
-不要再做全 ROM glyph scan，也不要把 `0x24` marker 或 record shape 當成文字表。
-若 reader 仍無法接通，轉向下一個已命名 text/code-unit consumer；在 decoder 能
-穩定重新抽出同一批資料、並以回插後 byte-for-byte round-trip 驗證前，維持
-source table、codepage、ledger、翻譯與 patch 工程封鎖。
+沿 M1.17 的第一條文字 edge，優先枚舉相同 reader family 的明確 table/category
+mapping，找到日文主文字的 source pointer／index、codepage、控制碼與長度規則；
+再建立可重抽取的 source table。不得再擴張 M1.15 resource set 或全 ROM glyph
+scan；`0x08163444` 的 bounded ASCII/padding prefix 也不可直接當翻譯來源。
+source table、ledger、翻譯與 patch 工程仍封鎖，直到日文 source 與可逆抽取契約
+被確認。
