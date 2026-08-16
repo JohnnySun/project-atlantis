@@ -26,7 +26,9 @@ replacement `A1A2A3A4` 只是 4-byte parser-fixture，用來驗證 selected
 | untouched record bytes／outside span | equal／equal |
 | target CRC32 | `775EA2C5`（patched ROM 改變 CRC，屬預期） |
 | BPS create | core `bps_create.rb`，38 bytes，patch CRC32 `20BD375F` |
-| BPS apply | core `bps_apply.rb`，applied SHA-256 與 patched SHA-256 相同 |
+| BPS SHA-256 | `8200b166b3734fb40249db0d4eb0973111521443ce483a76ee5a015d383a78e5` |
+| patched／applied SHA-256 | `6de15ba6d0bd2aaf6326acaf6fcea412f786f33aa4ca591ebac6789cf21c1725`／相同 |
+| BPS apply | core `bps_apply.rb`，byte-identical |
 | strict re-extract of applied ROM | `8938` high-quality records；使用 `--skip-identity-check`，因 clean CRC gate 不應接受 patched CRC |
 
 這證明 **confirmed-poc-only**：在不改變 record 長度、NUL 邊界與 control/newline
