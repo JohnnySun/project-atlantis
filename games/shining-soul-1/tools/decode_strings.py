@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Read-only decoder (session 12): walk the two known OBJ-sentence string
-pools (dialogue/prompt pool, monster/enemy-name pool - see README.md
-sessions 9-11) and decode every NUL-terminated 16-bit code array into the
-project's *local source table* format
+"""Read-only decoder (session 12, extended session 13): walk the two known
+OBJ-sentence string pools (dialogue/prompt pool, monster/enemy-name pool -
+see README.md sessions 9-11) and decode every NUL-terminated 16-bit code
+array into the project's *local source table* format
 (`docs/TRANSLATION-LEDGER.md` / `.agents/skills/gba-localization/SKILL.md`
 "Recover source text locally"):
 
@@ -54,12 +54,30 @@ placeholder (never a silent guess, never a dropped character):
    treat it with correspondingly less certainty than a category-0
    gojuon-only string - this is the "preserve the distinction" mechanism
    the task asked for, applied per-record rather than by dropping the
-   content.
+   content. **Session 13 added a second, larger source of provisional
+   entries**: KANJI_MAP_OCR_PROVISIONAL, 23 kanji identities (18 category
+   1, 4 category 3, plus 1 manual contextual-override entry) found by
+   rendering ~200 real corpus sentences, running Apple Vision OCR on
+   them, and statistically aligning/voting per the
+   render+OCR+corpus-wide-alignment pattern in
+   `.agents/skills/gba-localization/SKILL.md` - see that dict's own
+   docstring for the full methodology (which started from a 27-candidate
+   vote-accepted set before a second, semantic-context rejection round
+   removed 4 systematic misreads - see the dict's own comments),
+   acceptance bar, and explicitly rejected false-positive candidates.
+   These are evidentially weaker than
+   an address cross-reference (KANJI_MAP) but stronger than a single
+   unverified layout guess, corroborated across multiple independent real
+   sentences and eyeballed against the actual ROM pixels before
+   inclusion - they stay in this tier, never "confirmed", per this
+   project's standing "OCR output is candidate evidence, not ground
+   truth" rule.
 3. **unmapped** - no recorded identity at all (includes all of categories
    5-15, confirmed in session 11 to not even have a glyph pool attached in
-   this ROM revision; all non-KANJI_MAP indices in categories 1-4; and any
-   category-0 char_idx outside the confirmed/provisional ranges above).
-   Renders as `{unmapped_glyph:<category>:<glyph_entry_index>}`.
+   this ROM revision; all non-KANJI_MAP/non-KANJI_MAP_OCR_PROVISIONAL
+   indices in categories 1-4; and any category-0 char_idx outside the
+   confirmed/provisional ranges above). Renders as
+   `{unmapped_glyph:<category>:<glyph_entry_index>}`.
 
 Reuses (does not reimplement) the pool-walking and code-decoding logic
 sessions 8-11 already wrote and validated:
@@ -136,6 +154,116 @@ KANJI_MAP = {
     (4, 30): "難",  # "...仕掛ける事が難しくなります" (0x49da64)
 }
 
+# Session 13, provisional tier, corpus-wide OCR statistical alignment
+# (games/shining-soul-1/tools/ocr_render_lines.py -> ocr_align_vote.py ->
+# ocr_contact_sheet.py; method follows .agents/skills/gba-localization/
+# SKILL.md "render-whole-string + OCR + corpus-wide statistical alignment",
+# ported from games/golden-sun-the-lost-age/tools/infer_ja_codepage.rb -
+# see that file's docstring comparison in ocr_align_vote.py for what
+# differs). 267 real corpus lines (>=1 category-1/2/3/4 code, >=2
+# already-confirmed gojuon anchors) were rendered to grayscale PNGs and
+# OCR'd with Apple Vision (ja-JP, .accurate), then each OCR reading was
+# aligned against its glyph-code sequence with an edit-distance algorithm
+# that treats already-known glyphs (gojuon + this file's own KANJI_MAP) as
+# anchors and lets unknown (category, glyph_entry_index) positions float
+# to whichever OCR character lines up there; only alignments with
+# normalized edit-distance quality <=0.32 were kept (200/267 lines), and
+# only (category, glyph_entry_index) positions with >=4 accepted votes AND
+# a dominant candidate holding >=75% of those votes were considered at
+# all - deliberately stricter than the reference implementation's 0.6
+# ratio bar, because a first eyeball pass at 0.6 surfaced real false
+# positives (see "explicitly rejected" note below) that a straight vote
+# count did not catch on its own; every accepted entry below was ALSO
+# individually eyeballed against a Hiragino-Sans-GB rendering of the
+# claimed character next to the actual ROM glyph pixels
+# (ocr_contact_sheet.py output) before being added here - this is
+# candidate evidence corroborated across many independent real sentences,
+# not an individually address-verified identity like KANJI_MAP above, so
+# it stays in "provisional" per this project's standing OCR rule ("OCR
+# output is candidate evidence, not ground truth" - never promote it to
+# "confirmed" no matter how unanimous the vote).
+#
+# Explicitly rejected during the eyeball pass despite meeting a looser
+# vote bar (recorded so a future session does not re-propose them without
+# new evidence): category 0 (kana) candidates were dropped entirely this
+# round - two different category-0 positions (glyph_entry_index 166 and
+# 234) both voted near-unanimously for "ー" (chōonpu) but their actual ROM
+# glyph pixels do NOT look like a horizontal dash (they look like short
+# hook/tick shapes, nothing like the existing confirmed idx-247 "ー"
+# glyph) - Vision appears to default to "ー" as a generic guess for
+# strokes it cannot otherwise classify, which would make any bare vote
+# count for it structurally unreliable regardless of tally. Two katakana
+# candidates (cat0 idx156 "イ", idx249 "ツ") were similarly rejected on
+# shape-mismatch grounds. (1, 184) "口" hit 3/3=100% but its ROM glyph is
+# a near-empty single dot, obviously not a box-shaped 口 - a reminder that
+# 100% agreement on a tiny vote count is not the same as a real signal.
+#
+# A second, more consequential rejection round happened AFTER the shape
+# eyeball pass: re-decoding ~90 real corpus sentences with the initial
+# 27-entry table (advisor guidance, session 13 - "re-decode 10-20 newly-
+# clean sentences and read them for fluency") turned up FOUR category-3
+# entries that had cleared both the vote-count/ratio bar and the shape
+# eyeball, yet made every sentence they appeared in read as broken
+# Japanese once put in context - a systematic OCR misread each vote count
+# alone could not catch (advisor's warning: "OCR misreading X as Y twenty
+# times produces twenty consistent wrong votes"). All four were removed
+# from this dict entirely (not replaced with a guessed correct answer,
+# per this project's standing rule against inventing identities):
+#   - (3, 19) "加" (4 votes, 75%): every real occurrence is "...を加すため
+#     に" / "...加したのですか" - "加す"/"加した" are not real verb forms
+#     (加える conjugates to 加えた/加えて, never 加した). Plausible actual
+#     readings include 課す/化す/貸す, none confirmed.
+#   - (3, 26) "油" (6 votes, 100%): every real occurrence places it
+#     immediately after a noun/pronoun and before a particle - "ボク油の
+#     手で", "あなた油だけです", "士油が" - the exact distribution
+#     expected of a PLURAL/GROUP SUFFIX (something like 達/たち), not the
+#     noun 油 ("oil"), which cannot grammatically sit in that slot at all.
+#   - (3, 56) "飲" (4 votes, 100%): occurrences include "...に大ダメージ"
+#     (someone/something takes big damage) and "...の防御力が下がる"
+#     (something's defense drops) - 飲 ("drink") cannot take damage or
+#     have a defense stat; the real character is far more likely a noun
+#     like 敵/魔物/族 (enemy/monster/race).
+#   - (3, 216) "背" (3 votes, 75%): its one clean context is "[X]物がい
+#     っぱいです" ("[X]-mono is full") - a bag/inventory-full message.
+#     背物 is not a Japanese word; 荷物 ("luggage/cargo") fits perfectly
+#     and was in fact OCR's own SECOND-place candidate at this position
+#     (1/4 votes) - the correct reading was very likely sitting right
+#     there in the vote tally, just not the plurality winner.
+# None of these four are re-proposed with the "more likely" alternative
+# substituted in - that would just be trading one unverified guess for
+# another. They are simply unmapped again pending independent evidence
+# (an address cross-reference, or a corpus-wide OCR pass with a different
+# rendering/threshold that produces a cleaner vote). This whole episode is
+# the strongest argument in this session for advisor guidance step 7:
+# vote tallies validate agreement, not correctness, and only reading the
+# decoded output back in context - not the raw vote numbers - caught it.
+KANJI_MAP_OCR_PROVISIONAL = {
+    # category 1, base 0x474584:
+    (1, 6): "神", (1, 19): "光", (1, 25): "力", (1, 27): "気", (1, 31): "物",
+    (1, 35): "具", (1, 43): "来", (1, 52): "手", (1, 55): "何", (1, 62): "大",
+    (1, 117): "上", (1, 124): "下", (1, 133): "防", (1, 135): "本", (1, 137): "見",
+    (1, 222): "中", (1, 226): "地", (1, 235): "界",
+    # category 3, base 0x4879c4:
+    (3, 40): "入", (3, 100): "立", (3, 133): "陸", (3, 146): "出",
+    # Not an OCR vote winner - a manual contextual override found while
+    # spot-checking the (1, 133) "防" entry above. OCR's plurality vote
+    # for (1, 134) was "骨" (6/9 = 67%, below this round's 75% acceptance
+    # bar, so it was never a candidate on vote grounds alone). But
+    # rendering the real corpus sentence at ROM 0x49a0b8 with (1,133)=防
+    # already substituted reads "[0:0]防[1:134]力が上がる" - i.e. "防
+    # <?> 力が上がる", and 防御力 ("defense power") is a completely
+    # standard RPG stat-increase message, immediately after a
+    # newly-confirmed 防. 骨 ("bone") does not fit that sentence at all.
+    # This is the same evidential shape session 7-11 used for several
+    # KANJI_MAP entries (single real-sentence semantic fit), so it stays
+    # provisional rather than unmapped, but it is flagged distinctly from
+    # the systematic-vote entries above because it directly overrides
+    # what OCR actually voted for - a future session should look for a
+    # second independent sentence containing (1, 134) before trusting
+    # this further.
+    (1, 134): "御",
+}
+
 # Known real string pools this session decodes. Ranges match sessions 9-11
 # (dialogue/prompt pool, monster/enemy-name pool) - see README.md "第九輪
 # 偵察" and module docstring above for why the rest of the ROM is skipped.
@@ -210,6 +338,9 @@ def decode_glyph(category, glyph_entry_index, char_idx):
     char = KANJI_MAP.get((category, glyph_entry_index))
     if char is not None:
         return char, "confirmed"
+    char = KANJI_MAP_OCR_PROVISIONAL.get((category, glyph_entry_index))
+    if char is not None:
+        return char, "provisional"
     return None, None
 
 
@@ -311,10 +442,14 @@ def entry_to_record(pool_name, off, entry_id, marker, lines):
     )
     if "provisional" in tiers_used:
         prov_parts.append(
-            "CONTAINS PROVISIONAL-TIER GLYPH(S) (katakana/chōonpu/small-tsu; single "
-            "real-sentence data point or an ordered-layout hypothesis, not an "
-            "independently address-verified codepage entry - see decode_strings.py "
-            "module docstring tier 2). Lower confidence than a gojuon/confirmed-kanji-only string."
+            "CONTAINS PROVISIONAL-TIER GLYPH(S) (katakana/chōonpu/small-tsu, an "
+            "ordered-layout hypothesis or single real-sentence data point; OR a "
+            "session-13 KANJI_MAP_OCR_PROVISIONAL kanji identity, corpus-wide OCR "
+            "voting evidence eyeballed against the ROM glyph but not individually "
+            "address-verified - see decode_strings.py module docstring tier 2). "
+            "Lower confidence than a gojuon/confirmed-kanji-only string; OCR output "
+            "is candidate evidence, not ground truth, and must never be treated as "
+            "more certain than that."
         )
     if placeholders:
         prov_parts.append(
