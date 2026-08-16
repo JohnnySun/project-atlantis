@@ -12,10 +12,14 @@
 
 ## 里程碑 1：文字系統與可逆試補丁
 
+- [x] 在獨立 `23901` listener 完成一次有界 read-watchpoint capture；receipt 與負結果
+  已記錄，沒有把 stub `OK` 當成文字命中。
 - [ ] 從原 ROM 的候選 pointer／record 結構分離劇情、地圖／事件、角色、戰鬥與
   圖像／字型資料。
 - [ ] 以 mGBA GDB watchpoint／VRAM 證據確認至少一條實際文字渲染路徑；記錄讀取
   位址、碼元與字形資料位置。
+- [x] 定義日文 source table 的本機欄位、proof gate 與 ledger restore／strip 接線；
+  規格見 `research/source-table-spec-20260816.md`。
 - [ ] 解出 16-bit codepage、字形身份與控制碼；把「能定位 glyph」與「知道 glyph
   是哪個字」分開記錄。
 - [ ] 寫出可重跑 decoder，輸出本機 `research/*-decoded.jsonl`，不提交原文。

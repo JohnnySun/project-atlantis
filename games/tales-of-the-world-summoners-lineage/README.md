@@ -7,10 +7,12 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」里程碑，尚未開始有限量翻譯，也沒有可回插的
-文字 patch。已證實遊戲不是可直接套用其他作品格式的 Shift-JIS 腳本；下一個技術關卡
-是把候選指標分成劇情、地圖／事件、角色／戰鬥資料與圖像／字型資料，再確認自訂碼頁、
-控制碼和可逆回插規則。
+目前完成的是「ROM 身分＋唯讀結構偵察」里程碑，並完成一次有界 M1 GDB 擷取；尚未
+開始有限量翻譯，也沒有可回插的文字 patch。M1 的 read watchpoint 被 stub 接受但在
+12 秒內沒有 stop packet，因此沒有把候選區宣稱成事件／選單文字。已證實遊戲不是可
+直接套用其他作品格式的 Shift-JIS 腳本；下一個安全技術關卡仍是以獨立證據把候選指標
+分成劇情、地圖／事件、角色／戰鬥資料與圖像／字型資料，再確認自訂碼頁、控制碼和可逆
+回插規則。
 
 - ROM 身分、大小與雜湊已記錄；標頭補數校驗不一致，這個異常必須保留在基準資料中。
 - 全 ROM 未找到常見日文 UI 詞的 literal Shift-JIS 命中，不能把一般 Shift-JIS 當成
@@ -21,6 +23,8 @@
   通過 GBA LZ77 解碼，較像圖像／字型等資源，不能拿來當劇本池。
 - 外部 v0.20 IPS patch 可作工程參考；其新增資料含 LZ77 資源、字型樣資料與 16-bit
   自訂碼元，但英文譯文不是本專案的日文原文依據。
+- M1 的有界擷取 receipt 見 [`research/runtime-text-capture-20260816.md`](research/runtime-text-capture-20260816.md)；
+  source table 的本機 row contract 與證據門檻見 [`research/source-table-spec-20260816.md`](research/source-table-spec-20260816.md)。
 
 ## ROM 基準
 
