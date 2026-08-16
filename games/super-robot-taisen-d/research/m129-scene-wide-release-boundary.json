@@ -1,0 +1,126 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "full_semantic_translation": false,
+    "pointer_report_reused_without_rescan": true,
+    "release_ready": false,
+    "rom_hash_match": true,
+    "runtime_wide_identity_1": true,
+    "scene_semantic_labels_unconfirmed": true,
+    "source_records_2325": true,
+    "source_wide_target_narrow_edge_preserved": true,
+    "structural_caller_reports_reconciled": true,
+    "translation_started": false,
+    "wide_identity_743": true,
+    "wide_new_slot_capacity_zero": true,
+    "wide_static_only_742_rejected": true
+  },
+  "milestone": "M1.29",
+  "release_boundary": {
+    "full_semantic_translation": false,
+    "natural_caller_coverage_proven": false,
+    "next_required_evidence": [
+      "producer_or_queue context binding exact source record to a verified callsite",
+      "scene semantics from natural or controlled screen/layout evidence",
+      "runtime confirmation for any additional wide identity or a reversible resource expansion",
+      "full-corpus ledger and translation only after all fail-closed gates pass"
+    ],
+    "release_ready": false,
+    "runtime_target_screen_proven": false,
+    "scene_classification_complete": false,
+    "target_encoder_admissible_records": 12,
+    "wide_encoder_complete": false
+  },
+  "scene_semantics": {
+    "battle_dialogue": "unconfirmed",
+    "branch": "unconfirmed",
+    "natural_caller_coverage": "not_observed",
+    "natural_screen_coverage": "not_observed",
+    "newline": "unconfirmed",
+    "reason": "source-pointer provenance and structural callsites do not prove scene semantics",
+    "speaker": "unconfirmed",
+    "story": "unconfirmed",
+    "ui": "unconfirmed",
+    "unit_pilot_weapon_spirit": "unconfirmed"
+  },
+  "schema": "super-robot-taisen-d-m129-scene-wide-release-boundary-v1",
+  "source_policy": {
+    "bitmap_identity_inferred": false,
+    "pointer_report_rescanned": false,
+    "raw_memory_emitted": false,
+    "source_text_emitted": false,
+    "target_text_emitted": false,
+    "translation_started": false
+  },
+  "structural_caller_coverage": {
+    "caller_cohort_count": 123,
+    "consumer": "0x08008724",
+    "direct_consumer_callsite_count": 5,
+    "exact_pointer_candidate_count": 609,
+    "exact_pointer_record_count": 370,
+    "partition_coverage": {
+      "glyph_only_mixed": {
+        "exact_pointer_record_count": 126,
+        "exact_record_id_index_sha256": "c4c95dfe05bd0662e3aa77c9deb1d2b162502afb5fc06b88762eef4e8b0e97dd",
+        "total_record_count": 833,
+        "uncovered_record_count": 707
+      },
+      "glyph_only_narrow": {
+        "exact_pointer_record_count": 83,
+        "exact_record_id_index_sha256": "3db5fe56c80e4d829e19169d246bc7b6e4c1b4d2fd5f50f93895e00d0d49416e",
+        "total_record_count": 939,
+        "uncovered_record_count": 856
+      },
+      "glyph_only_wide": {
+        "exact_pointer_record_count": 101,
+        "exact_record_id_index_sha256": "707f8fed940ec3948a19956110d75f7677051acb9b166e550729da80cab350c5",
+        "total_record_count": 417,
+        "uncovered_record_count": 316
+      },
+      "opaque_or_unaligned": {
+        "exact_pointer_record_count": 60,
+        "exact_record_id_index_sha256": "3308ac459650fe32764a23f54ad698faf4291e1a212be3c37fadd18b76652486",
+        "total_record_count": 136,
+        "uncovered_record_count": 76
+      }
+    },
+    "record_count": 2325,
+    "semantic_label": "unconfirmed",
+    "structural_class_counts": {
+      "dual_buffer_ui": 2,
+      "indexed_object_buffer": 1,
+      "queue_entry_drain_loop": 1,
+      "wrapper_fallback_zero_stack_arg": 1
+    },
+    "translated_ledger_pointer_overlap": {
+      "all_ledger_records_have_exact_pointer_candidate": true,
+      "exact_pointer_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+      "exact_pointer_record_count": 12,
+      "ledger_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+      "ledger_record_count": 12,
+      "structural_translation_boundary": "narrow_only_static_subset; semantic scene unconfirmed"
+    }
+  },
+  "wide_encoder_strategy": {
+    "existing_identity_count": 743,
+    "new_slot_capacity": 0,
+    "policy": "reuse only an existing identity with bounded runtime confirmation; reject static-only and new wide slots",
+    "resource": {
+      "end_exclusive": "0x0814F664",
+      "glyph_payload_bytes": 24,
+      "new_slot_capacity": 0,
+      "physical_slots": 7332,
+      "size": 190632,
+      "start": "0x08120DBC",
+      "stride": 26
+    },
+    "runtime_confirmed_identity_count": 1,
+    "source_wide_occurrence_count": 3983,
+    "source_wide_record_count": 1250,
+    "source_wide_to_target_narrow_occurrence_count": 147,
+    "static_only_identity_count": 742,
+    "status": "runtime_confirmed_existing_identity_only",
+    "target_static_only_wide_occurrence_count": 3813,
+    "target_static_only_wide_record_count": 1250
+  }
+}
