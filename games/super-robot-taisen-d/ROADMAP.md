@@ -63,6 +63,11 @@
   `m115_caller_probe.py` 的 entry breakpoint 工具與測試已建立，但本輪執行前 approval
   transport 被拒絕，沒有把它記成 runtime positive；摘要在
   `research/m115-consumer-callsite.json`。
+- [x] M1.16 建立 full-corpus layout-safe static contract：2325/2325 strict source／
+  NUL／token no-op；624 筆進入 glyph-only narrow、單行、observed width `<=64px`，315
+  筆 narrow over-cap、833 mixed、417 wide、136 opaque／unaligned 明確 reject。64px
+  只是保守 static POC cap，`engine_width_limit_proven=false`；newline／speaker／branch
+  與變長仍 reject，未開始新翻譯。摘要在 `research/m116-layout-safe-contract.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

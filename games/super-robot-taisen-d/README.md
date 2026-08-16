@@ -404,6 +404,11 @@ queue 觸發尚未取代這條受控驗證。
   虛構 caller。`m115_caller_probe.py` 已準備在 font-base guard 後捕捉第一個自然
   entry 的 LR／callsite／r0，但本輪 invocation 在執行前遇 approval transport negative，
   沒有新增 runtime evidence。摘要在 [`research/m115-consumer-callsite.json`](research/m115-consumer-callsite.json)。
+- [x] M1.16 將 2325 筆 source 收斂成保守的 layout-safe static subset：NUL／strict
+  token no-op 2325/2325；624 筆為 glyph-only narrow、單行、observed width `<=64px`，
+  315 筆窄字但超過 cap、833 mixed、417 wide、136 opaque／unaligned 仍拒絕。64px
+  是 POC allocation cap，不是 engine 最大寬度證明；newline／speaker／branch／變長
+  仍 opaque/reject，沒有因此新增翻譯。摘要在 [`research/m116-layout-safe-contract.json`](research/m116-layout-safe-contract.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

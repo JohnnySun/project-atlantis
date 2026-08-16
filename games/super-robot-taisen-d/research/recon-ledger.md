@@ -688,6 +688,29 @@ immediate target 與 PC-relative literal target，並保存 executable-range has
 語意、newline／speaker／最大寬度與自然畫面 pending。下一個安全入口是使用已授權且可用的
 runtime transport 捕捉 entry LR／r0，再以該 caller 做受控 source queue／layout QA。
 
+## 2026-08-16：M1.16 full-corpus layout-safe static contract
+
+為了讓未證明的控制碼／版面不會被誤當成可翻譯容量，本輪新增
+[`tools/m116_layout_safe_contract.py`](../tools/m116_layout_safe_contract.py)。它重讀完整
+2325 筆 strict source，僅接受 NUL 終止、token encode no-op、glyph-only narrow、單行
+且 observed width 不超過 64px 的 record。64px 是目前 static POC 的保守配置上限，不是
+引擎最大行寬；工具不輸出 source text，也不替 opaque token 命名 newline／speaker／branch。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| source gate | strict 2325/2325；NUL 2325/2325；token encode no-op 2325/2325 |
+| accepted static layout subset | 624 records；glyph-only narrow；single-line；width `<=64px`；ID hash `f8695cb6…` |
+| rejected narrow | 315 records；narrow glyph-only 但 width over observed cap |
+| other rejected partitions | mixed 833；wide 417；opaque／unaligned 136 |
+| token metadata | glyph 15885；opaque ASCII／format-like 1032；unaligned tail 88；未命名語意 |
+| policy | `max_lines=1`；newline／speaker／branch／variable length／wide new slot 皆 reject；`engine_width_limit_proven=false` |
+
+這個 slice 是回插前的結構容量邊界，不是 624 筆翻譯完成、不是完整 encoder，也不能
+把 64px 外的窄字直接判定為引擎不支援；下一步仍需 caller／自然畫面或明確 callee
+state 證明實際 line layout，再決定是否能安全放寬 cap。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的
