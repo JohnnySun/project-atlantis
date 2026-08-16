@@ -639,6 +639,31 @@ clean ROM；輸出只保存 hash、address、count、mode 與 gate metadata。
 resource expansion。完整輸出在 [`m113-full-encoder-contract.json`](m113-full-encoder-contract.json)；
 ROM、font source、working／raw output 仍留 ignored。
 
+## 2026-08-16：M1.14 patched consumer trace 的精確 negative
+
+本輪沒有再做廣泛 pointer scan，也沒有新增翻譯。以自己的 patched M1.8 ROM、fresh mGBA
+process、port `2346` 與單一 GDB connection 重跑 bounded metadata trace；ROM SHA-256
+`b58ef432…` 與 BPS 對應的 patched artifact hash 已先核對，兩個 live font base
+`0x0814F664`／`0x08120DBC` 的 nonzero guard 通過。原始 trace 留在 ignored `work/`，
+tracked 摘要由 [`tools/m114_runtime_boundary.py`](../tools/m114_runtime_boundary.py)
+只保留 address／code-unit／count／status。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| requested record | source offset `0x080858`／pointer `0x08080858`；expected 2 units |
+| observed consumer event | pointer `0x02018368`；unit `0x628D`；codepage 1；narrow glyph 0；tile-writer event count 36 |
+| argument gate | `consumer_argument_match=false`；`unit_loop_status=natural_or_unmatched_consumer` |
+| raw completion | 有 raw glyph-complete event，但因 source pointer mismatch 不計入 target proof |
+| target QA | writer destination／target tile cache hash `not_proven`；screen hash `not_observed`；ROM／翻譯失敗 `false` |
+| next condition | 必須在 caller/callsite 或已驗證 callee entry 捕捉 requested pointer 與全部 unit，再做 writer／VRAM/layout QA |
+
+這個 slice 修正了 runtime 工具的兩個安全問題：bounded stack seed 與 entry setup 對齊
+既有 consumer helper，並要求 observed source pointer／unit count match 才能宣稱完成。它
+沒有把另一個 runtime buffer 的 glyph output 偷換成 `string_id=526424` 畫面，也沒有解除
+M1.9 target／自然 menu／newline branch 的 pending 狀態。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

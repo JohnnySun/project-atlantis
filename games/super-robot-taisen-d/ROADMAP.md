@@ -50,6 +50,13 @@
   自有 patched process `2346` 通過 font-base guard 卻在 target loop 只得到
   `codepage=1/glyph=1`（預期 2），fail-closed；後續 trace 在 initializer 前
   `S04/PC=0x4`，writer／tile／screen proof 仍 pending。
+- [x] M1.14 對另一個獨立 port `2346` trace 做精確 source-consumer gate：patched
+  ROM hash／single connection／兩個 nonzero font base 通過，但 requested source
+  `0x08080858` 的 codepage event 指向 `0x02018368`、unit `0x628D`，不是 requested
+  pointer，且只見 1 個 codepage／0 個 narrow glyph；raw complete event 不升級成
+  target proof。工具現在要求 observed source pointer 與 unit count 同時吻合，摘要在
+  `research/m114-runtime-boundary.json`；下一次需用 caller/callsite breakpoint 或
+  已驗證 callee-entry state。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

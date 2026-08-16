@@ -392,6 +392,12 @@ queue 觸發尚未取代這條受控驗證。
   的 source hash、同長與窄字 encode 全數通過，2325/2325 source token no-op 通過。
   742 個 static-only wide、opaque/control、缺字、變長與 wide 新槽仍拒絕；這不是完整
   語意翻譯或完整 wide resource 策略。摘要在 [`research/m113-full-encoder-contract.json`](research/m113-full-encoder-contract.json)。
+- [x] M1.14 將一次獨立 patched runtime trace 正規化為 fail-closed evidence：ROM hash 與
+  font-base guard 通過，但 requested `0x08080858` 的預期 2-unit 消費實際觀察到
+  `source_pointer=0x02018368`、`code_unit=0x628D`、codepage 1／glyph 0；即使有
+  raw glyph-complete event，也拒絕當成 target render。修正 `m19_runtime_trace.py` 的
+  bounded stack／entry setup 與 argument-match 判定；target writer／tile／screen 仍
+  `not_proven`／`not_observed`。摘要在 [`research/m114-runtime-boundary.json`](research/m114-runtime-boundary.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在

@@ -1,0 +1,66 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "font_base_nonzero": true,
+    "natural_screen_proven": false,
+    "patched_rom_hash_match": true,
+    "requested_target_render_proven": false,
+    "source_pointer_match": false,
+    "translation_status": "ai_draft"
+  },
+  "gdb": {
+    "fresh_process_required": true,
+    "port": 2346,
+    "single_connection": true
+  },
+  "initializer": {
+    "event_count": 3,
+    "nonzero_base_guard": true,
+    "slot_values": {
+      "narrow": "0x0814F664",
+      "wide": "0x08120DBC"
+    }
+  },
+  "next_runtime_gate": {
+    "reason": "a glyph-complete event from another source buffer cannot prove the requested record",
+    "required": "callsite_breakpoint_or_verified_callee_entry_state"
+  },
+  "requested_record": {
+    "codepage_count": 1,
+    "complete_event_raw": true,
+    "consumer_argument_match": false,
+    "expected_unit_count": 2,
+    "glyph_count": 0,
+    "observed_code_units": [
+      "0x628D"
+    ],
+    "observed_source_pointers": [
+      "0x02018368"
+    ],
+    "source_offset": 526424,
+    "source_pointer": "0x08080858",
+    "tile_writer_count": 36,
+    "unit_loop_status": "natural_or_unmatched_consumer"
+  },
+  "rom": {
+    "expected_sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce",
+    "hash_match": true,
+    "sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce"
+  },
+  "runtime_boundary": {
+    "consumer_entry": "reached_bounded_breakpoint_set",
+    "font_initialization": "positive_nonzero_bases",
+    "natural_or_unmatched_consumer_interleaving": true,
+    "requested_record_consumption": "not_observed_due_to_source_pointer_mismatch",
+    "rom_or_translation_failure": false,
+    "target_screen_hash": "not_observed",
+    "target_tile_cache_hash": "not_proven",
+    "target_writer_destination": "not_proven"
+  },
+  "schema": "super-robot-taisen-d-m114-runtime-boundary-v1",
+  "source_policy": {
+    "normalization_policy": "target_proof_requires_observed_source_pointer_and_unit_count_match",
+    "raw_memory_emitted": false,
+    "source_text_emitted": false
+  }
+}

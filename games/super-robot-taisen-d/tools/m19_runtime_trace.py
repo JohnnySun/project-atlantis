@@ -29,6 +29,7 @@ from core.gba.gdbstub_client import GdbClient, parse_stop_watch  # noqa: E402
 from m19_runtime_qa import (  # noqa: E402
     BASE_ROM_SHA256,
     CODEPAGE_LOOKUP,
+    CONSUMER,
     GLYPH_COMPLETE,
     NARROW_GLYPH_ADD,
     ROM_BASE,
@@ -37,7 +38,10 @@ from m19_runtime_qa import (  # noqa: E402
     TILE_WRITER,
     _registers_metadata,
     address,
+    code_units,
     sha256,
+    gdb_pc_argument,
+    read_payload,
 )
 from probe_font_resource import (  # noqa: E402
     _assert_initialized,
@@ -85,9 +89,52 @@ def writer_metadata(client: GdbClient, regs: Mapping[str, int]) -> Dict[str, Any
     }
 
 
+def classify_trace_events(
+    events: Sequence[Mapping[str, Any]],
+    *,
+    expected_source_pointer: str,
+    expected_unit_count: int,
+) -> Dict[str, Any]:
+    """Classify a trace only when its observed consumer arguments match."""
+    codepage = [event for event in events if event.get("kind") == "codepage_lookup"]
+    glyphs = [event for event in events if event.get("kind") == "narrow_glyph_add"]
+    writers = [event.get("writer") for event in events if event.get("kind") == "tile_writer"]
+    observed_source_pointers = sorted(
+        {str(event["source_pointer"]) for event in codepage if event.get("source_pointer")}
+    )
+    observed_code_units = [str(event["code_unit"]) for event in codepage if event.get("code_unit")]
+    source_pointer_match = bool(codepage) and all(
+        pointer == expected_source_pointer for pointer in observed_source_pointers
+    )
+    argument_match = source_pointer_match and len(codepage) == expected_unit_count
+    complete_event = next((event for event in events if event.get("kind") == "glyph_complete"), None)
+    complete_for_requested_record = complete_event is not None and argument_match and (
+        len(glyphs) == expected_unit_count
+    )
+    if complete_for_requested_record and len(codepage) == 2 and len(glyphs) == 2:
+        unit_loop_status = "complete_two_unit_candidate"
+    elif not argument_match:
+        unit_loop_status = "natural_or_unmatched_consumer"
+    else:
+        unit_loop_status = "partial_or_mismatch"
+    return {
+        "observed_source_pointers": observed_source_pointers,
+        "observed_code_units": observed_code_units,
+        "requested_unit_count": expected_unit_count,
+        "consumer_argument_match": argument_match,
+        "codepage_count": len(codepage),
+        "glyph_count": len(glyphs),
+        "tile_writer_count": len(writers),
+        "complete_observed": complete_for_requested_record,
+        "unit_loop_status": unit_loop_status,
+    }
+
+
 def trace_consumer(client: GdbClient, rom: bytes, *, offset: int, max_stops: int) -> Dict[str, Any]:
     initializer = capture_initializer(client, rom, boot_seconds=1.0, stop_timeout=8.0)
     slots = _assert_initialized(client)
+    expected_units = code_units(read_payload(rom, offset)[0])
+    expected_source_pointer = address(ROM_BASE + offset)
     write_bounded_memory(client, TEMP_STACK, bytes(STACK_LENGTH))
     write_bounded_memory(client, CACHE_START, bytes(CACHE_LENGTH))
 
@@ -97,13 +144,14 @@ def trace_consumer(client: GdbClient, rom: bytes, *, offset: int, max_stops: int
     for breakpoint in breakpoints:
         client.set_breakpoint(breakpoint)
     try:
+        client.write_memory(TEMP_STACK, struct.pack("<I", 1))
         client.write_register(0, ROM_BASE + offset)
         client.write_register(1, 0)
         client.write_register(2, 0)
         client.write_register(3, CACHE_START)
         client.write_register(13, TEMP_STACK)
         client.write_register(14, TEMP_STACK | 1)
-        client.write_register(15, 0x08008722)
+        client.write_register(15, gdb_pc_argument(CONSUMER, "thumb"))
 
         for stop_index in range(max_stops):
             stop = client.continue_until_stop(8.0)
@@ -170,9 +218,13 @@ def trace_consumer(client: GdbClient, rom: bytes, *, offset: int, max_stops: int
             except Exception:
                 pass
 
-    codepage = [event for event in events if event["kind"] == "codepage_lookup"]
-    glyphs = [event for event in events if event["kind"] == "narrow_glyph_add"]
-    writers = [event["writer"] for event in events if event["kind"] == "tile_writer"]
+    expected_unit_count = len(expected_units)
+    classification = classify_trace_events(
+        events,
+        expected_source_pointer=expected_source_pointer,
+        expected_unit_count=expected_unit_count,
+    )
+    classification["complete_observed_raw"] = complete is not None
     return {
         "initializer": {
             "slot_values": initializer["slot_values"],
@@ -180,23 +232,16 @@ def trace_consumer(client: GdbClient, rom: bytes, *, offset: int, max_stops: int
             "nonzero_base_guard": all(value != "0x00000000" for value in initializer["slot_values"].values()),
         },
         "controlled_call": {
-            "consumer": address(0x08008724),
+            "consumer": address(CONSUMER),
             "source_offset": offset,
             "source_pointer": address(ROM_BASE + offset),
             "stack": {"address": address(TEMP_STACK), "length": STACK_LENGTH},
             "cache": {"address": address(CACHE_START), "length": CACHE_LENGTH},
+            "requested_source_pointer": expected_source_pointer,
+            **classification,
             "breakpoint_set": [address(value) for value in breakpoints],
             "events": events,
-            "codepage_count": len(codepage),
-            "glyph_count": len(glyphs),
-            "tile_writer_count": len(writers),
-            "complete_observed": complete is not None,
             "expected_static_narrow_units": 2 if offset == TARGET_OFFSET else None,
-            "unit_loop_status": (
-                "complete_two_unit_candidate"
-                if len(codepage) == 2 and len(glyphs) == 2
-                else "partial_or_mismatch"
-            ),
         },
     }
 
