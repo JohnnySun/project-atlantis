@@ -19,6 +19,7 @@
 - [ ] 確認指標／bank／壓縮格式與控制碼，不套用其他遊戲假設。
 - [ ] 建立可重跑的 `research/*-decoded.jsonl` 本機原文表。
 - [x] 以 clean pointer spans 統計 `FF`／缺少 `FF`／`FF` 後資料，保留 terminator 僅為候選而不誤切 script boundary。
+- [x] 以三次／五次 A 的 clean mGBA/GDB trace 固定 title/logo → menu-like tilemap → text-parser 可達性；receipts 位於 `research/runtime-smoke-clean-three-inputs-20260817.md` 與 `research/runtime-smoke-clean-five-inputs-20260817.md`，未命中的 glyph／layout breakpoint 仍不視為 pass。
 - [x] 分別記錄 glyph addressing 與 glyph identity 的證據層級（目前已完成一筆 38-token exact output round-trip；全遊戲 mapping 仍是後續工作）。
 - [x] 固定 clean glyph writer／DMA3／layout 的可重跑靜態 receipt（完整 VWF 寬度與換行語義仍未完成）。
 - [x] 固定 pair／single writer 的 output-slot `state+0x16` 每次 `+1` signatures，明確標記 clean fixed-cell 證據與 VWF 未證明邊界（`research/fixed-cell-vwf-risk-20260816.md`）。
