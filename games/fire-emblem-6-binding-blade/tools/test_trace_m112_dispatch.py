@@ -61,6 +61,13 @@ class AfejM112DispatchTests(unittest.TestCase):
         self.assertEqual(chain["dispatch_table_base"], "0x085c4164")
         self.assertEqual(chain["dispatch_table_stride"], 8)
         self.assertEqual(chain["high_pointer_table_index"], 86)
+        self.assertEqual(dispatch.DISPATCH_OBJECT_ADDRESS, 0x02024750)
+        self.assertEqual(chain["dispatch_object_writer_function"], "0x08003a04")
+        self.assertEqual(chain["dispatch_object_writer_function_return"], "0x08003ad6")
+        self.assertEqual(chain["dispatch_object_writer_instruction"], "0x08003a18")
+        self.assertEqual(chain["dispatch_object_writer_instruction_text"], "str r1,[r0]")
+        self.assertEqual(chain["dispatch_object_allocator_callsite"], "0x08003a0e")
+        self.assertEqual(chain["dispatch_object_allocator_target"], "0x08003c54")
         entry = next(
             row for row in pointer["record_window"] if row["file_offset"] == "0x5c4414"
         )

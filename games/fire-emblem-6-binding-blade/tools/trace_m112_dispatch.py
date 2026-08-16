@@ -93,6 +93,9 @@ DISPATCH_CALLSITE = 0x0800E02A
 DISPATCH_THUNK = 0x0809DF14
 DISPATCH_TABLE_BASE = 0x085C4164
 DISPATCH_TABLE_STRIDE = 8
+DISPATCH_OBJECT_ADDRESS = 0x02024750
+DISPATCH_OBJECT_WRITER_FUNCTION = 0x08003A04
+DISPATCH_OBJECT_WRITER_INSTRUCTION = 0x08003A18
 
 RENDERER_BREAKPOINTS = (
     0x08098F68,
@@ -307,6 +310,12 @@ def _generic_call_chain_gate(rom: bytes) -> dict[str, object]:
         "dispatch_table_base": hex32(DISPATCH_TABLE_BASE),
         "dispatch_table_stride": DISPATCH_TABLE_STRIDE,
         "high_pointer_table_index": pointer_index,
+        "dispatch_object_writer_function": hex32(DISPATCH_OBJECT_WRITER_FUNCTION),
+        "dispatch_object_writer_function_return": "0x08003ad6",
+        "dispatch_object_writer_instruction": hex32(DISPATCH_OBJECT_WRITER_INSTRUCTION),
+        "dispatch_object_writer_instruction_text": "str r1,[r0]",
+        "dispatch_object_allocator_callsite": "0x08003a0e",
+        "dispatch_object_allocator_target": "0x08003c54",
         "high_caller_dispatch_pointer": {
             "pointer_word": hex32(GENERIC_HIGH_POINTER_WORD),
             "file_offset": f"0x{pointer_offset:06x}",
@@ -362,6 +371,7 @@ def _route_report(
             "callback_pointer_reads": [],
             "callback_entries": [],
             "call_chain_receipts": [],
+            "dispatch_object_write_receipts": [],
             "renderer_events": [],
             "loader_records": [],
             "hit_counts": {},
@@ -400,8 +410,10 @@ def _route_report(
     started = time.monotonic()
     installed_breakpoints: list[int] = []
     installed_watchpoints: list[int] = []
+    object_write_watch_active = False
 
     def record_stop(packet: str) -> tuple[Optional[str], Optional[int], dict[str, int]]:
+        nonlocal object_write_watch_active
         stop_kind, stop_address = parse_stop_watch(packet)
         regs = _read_registers(client)
         pc = regs["pc"] & 0xFFFFFFFF
@@ -416,6 +428,30 @@ def _route_report(
         }
         if stop_address == KEYINPUT:
             event["kind"] = "keyinput_poll"
+        elif stop_address == DISPATCH_OBJECT_ADDRESS:
+            after_value = None
+            try:
+                after_value = hex32(int.from_bytes(_read_memory(client, DISPATCH_OBJECT_ADDRESS, 4), "little"))
+            except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+                pass
+            event.update({
+                "kind": "dispatch_object_write_watch",
+                "destination": hex32(DISPATCH_OBJECT_ADDRESS),
+                "writer_pc_after_access": hex32(pc),
+                "writer_instruction": hex32(DISPATCH_OBJECT_WRITER_INSTRUCTION),
+                "writer_instruction_text": "str r1,[r0]",
+                "writer_function": hex32(DISPATCH_OBJECT_WRITER_FUNCTION),
+                "source_register_r1": hex32(regs["r1"]),
+                "destination_register_r0": hex32(regs["r0"]),
+                "after_value": after_value,
+            })
+            runtime["dispatch_object_write_receipts"].append(event.copy())
+            if object_write_watch_active:
+                try:
+                    _request_ok(client, f"z2,{DISPATCH_OBJECT_ADDRESS:x},4")
+                except (ConnectionError, OSError, RuntimeError, TimeoutError):
+                    pass
+                object_write_watch_active = False
         elif stop_address in pointer_counts:
             pointer_key = hex32(stop_address)
             pointer_counts[pointer_key] += 1
@@ -653,6 +689,15 @@ def _route_report(
                     "address": hex32(address),
                     "error": type(exc).__name__,
                 })
+        try:
+            _request_ok(client, f"Z2,{DISPATCH_OBJECT_ADDRESS:x},4")
+            object_write_watch_active = True
+        except RuntimeError as exc:
+            runtime.setdefault("watchpoint_errors", []).append({
+                "address": hex32(DISPATCH_OBJECT_ADDRESS),
+                "type": "write",
+                "error": type(exc).__name__,
+            })
         continue_for(args.initial_seconds)
         route_steps: list[dict[str, object]] = []
         for index, button in enumerate(sequence):
@@ -682,6 +727,11 @@ def _route_report(
         for address in reversed(installed_watchpoints):
             try:
                 _request_ok(client, f"z3,{address:x},{2 if address == KEYINPUT else 4}")
+            except (ConnectionError, OSError, RuntimeError, TimeoutError):
+                pass
+        if object_write_watch_active:
+            try:
+                _request_ok(client, f"z2,{DISPATCH_OBJECT_ADDRESS:x},4")
             except (ConnectionError, OSError, RuntimeError, TimeoutError):
                 pass
         for address in reversed(installed_breakpoints):

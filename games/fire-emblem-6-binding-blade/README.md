@@ -167,6 +167,8 @@ M1.14 再往上確認 generic high caller 的 function-pointer dispatch：static
 
 M1.14 同一路徑的 `0x085c4414`／舊 callback pointer read-watch 均 0，表示不能把 GDB ROM read-watch 當作 CPU 讀取證據；實際正證據是 static `BL`／`BX r1`、runtime `r1`、table index/entry/pointer 對應與 callback entry LR。renderer candidates 仍全 0，只有 EWRAM consumer branch；`0x01`、flag、Unicode/codepage、字型、回插與 BPS 仍 unknown/opaque。
 
+M1.15 對 `0x02024750` 加上一次性 write-watch，取得第一筆 dispatch-object producer：watch stop PC `0x08003a1a` 的實際前一條 writer 是 `0x08003a18: str r1,[r0]`，static function boundary `0x08003a04–0x08003ad6`，其 allocator callsite `0x08003a0e` → `0x08003c54`。runtime `r1=0x08691858`、`r0=0x02024750`，after-value 也為 `0x08691858`；與 M1.14 的 table index/pointer receipt 分欄保存。這只是 object 初始化的一個可重跑 write receipt，尚未證明 `0x08691858` 的完整來源或任何文本語義。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
