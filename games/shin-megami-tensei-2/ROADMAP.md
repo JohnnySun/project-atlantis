@@ -48,6 +48,15 @@
 - [~] selector/descriptor 到真正 glyph writer 尚未接通；fresh boot `0x03006950` pointer 與 `0x0203db40` counter 都為 0，下一步應設 reset 前 write watch 找到 RAM selector-table initializer／state dispatcher，再以自然已初始化 table 觸發 caller。
 - [ ] 取得 `0x080baef0`／`0x080bafb8` 的實際 source/index/code-unit argument，並交叉到 staging→OBJ VRAM→OAM；未完成前維持 source table、stable string ID、codepage 與翻譯封鎖。
 
+## M1.8：selector table initializer 與 natural transition
+
+- [x] fresh mGBA process 從 GDB 初始 `pc=0` 起點先 arm `0x03006950` pointer、相鄰 halfword、`0x0203db40` counter 與 KEYINPUT watches；沒有直接寫 selector table/state。
+- [x] 對 `0x03006950` 做 aligned literal-load/store 與 bounded BL caller pass：157 word occurrences、165 literal refs、22 個 Thumb store candidates；候選與 function hash/width/callsite 分層記錄，未把 pattern ref 升格成 initializer。
+- [x] 執行三條明確 natural transition cohort：`boot-start`、`fast-start`、`aggressive-start`；另以同一路徑 initializer-only hold/release follow-up 排除 full dispatch breakpoint budget 影響。每條保留 key/time/screen hash/hit count。
+- [x] bounded negative：所有 cohort 的 selector pointer/counter write、三個 selector caller、selector entry、descriptor producer/callback 都是 0；watchpoint install failures 為 0。GDB `R` reset packet 的 `E07` 也已記錄，不能用同一 process replay reset。
+- [~] initializer 尚未自然命名；`0x0812f2b4`、`0x0813e428`、`0x0813e574` 只列為 static priority candidates，下一步做 caller/source/state argument mapping，不再延長相同 reset→Start navigation。
+- [ ] 取得自然 selector／descriptor consumer 與第一個 source/index/code-unit edge；未完成前維持 glyph source chain、source table、codepage、ledger、翻譯與回插封鎖。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

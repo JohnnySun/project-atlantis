@@ -2,7 +2,7 @@
 
 本目錄只處理日版 GBA《真・女神転生II》（A5TJ），目標為臺灣繁體 `zh-TW`。ROM、sav、完整解出的原文、VRAM／OAM dump、渲染圖片與暫存構建只保存在本機，不進 Git。
 
-## M0/M1/M1.5/M1.6/M1.7 基準狀態（2026-08-16）
+## M0/M1/M1.5/M1.6/M1.7/M1.8 基準狀態（2026-08-16）
 
 - ROM header 身分已確認：`DDS_2`、`A5TJ`、maker `EB`、revision `0`、8 MiB。
 - 本機候選的 ROM CRC32 為 `af40cc99`，SHA-256 為 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`；完整指紋和 header complement 異常見 `research/recon-20260816.md`。
@@ -29,6 +29,7 @@
   `0x081869c8 → 0x080ad0fc(pointer,0xffff)` producer link，並在 return guard
   fail-closed；不能冒充自然 resource selection，也沒有取得 glyph writer。
 - 尚未開始翻譯，也沒有可提交的翻譯記錄；專有名詞會在真正建立批次前依 `AGENTS.md` 查 Wikipedia zh-tw、巴哈姆特及其他獨立來源。
+- M1.8 已從 fresh process 起點先 arm `0x03006950` pointer、相鄰 halfword 與 `0x0203db40` counter watches；三條明確 natural transition cohort 與同一路徑的窄 initializer-only follow-up 都沒有 pointer/counter write、selector caller 或 descriptor hit。完整證據與 22 個 provisional static candidates 見 `research/m1.8-selector-initializer-20260816.md`。
 
 ## 可重現入口
 
@@ -78,6 +79,24 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B \
 它會明確標示 PC/register override，不得當成自然場景證據，也不應在未審核的
 遊戲狀態上繼續 emulator 執行。
 
+M1.8 initializer／natural transition probe：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m18_initializer_probe.py \
+  --rom /path/to/A5TJ.gba --port 2345 --path-id boot-start \
+  --key-sequence a,start,a,b,down,a --output /private/tmp/smt2-m18.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m18_initializer_probe.py \
+  --rom /path/to/A5TJ.gba --port 2345 --initializer-only \
+  --key-sequence a,start,a,b,right,left,down --output /private/tmp/smt2-m18-init.json
+```
+
+`--initializer-only` 只保留 initializer candidates 與窄 selector-table watches；
+它沒有任何 selector/state 寫入選項。`--summary --input-report` 可產生不含事件
+payload 的 metadata 摘要。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -87,8 +106,7 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-先追 `0x03006950` selector-table pointer 的 reset 前 writer／state dispatcher，讓
-`0x08138fb8`／`0x08139040` 在已初始化 RAM table 下自然命中，再沿 selector
-queue 的 live command cursor 取得 `0x080baef0`／`0x080bafb8` 的 source/index
-argument。只有 decoder 能穩定重新抽出同一批資料、且回插後能 byte-for-byte
-驗證，才進入有限量翻譯與 patch 工程。
+沿 M1.8 優先 candidates `0x0812f2b4`、`0x0813e428`、`0x0813e574` 的 direct
+callers，做 bounded source/state argument mapping；不要再延長同一 reset→Start
+窗口。只有 decoder 能穩定重新抽出同一批資料、且回插後能 byte-for-byte 驗證，
+才進入有限量翻譯與 patch 工程。
