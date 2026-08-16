@@ -364,12 +364,32 @@ queue 觸發尚未取代這條受控驗證。
 - [x] M4 bounded wide reuse audit 完成 743 個既有 source-context identity 的一對一
   codepoint／code-unit／slot map；新增 wide slot、未映射 target 與 font expansion
   仍 fail-closed，runtime 僅有 `U+79FB` 的既有 bounded positive。
+- [x] M4 bounded wide reuse contract 將 743-entry existing-slot map 做成 reject-closed
+  policy：只接受已證明 identity，unknown target／new wide slot／font expansion 均拒絕；
+  runtime confirmed 仍為 1，完整 wide resource strategy 尚未完成。摘要在
+  [`research/m4-wide-reuse-contract.json`](research/m4-wide-reuse-contract.json)。
+- [x] M4 bounded source provenance join 重用既有 pointer-caller report，保存 4,947
+  pointer refs、915 literal candidates、609 exact source candidates／370 records 的
+  source-safe caller／literal metadata；semantic labels 保持 `unclassified`，未擴張成
+  話數／UI／分支語意。摘要在 [`research/m4-source-provenance.json`](research/m4-source-provenance.json)。
+- [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
+  筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
+  opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
+  [`research/m4-full-corpus-gate.json`](research/m4-full-corpus-gate.json)。
 - [x] M4 UI batch-2 完成 `512228` 的 restore／strip、duplicate-codepoint global
   allocation、BPS apply 與 2325 筆 re-extraction comparator；3/3 target、2322/2322
   untouched、runtime screen 仍 pending。
 - [x] M4 UI batch-3 完成 5 筆 24px source-shape seed、restore／strip、15-slot global
   allocation、BPS apply 與 re-extraction comparator；8/8 target、2317/2317 untouched、
   runtime screen 仍 pending。
+- [x] M4 UI batch-4 完成 3 筆 48／56px source-shape seed、restore／strip、26-slot
+  global allocation、BPS apply 與 re-extraction comparator；11/11 target、2314/2314
+  untouched、outside allowed ranges equal，runtime screen 仍 pending。工具與摘要在
+  [`tools/m4_ui_batch4.py`](tools/m4_ui_batch4.py) 與 [`research/m4-ui-batch4.json`](research/m4-ui-batch4.json)。
+- [x] M4 UI batch-5 完成 `516324` 一筆 64px source-shape seed、restore／strip、28-slot
+  global allocation、BPS apply 與 re-extraction comparator；12/12 target、2313/2313
+  untouched、outside allowed ranges equal，runtime screen 仍 pending。工具與摘要在
+  [`tools/m4_ui_batch5.py`](tools/m4_ui_batch5.py) 與 [`research/m4-ui-batch5.json`](research/m4-ui-batch5.json)。
 - [x] M2 glossary slice 完成 17 筆 source-safe zh-TW 詞彙 provenance：12 筆雙來源
   通過、4 筆衝突 fail-closed deferred、1 筆 provisional；工具測試涵蓋 source hash
   mismatch、kana 外洩、來源不足與 deferred 無 target。
@@ -385,12 +405,12 @@ queue 觸發尚未取代這條受控驗證。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
-  流程保留 source provenance；M1.8／M2／M4 已完成八筆 static `ai_draft` POC，完整批量
+  流程保留 source provenance；M1.8／M2／M4 已完成十二筆 static `ai_draft` POC，完整批量
   翻譯仍未開始。
 - [x] 建立 bounded strict-reject source mismatch、缺字、控制碼、wide、容量、collision
   與變長的窄字編碼／回插器；完整 corpus、wide resource 與 runtime 仍待後續門檻。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始完整批量翻譯；M1.8／M2／M4 的八筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
+目前尚未開始完整批量翻譯；M1.8／M2／M4 的十二筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
 glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼語意、zh-TW
 字型美術品質、自然畫面 runtime 或完整可逆回插已證明。

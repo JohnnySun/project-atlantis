@@ -1,0 +1,131 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "bps_apply_byte_identical": true,
+    "control_tokens_empty": true,
+    "narrow_only": true,
+    "nul_terminated": true,
+    "rom_outside_allowed_ranges_equal": true,
+    "roundtrip_source_2325": true,
+    "roundtrip_targets_exact": true,
+    "roundtrip_untouched_exact": true,
+    "runtime_screen_verified": false,
+    "same_length": true,
+    "source_hash_matches": true,
+    "source_text_emitted": false,
+    "wide_new_slots_zero": true
+  },
+  "roundtrip": {
+    "actual_changed_bytes": 355,
+    "allowed_range_count": 37,
+    "base_source_matches": 2325,
+    "rom_outside_allowed_ranges_equal": true,
+    "runtime_status": "pending; static re-extraction only",
+    "source_records": 2325,
+    "target_exact_matches": 11,
+    "target_records": 11,
+    "untouched_exact_matches": 2314,
+    "untouched_records": 2314
+  },
+  "schema": "super-robot-taisen-d-m4-ui-batch4-v1",
+  "selection": {
+    "control_token_count": 0,
+    "glyph_class": "narrow_only",
+    "line_widths": [
+      48,
+      56
+    ],
+    "record_count": 3,
+    "records": [
+      {
+        "control_token_count": 0,
+        "glyph_class": "narrow_only",
+        "line_width": 48,
+        "same_length": true,
+        "source_ledger_sha256": "8d0d58ce273e91ae39f2b0102264544af4999bcb60c07c31c0a29a85e9677b10",
+        "source_payload_length": 12,
+        "source_raw_sha256": "d364d72ac288aeb0d3a3fdefbbc31bdcaa4ae13762c67cfa13d1bacef09af36b",
+        "source_unit_count": 6,
+        "string_id": 513060,
+        "target_codepoints": [
+          "U+6B63",
+          "U+5728",
+          "U+8B80",
+          "U+53D6",
+          "U+8CC7",
+          "U+6599"
+        ],
+        "target_payload_sha256": "28c3e5ff3be2163232f78cff13a573775414e4dafc80f2ba29f695c65da8b600",
+        "terminator": "NUL"
+      },
+      {
+        "control_token_count": 0,
+        "glyph_class": "narrow_only",
+        "line_width": 48,
+        "same_length": true,
+        "source_ledger_sha256": "c782a5b6f3eeba866c617414d5a2fd81a878776fc069207185a75046fe84d623",
+        "source_payload_length": 12,
+        "source_raw_sha256": "c54ea299c0529051734998a90f005fb517e0cdab8d8f055034b23c6edf8cf289",
+        "source_unit_count": 6,
+        "string_id": 513076,
+        "target_codepoints": [
+          "U+6B63",
+          "U+5728",
+          "U+5132",
+          "U+5B58",
+          "U+8CC7",
+          "U+6599"
+        ],
+        "target_payload_sha256": "36b1047e86bf95b65cb1b5be4d93d40d351df3da5191325e941b04f9ca42e157",
+        "terminator": "NUL"
+      },
+      {
+        "control_token_count": 0,
+        "glyph_class": "narrow_only",
+        "line_width": 56,
+        "same_length": true,
+        "source_ledger_sha256": "dd5fe83fe05478d6322a02942377926e8b81da95b25b85a11c53360edf3a4efe",
+        "source_payload_length": 14,
+        "source_raw_sha256": "b51cd7f11b3cde7781af6dba006474b2c18fc6939da54a760ce0c6389292ba9b",
+        "source_unit_count": 7,
+        "string_id": 517848,
+        "target_codepoints": [
+          "U+78BA",
+          "U+5B9A",
+          "U+8981",
+          "U+8986",
+          "U+5BEB",
+          "U+55CE",
+          "U+FF1F"
+        ],
+        "target_payload_sha256": "0d8ef9fa5f0b9589c6c803f573fd1c1707c522739e59f24e4f27637f1be18027",
+        "terminator": "NUL"
+      }
+    ],
+    "same_length": true
+  },
+  "source_policy": {
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false,
+    "translation_status": "ai_draft"
+  },
+  "static_reinsert": {
+    "allocated_slot_range": [
+      466,
+      543
+    ],
+    "base_rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "bps_apply_byte_identical": true,
+    "bps_sha256": "5c64fc7d87e31792fda7fc387f547b86529fe376ae7854fa36cd7b32cba18d82",
+    "bps_size": 472,
+    "combined_records": 11,
+    "combined_unique_allocations": 26,
+    "patched_rom_sha256": "d6c89f551eae9c849bd3499abebc973e53c5587c6132ff32e90e6936083948c2",
+    "protected_blank_slots_preserved": [
+      0,
+      57,
+      58
+    ],
+    "wide_new_slots": 0
+  }
+}

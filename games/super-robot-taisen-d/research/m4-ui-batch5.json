@@ -1,0 +1,89 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "bps_apply_byte_identical": true,
+    "control_tokens_empty": true,
+    "narrow_only": true,
+    "nul_terminated": true,
+    "rom_outside_allowed_ranges_equal": true,
+    "roundtrip_source_2325": true,
+    "roundtrip_targets_exact": true,
+    "roundtrip_untouched_exact": true,
+    "runtime_screen_verified": false,
+    "same_length": true,
+    "source_hash_matches": true,
+    "source_text_emitted": false,
+    "wide_new_slots_zero": true
+  },
+  "roundtrip": {
+    "actual_changed_bytes": 393,
+    "allowed_range_count": 40,
+    "base_source_matches": 2325,
+    "rom_outside_allowed_ranges_equal": true,
+    "runtime_status": "pending; static re-extraction only",
+    "source_records": 2325,
+    "target_exact_matches": 12,
+    "target_records": 12,
+    "untouched_exact_matches": 2313,
+    "untouched_records": 2313
+  },
+  "schema": "super-robot-taisen-d-m4-ui-batch5-v1",
+  "selection": {
+    "control_token_count": 0,
+    "glyph_class": "narrow_only",
+    "line_widths": [
+      64
+    ],
+    "record_count": 1,
+    "records": [
+      {
+        "control_token_count": 0,
+        "glyph_class": "narrow_only",
+        "line_width": 64,
+        "same_length": true,
+        "source_ledger_sha256": "061bcf58b44c5603c56d3dedff565b09f57b64b84bfd4815e9a4865ccc3a53ce",
+        "source_payload_length": 16,
+        "source_raw_sha256": "c9bac704afca40ff1637dec2cfcc2470589aa2e8b77396cfab57b2525a8a174e",
+        "source_unit_count": 8,
+        "string_id": 516324,
+        "target_codepoints": [
+          "U+662F",
+          "U+5426",
+          "U+8981",
+          "U+5132",
+          "U+5B58",
+          "U+8CC7",
+          "U+6599",
+          "U+FF1F"
+        ],
+        "target_payload_sha256": "2252a43c29588620bf7c03d986bb6ac801114e166b66b49aa115d24b1c217aed",
+        "terminator": "NUL"
+      }
+    ],
+    "same_length": true
+  },
+  "source_policy": {
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false,
+    "translation_status": "ai_draft"
+  },
+  "static_reinsert": {
+    "allocated_slot_range": [
+      464,
+      543
+    ],
+    "base_rom_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "bps_apply_byte_identical": true,
+    "bps_sha256": "f853f78dfb0be78cdd0242fe5e879850897d15c411ed9d62eebf5fe6fcd3bb1d",
+    "bps_size": 518,
+    "combined_records": 12,
+    "combined_unique_allocations": 28,
+    "patched_rom_sha256": "6723931d0ba65b1645ab6a46f017ef30845f187f3e82e16c73479db14bf54b4f",
+    "protected_blank_slots_preserved": [
+      0,
+      57,
+      58
+    ],
+    "wide_new_slots": 0
+  }
+}

@@ -112,6 +112,18 @@
   slot payload 已初始化；其中 `0xDA88`／`U+79FB` 有 M1.6 runtime positive，
   其餘 742 筆維持 static-only。新增寬槽與未在 map 的 target 仍 fail-closed；完整
   font expansion／全場景 proof 尚未完成，摘要在 `research/m4-wide-reuse-audit.json`。
+- [x] M4 bounded wide reuse contract 將既有 743-entry map 收斂成可執行 policy：只接受
+  已映射且已初始化的 existing slot，unknown target、new wide slot 與 font expansion
+  一律 reject；runtime confirmed 仍只有 1，完整 wide resource strategy 尚未完成。
+  摘要在 `research/m4-wide-reuse-contract.json`。
+- [x] M4 bounded source provenance join 重用既有 pointer-caller report，確認 4,947
+  refs／915 literal candidates 中 609 個 exact source candidates 對應 370 筆 record，
+  並按 structural partition 保存 caller／literal confidence 與 ID hash；semantic
+  partition 仍明確標為 `unclassified`，不把 pointer 命中外推成話數／UI／劇情。
+- [x] M4 full-corpus fail-closed gate 完成 2325/2325 strict source／NUL／token no-op
+  重讀；12 筆 ledger 全在窄字 accepted subset，其餘 927 筆窄字尚未翻譯、833 筆混合、
+  417 筆全寬、136 筆 opaque／unaligned 明確拒絕。`full_encoder_status` 維持
+  `fail_closed_subset_only`，不宣稱完整語意 encoder。
 - [ ] 在上述 gate 後建立完整 source-safe `zh-TW` ledger，所有專有名詞先通過
   glossary provenance；每筆翻譯保留 restore／working／strip 可重現鏈，opaque／
   變長／缺字／超寬 record fail-closed。
@@ -123,6 +135,15 @@
   UI labels；seed ledger 由 source shape 計算實際 width，5 筆與前批合併為 8 records、
   15 unique narrow allocations，`：` codepoint 跨 record 共用。static BPS／round-trip
   通過；完整批次與 runtime QA 仍未完成。
+- [x] M4 bounded UI batch-4 完成 3 筆全窄、6／7 unit、48／56px、NUL、無 control 的
+  UI／status labels；依 restore／strip 建立 source-safe `ai_draft` ledger，與前批合併
+  為 11 records／26 unique narrow allocations。static BPS／round-trip 通過：
+  source 2325/2325、target 11/11、untouched 2314/2314、outside allowed ranges equal；
+  runtime screen 仍 pending，寬字新槽仍為 0。摘要在 `research/m4-ui-batch4.json`。
+- [x] M4 bounded UI batch-5 完成 `516324` 一筆全窄、8 unit、64px、NUL、無 control 的
+  UI prompt；與前批合併為 12 records／28 unique narrow allocations，static BPS／
+  round-trip 通過：source 2325/2325、target 12/12、untouched 2313/2313、outside
+  allowed ranges equal。runtime screen 仍 pending；摘要在 `research/m4-ui-batch5.json`。
 - [ ] 完成全語料 encoder／回插、重抽取 byte round-trip、BPS create/apply，並以
   target／untouched／font／ROM hash 及 changed-range audit 證明沒有旁改。
 - [ ] 以獨立 mGBA 覆蓋核心流程與 translated records，記錄自然／controlled 分欄、

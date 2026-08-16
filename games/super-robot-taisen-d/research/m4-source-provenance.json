@@ -1,0 +1,95 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "pointer_report_joined": true,
+    "record_count_match": true,
+    "rom_hash_match": true,
+    "semantic_labels_inferred": false,
+    "source_text_emitted": false,
+    "strict_source_identity": true,
+    "token_encode_noop": true
+  },
+  "pointer_report": {
+    "aligned_pointer_refs": 4947,
+    "exact_call_target_index_sha256": "1455ee329a20c5ddcbb2203267cfb0407361ac721cbbfcd2aee3c6f3bd9df918",
+    "exact_caller_function_index_sha256": "2129b8f3b31c4289d0b32417e459e625cfe0b0ca95349ba088b3f55e05e46234",
+    "exact_candidate_confidence": {
+      "high": 321,
+      "low": 67,
+      "medium": 221
+    },
+    "exact_candidate_literal_kind": {
+      "literal_pool": 393,
+      "pointer_table_member": 216
+    },
+    "exact_source_candidate_count": 609,
+    "exact_source_record_count": 370,
+    "exact_source_record_id_index_sha256": "8edd85cb32f2486acdf1858dc4308e2ddb171d5d23b7b3db2eda11b5cd370fd6",
+    "literal_candidates": 915,
+    "pointer_runs": 195
+  },
+  "schema": "super-robot-taisen-d-m4-source-provenance-v1",
+  "semantic_boundary": {
+    "caller_provenance_status": "bounded_exact_pointer_only",
+    "natural_runtime_screen_status": "pending",
+    "next_gate": "natural_or_controlled caller context before naming story/UI/branch partitions",
+    "semantic_partition_status": "unclassified",
+    "unknown_pointer_and_pool_outside_status": "unconfirmed"
+  },
+  "source_corpus": {
+    "record_count": 2325,
+    "runtime_identity_id_index_sha256": "35279be7fe38adbc10994a0baaa695622b2f37f2bdd0e9b00004a0309afec743",
+    "runtime_identity_record_count": 2,
+    "source_range": {
+      "end_exclusive": "0x082490",
+      "start": "0x076000"
+    },
+    "strict_shift_jis_count": 2325,
+    "token_encode_noop_count": 2325,
+    "translated_static_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+    "translated_static_record_count": 12
+  },
+  "source_policy": {
+    "semantic_labels_inferred": false,
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false
+  },
+  "structural_partitions": {
+    "glyph_only_mixed": {
+      "exact_pointer_occurrences": 160,
+      "exact_pointer_record_count": 126,
+      "exact_pointer_record_id_index_sha256": "c4c95dfe05bd0662e3aa77c9deb1d2b162502afb5fc06b88762eef4e8b0e97dd",
+      "record_count": 833,
+      "record_id_index_sha256": "b8a263b5e235a9eb38bcb8bd09ecb39cab32ffb73c1617af6d6106e21722fae3",
+      "runtime_identity_record_count": 1,
+      "translated_static_record_count": 0
+    },
+    "glyph_only_narrow": {
+      "exact_pointer_occurrences": 180,
+      "exact_pointer_record_count": 83,
+      "exact_pointer_record_id_index_sha256": "3db5fe56c80e4d829e19169d246bc7b6e4c1b4d2fd5f50f93895e00d0d49416e",
+      "record_count": 939,
+      "record_id_index_sha256": "d428a46ddbfb2bb17636e22684aca04768b2f4fd27a3a246c205231458602b92",
+      "runtime_identity_record_count": 1,
+      "translated_static_record_count": 12
+    },
+    "glyph_only_wide": {
+      "exact_pointer_occurrences": 206,
+      "exact_pointer_record_count": 101,
+      "exact_pointer_record_id_index_sha256": "707f8fed940ec3948a19956110d75f7677051acb9b166e550729da80cab350c5",
+      "record_count": 417,
+      "record_id_index_sha256": "94543c7a7fbf4c258c518d37af77aaa848acdbf1e52882ce1dd23a3daa5ad819",
+      "runtime_identity_record_count": 0,
+      "translated_static_record_count": 0
+    },
+    "opaque_or_unaligned": {
+      "exact_pointer_occurrences": 63,
+      "exact_pointer_record_count": 60,
+      "exact_pointer_record_id_index_sha256": "3308ac459650fe32764a23f54ad698faf4291e1a212be3c37fadd18b76652486",
+      "record_count": 136,
+      "record_id_index_sha256": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc",
+      "runtime_identity_record_count": 0,
+      "translated_static_record_count": 0
+    }
+  }
+}

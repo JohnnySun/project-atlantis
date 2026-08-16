@@ -1,0 +1,30 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "initialized_existing_slots": true,
+    "one_to_one_codepoint_code_unit_slot": true,
+    "source_text_emitted": false,
+    "unknown_target_rejectable": true,
+    "wide_new_slots_zero": true
+  },
+  "identity_map": {
+    "code_unit_index_sha256": "eceec2251a6a7481a84f4d0ba258a77925238193835f7ce336e1952075ded884",
+    "codepoint_index_sha256": "c126fe8aa176d349078934e7e74a5749d73be935eba5fb72c5f9a105aaaa7499",
+    "count": 743,
+    "runtime_confirmed_identity_count": 1,
+    "slot_index_sha256": "02df90b8088f5202d450c506905ceab751c46c24b8ad4c9470d296af1864167d",
+    "static_only_identity_count": 742
+  },
+  "policy": {
+    "accepted": "only mapped existing wide identity",
+    "font_expansion": "reject_pending_resource_strategy",
+    "new_wide_slot_allocation": "reject",
+    "rom_modified": false,
+    "unmapped_target_codepoint": "reject"
+  },
+  "schema": "super-robot-taisen-d-m4-wide-reuse-contract-v1",
+  "source_policy": {
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false
+  }
+}

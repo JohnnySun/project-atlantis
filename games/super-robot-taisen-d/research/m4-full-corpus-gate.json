@@ -1,0 +1,80 @@
+{
+  "game_code": "A6SJ",
+  "gate": {
+    "full_encoder_status": "fail_closed_subset_only",
+    "full_semantic_translation": false,
+    "nul_2325": true,
+    "rom_hash_match": true,
+    "source_records_2325": true,
+    "source_text_emitted": false,
+    "strict_source_2325": true,
+    "translated_set_matches_reinsert": true,
+    "wide_new_slots_zero": true
+  },
+  "reinsert": {
+    "record_count": 12,
+    "same_length": true,
+    "source_hash_matches": true,
+    "wide_new_slots": 0
+  },
+  "roundtrip": {
+    "base_source_matches": 2325,
+    "rom_outside_allowed_ranges_equal": true,
+    "source_records": 2325,
+    "target_exact_matches": 12,
+    "target_records": 12,
+    "untouched_exact_matches": 2313,
+    "untouched_records": 2313
+  },
+  "schema": "super-robot-taisen-d-m4-full-corpus-gate-v1",
+  "source_corpus": {
+    "nul_terminated_count": 2325,
+    "partition_counts": {
+      "glyph_only_mixed": 833,
+      "glyph_only_narrow": 939,
+      "glyph_only_wide": 417,
+      "opaque_or_unaligned": 136
+    },
+    "record_count": 2325,
+    "strict_shift_jis_count": 2325,
+    "token_encode_noop_count": 2325
+  },
+  "source_policy": {
+    "semantic_translation_complete": false,
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false
+  },
+  "structural_partitions": {
+    "glyph_only_mixed": {
+      "record_count": 833,
+      "record_id_index_sha256": "b8a263b5e235a9eb38bcb8bd09ecb39cab32ffb73c1617af6d6106e21722fae3",
+      "translated_record_count": 0
+    },
+    "glyph_only_narrow": {
+      "record_count": 939,
+      "record_id_index_sha256": "d428a46ddbfb2bb17636e22684aca04768b2f4fd27a3a246c205231458602b92",
+      "translated_record_count": 12
+    },
+    "glyph_only_wide": {
+      "record_count": 417,
+      "record_id_index_sha256": "94543c7a7fbf4c258c518d37af77aaa848acdbf1e52882ce1dd23a3daa5ad819",
+      "translated_record_count": 0
+    },
+    "opaque_or_unaligned": {
+      "record_count": 136,
+      "record_id_index_sha256": "e46ce63b38bdfd9efbdac409b8f991675fad20aff954f35c3753d56e30fac1dc",
+      "translated_record_count": 0
+    }
+  },
+  "translation_boundary": {
+    "ledger_id_index_sha256": "a36f79b2cab8297f413d6f00c3194867ce6e3faf85d447d269d6d772cc555c71",
+    "ledger_record_count": 12,
+    "policy": "only translated narrow-only records enter static reinsert; all other records fail closed",
+    "rejected_mixed_count": 833,
+    "rejected_opaque_or_unaligned_count": 136,
+    "rejected_total_count": 2313,
+    "rejected_wide_count": 417,
+    "translated_narrow_only_count": 12,
+    "untranslated_narrow_only_count": 927
+  }
+}

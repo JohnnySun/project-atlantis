@@ -792,6 +792,57 @@ zh-TW ledger。
 的其他 layout gate。下一步仍須完成控制碼／newline／speaker 語意與完整 encoder，並以
 自然或 controlled runtime 覆蓋翻譯後的 wide consumer。
 
+`tools/m4_wide_reuse_contract.py` 再把這個 boundary 變成可測的 policy：它只接受
+existing identity map 中的 Unicode，對 unknown target codepoint、new wide slot 與
+font expansion 都回傳 reject；它不寫 ROM。摘要在
+[`m4-wide-reuse-contract.json`](m4-wide-reuse-contract.json)，因此仍不能替代完整
+wide resource expansion 或 runtime proof。
+
+## 2026-08-16：M4 bounded source provenance join
+
+本輪不重新做 pointer scan；`tools/m4_source_provenance.py` 只讀先前 M1.5 已建立的
+ignored `pointer-caller-report.json`，再與 2325 筆 strict source table、12 筆已提交
+static ledger 與 M1.6 glyph provenance 做 source-safe join。輸出只含 structural
+partition、caller／literal confidence count、ID／caller index hash 與 coverage count，
+不含 source text，也不替 pointer target 命名語意。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| pointer evidence | 4,947 aligned refs；915 literal candidates；195 pointer runs |
+| exact source join | 609 exact source candidates；370 distinct source records；confidence high 321／medium 221／low 67 |
+| literal provenance | literal pool 393；pointer-table member 216；caller／call-target 只保存 index hash |
+| structural join | narrow 939（exact records 83）；mixed 833（126）；wide 417（101）；opaque／unaligned 136（60） |
+| translation/runtime coverage | 11 static translation IDs 全在 narrow partition；M1.6 runtime identity IDs 2（narrow 1／wide 1） |
+| semantic boundary | `semantic_partition_status=unclassified`；natural runtime screen `pending`；pool 外與未知 pointer `unconfirmed` |
+
+這個 milestone 只證明既有 caller evidence 能被分區統計，沒有完成話數、分支、UI、
+機體／駕駛員／武器／精神或戰鬥／話間語意分類；下一步仍須自然／controlled caller
+context 才能解除該邊界。
+
+## 2026-08-16：M4 full-corpus fail-closed encoder boundary
+
+為避免把 12 筆 static POC 誤稱為 full encoder，本輪新增
+[`tools/m4_full_corpus_gate.py`](../tools/m4_full_corpus_gate.py)。它重讀 clean ROM 與
+ignored strict source table 的全部 2325 筆，逐筆核對 Shift-JIS、NUL 與 token encode
+no-op，再以 source-safe ledger ID 與 M4 reinsert／round-trip report 核對實際可回插集合。
+工具不生成未證明的 target，也不替 mixed／wide／opaque record 猜控制碼或語意。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| source gate | strict Shift-JIS 2325/2325；NUL 2325/2325；token encode no-op 2325/2325 |
+| accepted static subset | ledger 12 筆，全數為 glyph-only narrow；reinsert 12/12；same-length true；wide new slots 0 |
+| not-yet-translated | 927 筆 glyph-only narrow |
+| fail-closed partitions | mixed 833；wide 417；opaque／unaligned 136 |
+| round-trip | base source 2325/2325；target 12/12；untouched 2313/2313；outside allowed ranges equal |
+| status | `full_encoder_status=fail_closed_subset_only`；semantic translation complete `false` |
+
+這個 gate 完成的是「全語料可重讀、已批准 subset 可回插、其餘明確拒絕」的安全邊界，
+不是完整語意 encoder、完整 ledger 或發行版翻譯。
+
 ## 2026-08-16：M4 bounded UI batch-2 duplicate-codepoint POC
 
 在 M1.11 的 NUL／two-byte／width gate 已明確適用的前提下，選取另一筆 source
@@ -836,6 +887,54 @@ control token 0 的一般 UI label。target 為 source-safe ledger 中的「類�
 變長、wide、mixed、opaque、newline／speaker／branch semantics 與 natural mGBA screen
 仍維持 fail-closed／pending。
 
+## 2026-08-16：M4 bounded UI batch-4 48／56px status slice
+
+在 batch-3 已驗證 source-shape 寬度可由 tokenizer 計算後，本輪再選三筆不含控制碼、
+全窄 glyph-only、NUL 結尾且可保持原長度的 UI／status record：`513060`、`513076`、
+`517848`。tracked [`../translations/m4-ui-batch-4.jsonl`](../translations/m4-ui-batch-4.jsonl)
+只保存 source hash、target metadata 與 `ai_draft` 狀態；本機 source／working、patched
+ROM、BPS 與 raw render 仍在 ignored `work/`／`roms/`。本輪沒有把預檢到的 wide record
+`516460` 加入翻譯，維持 wide-new-slot `0` 的 fail-closed 邊界。
+
+`tools/m4_ui_batch4.py` 會重新讀取 ignored strict source table，逐筆核對 ROM bytes、
+Shift-JIS、NUL、narrow-only token shape、ledger UTF-8 hash 與 target unit count，並把
+static reinsert／round-trip／BPS 套用結果收斂成不含 source text 的 tracked metadata。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| selection | 3 records；6／6／7 narrow units；48／48／56px；NUL；control 0；narrow-only |
+| targets | `513060`、`513076`、`517848`；target codepoint 與 payload 只以 metadata／hash 保存 |
+| combined static reinsert | 11 records；26 unique narrow allocations；protected `[0,57,58]` preserved；wide new slots 0 |
+| BPS | 472 bytes／`5c64fc7d…`；apply byte-identical；patched ROM `d6c89f55…` |
+| re-extraction | source 2325/2325；target 11/11；untouched 2314/2314；changed bytes 355；outside allowed ranges equal |
+| runtime | `pending; static re-extraction only`；仍不把 static hash 當成 mGBA 畫面證據 |
+
+這個 slice 只擴大已證明的窄字／單行／無控制碼／固定長度 static coverage；它沒有解除
+wide、mixed、opaque、newline／speaker／branch semantics，也沒有宣稱完整 encoder、
+自然畫面或完整翻譯完成。
+
+## 2026-08-16：M4 bounded UI batch-5 64px prompt slice
+
+本輪選取 `string_id=516324` 的單行窄字 prompt，source shape 為 8 units／64px、NUL、
+control token 0；target 以同長 `ai_draft` ledger 保存。`tools/m4_ui_batch5.py` 重用
+batch-4 的 source-safe validator，並以 restore／working／strip、global reinsert、BPS
+與全池 round-trip 產生本輪摘要 [`m4-ui-batch5.json`](m4-ui-batch5.json)。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| selection | `516324`；16-byte payload／8 units／64px／NUL；control 0；narrow-only |
+| combined static reinsert | 12 records；28 unique allocations；protected `[0,57,58]` preserved；wide new slots 0 |
+| BPS | 518 bytes／`f853f78d…`；apply byte-identical；patched ROM `6723931d…` |
+| re-extraction | source 2325/2325；target 12/12；untouched 2313/2313；changed bytes 393；outside allowed ranges equal |
+| runtime | `pending; static re-extraction only`；不把 static hash 當成畫面證據 |
+
+這個 slice 仍只擴大窄字／單行／無控制碼／固定長度 static coverage；完整 semantic
+partition、wide／mixed／opaque、newline／speaker／branch 與自然 mGBA screen 仍 pending。
+
 ### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |
@@ -849,8 +948,8 @@ control token 0 的一般 UI label。target 為 source-safe ledger 中的「類�
 | runtime 邊界 | ROM entry／VRAM transfer、font slot writer 與兩個 bounded glyph consumer 均有陽性；自然 boot／menu 覆蓋仍有限 |
 | 壓縮 | 只有 BIOS／簽章候選，未確認與文本相關 |
 | 控制碼／終止碼／行寬 | NUL／窄字 bounded width 已確認；newline／完整控制語意仍未確認 |
-| 可逆回插 | 八筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
-| 翻譯 | 八筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
+| 可逆回插 | 十二筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
+| 翻譯 | 十二筆 source-safe `ai_draft` static POC；尚未開始全語料批量翻譯 |
 
 ## 下一輪入口
 
