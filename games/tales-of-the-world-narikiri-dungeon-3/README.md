@@ -360,6 +360,17 @@ consumer 或注入 pipeline 證據。兩個自有 process 均已停止，receipt
 context→VRAM；receipt 見
 [`research/m2-font-loader-layout-20260816.md`](research/m2-font-loader-layout-20260816.md)。
 
+已建立第一個**不等同翻譯 builder** 的 fail-closed 等長 round-trip POC：
+[`tools/bounded_roundtrip_poc.py`](tools/bounded_roundtrip_poc.py) 只接受 exact strict
+record start、同長 replacement bytes、NUL terminator 與 control/newline invariant，
+在記憶體重抽取後才寫 ignored／`/private/tmp` patched ROM。對 selected
+`sjis:0x146EE0` 的 synthetic 4-byte payload，8,938 筆 record starts、untouched
+records 與 outside-span bytes 均保持一致；再重用
+[`core/patches/bps_create.rb`](../../core/patches/bps_create.rb)／`bps_apply.rb` 做
+BPS byte-identical apply。這只證明 bounded static mechanics，尚未證明 live consumer、
+codepage／glyph、容量／指標／壓縮或可開始翻譯；receipt 見
+[`research/m2-roundtrip-poc-20260816.md`](research/m2-roundtrip-poc-20260816.md)。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \
