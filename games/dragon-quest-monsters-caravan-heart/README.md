@@ -9,6 +9,7 @@ ROM、抽出的日文原文、字型點陣、OCR／渲染圖片、工作記錄�
 - **已確認遊戲身分**：ROM 標頭為 `DQM-CARAVANH`、game code `A9HJ`、maker code `B4`、Rev.00；標頭補數校驗正確。
 - **已建立可重跑的唯讀偵察工具**：`tools/recon_rom.py` 會輸出檔案指紋、標頭、Shift-JIS sentinel 命中、ROM 指標候選、BIOS 壓縮簽章統計；不輸出完整遊戲原文。
 - **已建立獨立 mGBA／GDB 偵察路徑**：`tools/gdb_dynamic_recon.py` 已在 A9HJ 候選上驗證 ROM 入口、VRAM watchpoint、顯示寄存器與 live VRAM 摘要；目前只證明開機圖像／BG0 的渲染路徑，尚未證明劇本文本或 VWF。
+- **已收斂一條 runtime consumer 證據**：共用 GDB client 追到 `KEYINPUT` 輪詢與 BIOS `CpuSet` 的 BG char-data 搬移，並回溯到候選 ROM caller；這是輸入／tile loader 證據，不是 codepage、glyph identity 或 VWF 證據，詳見 `research/recon-20260816.md`。
 - **基準仍未放行**：目前本機候選是 32 MiB，CRC32 `EC167D8B`、SHA-256 `98c96d1f0753d22985c89fc3dd0e80ed5cbcd93eb09f880bb4418654347f7d58`，與公開 clean dump 的 8 MiB／CRC32 `3C24ABCC` 不同。因此它只能作為「格式偵察候選」，不能作為原文表或翻譯基準。
 - **尚未解出文字系統**：直接搜尋常見日文 Shift-JIS UI sentinel 全部 0 命中；結構上看似 Shift-JIS 的長片段與大量壓縮標記候選都可能是圖形／程式資料假陽性，尚未證明文本、字型、指標或壓縮路徑。
 - **尚未翻譯**：在 clean A9HJ ROM 與可逆抽取路徑確認前，不建立翻譯批次、不建立 source-bearing 工作記錄，也不宣稱英文 patch 已被本專案覆蓋或重用。
