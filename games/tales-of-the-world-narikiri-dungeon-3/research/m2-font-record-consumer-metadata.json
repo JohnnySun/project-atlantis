@@ -1,0 +1,85 @@
+{
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  },
+  "fixed_entries": {
+    "object_text_builder": "0x080CD14C",
+    "font_builder": "0x08015B74",
+    "font_loader": "0x080021A8",
+    "font_init": "0x08002100"
+  },
+  "direct_calls": {
+    "font_loader": {"target": "0x080021A8", "count": 1, "file_offsets": ["0x015C26"], "all_direct_targets_match": true},
+    "font_builder": {"target": "0x08015B74", "count": 1, "file_offsets": ["0x0CD170"], "all_direct_targets_match": true},
+    "object_text_builder": {"target": "0x080CD14C", "count": 5, "file_offsets": ["0x0D5218", "0x0D5224", "0x0D5234", "0x0D5240", "0x0D6C86"], "all_direct_targets_match": true},
+    "font_init": {"target": "0x08002100", "count": 4, "file_offsets": ["0x002146", "0x002174", "0x0021E2", "0x0022FC"], "all_direct_targets_match": true}
+  },
+  "literals": {
+    "font_asset_base_loader": {"value": "0x080DDCC4", "expected": "0x080DDCC4", "matches": true},
+    "font_lookup_aux_loader": {"value": "0x03001462", "expected": "0x03001462", "matches": true},
+    "font_lookup_table_loader": {"value": "0x03001464", "expected": "0x03001464", "matches": true},
+    "font_lookup_aux_init": {"value": "0x03001462", "expected": "0x03001462", "matches": true},
+    "font_lookup_table_init": {"value": "0x03001464", "expected": "0x03001464", "matches": true}
+  },
+  "instruction_checks": {
+    "builder_saves_source_in_r8": true,
+    "loader_caller_sets_r0_from_r4": true,
+    "loader_caller_sets_r1_from_r8": true,
+    "loader_reads_source_byte_0": true,
+    "loader_reads_source_byte_1": true,
+    "loader_lead_boundary_0x87": true,
+    "loader_asset_stride_shift_left_5": true,
+    "loader_initializes_lookup_before_expand": true
+  },
+  "static_pointer_provenance": {
+    "object_text_builder_to_font_builder": {
+      "callsite": "0x0CD170",
+      "register_setup": "r0=caller_allocated_context; r1=builder_input",
+      "status": "confirmed-static-register-shape"
+    },
+    "font_builder_to_font_loader": {
+      "callsite": "0x015C26",
+      "register_setup": "r0=builder_context; r1=r8(saved-builder-input)",
+      "status": "confirmed-static-source-pointer-shaped-edge"
+    },
+    "font_loader_source_read": {
+      "instructions": ["0x080021B6:[r1]", "0x080021B8:[r1+1]"],
+      "status": "confirmed-static-two-byte-input-read"
+    }
+  },
+  "font_asset_contract": {
+    "base": "0x080DDCC4",
+    "stride_bytes": 32,
+    "address_formula": "0x080DDCC4 + sjis_like_index*0x20",
+    "slot_address_helper": "font_asset_address(index)",
+    "status": "confirmed-static-address-math"
+  },
+  "lookup_init_contract": {
+    "aux_base": "0x03001462",
+    "table_base": "0x03001464",
+    "initializer": "0x08002100",
+    "interpretation": "runtime-initialized-lookup/palette-shape",
+    "status": "confirmed-static-writes; values-runtime-dependent"
+  },
+  "bounded_spans": [
+    {"name": "object-text-builder-caller", "file_start": "0x0CD14C", "file_end_exclusive": "0x0CD18A", "byte_length": 62, "sha256": "ddb713c7f96fabcdb7f6526cf906aa5a97aa42f8a22f66ef47b61bffaf40e0c6"},
+    {"name": "font-builder", "file_start": "0x015B74", "file_end_exclusive": "0x015C52", "byte_length": 222, "sha256": "9fc1a2570fa3693920fcf59c165fb7e822ef58d5dd7210cc7c8cfc3d1543a561"},
+    {"name": "font-loader-inline-transform", "file_start": "0x0021A8", "file_end_exclusive": "0x002310", "byte_length": 360, "sha256": "4f8a02106766982948229d849b668f9236603db9d4d279d720030f967cc10756"},
+    {"name": "font-init", "file_start": "0x002100", "file_end_exclusive": "0x002128", "byte_length": 40, "sha256": "bba48b21aa0d09338a371823e1daf6a6ac21fbb2769a155ae8f998decb497863"}
+  ],
+  "classification": {
+    "source_pointer_shaped_font_loader_edge": "confirmed-static",
+    "strict_five_window_record_membership": "unconfirmed",
+    "live_source_read": "unconfirmed",
+    "font_asset_identity": "provisional-static",
+    "complete_japanese_codepage": "unconfirmed",
+    "width_semantics": "unconfirmed",
+    "loader_destination_buffer": "provisional-static",
+    "scratch_or_object_to_vram": "unconfirmed",
+    "capacity_roundtrip_and_insertion": "unconfirmed"
+  }
+}

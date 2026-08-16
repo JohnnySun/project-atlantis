@@ -293,6 +293,15 @@ read-watch，再 bounded 觀察 `0x080011A8`／`0x080012E0` 與 `0x03000560`。�
 當成文字 source edge；界線與目前環境 negative 見
 [`research/m2-font-consumer-probe-20260816.md`](research/m2-font-consumer-probe-20260816.md)。
 
+另外已固定一條更接近 source pointer 的 static chain：全 ROM 只有一個
+`0x08015C26 → 0x080021A8` direct caller，caller 將 builder input 經 `r8` 放入
+loader `r1`，loader 讀 `[r1]`／`[r1+1]` 後選取
+`0x080DDCC4 + index*0x20`。詳情與 metadata-only probe 見
+[`research/m2-font-record-consumer-20260816.md`](research/m2-font-record-consumer-20260816.md)
+與 [`tools/font_record_consumer_probe.py`](tools/font_record_consumer_probe.py)。
+這仍是 source-pointer-shaped static edge；strict record membership、live read、
+glyph identity 與 VRAM destination 尚未確認。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \

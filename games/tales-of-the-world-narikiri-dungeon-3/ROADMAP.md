@@ -89,6 +89,9 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 建立只針對 `0x08001414` 的 bounded font consumer harness；只保留
   `r2→asset read→transform→scratch write` metadata，未把 harness 產物冒充
   runtime hit
+- [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
+  edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
+  仍保留為 unknown
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構
