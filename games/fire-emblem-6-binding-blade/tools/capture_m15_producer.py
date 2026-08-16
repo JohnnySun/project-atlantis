@@ -25,7 +25,10 @@ from gdbstub_client import GdbClient  # noqa: E402
 
 
 ENTRY = 0x080000C0
-LOADER = 0x08013ACC
+# 0x08013acc is the requested loader region; the actual Thumb prologue starts
+# at 0x08013ad0 after two literal/data halfwords.
+LOADER_REGION_START = 0x08013ACC
+LOADER = 0x08013AD0
 LOADER_CALL = 0x08013B04
 LOADER_RETURN = 0x08013B08
 COPY_WRAPPER = 0x0800384C

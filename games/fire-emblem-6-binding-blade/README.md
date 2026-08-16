@@ -8,7 +8,7 @@
 
 目前已由 AFEJ 執行期確認一條文字路徑：EWRAM 文字緩衝區會被字元消費者讀取，經兩位元組碼表查找後，glyph index 會寫入 EWRAM 渲染物件並進入 VRAM bitmap composer。完整劇情／支援／事件表、控制碼、glyph pool／tile stride／palette 對應與可逆回插仍未完成。
 
-M1.5 已再確認一個有限 producer：ROM pointer table `0x080f635c[index 3087]` 取出 `0x080f2256`，經 copy／IWRAM worker 寫入 `0x02029404`，並在 renderer 實際觀察到 `0x01` marker 與 payload 後的 `0x00` 邊界。source encoding、`0x01` 的換行／等待／結束語義及完整表格仍屬 provisional；沒有開始大批翻譯。
+M1.5 已再確認一個有限 producer：ROM pointer table `0x080f635c[index 3087]` 取出 `0x080f2256`，經 copy／IWRAM worker 寫入 `0x02029404`，並在 renderer 實際觀察到 `0x01` marker 與 payload 後的 `0x00` 邊界。M1.6 已反組譯實際 loader entry `0x08013ad0`、IWRAM worker 的 ROM 初始化來源，並建立 `index 3080..3095` 的 16 筆 opaque-token corpus；16/16 decode→encode source bytes 相等，index 3087 的固定 buffer hash 也與獨立 runtime receipt 相等。source encoding、`0x01` 的換行／等待／結束語義及完整表格仍屬 provisional；沒有開始大批翻譯。
 
 已確認的 ROM 身分與 runtime 位址、證據限制，見 `research/recon-20260816.md`。
 
@@ -31,11 +31,32 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/capture_m15_producer.py \
 
 該工具只輸出位址、索引、雜湊、控制 marker offset 與 breakpoint／watchpoint 結果，不輸出完整 ROM、RAM 或原文。
 
+若要重跑 M1.6 的 bounded extractor，使用本機被忽略的 ROM 與研究輸出：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/extract_afej_m16.py \
+  --rom roms/base/AFEJ.gba \
+  --output research/afej-decoded.jsonl \
+  --runtime-receipt work/afej-m16-runtime-receipt.json
+```
+
+預設 cohort 是 `index 3080..3095`。每筆只保留 stable ID、pointer provenance、source/output hash、長度、leaf-derived code-unit／opaque token 與 marker offset；不使用 FE7／FE8 或外部 TBL 猜 Unicode。`research/afej-decoded.jsonl` 與 `work/afej-m16-runtime-receipt.json` 都是本機 ignored 產物。
+
+要重新產生 index 3087 的 runtime receipt，先以自己的獨立 mGBA GDB port 啟動 AFEJ，再執行：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/capture_m16_runtime.py \
+  --port 23901 --timeout 30 \
+  --output work/afej-m16-runtime-receipt.json
+```
+
+該 receipt 只保存 loader entry／table／source／worker／EWRAM 位址、breakpoint／watchpoint 停止點、buffer hash、長度與 logical marker offsets，不保存 ROM、RAM dump 或完整原文。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
 
-1. 嚴格、可重跑的本機原文表 `research/afej-decoded.jsonl`（該檔案被忽略，不能提交）。
+1. 嚴格、可重跑的本機結構化原文／code-unit 表 `research/afej-decoded.jsonl`（目前為 opaque tokens；該檔案被忽略，不能提交）。
 2. `work/` 中含原文的翻譯工作記錄。
 3. 只含 `source_hash` 的 `translations/*.jsonl` ledger；只能由 `core/ledger/strip_translations.rb` 產生後提交。
 4. 回插後重新抽取、BPS round-trip 與 mGBA 場景驗證；在此之前不得宣稱翻譯或可逆構建完成。

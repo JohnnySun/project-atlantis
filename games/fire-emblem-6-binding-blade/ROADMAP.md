@@ -12,10 +12,12 @@
 - [x] 讀取合法 AFEJ ROM，確認標頭、game code、maker code、revision、CRC32 與 SHA-256。
 - [x] 以 mGBA/GDB 確認一條文字 buffer → 兩位元組碼表 → glyph index → VRAM bitmap composer 路徑。
 - [x] M1.5：以可重跑 loader breakpoint、copy-wrapper breakpoint 與 EWRAM write-watchpoint 證明 ROM pointer table → EWRAM code-unit buffer；記錄一個 `0x01` marker 與 payload 後的 `0x00` 邊界。
+- [x] M1.6：反組譯實際 loader entry、caller return 區域與 IWRAM worker 的 ROM 初始化來源；確認 `table + index * 4`、bounded table boundary 與 custom tree expansion。
+- [x] M1.6：建立 `index 3080..3095` 的 16 筆 opaque code-unit/control corpus；保存 stable ID、pointer provenance、source/output hash、長度與 marker offsets；16/16 decode→encode byte-identical，index 3087 與獨立 runtime receipt hash 相等。
 - [ ] 定位劇情、支援、章節事件、單位／武器／技能、商店／戰鬥／系統訊息及圖像文字。
 - [ ] 確認文本資料結構：字元寬度、終止／換行／選項／名字／數字控制碼、指標與壓縮。
 - [ ] 確認各字型池的地址／stride 與 Unicode 身分；分開記錄「已定位」和「已辨識」。
-- [ ] 寫出嚴格解碼器，產生被忽略的 `research/afej-decoded.jsonl`。
+- [ ] 擴大嚴格解碼器至劇情／支援／事件／資料表各內容類別；目前 M1.6 僅覆蓋一個 bounded loader/table cohort，產生的 `research/afej-decoded.jsonl` 仍是 opaque tokens。
 - [ ] 為負面結果與假陽性建立可重跑的研究紀錄，不把猜測寫成結論。
 
 ## M2：有限量翻譯批次
