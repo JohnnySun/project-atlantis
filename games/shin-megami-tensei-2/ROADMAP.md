@@ -375,9 +375,9 @@
 - [~] 外部資料包含原版／社群 item sequence，僅作 identity/order cross-check，不直接
   取代 A5TJ source；完整 codepage、Unicode、glyph、width/control 與 runtime live
   selector 仍未知，M2 ledger gate 維持 blocked。
-- [ ] 對前 8 筆之後的第一個 item subcategory boundary 做 bounded cross-check，並
-  對 `0x0819cb74` skill accessor 建立獨立 anchor family；不得把 item、skill、demon
-  或劇情資料混成一張翻譯表。
+- [x] 對前 8 筆之後的 item subcategory boundary 做 bounded cross-check；M1.30
+  另以獨立 namespace 對 `0x0819cb74` demon accessor 建立 anchor family，不把
+  item、skill、demon 或劇情資料混成一張翻譯表。
 
 ## M1.29：item equipment subcategory boundary anchors
 
@@ -390,9 +390,26 @@
 - [~] sparse edges 支持 item equipment family，但中間 subcategory spans、特殊
   field（例如未 anchor 的 `0x70`）與整個 208-record category 仍 provisional；
   `0x08198eb4` secondary path 不納入 item claim。
-- [ ] 補完 item table 剩餘 subcategory boundary 後，切換至獨立
-  `0x0819cb74` skill accessor（stride `0x60`、field `+0x22`）建立少量日文 skill
-  anchors；item、skill、demon、劇情與 system source 必須維持不同 family/namespace。
+- [~] item table 仍有未解析的中間 subcategory boundary；M1.30 已切換至獨立
+  `0x0819cb74` demon accessor（stride `0x60`、field `+0x22`）建立 bounded anchors；
+  skill、item、demon、劇情與 system source 必須維持不同 family/namespace。
+
+## M1.30：demon record prefix 的 code-unit identity cross-map
+
+- [x] 完整驗證 `0x080bf648..0x080bf6ce` accessor、`0x080e1644..0x080e17f2`
+  caller、`0x080bf656` literal target `0x0819cb74`，以及 accessor／small reader／
+  large reader 三個 BL callsite；固定 `index * 0x60`、field `+0x22`、八個
+  halfword、stack `+0x0c` 與 `0x0000` terminator contract。
+- [x] 以三個獨立日文資料來源作為 bounded identity cross-check，前 16 筆連續
+  demon record 16/16 match；建立 `m30-demon-record-{ordinal:04d}` addressing
+  namespace。工具只輸出 metadata/hash/count，沒有提交 raw record、完整原文或
+  translation ledger。
+- [~] 前綴 demon family identity 已 confirmed，但完整 table extent、其餘
+  category spans、special indices、自然 runtime selection、complete codepage、
+  glyph/width/control 與回插仍 provisional/unknown；runtime listener blocked。
+- [ ] 沿一個自然可達 caller 或同一 family 的 bounded initializer 取得
+  selector／record index／reader argument provenance；完成前維持 source table、
+  ledger、翻譯與 patch gate blocked，不再擴張 graphics/resource 分類。
 
 ## M2：可審核翻譯 ledger
 
