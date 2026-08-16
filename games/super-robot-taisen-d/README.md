@@ -100,7 +100,24 @@ python3 games/super-robot-taisen-d/tools/fingerprint_rom.py \
   [`research/m17-layout-boundary.json`](research/m17-layout-boundary.json) 與
   [`research/m17-poc-contract.json`](research/m17-poc-contract.json)，沒有開始
   翻譯、ledger 或 ROM 修改。
-- 回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
+- M1.8 已在窄字 mode `0x080085fc` 固定 code-unit → slot 公式：resource
+  `0x0814f664..0x08150fe4` 有 544 個 8×12／12-byte slot；完整 2325 筆 corpus
+  只引用 257 個 slot，保護 3 個 blank-but-referenced slot 後，保守可分配容量為
+  165 個。寬字新槽容量維持 0。allocator 只取 addressable、blank 且 corpus 未引用
+  的窄字 slot，並拒絕 hash mismatch、collision、越界、wide／opaque／control、
+  缺字、容量不足與變長輸入。
+- M1.8 固定使用 repo 既有 GNU Unifont T-source 17.0.05（font SHA-256
+  `c1768bd7...f46c5b53`，OFL-1.1 license SHA-256 `869692af...651763ded`），
+  以明確的 16×16 → 8×12 static transform 產生 glyph。已完成一筆全窄、無專名、
+  同長的 `string_id=526424` `ai_draft`：zh-TW target 為兩個窄字，配置 slot
+  543／542；target 與相鄰 untouched record 都有 patched 前後 1bpp／4bpp
+  render hash。完整 metadata 在 [`research/m18-narrow-poc.json`](research/m18-narrow-poc.json)，
+  translation ledger 在 [`translations/m18-static-poc.jsonl`](translations/m18-static-poc.jsonl)。
+- M1.8 static patched ROM 只改 target record 與兩個 glyph slot，共 28 bytes；
+  BPS create/apply 已 byte-identical。ROM、BPS、render image 與 restored／working
+  source 仍只留 ignored `roms/`／`work/`；runtime patched-screen proof、完整
+  newline／layout、字型美術品質與批量翻譯仍 pending。
+- 完整回插路徑尚未證明。至少要先確認：文字記錄格式、控制碼／行寬、字符索引、
   字型來源、容量或擴容策略，以及從重建 ROM 再抽回的 byte-level 不變量。
 
 可重跑的第一輪偵察工具：
@@ -137,6 +154,50 @@ PYTHONDONTWRITEBYTECODE=1 python3 \
   games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
   games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
   --output games/super-robot-taisen-d/work/m17-poc-report.json
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m18_narrow_allocator.py seed-ledger \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --target-offset 0x080858 \
+  --output games/super-robot-taisen-d/work/m18-seed-ledger.jsonl
+
+ruby core/ledger/restore_translations.rb \
+  games/super-robot-taisen-d/work/m18-seed-ledger.jsonl \
+  games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  games/super-robot-taisen-d/work/m18-static-poc-working.jsonl
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m18_narrow_allocator.py set-target \
+  --working games/super-robot-taisen-d/work/m18-static-poc-working.jsonl \
+  --output games/super-robot-taisen-d/work/m18-static-poc-working-final.jsonl \
+  --zh-hans '没有' --zh-tw '沒有'
+
+ruby core/ledger/strip_translations.rb \
+  games/super-robot-taisen-d/work/m18-static-poc-working-final.jsonl \
+  games/super-robot-taisen-d/translations/m18-static-poc.jsonl
+
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/super-robot-taisen-d/tools/m18_narrow_allocator.py build \
+  --rom games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  --source-table games/super-robot-taisen-d/research/super-robot-taisen-d-decoded.jsonl \
+  --ledger games/super-robot-taisen-d/translations/m18-static-poc.jsonl \
+  --working games/super-robot-taisen-d/work/m18-static-poc-working-final.jsonl \
+  --target-offset 0x080858 --adjacent-offset 0x080860 \
+  --patched-rom games/super-robot-taisen-d/work/Super_Robot_Taisen_D_A6SJ_M18_static_poc.gba \
+  --report games/super-robot-taisen-d/work/m18-static-poc-report.json \
+  --render-dir games/super-robot-taisen-d/work/m18-renders
+
+ruby core/patches/bps_create.rb \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  games/super-robot-taisen-d/work/Super_Robot_Taisen_D_A6SJ_M18_static_poc.gba \
+  games/super-robot-taisen-d/work/m18-static-poc.bps
+ruby core/patches/bps_apply.rb \
+  games/super-robot-taisen-d/roms/base/Super_Robot_Taisen_D_JP_A6SJ.gba \
+  games/super-robot-taisen-d/work/m18-static-poc.bps \
+  games/super-robot-taisen-d/work/m18-bps-applied.gba
+cmp -s \
+  games/super-robot-taisen-d/work/Super_Robot_Taisen_D_A6SJ_M18_static_poc.gba \
+  games/super-robot-taisen-d/work/m18-bps-applied.gba
 ```
 
 `--show-text` 只把本機候選解碼輸出到終端，不應重導向到 Git 追蹤檔案。
@@ -170,12 +231,17 @@ queue 觸發尚未取代這條受控驗證。
   2325 筆 source 的 no-op byte-identical 統計、窄／寬 resource slot 容量盤點，
   以及兩筆同長度 fail-closed POC contract；newline、完整 layout 與 zh-TW
   Unicode capacity 仍維持 opaque／未證明。
+- [x] M1.8 完成窄字 code-unit／slot formula、544-slot occupancy 與 165 個安全空槽
+  allocator、12-byte glyph packing／固定字型來源 hash，以及一筆同長 static
+  `zh-TW` glyph POC；target／相鄰 record、BPS round-trip 與 fail-closed gate 已
+  通過，寬字新槽容量為 0，patched runtime screen 仍待驗證。
 - [ ] 確認完整文本分區、字串 ID／指標語意或池外結構。
 - [ ] 確認字符表／字型格式、控制碼、行寬與分支腳本邊界。
 - [x] 輸出本機 ignored `research/super-robot-taisen-d-decoded.jsonl`，並以 ledger
-  流程保留 source provenance；第一個翻譯小批次仍未開始。
+  流程保留 source provenance；M1.8 已完成一筆 static `ai_draft` POC，批量翻譯仍未開始。
 - [ ] 建立嚴格拒絕 source mismatch、缺字與控制碼不一致的編碼／回插器。
 - [ ] 重抽取、BPS round-trip 與 mGBA 核心場景 QA。
 
-目前尚未開始翻譯；M1.7 只完成 bounded consumer／layout boundary 與 no-op contract，
-不代表完整文字覆蓋、newline／控制碼語意、zh-TW 字型容量或可逆回插已證明。
+目前尚未開始批量翻譯；M1.8 的一筆 static `ai_draft` 只證明窄字 allocator、同長
+glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼語意、zh-TW
+字型美術品質、自然畫面 runtime 或完整可逆回插已證明。

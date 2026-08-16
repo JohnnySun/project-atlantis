@@ -1,0 +1,152 @@
+{
+  "schema": "super-robot-taisen-d-m18-narrow-poc-v1",
+  "game_code": "A6SJ",
+  "source_policy": {
+    "source_text_emitted": false,
+    "source_safe_hashes_only": true,
+    "source_string_id": 526424,
+    "source_address": "0x08080858",
+    "source_raw_sha256": "d00ed112a00788d7ddacfb733ee3b6475d21d8df31ac36b33699519caa24f0ee",
+    "source_ledger_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+    "source_payload_length": 4,
+    "source_unit_count": 2,
+    "source_line_width": 16,
+    "terminator": "NUL"
+  },
+  "narrow_formula": {
+    "lookup_pc": "0x080085FC",
+    "mode": 1,
+    "lead_byte": "low byte of ldrh code unit",
+    "trail_byte": "high byte of ldrh code unit",
+    "lead_adjustment": "lead > 0xDF: lead-0x43; else lead > 0x87: lead-3; else unchanged",
+    "row": "adjusted_lead-0x81",
+    "trail_adjustment": "trail >= 0x80: trail-1; else unchanged",
+    "slot_index": "((row*3)<<6)-0x40+adjusted_trail-row*4",
+    "byte_offset": "slot_index*12",
+    "base": "0x0814F664",
+    "stride": 12,
+    "addressable_slot_count": 544,
+    "addressable_code_unit_ranges": [
+      "lead 0x81..0x82 with trails 0x40..0x7E or 0x80..0xFC",
+      "lead 0x83 with trails 0x40..0x7E or 0x80..0xE8"
+    ],
+    "first_raw_code_unit": "8140",
+    "last_raw_code_unit": "83E8",
+    "code_unit_slot_collisions": 0,
+    "evidence": {
+      "narrow_code_unit_0x8983_offset": "0x1500",
+      "narrow_code_unit_0x8983_slot": 128,
+      "known_lara_glyph_bytes_sha256": "55b2fd73918c81d6dd243d2268a88c5bd6f3d017b300e6820153c73e561b7838",
+      "known_lara_render_4bpp_sha256": "e71147fdef4c60ca983b882977c873dfc83d45fe8e6dc2ed176497b2efd806f8"
+    }
+  },
+  "resource_occupancy": {
+    "resource_start": "0x0814F664",
+    "resource_end_exclusive": "0x08150FE4",
+    "physical_slots": 544,
+    "addressable_slots": 544,
+    "glyph_payload_bytes": 12,
+    "referenced_slots": 257,
+    "reference_occurrences": 11902,
+    "blank_slots": 168,
+    "protected_blank_referenced_slots": [0, 57, 58],
+    "free_blank_unreferenced_slots": 165,
+    "free_slot_index_sha256": "7d14e1b1f986ea7e261693933b0af4c1863f1d582c6dacd5ebc52990d693802f",
+    "allocation_policy": "choose highest free addressable slots; never overwrite protected blanks"
+  },
+  "glyph_format": {
+    "dimensions": "8x12",
+    "source_encoding": "one bit per row pixel, 12 rows, MSB is leftmost pixel",
+    "renderer_pc": "0x080085B0",
+    "renderer_behavior": "each row byte becomes four 4bpp bytes; even pixel uses low nibble, odd pixel high nibble",
+    "tile_writer_pc": "0x08008650",
+    "tile_writer_behavior": "halfword writes use tile-row and column offsets; no glyph bytes are reinterpreted"
+  },
+  "font_source": {
+    "path": "vendor/fonts/unifont/unifont_t-17.0.05.hex.gz",
+    "url": "https://unifoundry.com/pub/unifont/unifont-17.0.05/font-builds/unifont_t-17.0.05.hex.gz",
+    "sha256": "c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53",
+    "license_path": "vendor/fonts/unifont/OFL-1.1.txt",
+    "license_sha256": "869692af094c57fb7258c57fe26820c759319603321d0ffeb278de3651763ded",
+    "license": "SIL OFL 1.1 or GPL-2.0-or-later with the GNU font exception",
+    "transform": "16x16 box-any downsample to 8x12",
+    "redistributable": true
+  },
+  "allocation": {
+    "mode": "narrow_only",
+    "wide_new_slots": 0,
+    "records_equal_length": true,
+    "entries": [
+      {
+        "unicode": "U+6C92",
+        "target_character": "沒",
+        "slot": 543,
+        "code_unit_little_endian": "0xE883",
+        "raw_code_unit_bytes": "83E8",
+        "glyph_bytes_sha256": "fc802795e0a087b4a040a4aa021aec11f1ce171562606996e46720d81261b74c",
+        "render_1bpp_sha256": "fc802795e0a087b4a040a4aa021aec11f1ce171562606996e46720d81261b74c",
+        "render_4bpp_sha256": "7ea2c7a3ca398e333fa6b701517e7964deabe4ce64f7dadf913e4bb135677b2c"
+      },
+      {
+        "unicode": "U+6709",
+        "target_character": "有",
+        "slot": 542,
+        "code_unit_little_endian": "0xE783",
+        "raw_code_unit_bytes": "83E7",
+        "glyph_bytes_sha256": "baec37d94010d471df77dae5d16aecd1d581178af6c0f65f1aabbfbde11ee01d",
+        "render_1bpp_sha256": "baec37d94010d471df77dae5d16aecd1d581178af6c0f65f1aabbfbde11ee01d",
+        "render_4bpp_sha256": "b5cd53c77777564920183a17e99524d08081b21e69da1e20870a05c702ed2078"
+      }
+    ],
+    "rejection_contract": [
+      "rom_hash_mismatch",
+      "font_hash_mismatch",
+      "font_license_hash_mismatch",
+      "source_hash_mismatch",
+      "code_unit_slot_collision",
+      "code_unit_out_of_range",
+      "wide_glyph",
+      "opaque_or_control",
+      "missing_glyph",
+      "capacity_exceeded",
+      "variable_length"
+    ]
+  },
+  "static_poc": {
+    "target_locale": "zh-TW",
+    "target_text": "沒有",
+    "target_payload_length": 4,
+    "target_payload_sha256": "13b51fc2f53ba6f5bec299775a4b6987708e791c2ca19e9bb4cb3267a4d8f7fe",
+    "target_before_render_1bpp_sha256": "46c6daf217d231d61da40fcbbed221c759074b303a09c99e45afa5a98c74d351",
+    "target_after_render_1bpp_sha256": "d9afb0558337ac6763bd136ad0622a13a29bcd30924b9518e56b3a9bfed00d97",
+    "target_after_render_4bpp_sha256": "69aa6186e6fafeb3c3d5e96ad4031ba0f80f0d595526f4f9e01b45dcd6cc99e1",
+    "adjacent_string_id": 526432,
+    "adjacent_address": "0x08080860",
+    "adjacent_untouched": true,
+    "adjacent_render_1bpp_sha256": "20b2c971fdc3f2643de157bb542dd62f3658f40024d5c3502d6edfc80db89105",
+    "adjacent_render_4bpp_sha256": "c0ef81f33c1de225a8f8f7dced258c92641ed2b7daa1e62c7f2d173bfb99c54f",
+    "runtime_status": "pending; static consumer proof remains separate"
+  },
+  "rom_and_bps": {
+    "base_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "patched_sha256": "b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce",
+    "patched_crc32": "787fa8cc",
+    "changed_bytes": 28,
+    "bps_sha256": "4f694170e119fdf8a9f3113ddca9aec0850f07fdfd1adc75bfca46643a4e0f31",
+    "bps_size": 66,
+    "bps_patch_crc32": "725f824b",
+    "bps_roundtrip": "byte-identical",
+    "changed_ranges": [
+      {"address": "0x08080858", "length": 4, "kind": "source_record_same_length"},
+      {"address": "0x08150FD8", "length": 12, "slot": 543, "kind": "blank_narrow_glyph_slot"},
+      {"address": "0x08150FCC", "length": 12, "slot": 542, "kind": "blank_narrow_glyph_slot"}
+    ]
+  },
+  "gate": {
+    "accepted": true,
+    "translation_status": "ai_draft",
+    "rom_modified_only_in_ignored_work": true,
+    "ledger_source_text_emitted": false,
+    "protected_slots_preserved": true
+  }
+}

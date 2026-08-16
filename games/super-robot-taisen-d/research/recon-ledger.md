@@ -434,29 +434,117 @@ trampoline 誤報成自然畫面證據。自然 menu／queue 的 newline、layou
 與 record boundary、zh-TW codepoint 到 glyph slot 的合法 encoder／缺字策略、
 以及 rebuilt ROM 重抽取與 byte-level round-trip。未完成前不開始批量翻譯。
 
-### 第一輪結論（M0／M1 初輪快照；M1.6 更新見上）
+## 2026-08-16：M1.8 narrow allocator／static zh-TW POC
+
+本輪只處理窄字 resource，沒有建立或使用任何寬字新 slot。先由 ignored
+source table 選一筆全窄、無專名、兩個 code unit 的短 UI record（stable
+`string_id=526424`、ROM address `0x08080858`）；tracked 文件只保存 raw／ledger
+source hash，不保存日文原文。翻譯工作確實依序經過 `seed ledger → restore_translations.rb`
+→ ignored work → `strip_translations.rb`，唯一 tracked 翻譯檔為
+[`translations/m18-static-poc.jsonl`](../translations/m18-static-poc.jsonl)。
+
+### Narrow formula、range 與 occupancy gate
+
+對 `0x080085fc` 的 A6SJ Thumb code 做 direct disassembly，mode 1 的運算為：
+
+```text
+lead = code_unit & 0xff
+trail = (code_unit >> 8) & 0xff
+lead' = lead-0x43 if lead > 0xdf
+        lead-3    if lead > 0x87
+        lead      otherwise
+row = lead' - 0x81
+trail' = trail-1 if trail & 0x80 else trail
+slot_index = ((row * 3) << 6) - 0x40 + trail' - row * 4
+byte_offset = slot_index * 12
+```
+
+窄字 resource 是 `0x0814f664..0x08150fe4`，544 個 physical／addressable slot，
+所以在本 resource 大小下可安全定址的 raw code-unit range 是：lead `0x81..0x82`
+搭配 trail `0x40..0x7e` 或 `0x80..0xfc`，以及 lead `0x83` 搭配 trail
+`0x40..0x7e` 或 `0x80..0xe8`；第一個 raw pair 是 `8140`，最後一個是 `83e8`。
+544 個 slot 均只有一個 code-unit mapping，沒有 formula collision。
+
+以完整已驗證 corpus 重算 occupancy：257 個 slot／11,902 次引用、168 個空白
+physical slot，其中 `0/57/58` 是 blank-but-referenced，固定保護；剩下 165 個
+才是 addressable 且未被 corpus 引用的可分配候選。allocator 使用高端空槽，這次
+配置 slot `543`／`542`，raw code unit 為 `83e8`／`83e7`，沒有覆寫保護 slot，
+也沒有觸碰 wide resource（容量仍為 0）。完整 metadata 在
+[`research/m18-narrow-poc.json`](m18-narrow-poc.json)。
+
+### 12-byte glyph format 與固定字型來源
+
+`0x080085b0` 的窄字 renderer 逐列讀取 12 bytes；每 byte 是 8 pixels、MSB 為
+左側像素，因此格式是 8×12、1bpp。renderer 將每兩個 bit 轉成一個 4bpp byte，
+偶數 pixel 放 low nibble、奇數 pixel 放 high nibble；`0x08008650` 只負責按
+tile-row／column offset 寫 halfword。已用既有 `ラ` resource bytes hash 與靜態
+4bpp render hash 交叉驗證此 packing，沒有由圖形猜 Unicode identity。
+
+本輪固定使用 repo 已核准的 GNU Unifont T-source 17.0.05：
+`vendor/fonts/unifont/unifont_t-17.0.05.hex.gz`，SHA-256
+`c1768bd7fea203db1f419045d5a9e4d420772445e29b96c8873471d3f46c5b53`；授權檔
+`OFL-1.1.txt` SHA-256 `869692af094c57fb7258c57fe26820c759319603321d0ffeb278de3651763ded`，
+依 SIL OFL 1.1／GPL font exception 可再分發。衍生器固定採 16×16 box-any
+downsample 到 8×12；這是本輪 static POC 的明確實驗轉換，不宣稱最終字型美術品質。
+
+### Fail-closed allocator 與 static POC
+
+allocator 的拒絕條件固定為 ROM／font／license hash mismatch、source hash
+mismatch、code-unit／slot collision、range outside、wide glyph、opaque/control、
+missing glyph、capacity exhausted 與 variable length。source record payload 是
+4 bytes／2 narrow units／line width 16；`zh-TW` static target payload 也固定為
+4 bytes／2 narrow units／width 16。配置的兩個 target glyph metadata 為：
+
+| target codepoint | slot | raw code unit | glyph bytes SHA-256 | 4bpp render SHA-256 |
+| --- | ---: | --- | --- | --- |
+| `U+6c92` | 543 | `83e8` | `fc802795e0a087b4a040a4aa021aec11f1ce171562606996e46720d81261b74c` | `7ea2c7a3ca398e333fa6b701517e7964deabe4ce64f7dadf913e4bb135677b2c` |
+| `U+6709` | 542 | `83e7` | `baec37d94010d471df77dae5d16aecd1d581178af6c0f65f1aabbfbde11ee01d` | `b5cd53c77777564920183a17e99524d08081b21e69da1e20870a05c702ed2078` |
+
+static render／hash gate 顯示 target changed record 的 8×12 1bpp hash 為
+`d9afb0558337ac6763bd136ad0622a13a29bcd30924b9518e56b3a9bfed00d97`、4bpp hash
+為 `69aa6186e6fafeb3c3d5e96ad4031ba0f80f0d595526f4f9e01b45dcd6cc99e1`；相鄰
+`0x08080860` record 的 1bpp／4bpp hashes 在 patched 前後均為
+`20b2c971fdc3f2643de157bb542dd62f3658f40024d5c3502d6edfc80db89105`／
+`c0ef81f33c1de225a8f8f7dced258c92641ed2b7daa1e62c7f2d173bfb99c54f`，
+`adjacent_untouched=true`。
+
+### ROM／BPS gate 與限制
+
+static patched ROM 只改 28 bytes：target record 4 bytes，加上兩個窄字 slot 各
+12 bytes。patched SHA-256 為
+`b58ef43229be2a05217f2a5ac7c1cb0085cce53ce8fe0a17ea064d3355042cce`，CRC32
+`787fa8cc`。BPS 為 66 bytes、SHA-256
+`4f694170e119fdf8a9f3113ddca9aec0850f07fdfd1adc75bfca46643a4e0f31`，patch CRC32
+`725f824b`；create/apply 後與 patched ROM byte-identical。ROM、BPS、render image
+與 work record 全部留在 ignored `roms/`／`work/`。
+
+本輪 runtime status 是 pending：static glyph render、target／相鄰 record re-read、
+allocator gate 與 BPS round-trip 已通過，但尚未用獨立 mGBA session 顯示 patched
+record。Unifont downsample 的字形風格、未定位 corpus 對新 code-unit 的潛在使用、
+newline／完整 layout 與 full-game QA 仍是風險；這一筆 `ai_draft` 不代表完整翻譯
+或自然畫面通過。
+
+### 第一輪結論（M0／M1 初輪快照；M1.8 更新見上）
 
 | 問題 | 狀態 |
 | --- | --- |
 | ROM 身分／CRC | 已確認（A6SJ／`efb45117`） |
 | 有界靜態文字池／分區線索 | 已確認 `0x076000..0x082490` 的 NUL 結尾 Shift-JIS 候選池；完整文本仍未確認 |
-| 字型／glyph addressing | M1.6 已在兩個 initialized ROM base 上完成 bounded glyph bytes／tile output hash；完整字型格式仍未確認 |
+| 字型／glyph addressing | M1.8 已確認窄字 8×12／12-byte packing、544-slot formula 與 allocator；寬字新槽仍為 0 |
 | glyph identity | M1.6 已確認 `ラ`／`移` 兩個 strict source-context sample；字符表候選仍不能直接擴張成完整 codepage |
 | codepage | 已確認有界靜態池為嚴格標準 Shift-JIS，並以兩個 runtime code unit 走通 lookup；池外文本未確認 |
 | 指標表 | 有界池已有 4-byte 絕對 pointer 命中與群組；語意／caller／runtime 未確認 |
 | runtime 邊界 | ROM entry／VRAM transfer、font slot writer 與兩個 bounded glyph consumer 均有陽性；自然 boot／menu 覆蓋仍有限 |
 | 壓縮 | 只有 BIOS／簽章候選，未確認與文本相關 |
-| 控制碼／終止碼／行寬 | 未確認 |
-| 可逆回插 | 未確認，尚未建立 encoder／builder |
-| 翻譯 | 未開始 |
+| 控制碼／終止碼／行寬 | NUL／窄字 bounded width 已確認；newline／完整控制語意仍未確認 |
+| 可逆回插 | 一筆同長 static POC＋BPS round-trip 已確認；完整 encoder／場景 QA 未確認 |
+| 翻譯 | 一筆 `ai_draft` static POC；未開始批量翻譯 |
 
 ## 下一輪入口
 
-1. 以已知 queue／UI caller 為邊界，擴大自然畫面與分支／話數資料的 renderer
-   覆蓋；不把兩個 controlled sample 當作完整劇情 coverage。
-2. 定義 control token、換行／行寬、說話者與字串容量，並確認窄／寬字 codepage
-   的完整 glyph table 與缺字策略。
-3. 以現有共用 core GDB／renderer 工具做少量可重現場景驗證；每次 GDB 斷線都
-   重啟本 session 自己的 mGBA，raw output 留 ignored。
-4. 只有在上述邊界、encoder、回插與 round-trip 條件都可審核後，才建立第一批
-   zh-TW 翻譯與回插實驗；目前 translation 仍未開始。
+1. 以獨立 mGBA／controlled consumer 驗證 patched target 與相鄰 untouched record；
+   raw output 留 ignored，不把 static render 擴張成自然畫面 QA。
+2. 定義 newline／opaque token、完整行數／說話者／分支 layout，並以更多不含專名
+   的短 UI record 擴大 allocator QA；wide 新槽仍不可用。
+3. 以 target／font／ROM hash、ledger restore／strip 與 BPS gate 維持可重現；
+   只有 full-game encoder、容量與場景 QA 完成後才擴大翻譯批次。

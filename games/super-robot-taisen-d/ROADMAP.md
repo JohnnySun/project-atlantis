@@ -34,6 +34,11 @@
   corpus 上驗證 no-op byte identity；同時盤點
   resource stride、空白／不可達 slot 與保守容量，建立兩筆同長度 fail-closed POC。
   newline 與未知 token 維持 opaque，尚未開始翻譯或修改 ROM。
+- [x] M1.8 將窄字 mode `0x080085fc` 反組譯為可重現的 544-slot formula，保留
+  3 個 blank-but-referenced slot，從完整 corpus 收斂出 165 個安全空槽；確認
+  8×12／12-byte packing，使用固定 hash／license 的 GNU Unifont T-source 建立
+  fail-closed allocator，並完成一筆同長 `zh-TW` static glyph POC。寬字新槽容量
+  為 0；target／相鄰 re-read、BPS create/apply 已通過，patched runtime 尚 pending。
 - [ ] 定義控制碼、終止符、換行、說話者、最大寬度／行數與分支邊界。
 - [ ] 用自然畫面或更多獨立語料上下文擴大重讀確認解碼結果；M1.6 的兩個 sample
   仍是同一受控 consumer path 的最小證據。
@@ -42,6 +47,9 @@
 
 - [x] 產生並以 strict ROM checker 驗證本機 ignored
   `research/super-robot-taisen-d-decoded.jsonl`（2325/2325）。
+- [x] 以 `restore_translations.rb` → ignored working record → `strip_translations.rb`
+  完成一筆 source-safe、同長度的 M1.8 static `ai_draft` ledger POC；這不是批量
+  翻譯，也不代表術語或完整 layout 已定稿。
 - [ ] 建立 `translations/glossary.zh-TW.tsv`，專有名詞先核對 Wikipedia zh-tw、
   巴哈姆特等多個社群來源，記錄分歧與採用理由。
 - [ ] 先做一個可達且邊界明確的小批次：例如 UI／精神指令／一個完整對話群，
