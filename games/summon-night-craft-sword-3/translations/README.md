@@ -43,6 +43,16 @@ target metadata 與 `ai_draft` status；其 builder 先重建 M2.5／M4.1／M4.2
 重導到 M5.1 已驗證的 zero-filled destination。完整原文、source adapter、working copy、
 relocated ROM 與 BPS 仍只在 ignored `research/*-decoded.jsonl`／`work/`。
 
+M5.3 的 `m5.3-repeated-prize-header.jsonl` 只保存第二筆同樣 prize-header record 的
+source hash、target metadata 與 `ai_draft` status；其 builder 從 clean ROM 重新累積
+M5.2，再在同一 relocated resource 改寫一筆 14-byte record，沿用 `ec64/ec65/ec66`
+mapping，不新增 slot。source adapter、working copy、ROM 與 BPS 仍只在 ignored `work/`。
+
+`glossary.zh-TW.tsv` 目前收七個 bounded target term，其中六個是通用 UI／語氣詞，
+另有一個因外部多來源查證不可達而維持 `blocked_external_lookup`；沒有角色、地名或
+其他需要自行音譯的專有名詞，也沒有把完整日文 source 寫入 glossary。未來出現專有
+名詞時，必須先補 Wikipedia zh-tw、巴哈姆特等多來源證據，再把決定寫入此檔。
+
 這個目錄只保存已通過 schema／safety 的可提交 ledger；M2.5 的 target 仍需人工／術語、
 字型與 runtime 審核，不能把 ledger 存在視為翻譯完成。`research/*-decoded.jsonl` 與
 `work/` 已由 repository ignore 規則排除；若新檔名不符合既有規則，提交前必須用

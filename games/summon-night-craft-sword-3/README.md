@@ -6,7 +6,7 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3、M2.4、M2.5、M2.6、M2.7、M2.8、M3 ledger、M4.1、M4.2、M4.3、M4 target QA、M5.1 static pointer relocation POC 與 M5.2 resource-24 relocation static batch 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、fail-closed glyph encoder、五筆 cumulative zh-TW／7-glyph bounded static build、resource-24 relocation、BPS apply round-trip、target／adjacent static proof、target-side QA、單一 resource directory redirect、361 筆 pointer／record／layout contract audit，以及 source／work／ledger hash-guarded restore-strip validator。M2.7 transport 仍 blocked；完整 VM／未命名 opcode、line/page／glyph-width semantics、palette／runtime VRAM、自然畫面 QA、人工翻譯審核與全遊戲批次翻譯仍未完成；目前 target 仍是 `ai_draft`，不是可發布 patch。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/m3-ledger.md`](research/m3-ledger.md)、[`research/m4.1-wood-chopping.md`](research/m4.1-wood-chopping.md)、[`research/m4.2-warning-label.md`](research/m4.2-warning-label.md)、[`research/m4.3-ellipsis-label.md`](research/m4.3-ellipsis-label.md)、[`research/m4-batch-qa.md`](research/m4-batch-qa.md)、[`research/m5.1-pointer-relocation.md`](research/m5.1-pointer-relocation.md)、[`research/m5.2-reward-relocation.md`](research/m5.2-reward-relocation.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md)、[`research/m2.4-runtime.md`](research/m2.4-runtime.md)、[`research/m2.5-batch.md`](research/m2.5-batch.md)、[`research/m2.6-runtime.md`](research/m2.6-runtime.md)、[`research/m2.7-runtime.md`](research/m2.7-runtime.md)、[`research/m2.8-layout.md`](research/m2.8-layout.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3、M2.4、M2.5、M2.6、M2.7、M2.8、M3 ledger、M4.1、M4.2、M4.3、M4 target QA、M5.1 static pointer relocation POC 與 M5.2／M5.3／M5.4／M5.5 resource-24 relocation static batches 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、fail-closed glyph encoder、八筆 cumulative zh-TW／8-glyph bounded static build、resource-24 multi-record relocation、BPS apply round-trip、target／adjacent static proof、target-side QA、單一 resource directory redirect、361 筆 pointer／record／layout contract audit，以及 source／work／ledger hash-guarded restore-strip validator。M5.5 後另以 10 個 function／10 個 literal guards 證實 text VRAM `0x06010000` 與 hardware palette `0x05000000` 的 static DMA destinations；runtime transport 仍 blocked，完整 VM／未命名 opcode、line/page／glyph-width semantics、tilemap／OAM、自然畫面 QA、人工翻譯審核與全遊戲批次翻譯仍未完成；目前 target 仍是 `ai_draft`，不是可發布 patch。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)、[`ROADMAP.md`](ROADMAP.md)。
 
 ### ROM metadata／外部比對
 
@@ -175,6 +175,10 @@ lossless Shift-JIS code-unit count；完整收據見
 
 外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL?oldid=53006) 提供主日文字型的 16-bit code-table 線索；本輪已用固定 B3CJ ROM 的多個 `0x0308 ... 0x0000` record 交叉驗證：VM halfword 仍按 little-endian 讀取，但 marker 後的 codepage bytes 必須以記憶體原始順序直接做 strict Shift-JIS decode，不能逐 halfword swap。M2.1 另以 csm3 handler／expression callsite 證實有限控制形狀，未知 word 保留 opaque；這不代表字型與所有 opcode 都已命名，也不能假設第一、二代的格式相同。完整格式見 [`research/static-format.md`](research/static-format.md) 與 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。M2.5 另以固定 plan、source hash、code-unit／glyph allocation、resource span 與重抽取收據限制第一筆翻譯，不把 static build 當成 runtime QA。研究時必須分開記錄：
 
+M5.5 後的八筆 review、fixed-port 負證據與 static writer→VRAM／palette-shadow chain
+見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)；不因此把
+static chain 升格為 runtime QA 或可發布 patch。
+
 1. 字串在哪裡、如何分界、是否有指標、壓縮與控制碼如何運作。
 2. glyph 的位址／tile 定址是否已找到。
 3. 每個 glyph 的 Unicode 身分是否有獨立交叉證據。
@@ -195,7 +199,7 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 
 目標語言固定明寫為 `zh-TW`。專有名詞先查臺灣繁體 Wikipedia、巴哈姆特等多個社群來源，採既有主流寫法；若來源分裂，保留現有選擇並在 review note 說明，不自行創造音譯。既有英文／中文 patch 可參考工程資訊，但不是未審核的日文翻譯來源。
 
-## 完成標準（M5.2 static slice 已達成，畫面 QA／翻譯審核尚未達成）
+## 完成標準（M5.5 static slice 已達成，發布 gate 尚未達成）
 
 - clean 日版 ROM 的 header、revision、CRC32、SHA-256 已記錄並可重跑。
 - type-2 script table、LZ77、`PSI3` stream、bounded text record、Shift-JIS codepage 與 csm3 consumer 有遊戲專用、可重跑證據。
@@ -215,9 +219,14 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 - M5.1 static pointer relocation POC 已將 resource 24 directory entry 從原 span 重導至 `0x1fbb1fc` zero-filled destination，361 筆 stable records／stream aggregate byte-identical；這只解除下一個 static capacity-expansion slice 的 pointer contract 風險，不代表完整 ROM 回插或 runtime 通過。
 - M5.2 已以 `b3cj:t2:024:0x0078` 建立第五筆 `ai_draft` target，沿用 `ec65→0x848`、新增 `ec6e→0x84d`；resource 24 從 `0x17231fc`／`1392` bytes 重導至 `0x1fbb1fc`／`1536` bytes，361 筆 re-extract 為 target `5`／untouched `356`，BPS `4814` bytes apply byte-identical，target ROM SHA-256 `da3b83b5470f278f455672021e2ae87452bc92d93fdbf1126c0e994dde757cb1`、CRC32 `c81e7eb5`。這仍是 static-only，沒有 runtime／人工 review 或發布資格。
 - M5.2 以 resource 24 的 `b3cj:t2:024:0x0078` 建立第五筆 cumulative `ai_draft` target `特獎　重金礦`；沿用 `ec65→0x848`，新增 `ec6e→0x84d`，resource compressed `1396` 移至 `0x1fbb1fc` 的 `1536`-byte span，361 筆重抽為 target `5`／untouched `356`，BPS `4814` bytes apply byte-identical。這仍是 static-only，不是人工審核、runtime QA 或發布 patch。
+- M5.3 以 resource 24 的第二筆相同 prize header `b3cj:t2:024:0x012c` 建立第六筆 cumulative `ai_draft` target；沿用 `ec64/ec65/ec66→0x847/0x848/0x849`，不新增 glyph，resource compressed `1396→1397`，361 筆重抽為 target `6`／untouched `355`，BPS `4820` bytes apply byte-identical。這仍是 static-only，不是人工審核、runtime QA 或發布 patch。
+- M5.4 以 resource 24 的通用問句 `b3cj:t2:024:0x0886` 建立第七筆 cumulative `ai_draft` target `要抽獎嗎？　　`；沿用 `ec65→0x848` 與 existing `9776/928a/8148/8140`，新增 `ec6f→0x84e`，resource compressed `1397→1406`，361 筆重抽為 target `7`／untouched `354`，BPS `4854` bytes apply byte-identical。這仍是 static-only，不是人工審核、runtime QA 或發布 patch。
+- M5.5 以 resource 24 的第三筆相同 prize header `b3cj:t2:024:0x01f0` 建立第八筆 cumulative `ai_draft` target；沿用 `ec64/ec65/ec66→0x847/0x848/0x849`，不新增 glyph，resource compressed 維持 `1406`，361 筆重抽為 target `8`／untouched `353`，target ROM SHA-256 `acfb3587a8217bf4ea444daf25f32c0947998a9203ee874db5006d7b6b016db6`、CRC32 `fc874c4d`，BPS `4856` bytes apply byte-identical。這仍是 static-only，不是人工審核、runtime QA 或發布 patch。
+- M5.5 後已完成八筆 bounded consistency／字型／單行版面 review；七筆維持 provisional wording，`重金礦` 因外部多來源不可達維持 `blocked_external_lookup`，八筆仍為 `ai_draft`。這是可審核的 static review，不等同人工定稿。
+- M5.5 後的 fixed-port SDL route 在 port `2346` bind 前失敗；static audit 已確認 writer→DMA queue→`0x06010000` text VRAM destination，以及 palette shadow→`0x05000000` hardware palette DMA destination，但 tilemap／OAM、live cache、自然 reachability 與畫面可讀性仍 unknown。完整收據見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
 - 相同 byte length 的 record-level 原地修改可行；zero padding 縮短 blocked，變長需 resource rebuild；完整 VM、字型、LZ77／pointer encoder 與 ROM 回插仍待建立。
-- 至少五個有限量 target 通過各自的 `restore → work → strip`／source hash contract 與 repository safety check；M3 validator 已重驗 source／work／ledger 分界，但五筆 target 仍需人工／術語／runtime review。
+- 至少八個有限量 target 通過各自的 `restore → work → strip`／source hash contract 與 repository safety check；M3 validator 已重驗 source／work／ledger 分界，但八筆 target 仍需人工／術語／runtime review。
 - 編碼器／回插器拒絕來源 hash、缺字、控制碼或長度不一致，而不是放寬檢查。
 - 重建 ROM 重新抽取吻合；BPS round-trip 與 mGBA 核心畫面回歸另有收據。
 
-目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction、M2.2 static font chain／POC、M2.3 fail-closed allocation／bounded POC、M2.5／M4.1／M4.2／M4.3／M5.2 cumulative `ai_draft` zh-TW static build／BPS round-trip、M2.8 pointer／record contract audit、M3 ledger restore-strip validator，以及 M2.6 target／adjacent static proof、M2.7 transport retry／diagnostic；尚無翻譯人工審核、完整 VM／multi-resource rebuild、自然畫面 runtime QA 或可發布 patch 收據。
+目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction、M2.2 static font chain／POC、M2.3 fail-closed allocation／bounded POC、M2.5／M4.1／M4.2／M4.3／M5.2／M5.3／M5.4／M5.5 cumulative `ai_draft` zh-TW static build／BPS round-trip、M2.8 pointer／record contract audit、M3 ledger restore-strip validator，以及 M2.6 target／adjacent static proof、M2.7／M5.5 transport diagnostics與 static writer chain audit；尚無人工翻譯定稿、完整 VM／multi-resource rebuild、自然畫面 runtime QA 或可發布 patch 收據。

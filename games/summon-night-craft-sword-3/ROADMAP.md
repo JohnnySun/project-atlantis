@@ -164,18 +164,18 @@ M4.3 的 source hash、glyph allocation、cell／capacity、cumulative re-extrac
 
 ## M4：有限量翻譯與術語
 
-- [~] 已建立四筆 M4 cumulative static target；M5.2 另加入第五筆 resource-24 capacity-expansion slice；仍需依日文原文與上下文完成劇情、支線、夥伴、鍛造、戰鬥、道具的完整分批工作帳。
+- [~] 已建立四筆 M4 cumulative static target；M5.2／M5.3／M5.4／M5.5 另加入第五至第八筆 resource-24 static slices；停止新增同型短句，下一階段改做既有八筆的人工／術語／字型／版面與 runtime／發布 gate。
 - [ ] 專有名詞以 Wikipedia zh-tw、巴哈姆特及其他獨立社群資料交叉核對；不把單一 patch 的譯名視為定論。
-- [ ] 建立 `translations/glossary.zh-TW.tsv`（只收已核對術語，不放完整原文段落）。
+- [~] 建立 `translations/glossary.zh-TW.tsv`（目前收七個 bounded target term，其中六個 generic provisional UI／語氣詞；`重金礦` 因外部多來源查證不可達而維持 blocked，不放完整原文段落）。
 - [x] 對目前四筆 M4 bounded batch 做字寬、行數、缺字、控制碼、簡繁漏入與 target metadata QA；M5.2 另由 relocation builder 做同等 fail-closed target contract；完整用語一致性與人工翻譯 review 仍待進行。
 
 M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](research/m4-batch-qa.md)。
 
 ## M5：回插、BPS 與 runtime QA
 
-- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成單一 resource 的 pointer relocation static slice，完整多 resource／alias policy 尚未建立。
-- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2 已涵蓋 resource-24 relocation，尚非完整 ROM container coverage。
-- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；目前為五筆 cumulative `ai_draft` static POC。
+- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成單一 resource 的多筆 pointer relocation static slices，完整多 resource／alias policy 尚未建立。
+- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2／M5.3／M5.4／M5.5 已涵蓋 resource-24 relocation，尚非完整 ROM container coverage。
+- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；目前為八筆 cumulative `ai_draft` static POC，尚未達可發布 gate。
 - [ ] 以 mGBA 測試實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面，保留未測試範圍。
 - [ ] 只有完成上述收據後，才評估 zh-TW 發布。
 
@@ -197,3 +197,48 @@ M5.1 的目的區 guard、pointer receipt、重抽取 hash 與邊界見 [`resear
 - [~] 這是 static-only slice；五筆 target 仍需人工／術語／字型／版面 review，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending。
 
 M5.2 的 plan、ledger 分界、pointer／font／re-extract／BPS receipts 見 [`research/m5.2-reward-relocation.md`](research/m5.2-reward-relocation.md)。
+
+## M5.3：resource-24 repeated prize-header slice
+
+- [x] 從 ignored source table 選出與 M2.5 完全相同、14-byte／7-code-unit、無 opaque control 的第二筆 prize header `b3cj:t2:024:0x012c`；不新增術語或 glyph allocation。
+- [x] 依 `restore → work → strip` 建立只含 source hash／target metadata 的 `translations/m5.3-repeated-prize-header.jsonl`，target 固定 `zh-TW`／`ai_draft`。
+- [x] 以 M5.2 relocation destination 重建同一 resource 的第二筆 record；既有 `ec64/ec65/ec66` mappings 保持 `0x847/0x848/0x849`，compressed `1396→1397` 且仍在 `1536`-byte span 內。
+- [x] 全部 361 筆 re-extract 為 target `6`／untouched `355`；五筆既有 target 對 M5.2 byte-identical，兩筆 local adjacent record 與 glyph `0x048` 保持 clean byte/render identical。
+- [x] 產生 `4820`-byte BPS，套用後 target ROM SHA-256 `2fc60cd44e2f1436dd346890755543e5a54db07ae09c382ebd35f99a2c5c86ee`、CRC32 `7433d39d`，apply byte-identical；ROM／BPS／summary 仍 ignored。
+- [~] 這是 static-only slice；六筆 target 仍需人工／術語／字型／版面 review，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending。
+
+M5.3 的 plan、ledger 分界、multi-record relocation／re-extract／BPS receipts 見 [`research/m5.3-repeated-prize-header.md`](research/m5.3-repeated-prize-header.md)。
+
+## M5.4：resource-24 lottery-question slice
+
+- [x] 從 ignored source table 選出 resource 24 的 14-byte／7-code-unit 通用問句 `b3cj:t2:024:0x0886`；控制形狀為 `0x0308`／`0x0000`，無 opaque control 或專有名詞。
+- [x] 依 `restore → work → strip` 建立只含 source hash／target metadata 的 `translations/m5.4-lottery-question.jsonl`；target `zh-TW`／`ai_draft` 暫定為 `要抽獎嗎？　　`。
+- [x] 保留既有 `ec65→0x848`、`9776/928a/8148/8140` mappings，僅配置 `ec6f→0x84e` 的 `嗎`；slot、font cell、source collision、target length 與 hash guards 通過。
+- [x] 在同一 relocated resource-24 `0x1fbb1fc`／1536-byte span 重建；compressed `1397→1406`，361 筆 re-extract 為 target `7`／untouched `354`，六筆既有 target 與 adjacent record／glyph proof 保持不變。
+- [x] 產生 `4854`-byte BPS，套用後 target ROM SHA-256 `0ac699421df123737d6039d65b6a139819c78bab44bd17af7dadd18ac731fc0a`、CRC32 `97cff810`，apply byte-identical；ROM／BPS／summary 仍 ignored。
+- [~] 這是 static-only slice；七筆 target 仍需人工／術語／字型／版面 review，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending。
+
+M5.4 的 plan、glyph／relocation／re-extract／BPS receipts 見 [`research/m5.4-lottery-question.md`](research/m5.4-lottery-question.md)。
+
+## M5.5：resource-24 third repeated prize-header slice
+
+- [x] 從 ignored source table 選出與前兩筆完全相同、14-byte／7-code-unit、無 opaque control 的第三筆 prize header `b3cj:t2:024:0x01f0`；不新增術語或 glyph allocation。
+- [x] 依 `restore → work → strip` 建立只含 source hash／target metadata 的 `translations/m5.5-repeated-prize-header.jsonl`，target 固定 `zh-TW`／`ai_draft`。
+- [x] 以 M5.4 relocated resource 重建同一 record；既有 `ec64/ec65/ec66` mappings 保持 `0x847/0x848/0x849`，compressed 維持 `1406` 且仍在 `1536`-byte span 內。
+- [x] 全部 361 筆 re-extract 為 target `8`／untouched `353`；七筆既有 target 對 M5.4 byte-identical，local adjacent records／glyph `0x048` 保持 clean byte/render identical。
+- [x] 產生 `4856`-byte BPS，套用後 target ROM SHA-256 `acfb3587a8217bf4ea444daf25f32c0947998a9203ee874db5006d7b6b016db6`、CRC32 `fc874c4d`，apply byte-identical；ROM／BPS／summary 仍 ignored。
+- [~] 這是最後一個同型 static slice；八筆 target 仍需人工／術語／字型／版面 review，runtime transport／consumer／VRAM／palette／畫面 QA 與發布資格仍 pending；不再新增 M5.6。
+
+M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS receipts 見 [`research/m5.5-repeated-prize-header.md`](research/m5.5-repeated-prize-header.md)。
+
+## M5.5 後發布 gate 收斂（不新增翻譯）
+
+- [x] 完成既有八筆 target 的 bounded consistency review：stable ID、source／target hash、byte-length、控制碼、單行版面、glyph／adjacent static contract 均固定；維持 `ai_draft`，不把 provisional wording 或 `重金礦` 升格為人工定稿。
+- [x] 以 `/private/tmp` compile-time fixed-port SDL mGBA 做一次與 `-C gdb.port` 不同的 fresh transport route；port `2346` preflight 無 listener，launcher 回報 `Debugger: Couldn't open socket`，沒有 qSupported 或 live coverage；收據見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
+- [x] 建立 `tools/audit_static_render_destination.py`／測試；以本機 10 個 function／10 個 literal hashes 確認 writer → DMA queue → GBA DMA register `0x040000D4` → text VRAM destination `0x06010000`，並確認 palette source／shadow → hardware palette destination `0x05000000`／`0x400` bytes 的 static chain。
+- [~] runtime 仍為 transport-only blocked；tilemap／OAM、live cache、natural reachability、VRAM readback 與畫面可讀性沒有證據，static chain 不升格為 runtime QA。
+- [~] 本作 milestone commit 尚 pending：path-limited Git stage 在 `.git/index.lock` 建立處被 workspace permission 拒絕；不使用 alternate index 或其他繞過方式，收據見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
+- [ ] 完成八筆人工語意／術語／字型／版面 review，尤其查證 `重金礦`；未通過前不得改為 reviewed／approved。
+- [ ] 取得可實際完成 `qSupported` 的不同 runtime transport，或以更完整且可重跑的 static tilemap／OAM callsite 證據替代；未達成前不宣稱可發布。
+
+本節是 M5.5 後的 gate 收斂，不是 M5.6，也不允許再增加同長度、重複通用短句。

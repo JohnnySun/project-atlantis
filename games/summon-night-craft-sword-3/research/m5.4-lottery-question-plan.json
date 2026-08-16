@@ -1,0 +1,74 @@
+{
+  "plan_version": 1,
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "batch_id": "m5.4-lottery-question",
+  "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3",
+  "clean_rom_sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+  "font_source_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be",
+  "target_locale": "zh-TW",
+  "status": "ai_draft",
+  "context": {
+    "scene": "resource-24 lottery question",
+    "max_width": 7,
+    "max_lines": 1,
+    "control_codes": ["0x0308", "0x0000"],
+    "notes": "Bounded generic question; one new Traditional Chinese glyph allocation. Runtime reachability remains pending."
+  },
+  "control_contract": {
+    "following_opcodes": ["0x0308"],
+    "opaque_control_count": 0
+  },
+  "targets": {
+    "zh-Hans": {
+      "text": "要抽奖吗？　　",
+      "utf8_sha256": "12bc4c923ae12539f9bd72aa522808959ac9a7594cc6b11f8c41dd926dd6c670"
+    },
+    "zh-TW": {
+      "text": "要抽獎嗎？　　",
+      "utf8_sha256": "f9fbc89951f8bde454cc39ce35ed7d8fcb5c60f58bbeba4b481aacca54be6f4d"
+    }
+  },
+  "target_contract": {
+    "byte_length": 14,
+    "code_units": ["9776", "928a", "ec65", "ec6f", "8148", "8140", "8140"],
+    "extension_units": ["ec65", "ec6f"],
+    "inherited_extension_units": ["ec65"],
+    "record_terminator": "0x0000"
+  },
+  "allocations": [
+    {
+      "code_unit": "ec6f",
+      "code_unit_kind": "opaque_extension",
+      "unicode": "嗎",
+      "codepoint": "U+55CE",
+      "glyph_id": "0x84e",
+      "status": "m5.4_ai_draft",
+      "cell_sha256": "10735ef11520f9aa72889a8da1b3443f131a2fc123a96c736b6423b113bf9b88"
+    }
+  ],
+  "inherited_mappings": [
+    {"code_unit": "ec65", "unicode": "獎", "glyph_id": "0x848", "source_batch": "m2.5-prize-ui"}
+  ],
+  "records": [
+    {
+      "string_id": "b3cj:t2:024:0x0886",
+      "resource_id": 24,
+      "decompressed_offset": "0x0886",
+      "raw_length": 14,
+      "source_hash": "0d5a78457208e290171e1080982d81302880952077c85746ab7ca5003d098976",
+      "source_raw_sha256": "62060fa9d3a6a5507150c5c7eb270562bd340968579fd3f23930fd840ab0d5c1",
+      "source_record_sha256": "4cd2d66901b46d10fdd993fffcfeb074827652b91e4f9175951e8eb9f1994ca1"
+    }
+  ],
+  "adjacent_untouched_records": ["b3cj:t2:024:0x0898", "b3cj:t2:024:0x08ae"],
+  "adjacent_untouched_glyph_id": "0x048",
+  "relocation": {
+    "destination_file_offset": "0x1fbb1fc",
+    "span_units": "0x60",
+    "span_bytes": 1536,
+    "pointer_unit_bytes": 16,
+    "inherited_from": "m5.3-repeated-prize-header"
+  },
+  "review_notes": "AI draft only. Generic question with no proper noun; existing codepage glyphs are reused and only 嗎 is allocated. Runtime screen reachability and visual QA remain pending."
+}

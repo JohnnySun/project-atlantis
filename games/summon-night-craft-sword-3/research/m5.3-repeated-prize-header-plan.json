@@ -1,0 +1,65 @@
+{
+  "plan_version": 1,
+  "game": "summon-night-craft-sword-3",
+  "revision": "B3CJ",
+  "batch_id": "m5.3-repeated-prize-header",
+  "source_table_sha256": "a050790267679a35b1300f8ed3056271b6c481124790e9249484ce9d1d7966e3",
+  "clean_rom_sha256": "39bc4cf448106aa4b8cdde235632ffb57432c4b1919c8843510b70b3787fad2d",
+  "font_source_sha256": "2ae5311c8e123e9e85f5331cd012aa99757071df23243f1487fdbf8f3acd86be",
+  "target_locale": "zh-TW",
+  "status": "ai_draft",
+  "context": {
+    "scene": "resource-24 repeated prize header",
+    "max_width": 7,
+    "max_lines": 1,
+    "control_codes": ["0x0308", "0x0000"],
+    "notes": "Second identical short header in the relocated resource; no new glyph allocation or terminology decision. Runtime reachability remains pending."
+  },
+  "control_contract": {
+    "following_opcodes": ["0x0309", "0x0308"],
+    "opaque_control_count": 0
+  },
+  "targets": {
+    "zh-Hans": {
+      "text": "这次的奖品是…",
+      "utf8_sha256": "77fba7c58919111ac7d91f7d864109c212cecdc23f6000ae75f2dae6ef27b2ff"
+    },
+    "zh-TW": {
+      "text": "這次的獎品是…",
+      "utf8_sha256": "ce6e829d970a7d1d4a0330637244dca64b0412b61ea88c4bdaa1687df6c0e2b0"
+    }
+  },
+  "target_contract": {
+    "byte_length": 14,
+    "code_units": ["ec64", "8e9f", "9349", "ec65", "9569", "ec66", "8163"],
+    "inherited_extension_units": ["ec64", "ec65", "ec66"],
+    "record_terminator": "0x0000"
+  },
+  "inherited_mappings": [
+    {"code_unit": "ec64", "unicode": "這", "glyph_id": "0x847", "source_batch": "m2.5-prize-ui"},
+    {"code_unit": "ec65", "unicode": "獎", "glyph_id": "0x848", "source_batch": "m2.5-prize-ui"},
+    {"code_unit": "ec66", "unicode": "是", "glyph_id": "0x849", "source_batch": "m2.5-prize-ui"}
+  ],
+  "allocations": [],
+  "records": [
+    {
+      "string_id": "b3cj:t2:024:0x012c",
+      "resource_id": 24,
+      "decompressed_offset": "0x012c",
+      "raw_length": 14,
+      "source_hash": "c10caff6b389dc1506d1879cdac4e21111ead7eb8b41e05eca6aed3d73873ddc",
+      "source_raw_sha256": "f0936dde8e2e67262ec319176052ffed73e6f3ce92537e94324b40f0b5b465ac",
+      "source_record_sha256": "6b80d46abee2a7f258c5a9587697aa237d1fc8b9d1b51282d5a4b4b8b35d13db"
+    }
+  ],
+  "adjacent_untouched_records": ["b3cj:t2:024:0x00b4", "b3cj:t2:024:0x01f0"],
+  "adjacent_untouched_glyph_id": "0x048",
+  "relocation": {
+    "destination_file_offset": "0x1fbb1fc",
+    "span_units": "0x60",
+    "span_bytes": 1536,
+    "pointer_unit_bytes": 16,
+    "inherited_from": "m5.2-reward-relocation"
+  },
+  "review_notes": "AI draft only. Reuses the already bounded generic prize-header translation; no new proper noun or glyph allocation. Runtime screen reachability and visual QA remain pending."
+}
