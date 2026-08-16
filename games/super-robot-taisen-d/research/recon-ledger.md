@@ -664,6 +664,30 @@ tracked 摘要由 [`tools/m114_runtime_boundary.py`](../tools/m114_runtime_bound
 沒有把另一個 runtime buffer 的 glyph output 偷換成 `string_id=526424` 畫面，也沒有解除
 M1.9 target／自然 menu／newline branch 的 pending 狀態。
 
+## 2026-08-16：M1.15 known consumer callsite boundary
+
+本輪只針對已知的 `0x08008724` consumer 做 direct-reference audit，不重新掃描一般
+pointer pool，也不替 register-indirect dispatch 猜 caller。工具
+[`tools/m115_consumer_callsite_audit.py`](../tools/m115_consumer_callsite_audit.py) 對
+`0x08000000..0x08076000` 的 bounded executable prefix 檢查 direct Thumb BL／BLX
+immediate target 與 PC-relative literal target，並保存 executable-range hash；完整 source
+與 raw bytes 不寫入 tracked report。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| bounded range | `0x08000000..0x08076000`；length `483328`；range SHA `2e302689…` |
+| known target | consumer `0x08008724` |
+| direct call candidates | Thumb BL／BLX `0`；PC-relative literal `0` |
+| static conclusion | `runtime_caller_required=true`；register-indirect dispatch `unresolved` |
+| runtime follow-up | `tools/m115_caller_probe.py` 只設 consumer entry breakpoint，預計記錄 LR／callsite／r0；本輪 approval transport 在 process 啟動前拒絕，未產生 runtime evidence |
+
+這個 slice 只把「沒有可直接由 bounded static reference 得到 caller」證明清楚；它沒有
+把 direct-call count 0 解讀成 consumer 不可達，也沒有解除 story／branch／battle／unit
+語意、newline／speaker／最大寬度與自然畫面 pending。下一個安全入口是使用已授權且可用的
+runtime transport 捕捉 entry LR／r0，再以該 caller 做受控 source queue／layout QA。
+
 ## 2026-08-16：M1.10 record boundary／opaque-token audit
 
 在不擴大 runtime 假說的前提下，`tools/m110_boundary_audit.py` 對 clean ROM 的

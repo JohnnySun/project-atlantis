@@ -1,0 +1,39 @@
+{
+  "bounded_range": {
+    "end_exclusive": "0x08076000",
+    "length": 483328,
+    "sha256": "2e302689296f1b9d7dd8bc3845336ca745746b888eaea47e0b3956593a3cef85",
+    "start": "0x08000000"
+  },
+  "direct_call_candidates": [],
+  "game_code": "A6SJ",
+  "gate": {
+    "direct_call_candidate_count": 0,
+    "indirect_register_dispatch": "unresolved",
+    "known_consumer_direct_reference_found": false,
+    "pc_relative_literal_candidate_count": 0,
+    "rom_hash_match": true,
+    "runtime_caller_required": true,
+    "translation_started": false
+  },
+  "next_condition": "runtime entry breakpoint must capture LR/callsite and r0 source pointer before semantic labels",
+  "pc_relative_literal_candidates": [],
+  "rom": {
+    "expected_sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84",
+    "hash_match": true,
+    "sha256": "12b706b637a6504cda20f213faa1f56451aaf8d5f54a7f48e8484d3b359a0e84"
+  },
+  "schema": "super-robot-taisen-d-m115-known-consumer-callsite-v1",
+  "source_policy": {
+    "source_safe_hashes_only": true,
+    "source_text_emitted": false
+  },
+  "target": {
+    "consumer": "0x08008724",
+    "target_forms_checked": [
+      "thumb_bl_immediate",
+      "thumb_blx_immediate",
+      "pc_relative_literal"
+    ]
+  }
+}

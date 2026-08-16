@@ -57,6 +57,12 @@
   target proof。工具現在要求 observed source pointer 與 unit count 同時吻合，摘要在
   `research/m114-runtime-boundary.json`；下一次需用 caller/callsite breakpoint 或
   已驗證 callee-entry state。
+- [x] M1.15 完成已知 consumer 的 bounded static callsite audit：只在
+  `0x08000000..0x08076000` 檢查 direct Thumb BL／BLX 與 PC-relative literal，結果
+  均為 `0`；register-indirect dispatch 未命名，`runtime_caller_required=true`。
+  `m115_caller_probe.py` 的 entry breakpoint 工具與測試已建立，但本輪執行前 approval
+  transport 被拒絕，沒有把它記成 runtime positive；摘要在
+  `research/m115-consumer-callsite.json`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

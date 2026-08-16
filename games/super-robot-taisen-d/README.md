@@ -398,6 +398,12 @@ queue 觸發尚未取代這條受控驗證。
   raw glyph-complete event，也拒絕當成 target render。修正 `m19_runtime_trace.py` 的
   bounded stack／entry setup 與 argument-match 判定；target writer／tile／screen 仍
   `not_proven`／`not_observed`。摘要在 [`research/m114-runtime-boundary.json`](research/m114-runtime-boundary.json)。
+- [x] M1.15 對已知 `0x08008724` consumer 做 bounded executable callsite audit：在
+  `0x08000000..0x08076000` 只檢查 direct Thumb BL／BLX 與 PC-relative literal，結果
+  direct `0`、literal `0`；register-indirect dispatch 維持 unresolved，不能從靜態結果
+  虛構 caller。`m115_caller_probe.py` 已準備在 font-base guard 後捕捉第一個自然
+  entry 的 LR／callsite／r0，但本輪 invocation 在執行前遇 approval transport negative，
+  沒有新增 runtime evidence。摘要在 [`research/m115-consumer-callsite.json`](research/m115-consumer-callsite.json)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
