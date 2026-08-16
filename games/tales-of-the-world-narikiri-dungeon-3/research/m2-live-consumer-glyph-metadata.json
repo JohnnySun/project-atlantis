@@ -1,0 +1,101 @@
+{
+  "format_version": 1,
+  "case_id": "b3tj.m2.live-consumer.glyph.20260816",
+  "rom": {
+    "title": "TOWNARIKIRI3",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "crc32": "1867CCEF",
+    "sha256": "d083d66b818b1353a449af7f1dd4232b490c254a4107951a3749973d03a0a394"
+  },
+  "listener": {
+    "host": "127.0.0.1",
+    "port": 39123,
+    "process_scope": "fresh own mGBA process",
+    "client_connections": 1
+  },
+  "navigation": {
+    "evidence_level": "argument-injected",
+    "state4_gate_frame": 692,
+    "start_active_low": "0x03F7",
+    "a1ac_frame": 694,
+    "a_active_low": "0x03FE",
+    "release_reads": 8,
+    "state7_frame": 786,
+    "state_bytes": {"next": "0x07", "current": "0x07", "previous": "0x04"},
+    "writes_state": false,
+    "writes_object": false,
+    "writes_save": false,
+    "writes_rom": false
+  },
+  "selected_record": {
+    "string_id": "sjis:0x140D68",
+    "file_offset": "0x140D68",
+    "gba_address": "0x08140D68",
+    "region": "text-pool",
+    "raw_length": 28,
+    "allocated_length": 29,
+    "source_span_sha256": "2dc05858bd37ff9a2e829aafded4f7ab9bfa6c5ff37eb9a66dbcb3f627ac8ac5"
+  },
+  "probe": {
+    "max_stops": 64,
+    "stops": 24,
+    "parser_hits": 2,
+    "source_read_hits": 1,
+    "output_write_hits": 1,
+    "output_read_hits": 1,
+    "glyph_asset_read_hits": 1,
+    "glyph_store_hits": 1,
+    "termination": "first-glyph-fixed-store",
+    "register_injection": {
+      "register": "r1",
+      "value": "0x08140D68",
+      "ack": "OK",
+      "status": "argument-injected-parser-source"
+    },
+    "natural_parser_boundary": {
+      "first_r1": "0x0200C798",
+      "second_r1": "0x081489EC",
+      "second_status": "strict-window-nonstrict-offset",
+      "second_span_start": "0x1489EC",
+      "second_span_end": "0x1489EE",
+      "second_span_length": 3,
+      "second_span_sha256": "5c9a38920a8ec22dc2be07e62a21d22cbb71676cc5326e349f8e38f98f9c18d9"
+    },
+    "confirmed_edge": {
+      "source_reader_pc": "0x080027F4",
+      "source_reader_lr": "0x08001651",
+      "parser_output": "0x03001468",
+      "parser_output_writer_pc": "0x080027EE",
+      "formatter_callsite": "0x08001652",
+      "formatter_entry": "0x080014F4",
+      "formatted_buffer_reader_pc": "0x08001504",
+      "glyph_entry": "0x08001414",
+      "codepoint_index": "0x44A0",
+      "glyph_asset_address": "0x081670C4",
+      "glyph_asset_reader_pc": "0x080011D6",
+      "glyph_asset_caller_lr": "0x08001459",
+      "glyph_store_pc": "0x080011F6",
+      "glyph_store_destination": "0x030007A0",
+      "glyph_store_value_register": "r4"
+    },
+    "unhit_in_this_bounded_run": ["0x08004D90 codepoint lookup", "0x08001DBC writer candidate"]
+  },
+  "evidence_boundary": {
+    "confirmed": [
+      "exact strict record source read after one acknowledged r1 injection",
+      "parser output RAM write and formatter formatted-buffer read",
+      "glyph asset read through 0x08001414 and fixed transform store into IWRAM"
+    ],
+    "provisional": [
+      "argument-injected edge does not prove natural menu/event pointer provenance",
+      "SJIS-like formatter arithmetic and glyph index are not a complete codepage proof",
+      "glyph asset to IWRAM transform is not yet an IWRAM-to-VRAM proof"
+    ],
+    "negative": [
+      "natural parser pointer 0x081489EC is not a strict record start",
+      "selected sjis:0x146EE0 was not used as the live source in this run"
+    ]
+  }
+}

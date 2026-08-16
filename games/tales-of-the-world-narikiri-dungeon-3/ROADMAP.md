@@ -123,7 +123,9 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 固定驗證 state 7 到 formatter `0x080014F4` 與 parser `0x080025CC` 的兩條
   bounded direct-BL call chain；只用來縮小下一次 runtime breakpoint/caller 邊界，
   不升格成 natural-flow、strict source read 或 glyph 證明
-- [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
+- [x] 以 bounded single-client runtime probe 取得 strict `sjis:0x140D68` 的
+  argument-injected source read→parser output→formatter→glyph asset→固定
+  transform store edge；natural pointer provenance 仍另列為未完成
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構
 - [ ] 證明每一種字串的容量、指標更新規則、壓縮／未壓縮界線

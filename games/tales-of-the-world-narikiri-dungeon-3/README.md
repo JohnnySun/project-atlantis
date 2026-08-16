@@ -24,6 +24,30 @@ edge 的 static 條件。M1.8 已以正常 START gate 重現
 不把既有英文 patch 的少量選單／開頭
 內容當作完整翻譯來源。
 
+M2 另完成一個明確分級的 live edge：以本作 `navigation_harness.lua` 進入 state 7
+後，在第二次 `0x080025CC` parser entry 對 strict `sjis:0x140D68` 做一次已獲
+`OK` ACK 的 `r1` injection，確認 source read `0x080027F4`、RAM output
+`0x03001468`、formatter `0x080014F4`、glyph asset `0x081670C4` 與固定
+transform store `0x080011F6 → 0x030007A0`。這是 **argument-injected** pipeline
+proof；自然流程的 `0x081489EC` 仍是 nonstrict short span，selected
+`sjis:0x146EE0` 仍未自然命中。詳見
+[`research/m2-live-consumer-glyph-20260816.md`](research/m2-live-consumer-glyph-20260816.md)。
+
+可重跑命令（mGBA listener 的 PID／port 必須由本 session 自己擁有）：
+
+```sh
+SDL_AUDIODRIVER=dummy mgba-headless -l 0 -g \
+  --script games/tales-of-the-world-narikiri-dungeon-3/tools/navigation_harness.lua \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  games/tales-of-the-world-narikiri-dungeon-3/tools/live_consumer_probe.py \
+  games/tales-of-the-world-narikiri-dungeon-3/roms/base/Tales_of_the_World_Narikiri_Dungeon_3_JP_AGB-B3TJ-JPN.gba \
+  --port 39123 --output /private/tmp/b3tj-live-consumer.json
+```
+
+probe 終止後須停止同一個自有 mGBA PID，再重新建立下一條 session；工具刻意採
+connection-close-only，避免 mGBA breakpoint list cleanup hang 被誤判成遊戲結果。
+
 後續的 state7 readiness receipt 見
 [`research/m2-state7-readiness-runtime-20260816.md`](research/m2-state7-readiness-runtime-20260816.md)。
 它在正常 state 4→7 return 後確認 `0x080A85D8 → 0x080A82AC` 及
