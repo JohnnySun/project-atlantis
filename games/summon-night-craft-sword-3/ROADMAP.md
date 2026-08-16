@@ -93,6 +93,17 @@ M2.5 只完成第一個有界 static translation slice。下一個最小缺口�
 
 M2.6 已把 static target／adjacent proof 與 runtime transport failure 分開記錄。完整 launcher、PID、port、hash、static glyph 與下一個 runtime 方案見 [`research/m2.6-runtime.md`](research/m2.6-runtime.md)；這一輪沒有宣稱畫面通過或可發布 patch。
 
+## M2.7：M2.5 target transport-only QA
+
+- [x] 只處理既有 target `b3cj:t2:024:0x0064`；M2.5 base／target／BPS／applied hash guard、361／1／360 re-extraction、`0x847/0x848/0x849` changed static proof 與 adjacent `0x846` proof 均重跑通過，沒有新增第二筆翻譯。
+- [x] 以 `lsof` 先確認高位 port `25273`／`26371` 無 listener，再以兩個不同的既有 mGBA binary 進行 fresh process；兩個 launcher 都使用 `-C gdb.port=<high-port> -C skipBios=1 -g` 並指向本作 M2.5 target。
+- [x] 兩個自有 foreground process 均明確回報 `Debugger: Couldn't open socket`，啟動前後指定 port 都無 listener，並已乾淨停止；沒有附加或終止其他 session。PTY wrapper 未暴露 child OS PID，故不虛構 PID。
+- [x] 建立 `tools/runtime_m2_7.py`／測試；重用 M2.6 static guard、`core/gba/gdbstub_client.py` 的單次 connection、`0.08s` packet delay、ACK／一次 retry；兩份 ignored diagnostic 在 `connect()` 前得到 `PermissionError [Errno 1]`，`qSupported` 未送出。
+- [~] runtime gate 仍 transport-only blocked：沒有 natural／controlled consumer hit、font cache、writer destination、palette、VRAM／tilemap／OAM 或 changed／adjacent live render；`ai_draft` 不變，不宣稱畫面通過或可發布。
+- [ ] 在允許 localhost socket 的環境，或以 `/private/tmp` compile-time GDB-port mGBA build，重跑同一 hash-guarded probe；解鎖前不擴大翻譯。
+
+M2.7 的 launcher、listener、single-connection error、safe alternatives 與重跑命令見 [`research/m2.7-runtime.md`](research/m2.7-runtime.md)。這個切片達到 transport evidence boundary 即停止，不把 `PermissionError` 解讀成 ROM／譯文失敗。
+
 ## M2：文本與字型格式
 
 - [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。

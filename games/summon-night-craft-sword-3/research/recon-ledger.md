@@ -35,6 +35,7 @@
 | `RUNTIME-004` | M2.3 以獨立高位 port 取得 live palette／writer／VRAM/OAM 證據 | `blocked` | 先以 bind preflight 證實 `24387` 空閒；只載入本作 POC ROM 的 PID `26484` 執行 `-g -C ports.qt.gdbPort=24387`，`lsof -p 26484` 證實實際 listener 是該 PID 的 `*:2345`，`24387` refused；透過自有 `2345` 執行 core capture，但 `qSupported:multiprocess+` retry 後 timeout。已停止 PID，兩 port 事後均無 listener，沒有 runtime summary／raw dump | 不再把 `ports.qt.gdbPort` 當 CLI port shim；待有可重現、互不干擾的 runtime 入口，才補 palette、writer destination、VRAM/OAM layout 與畫面 glyph 可讀性證據 |
 | `RUNTIME-005` | M2.4 使用 `gdb.port` 的本作專屬 fresh process／GDB handshake | `blocked` | 兩次獨立 bind preflight 分別確認 `24763`／`24764` 空閒；GUI PID `29811` 以 `-C gdb.port=24763` 啟動但無 listener，headless binary 以 `-C gdb.port=24764` 直接輸出 `Debugger: Couldn't open socket`；兩個自有 process 均已停止。`tools/runtime_m2_4.py` 對釋放 port 以共用 client 的 `0.08s` packet delay、ACK／一次 retry 收到 `ConnectionRefusedError [Errno 61]`，沒有 `qSupported`、breakpoint／watchpoint 或 raw dump | 維持 live RAM／font cache、palette、VRAM／tilemap／OAM 與畫面可讀性 blocked；下一次只接受可實際 bind 且能完成單次 `qSupported` 的 launcher，不能把 static writer contract 升格 |
 | `RUNTIME-006` | M2.6 M2.5 target 的第一輪 runtime renderer QA | `blocked`（transport-only） | clean base／target／BPS hash guard 通過；高位 port `25126` 僅見 no-listener preflight；GUI PID `50537` 立即退出且 log 為空，headless PID `50654` 輸出 `Debugger: Couldn't open socket`，兩個自有 PID 均已停止；`tools/runtime_m2_6.py` 使用 core client 的 `0.08s` delay／ACK／一次 retry，兩份 ignored diagnostic 在 connect 前回報 `PermissionError [Errno 1]`，沒有 `qSupported`、breakpoint／watchpoint 或 live memory | 不把 transport negative 解讀成 ROM／譯文失敗；下一步使用 `/private/tmp` compile-time GDB-port mGBA build，或在允許 localhost socket 的環境重跑；live cache、writer→VRAM、palette、tilemap、OAM、畫面 readable 與自然／受控 reachability 仍 unknown |
+| `RUNTIME-007` | M2.7 M2.5 target transport-only retry | `blocked`（transport-only） | target／BPS static guard 通過；高位 port `25273`／`26371` 均先後無 listener；headless 與另一個 SDL mGBA binary 都輸出 `Debugger: Couldn't open socket`，兩個自有 foreground process 均已停止；`tools/runtime_m2_7.py` 的兩份 single-connection probe 使用 core client `0.08s` delay／ACK／一次 retry，在 `connect()` 前回報 `PermissionError [Errno 1]`，`qSupported=null`，沒有 consumer／VRAM／render evidence | 只在允許 localhost socket 的環境或 `/private/tmp` compile-time GDB-port mGBA build 重跑；不得把無 listener／socket policy 解讀成 ROM／譯文失敗，也不得在 transport 解鎖前新增翻譯 |
 | `FONT-001` | 字型 resource、cell 格式、code-unit lookup 與 bounded identity | `confirmed`（static） | 本機 type-3 id 2 `BIT` payload file `0x14d5c6c`、glyph base `0x14d5c88`、2144×24-byte cells；`sub_0800348C` function/literal hash、table A/B、fallback 與 `gUnk_03002984 + glyph_id*0x18` 公式均重跑吻合；8 個 source Shift-JIS identity/addressing samples 分開記錄 | 以 fail-closed allocation manifest 接到最小回插 slice；palette／VRAM 仍由 RUNTIME-003 獨立處理 |
 | `FONT-002` | 實際 code format 的 physical slot 掃描 | `confirmed`（static） | 11280 formula candidates、6879 strict Shift-JIS pairs、2087 mapped physical slots；全零 physical cells 28，其中未引用安全空槽 `0x845..0x85f` 共 27；非空不可尋址槽 `0x141..0x15e` 共 30，未分配 | 只允許 27 個明確空槽；zero table fallback 與 out-of-resource target 維持 blocked |
 | `FONT-003` | glyph cell encoder／靜態 POC | `confirmed`（static POC） | 既有 GNU Unifont 17.0.05、固定 SHA／授權；`ec48`／`ec49` → slots `0x845`／`0x846`，table/cell 修改區域 52 bytes、實際非零 byte diff 43，static render 含 adjacent untouched `0x844`；patched ROM／PGM hash 收據見 `research/m2.2-font.md` | 未更新 ROM checksum、script container 或 runtime QA；不能稱翻譯或發布 patch |
@@ -122,6 +123,17 @@ cell/render equality；三個 changed static glyph 是 `ec64/ec65/ec66`→
 均已停止且事後無 listener。`tools/runtime_m2_6.py` 的兩份 ignored diagnostic
 都在 connect 前 blocked，沒有 `qSupported` 或 live coverage；完整 attempt／error／
 下一個 compile-time-port 方案見 [`research/m2.6-runtime.md`](m2.6-runtime.md)。
+
+M2.7 的固定收據是同一 target／static proof 上的兩輪 transport retry：`25273` 使用
+`/private/tmp/atlantis-mgba-headless-build2/mgba-headless`，`26371` 使用
+`/private/tmp/mgba-smt2-sdl-build/sdl/mgba`；兩輪啟動前後均無指定 port listener，
+launcher 都輸出 `Debugger: Couldn't open socket`，自有 foreground process 均已停止。
+PTY wrapper 未暴露 child OS PID，report 保留 `process_pid=null`，不以 session handle
+冒充 OS PID。`tools/runtime_m2_7.py` 的兩份 ignored report 都在 `connect()` 前收到
+`PermissionError [Errno 1] Operation not permitted`，`qSupported` 沒有送達；因此
+沒有 natural／controlled consumer hit、font cache、writer→VRAM、palette、tilemap、
+OAM 或畫面 render 結果。完整命令與 safe alternatives 見
+[`research/m2.7-runtime.md`](m2.7-runtime.md)。
 
 ## 外部資料索引
 
