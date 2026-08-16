@@ -226,6 +226,16 @@ source table 後檢查 decoder drift 與 hash mismatch；它不代表已解出�
 確認 66-pair table 的固定位置／雜湊與 19-entry dispatch 一致，仍未確認日文
 codepage、glyph identity 或 runtime text consumer。
 
+M2 另已完成一個更窄的 executable static edge：
+[`research/m2-control-parser-20260816.md`](research/m2-control-parser-20260816.md)
+與 [`research/m2-control-parser-metadata.json`](research/m2-control-parser-metadata.json)
+記錄 `0x080025CC` 的 `%` command parser、`0x08002630` 的 84-entry bounded jump
+table、IWRAM cursor `0x03001588`、NUL output 以及相鄰 width-helper candidate。
+[`tools/control_parser_probe.py`](tools/control_parser_probe.py) 會驗證固定
+signatures、target 範圍與 hash；這是 **confirmed-static control parser**，不是
+live source consumer、日文 codepage、glyph identity 或回插證明。下一步仍是
+在可重現 runtime 流程取得 parser entry 的 source pointer／caller receipt。
+
 ```sh
 PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   games/tales-of-the-world-narikiri-dungeon-3/tools/ledger_metadata.py \

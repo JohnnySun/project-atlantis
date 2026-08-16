@@ -1,0 +1,137 @@
+{
+  "bounded_parser": {
+    "bounded_spans": [
+      {
+        "byte_length": 580,
+        "file_end_exclusive": "0x002810",
+        "file_start": "0x0025CC",
+        "name": "parser-and-cases",
+        "sha256": "9c93c238a5c23a63aac653db5a15658bc3d216ea22c3a6f1dcf38e174c9693d3"
+      },
+      {
+        "byte_length": 18,
+        "file_end_exclusive": "0x002826",
+        "file_start": "0x002814",
+        "name": "wrapper",
+        "sha256": "0037d44ae0dfe198ed6000780a387eae2833bc4e0d2a622ea070a4c45dd0a8a0"
+      },
+      {
+        "byte_length": 26,
+        "file_end_exclusive": "0x002842",
+        "file_start": "0x002828",
+        "name": "width-counter",
+        "sha256": "b1e3d581df2edf84406a72920aeef7d5443ff8c6ec731aabfbdffb5c6095a4c0"
+      },
+      {
+        "byte_length": 108,
+        "file_end_exclusive": "0x0028B0",
+        "file_start": "0x002844",
+        "name": "width-helper",
+        "sha256": "e59892bf7ea3161380686417e99f319e101d50a5920b26cd44b64e41437a324d"
+      },
+      {
+        "byte_length": 98,
+        "file_end_exclusive": "0x002912",
+        "file_start": "0x0028B0",
+        "name": "width-helper-alt",
+        "sha256": "e98b5dd75dc69405c87b78c4c517d7a2dd487516afef9ded9c3546a1552b79f1"
+      }
+    ],
+    "command_dispatch": {
+      "command_byte_range": [
+        "0x25",
+        "0x78"
+      ],
+      "entry_count": 84,
+      "literal_file_offset": "0x00262C",
+      "literal_matches_table": true,
+      "literal_value": "0x08002630",
+      "maximum_delta": "0x53",
+      "subtract_byte": "0x25",
+      "table": {
+        "command_byte_max": "0x78",
+        "command_byte_min": "0x25",
+        "entry_count": 84,
+        "fallthrough_case_count": 72,
+        "fallthrough_target": "0x080027F2",
+        "file_offset": "0x002630",
+        "gba_address": "0x08002630",
+        "special_case_count": 12,
+        "target_count": 84,
+        "target_histogram": {
+          "0x08002780": 1,
+          "0x0800278E": 1,
+          "0x0800279C": 1,
+          "0x080027A6": 1,
+          "0x080027AA": 1,
+          "0x080027AE": 1,
+          "0x080027B2": 1,
+          "0x080027B6": 1,
+          "0x080027BE": 1,
+          "0x080027C2": 1,
+          "0x080027C6": 1,
+          "0x080027E0": 1,
+          "0x080027F2": 72
+        },
+        "target_sha256": "6975aaed3a58c9adcf595626854c6c44ca38f97338d6f52dd96c7a55cdb4447f",
+        "unique_target_count": 13
+      }
+    },
+    "cursor": {
+      "entry_literal_matches": true,
+      "global_gba_address": "0x03001588",
+      "output_literal_matches": true,
+      "region": "IWRAM"
+    },
+    "noncontrol_copy_entry": "0x080027E4",
+    "nul_terminator_entry": "0x080027FA",
+    "parser_entry": "0x080025CC",
+    "parser_loop": "0x080027F2",
+    "percent_trigger_byte": "0x25",
+    "signature_checks": {
+      "cursor_global_load": true,
+      "cursor_global_store": true,
+      "dispatch_bound": true,
+      "dispatch_index_shift": true,
+      "dispatch_subtract": true,
+      "noncontrol_copy": true,
+      "parser_loop_read": true,
+      "parser_nul_terminator": true,
+      "parser_push": true,
+      "percent_trigger": true,
+      "width_counter_push": true,
+      "width_helper_alt_push": true,
+      "width_helper_push": true,
+      "wrapper_push": true
+    },
+    "static_operations": {
+      "optional_zero_prefix_marker": "0x30",
+      "ordinary_input_byte_copied_to_cursor": true,
+      "output_terminated_with_nul": true,
+      "percent_introduces_dispatch": true
+    },
+    "width_helpers": {
+      "counter_entry": "0x08002828",
+      "interpretation": "static-width-helper-candidate",
+      "shared_table_literal": "0x080FFD86",
+      "signed_width_alt_entry": "0x080028B0",
+      "signed_width_entry": "0x08002844"
+    },
+    "wrapper_entry": "0x08002814"
+  },
+  "classification": {
+    "glyph_identity": "unconfirmed",
+    "japanese_codepage": "unconfirmed",
+    "roundtrip_insertion": "unconfirmed",
+    "runtime_text_consumer": "unconfirmed",
+    "source_buffer_edge": "provisional-static",
+    "static_control_parser": "confirmed-static"
+  },
+  "identity": {
+    "crc32": "1867CCEF",
+    "game_code": "B3TJ",
+    "maker_code": "AF",
+    "size": 16777216,
+    "title_ascii": "TOWNARIKIRI3"
+  }
+}

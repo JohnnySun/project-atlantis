@@ -61,12 +61,15 @@ M1.8 的完整 confirmed/provisional/negative/unknown 邊界見
 文字 consumer、codepage、glyph identity、翻譯或回插成立；下一個最小切片是 bounded
 state 7 text-consumer trace，不是擴大 pointer scan。
 
-## M2：尚未開始的必要證明
+## M2：文字 consumer、碼頁與回插必要證明（進行中）
 
 - [x] 建立不含原文的 8,938 筆 source-hash ledger scaffold 與控制標記 metadata；以
   本機 source table 做 decoder／hash drift verify，所有 target 仍為 untranslated
 - [x] 對既有固定 ROM literal 做 bounded layout／width-table metadata verify；只列為
   provisional，不把它升格成字型／codepage 證明
+- [x] 對固定 `0x080025CC` parser 做 bounded static contract verify：`%` dispatch、
+  84-entry jump table、IWRAM cursor、NUL output 與 width-helper candidate；仍未升格
+  成 live source consumer
 - [ ] 從可重現 breakpoint/watchpoint 找到文字 renderer 的入口與消費者
 - [ ] 確認字型 glyph 格式、codepage、寬度表與 glyph 載入路徑
 - [ ] 分類事件、角色／服裝／技能、戰鬥與選單各自的指標／控制碼結構
