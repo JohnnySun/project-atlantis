@@ -22,6 +22,8 @@ M1.25 已把 consumer 控制結構與原始 leaf 序列 guard 固化為可重跑
 
 M1.26 已將 source/provenance census 擴成兩個不重疊的 16 筆窗口：`2672..2687`（含 natural generic caller `0x08009252` 的 2678／2679）與 `3080..3095`（含 selector caller `0x08098b10` 的 3087）。32/32 筆共用同一 strict tree worker、source-span 與原始 leaf round-trip；兩條 natural route 的 4 筆 loader receipt 其 source pointer 4/4 對上、output hash 3/4 對上，2679 mismatch 仍保留為未定原因的 negative。這只擴大格式／來源證據，不把兩個 caller family 或 route 名稱升格為內容類別。
 
+M1.27 已將字型渲染後段固化為可重跑的 static contract：`0x080995b0` 對 `0x08099580` 呼叫四次，plane offset 為 `0x00/0x40/0x80/0xc0`；kernel 以 nibble mask `0x0f << ((r2 & 7) * 4)` 清除並合併 packed word，最後在 `0x080995a6` 寫回動態 destination。這是位元／plane data-flow 證據，不是完整 font pool、palette、Unicode 或字形身分；fresh writer hash pairing 若未取得仍維持 negative，沒有開始回插。
+
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
@@ -156,6 +158,16 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m126_provenance.py \
 ```
 
 `scene_or_content_category` 固定為 `unknown`；工具只 join table/source/output hash、caller LR/callsite 與 bounded route metadata，不輸出完整原文、code-unit bytes 或 Unicode。
+
+要重跑 M1.27 的字型 plane/nibble static contract：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m127_font_contract.py \
+  roms/base/AFEJ.gba \
+  --output /private/tmp/afej-m127-font-contract.json
+```
+
+工具會先嚴格核對 AFEJ game code／SHA-256，再輸出 instruction hash、plane offsets、nibble data-flow 與 writer boundary；不輸出 bitmap bytes、RAM dump 或完整原文。
 
 要重跑 M1.11 的 static caller／callback gate report：
 
