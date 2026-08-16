@@ -24,12 +24,14 @@ copied into this tracked report.
 | `b3cj:t2:024:0x0886` | `0d5a78457208e290171e1080982d81302880952077c85746ab7ca5003d098976` | `要抽獎嗎？　　` | Generic yes/no lottery question is natural zh-TW; explicit padding is layout-only. | `抽獎` provisional generic activity term; new `嗎` glyph is statically proven. |
 | `b3cj:t2:024:0x01f0` | `c10caff6b389dc1506d1879cdac4e21111ead7eb8b41e05eca6aed3d73873ddc` | `這次的獎品是…` | Matches the first and second occurrences exactly; consistency pass at static language level. | Reuses provisional `獎品`. |
 
-The external terminology lookup for `重金礦` was attempted through the
-Wikipedia zh-tw API and Bahamut search endpoint, but WebSearch returned a
-network error and both read-only curl attempts failed DNS resolution. The
-elevated retry was rejected by the execution safety reviewer. This is an
-external research limitation, not evidence that either candidate spelling is
-canonical; the item remains unapproved.
+The bounded external terminology review is recorded in
+[`research/m5.5-terminology-review.md`](m5.5-terminology-review.md). The
+Japanese item table uses `重金鉱`; an independent Chinese reference uses
+`重金矿石`; Wikipedia zh-tw confirms the game but has no item rendering, and
+the checked Bahamut攻略串 has no occurrence of this item. There is therefore
+no Taiwan-community majority. The existing `重金礦` spelling remains
+provisional and `blocked_external_lookup`; human terminology approval is
+still required.
 
 ## Font and layout review
 

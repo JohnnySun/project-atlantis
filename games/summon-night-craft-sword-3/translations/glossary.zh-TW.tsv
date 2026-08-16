@@ -5,4 +5,4 @@ ui.warning	警告	ui	provisional	b3cj:t2:016:0x001e				通用警示標籤；無�
 ui.wood_chopping	劈柴	ui	provisional	b3cj:t2:022:0x004e				通用動作標籤；不作角色／地名音譯，待上下文與人工 review。
 dialogue.ellipsis_ack	嗯…	dialogue	provisional	b3cj:t2:025:0x0b6e				通用語氣短句；保留省略號版面，待人工語言 review。
 ui.lottery	抽獎	ui	provisional	b3cj:t2:024:0x0886				通用活動／問句詞；不作專有名詞音譯，待人工語言與上下文 review。
-item.heavy_gold_ore	重金礦	item	blocked_external_lookup	b3cj:t2:024:0x0078	cd5eb4f2833b81100caa4feb0ddd9a3a1d9ffeefa6f60fdf1a2a18ce3f33b329		重金礦；重金礦石	可能是遊戲道具名；Wikipedia zh-tw、巴哈姆特與外部搜尋本輪因 WebSearch/network/DNS 不可達而未取得可核驗來源，維持 ai_draft，不升格或自行改名。
+item.heavy_gold_ore	重金礦	item	blocked_external_lookup	b3cj:t2:024:0x0078	cd5eb4f2833b81100caa4feb0ddd9a3a1d9ffeefa6f60fdf1a2a18ce3f33b329		重金礦；重金礦石	日文攻略表確認來源名為重金鉱；中文資料頁另見重金矿石，但 Wikipedia zh-tw 只確認本作且無道具表、巴哈姆特攻略串未出現此道具名，沒有臺灣社群多數共識；維持 ai_draft，待人工術語決策，不自行改名。
