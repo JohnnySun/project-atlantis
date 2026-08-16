@@ -8,6 +8,7 @@
   },
   "mode": "font-record-loader-live-consumer",
   "fixed_entries": {
+    "font_builder": "0x08015B74",
     "font_loader": "0x080021A8",
     "font_asset_ready": "0x080021DA",
     "font_loader_callsite": "0x08015C26",
@@ -20,6 +21,14 @@
     "requires_exact_strict_record_start": true,
     "provenance": "runtime-argument-injected",
     "natural_text_consumer_proof": false
+  },
+  "builder_trace": {
+    "cli_option": "--trace-builder-input",
+    "entry": "0x08015B74",
+    "caller": "0x080CD170",
+    "max_hits_default": 4,
+    "source_bytes_emitted": false,
+    "builder_hit_is_natural_text_consumer_proof": false
   },
   "sequence": [
     {"key": "start", "events": 1},
@@ -80,6 +89,7 @@
   "classification": {
     "tooling_contract": "confirmed-bounded",
     "runtime_loader_entry": "unconfirmed-setup-negative",
+    "runtime_builder_input": "unconfirmed-until-runtime-breakpoint-hit",
     "strict_record_source_read": "unconfirmed",
     "asset_read": "unconfirmed",
     "decoder_output_or_vram": "unconfirmed",

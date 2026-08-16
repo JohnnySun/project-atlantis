@@ -323,6 +323,11 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
   --output /private/tmp/tow-nd3-m2-font-record-runtime.json
 ```
 
+若要在同一 bounded session 先觀察已確認 caller-upward 的 input provenance，可加
+`--trace-builder-input --max-builder-hits 4`。它只在 `0x08015B74` 記錄 `r1`、LR
+與 strict-window classification，仍不讀 source bytes；命中後才繼續同一個 loader
+entry/source/asset pipeline。builder hit 本身不是自然文字 consumer proof。
+
 2026-08-16 的 port `24387` setup receipt 仍是 runtime negative：ROM identity／strict
 count `8938` 通過，但 sandbox 回報 `PermissionError: [Errno 1] Operation not
 permitted`，一次外部重試仍無 loader stop。詳情見

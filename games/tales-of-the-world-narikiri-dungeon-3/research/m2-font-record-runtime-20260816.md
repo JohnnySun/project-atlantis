@@ -11,6 +11,12 @@ GDB transport。工具在 loader entry `0x080021A8` 取得該次呼叫的 `r1`�
 輸出只有位址、strict record metadata、寄存器、stop metadata 與計數，不包含 source
 或 glyph bytes。
 
+工具另提供 `--trace-builder-input --max-builder-hits N` 的窄 caller-upward 模式：在
+`0x08015B74` 設 bounded entry breakpoint，僅記錄該次 `r1`、LR 與五窗 strict
+classification；到同一 invocation 的 `0x080021A8` 後才進入原有 source/asset
+watch。這個 builder hit 只是 runtime register provenance，不能單獨升格成自然
+文字 consumer，也不會展開 pointer scan。
+
 strict record classification 直接重用本作 `consumer_probe.py` 的五個已核准資料窗
 與本機 strict extractor；因此只有 `r1 ==` 某一筆 strict record 起點時，才會保留
 `string_id`。window 內非起點、RAM input、ROM window 外位址都維持各自 negative

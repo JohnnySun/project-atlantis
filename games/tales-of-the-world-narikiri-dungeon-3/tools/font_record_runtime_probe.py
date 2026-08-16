@@ -46,6 +46,8 @@ EXPECTED_SIZE = 16 * 1024 * 1024
 FONT_LOADER_ENTRY = 0x080021A8
 FONT_ASSET_READY = 0x080021DA
 FONT_LOADER_CALLSITE = 0x08015C26
+FONT_BUILDER_ENTRY = 0x08015B74
+FONT_BUILDER_CALLER = 0x080CD170
 FONT_ASSET_BASE = 0x080DDCC4
 FONT_ASSET_STRIDE = 0x20
 
@@ -138,6 +140,12 @@ def callsite_from_lr(lr: int) -> int | None:
     return callsite if callsite == FONT_LOADER_CALLSITE else None
 
 
+def builder_callsite_from_lr(lr: int) -> int | None:
+    return_site = lr & ~1
+    callsite = return_site - 4
+    return callsite if callsite == FONT_BUILDER_CALLER else None
+
+
 def _stop_row(
     stop: str,
     kind: str | None,
@@ -181,6 +189,25 @@ def _write_key(client: GdbClient, value: int) -> dict[str, object]:
             "error_type": type(exc).__name__,
         }
     return {"status": "write-ok", "register": "r1", "value": _hex(value, 4)}
+
+
+def trace_builder_hit(
+    stop: str, registers: dict[str, int], records: dict[int, dict[str, object]]
+) -> dict[str, object]:
+    """Classify one bounded builder-entry input without reading its bytes."""
+
+    source_pointer = registers.get("r1", 0)
+    return {
+        "entry": _stop_row(stop, "breakpoint", FONT_BUILDER_ENTRY, registers),
+        "caller_lr": _hex(registers.get("lr", 0)),
+        "caller_callsite": (
+            None
+            if builder_callsite_from_lr(registers.get("lr", 0)) is None
+            else _hex(FONT_BUILDER_CALLER)
+        ),
+        "source": classify_source_pointer(source_pointer, records),
+        "status": "confirmed-runtime-builder-input-registers",
+    }
 
 
 def trace_loader_hit(
@@ -402,6 +429,8 @@ def run_probe(
     max_loader_hits: int,
     max_stage_stops: int,
     injected_record_offset: int | None = None,
+    trace_builder_input: bool = False,
+    max_builder_hits: int = 4,
 ) -> dict[str, object]:
     """Run one bounded loader-entry session and return metadata only."""
 
@@ -430,6 +459,7 @@ def run_probe(
         "identity": identity,
         "strict_record_count": len(records),
         "fixed_entries": {
+            "font_builder": _hex(FONT_BUILDER_ENTRY),
             "font_loader": _hex(FONT_LOADER_ENTRY),
             "font_asset_ready": _hex(FONT_ASSET_READY),
             "font_loader_callsite": _hex(FONT_LOADER_CALLSITE),
@@ -445,6 +475,11 @@ def run_probe(
             if injected_record_offset is not None
             else {"status": "disabled"}
         ),
+        "builder_trace": {
+            "status": "enabled" if trace_builder_input else "disabled",
+            "max_hits": max_builder_hits,
+            "hits": [],
+        },
         "limits": {
             "max_events": max_events,
             "max_loader_hits": max_loader_hits,
@@ -457,6 +492,7 @@ def run_probe(
         "key_events": [],
         "classification": {
             "loader_entry": "unconfirmed-until-runtime-breakpoint-hit",
+            "builder_input": "unconfirmed-until-runtime-breakpoint-hit",
             "strict_record_source_read": (
                 "injected-source-pipeline-only"
                 if injected_source_address is not None
@@ -470,6 +506,7 @@ def run_probe(
 
     client = GdbClient(host, port, timeout=8.0)
     entry_breakpoint = False
+    builder_breakpoint = False
     key_watch = False
     event_index = 0
     stop_count = 0
@@ -481,6 +518,9 @@ def run_probe(
             report["initial_registers"] = register_snapshot(client.read_registers())
             client.set_breakpoint(FONT_LOADER_ENTRY, kind=2)
             entry_breakpoint = True
+            if trace_builder_input:
+                client.set_breakpoint(FONT_BUILDER_ENTRY, kind=2)
+                builder_breakpoint = True
             client.set_watchpoint(KEYINPUT_ADDRESS, kind=2, watch_type=3)
             key_watch = True
         except (RuntimeError, TimeoutError, OSError, ConnectionError) as exc:
@@ -514,7 +554,21 @@ def run_probe(
                 stop_count += 1
                 kind, stop_address = parse_stop_watch(stop)
                 pc = normalized_pc(registers)
+                if trace_builder_input and pc == FONT_BUILDER_ENTRY:
+                    builder_trace = report["builder_trace"]
+                    assert isinstance(builder_trace, dict)
+                    builder_hits = builder_trace["hits"]
+                    assert isinstance(builder_hits, list)
+                    if len(builder_hits) < max_builder_hits:
+                        builder_hits.append(trace_builder_hit(stop, registers, records))
+                    if len(builder_hits) >= max_builder_hits and builder_breakpoint:
+                        _safe_remove_breakpoint(client, FONT_BUILDER_ENTRY)
+                        builder_breakpoint = False
+                    continue
                 if pc == FONT_LOADER_ENTRY:
+                    if builder_breakpoint:
+                        _safe_remove_breakpoint(client, FONT_BUILDER_ENTRY)
+                        builder_breakpoint = False
                     hit = trace_loader_hit(
                         client,
                         stop,
@@ -564,6 +618,8 @@ def run_probe(
     finally:
         if entry_breakpoint:
             _safe_remove_breakpoint(client, FONT_LOADER_ENTRY)
+        if builder_breakpoint:
+            _safe_remove_breakpoint(client, FONT_BUILDER_ENTRY)
         if key_watch:
             _safe_remove_watchpoint(client, KEYINPUT_ADDRESS, 2, 3)
         client.close()
@@ -581,14 +637,28 @@ def main() -> None:
     parser.add_argument("--max-loader-hits", type=int, default=1)
     parser.add_argument("--max-stage-stops", type=int, default=12)
     parser.add_argument(
+        "--trace-builder-input",
+        action="store_true",
+        help="also trace bounded 0x08015B74 r1 inputs before the loader",
+    )
+    parser.add_argument("--max-builder-hits", type=int, default=4)
+    parser.add_argument(
         "--inject-record-offset",
         type=lambda value: int(value, 0),
         help="optional exact strict record offset; labels the run as injected-source only",
     )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    if args.max_events < 1 or args.max_loader_hits < 1 or args.max_stage_stops < 1:
-        parser.error("max-events, max-loader-hits and max-stage-stops must be positive")
+    if (
+        args.max_events < 1
+        or args.max_loader_hits < 1
+        or args.max_stage_stops < 1
+        or args.max_builder_hits < 1
+    ):
+        parser.error(
+            "max-events, max-loader-hits, max-stage-stops and max-builder-hits "
+            "must be positive"
+        )
     try:
         sequence = parse_sequence(args.sequence)
     except ValueError as exc:
@@ -605,6 +675,8 @@ def main() -> None:
             max_loader_hits=args.max_loader_hits,
             max_stage_stops=args.max_stage_stops,
             injected_record_offset=args.inject_record_offset,
+            trace_builder_input=args.trace_builder_input,
+            max_builder_hits=args.max_builder_hits,
         )
     except ValueError as exc:
         parser.error(str(exc))

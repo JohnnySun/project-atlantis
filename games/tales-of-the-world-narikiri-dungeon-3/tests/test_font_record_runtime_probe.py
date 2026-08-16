@@ -37,6 +37,31 @@ class FontRecordRuntimeProbeTests(unittest.TestCase):
         self.assertNotIn("bytes", row)
         self.assertNotIn("raw", row)
 
+    def test_builder_entry_classifies_only_the_r1_input(self):
+        records = {
+            0x146EE0: {
+                "string_id": "sjis:0x146EE0",
+                "file_offset": "0x146EE0",
+                "gba_address": "0x08146EE0",
+                "region": "text-pool",
+                "raw_length": 12,
+            }
+        }
+        row = font_record_runtime_probe.trace_builder_hit(
+            "T05thread:1;",
+            {
+                "pc": font_record_runtime_probe.FONT_BUILDER_ENTRY,
+                "lr": font_record_runtime_probe.FONT_BUILDER_CALLER + 4,
+                "r1": 0x08146EE0,
+            },
+            records,
+        )
+        self.assertEqual(row["caller_callsite"], "0x080CD170")
+        self.assertEqual(row["source"]["status"], "strict-record-start")
+        self.assertEqual(row["status"], "confirmed-runtime-builder-input-registers")
+        self.assertNotIn("bytes", row)
+        self.assertNotIn("raw", row)
+
     def test_bounded_fake_pipeline_confirms_source_and_asset_reads(self):
         class FakeClient:
             def __init__(self):
