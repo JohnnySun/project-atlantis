@@ -25,8 +25,18 @@
 - [x] 把 IWRAM、有效分塊讀取的完整 EWRAM、固定 OAM source 與 ROM 分開比對；IWRAM/EWRAM 都沒有完整 sprite glyph 命中，零 tile match 另列為反例。
 - [x] 以 4-byte 對齊、bounded output/candidate 的標準 GBA LZ77/RL scan 檢查完整 glyph；valid stream 中沒有命中，不能因此宣稱文字已壓縮格式化。
 - [x] 確認一條較早的 OAM consumer：IWRAM `0x030033f0` 的 OAM buffer 由 DMA3 搬到 `0x07000000`；這是 OAM source 證據，不等於 OBJ glyph source。
-- [~] 固定 OBJ-DMA routine（file `0x0baecc`，候選 source `0x02001000`、destination `0x06013000`、control `0x84000700`）已靜態收斂，但在本回合 reset→Start bounded execute trace 未命中；列為下一個精確追蹤點，不作 confirmed 結論。
+- [x] 固定 OBJ-DMA routine（file `0x0baecc`，source `0x02001000`、destination `0x06013000`、control `0x84000700`）已在 M1.6 完成 entry／literal-pool／ARM7TDMI 邊界驗證；runtime 是否命中另行列在 M1.6。
 - [~] M1.5 的結果是「來源範圍已縮小但尚未建立 source table」；因此 codepage、stable string ID、控制碼與翻譯仍保持封鎖。
+
+## M1.6：固定 DMA、transfer queue 與 staging writer 有界追蹤
+
+- [x] 完整驗證 `0x080baecc`：9 條 Thumb 指令、最後 `BX LR` 在 `0x080baedc`、alignment padding 後 literal pool `0x080baee0`–`0x080baef0`；`source=0x02001000`、`destination=0x06013000`、`CNT=0x84000700` 均由固定 literals 組裝，沒有 direct BL caller。
+- [x] 驗證另外七個 `0x06013000` fixed-DMA copies。routine entry 為 `0x080bb318`、`0x080bb61c`、`0x080bbcd8`、`0x080bc584`、`0x080bc978`、`0x080d8d80`、`0x080d9448`；其中後五個 M1.5 site 名稱是第一條 source `STR`，不再混稱函式 entry。
+- [x] 反組譯並記錄通用 queue drain／producer：`0x080ad01c`／`0x080ad0fc`，64 entries，base `0x02009004`、stride `0x64`，source field `+0x14`，callback table `0x0815eeec`，dynamic dispatch sites `0x080ad070`／`0x080ad0a2`／`0x080ad0be`。bounded code path 沒有獨立 head/tail slot；entry state `+0x00` 是實際 consumed state。
+- [x] Formal probe 從 reset arm staging、queue entries 與 DMA3 SAD/DAD/CNT watches，並以 `core/gba/gdbstub_client.py` 重現 Start：35 秒、220 stop bound、6 次 KEYINPUT read、Start sent；queue producer 2 hits、dispatch 30 hits、LZ77 wrapper 1 hit，queue entries `0x02009068`／`0x020090cc` 各自帶有兩個已記錄 ROM source pointers。
+- [x] 陰性窗口已界定：八個固定 OBJ-DMA site 0 hit、`0x080baef0` 0 hit、`0x02001000` staging write 0 hit；DMA3 metadata watch 有 hit，但 formal report 的唯一 LZ77 destination 是 `0x0200f874`，不是 `0x02001000` 或 OBJ VRAM。這不否定別的狀態／轉場，僅否定本次 reset→Start window。
+- [~] 尚未建立 glyph source/staging → transform → OBJ VRAM → OAM 的因果鏈；`0x080baef0` 仍是 staging candidate，附近 `0x081869c8` descriptor table（含 `0x080baef1` Thumb pointer）是下一個最小 indirect-dispatch 追蹤點。不得以 queue resource pointers 或畫面 OCR 代替 source table。
+- [ ] 取得實際 glyph writer 的 ROM pointer／RAM table／code-unit argument；確認 1–3 個重複 glyph 的 source hash、transform 與 OBJ tile hash 後，才可開始建立 stable string ID、codepage 或翻譯批次。
 
 ## M2：可審核翻譯 ledger
 

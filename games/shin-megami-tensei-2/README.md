@@ -2,7 +2,7 @@
 
 本目錄只處理日版 GBA《真・女神転生II》（A5TJ），目標為臺灣繁體 `zh-TW`。ROM、sav、完整解出的原文、VRAM／OAM dump、渲染圖片與暫存構建只保存在本機，不進 Git。
 
-## M0/M1/M1.5 基準狀態（2026-08-16）
+## M0/M1/M1.5/M1.6 基準狀態（2026-08-16）
 
 - ROM header 身分已確認：`DDS_2`、`A5TJ`、maker `EB`、revision `0`、8 MiB。
 - 本機候選的 ROM CRC32 為 `af40cc99`，SHA-256 為 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`；完整指紋和 header complement 異常見 `research/recon-20260816.md`。
@@ -12,6 +12,10 @@
 - M1.5 已完成一個有界來源分析回合：Start 後有 46 個 active sprite、84 個 unique OBJ tile；完整 sprite glyph 在 ROM、IWRAM、EWRAM 與 bounded LZ77/RL stream 均無 byte-identical match，也沒有因此推導出 font stride。
 - 已確認 OAM buffer 的 IWRAM source 與 DMA3→OAM consumer；OBJ tile 的固定 DMA candidate 已記為 provisional，尚未宣稱是免責畫面的實際 source。
 - 目前只確認「文字確實在 OBJ sprite 路徑上被消費並顯示」；尚未確認文字儲存表、codepage、指標／bank、壓縮、控制碼、惡魔／技能／道具／劇情資料邊界或可逆回插路徑。
+- M1.6 已把 provisional `0x080baecc` 完整驗證為固定 9-instruction Thumb DMA3 setup：literal pool 在 `0x080baee0`–`0x080baef0`，固定 `0x02001000` → `0x06013000`、control `0x84000700`；它不是 queue parameter。其餘七個 `0x06013000` copy 也是同一個 byte pattern 的固定副本；先前記為 `0x080bbcdc` 等五個位址的是 routine 的第一條 source `STR`，真正 entry 已在研究紀錄中回退 4 bytes。
+- M1.6 已確認一個獨立的通用 resource/event queue：drain `0x080ad01c`、producer `0x080ad0fc`、base `0x02009004`、64 個 stride `0x64` entry、callback table `0x0815eeec`。reset→Start live entry `0x02009068`／`0x020090cc` 只攜帶 ROM resource pointers `0x08509cf8`／`0x08509cd0`；這不是已證明的 glyph transfer queue。
+- M1.6 的 formal bounded probe 在 35 秒 reset→Start window 讀到 KEYINPUT 6 次、送出 Start；八個固定 OBJ-DMA site、`0x080baef0` staging candidate 與 `0x02001000` write watch 都是 0 hit。DMA3 register、queue entry、queue callback 與 BIOS LZ77 consumer 的 metadata 有捕捉，但唯一 LZ77 目的地為 `0x0200f874`，不是 staging buffer。這是可重現的陰性窗口，不是「全遊戲沒有」的證明。
+- `0x080baef0` 仍是最精確的 glyph-staging candidate：兩次 `LZ77UnCompWram` wrapper call 目標分別為 `0x02001000` 與 `0x02002000`；它在本次畫面窗口未命中。附近 `0x081869c8` resource descriptor table 仍待以 live indirect dispatch 追蹤，不能把 table pointer 當成 source table。
 - 尚未開始翻譯，也沒有可提交的翻譯記錄；專有名詞會在真正建立批次前依 `AGENTS.md` 查 Wikipedia zh-tw、巴哈姆特及其他獨立來源。
 
 ## 可重現入口
@@ -22,6 +26,27 @@
 python3 games/shin-megami-tensei-2/tools/recon_static.py /path/to/A5TJ.zip --pretty
 ```
 
+M1.6 的固定 DMA／queue 靜態驗證不會做 glyph pattern scan：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m16_queue_probe.py \
+  --rom /path/to/A5TJ.gba --static-only \
+  --output /private/tmp/smt2-m16-static.json
+```
+
+若要重跑已啟動、且只屬於本作的 mGBA GDB port `2367`，runtime report 只保留
+address、PC/LR、selected registers、length、hash 與 count；不要把 output 放進 Git：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m16_queue_probe.py \
+  --rom /path/to/A5TJ.gba --port 2367 --press-start \
+  --output /private/tmp/smt2-m16-runtime.json
+```
+
+可以再以 `--summary --input-report` 產生可放入研究筆記的 metadata 摘要。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -31,4 +56,4 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-先從一個可重複抵達的 UI／開場文字畫面建立本機原文表，再建立第一批 `work/*.jsonl`，以來源 hash、控制碼狀態、寬度預算與術語來源做審核。只有 decoder 能穩定重新抽出同一批資料、且回插後能 byte-for-byte 驗證，才進入有限量翻譯與 patch 工程。
+先完成 `0x081869c8` descriptor／indirect dispatch 到 `0x080baef0` 的最小 live 追蹤，確認 `0x02001000` 的真正 writer 及其 source parameter；再從可重複抵達的 UI／開場文字畫面建立本機原文表。只有 decoder 能穩定重新抽出同一批資料、且回插後能 byte-for-byte 驗證，才進入有限量翻譯與 patch 工程。
