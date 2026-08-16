@@ -151,6 +151,28 @@ class StoryLayoutAuditTest(unittest.TestCase):
         self.assertEqual([row["context"]["max_width"] for row in rows], [12, 11])
         self.assertEqual([row["context"]["max_lines"] for row in rows], [5, 4])
 
+    def test_batch18_ledger_is_source_free_and_bounded(self) -> None:
+        ledger_path = pathlib.Path(__file__).parents[1] / "translations" / "story-event-batch-18.jsonl"
+        rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertEqual(
+            [row["string_id"] for row in rows],
+            ["b3ej:story-event:000", "b3ej:story-event:001"],
+        )
+        self.assertTrue(all("source" not in row and row["status"] == "ai_review" for row in rows))
+        self.assertEqual([row["context"]["max_width"] for row in rows], [13, 13])
+        self.assertEqual([row["context"]["max_lines"] for row in rows], [4, 5])
+
+    def test_batch18_ledger_is_source_free_and_bounded(self) -> None:
+        ledger_path = pathlib.Path(__file__).parents[1] / "translations" / "story-event-batch-18.jsonl"
+        rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertEqual(
+            [row["string_id"] for row in rows],
+            ["b3ej:story-event:000", "b3ej:story-event:001"],
+        )
+        self.assertTrue(all("source" not in row and row["status"] == "ai_review" for row in rows))
+        self.assertEqual([row["context"]["max_width"] for row in rows], [13, 13])
+        self.assertEqual([row["context"]["max_lines"] for row in rows], [4, 5])
+
     def test_batch16_ledger_is_source_free_and_bounded(self) -> None:
         ledger_path = pathlib.Path(__file__).parents[1] / "translations" / "story-event-batch-16.jsonl"
         rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]

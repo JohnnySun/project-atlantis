@@ -66,8 +66,8 @@
 | M2.4 normal count | `unknown / runtime-pending` | static builder source remains `[0x02014E78]` terminated by `0xFF`; harness now records bounded sentinel/count metadata only when builder is naturally entered | no natural builder hit；不能把 empty-path count 44 外推 |
 | story-event E static chain | `confirmed-static / natural-runtime-pending; known-screen-cross provisional` | `tools/analyze_story_pool.py` 驗證 table boundary、27 個 entry-range literal slots、有效 Thumb caller／pair-helper／writer callsites；pointer-table SHA-256 `729b6f1e...ec6febe3`、ordered target SHA-256 `03f9d9a5...f3ad8f4`；公開夷陵／結局資料支持 E 的分支分類 | 這只證明 E 的 static consumer chain 與已知流程交叉；沒有把它當成自然 runtime glyph evidence；E source 與既有 custom units `0x8141/0x8142/0x8148/0x8158` 重疊 |
 | compression | `not-confirmed` | bounded signature scan 僅得到 noisy counts：LZ77 `10744`、Huffman `6692`、RLE `4704`、Diff `4966` | 沒有把任何 signature 當成文本壓縮；需由 code／runtime 呼叫證實 |
-| 可逆回插 | `record-level-bounded` | `verify_table_b_roundtrip.py` 對 table B 44/44 decode→Shift-JIS encode byte-identical、hash-identical、control-invariant；Table B／event-system D／pool A selected records 與 story E 002/011/032/003/004/005/006/007/008/009/010/012/013/014/015/016/017/018/019/020/021/022/023/024/025/026/027/028/029/030/031 另有 fixed-slot patch、re-extract、pointer-table invariant 和 BPS apply receipts | 只證明 reviewed record／pool layer；尚未證明 table relocation、全 ROM encoder、字庫覆蓋、全池抽出→回插 round trip 或自然畫面 QA |
-| 翻譯 ledger | `confirmed-static / bounded-ai-review` | Table B／event-system D／pool A／story-event E 共二十七批、106 筆 source-free rows；各自 source hash、`zh-TW` target、上下文和 `ai_review` 均可由 ignored source table restore，二十七批 strip 輸出逐 byte 相同 | pool A 尚有 115 個 unique records，E 尚有 2 筆、C 與完整劇情／武將／地名／官職／策略專名仍未建立完整批次；自然畫面 QA 尚未完成 |
+| 可逆回插 | `record-level-bounded` | `verify_table_b_roundtrip.py` 對 table B 44/44 decode→Shift-JIS encode byte-identical、hash-identical、control-invariant；Table B／event-system D／pool A selected records 與 story E 000/001/002/003/004/005/006/007/008/009/010/011/012/013/014/015/016/017/018/019/020/021/022/023/024/025/026/027/028/029/030/031/032 另有 fixed-slot patch、re-extract、pointer-table invariant 和 BPS apply receipts | 只證明 reviewed record／pool layer；尚未證明 table relocation、全 ROM encoder、字庫覆蓋、全池抽出→回插 round trip 或自然畫面 QA |
+| 翻譯 ledger | `confirmed-static / bounded-ai-review` | Table B／event-system D／pool A／story-event E 共二十八批、108 筆 source-free rows；各自 source hash、`zh-TW` target、上下文和 `ai_review` 均可由 ignored source table restore，二十八批 strip 輸出逐 byte 相同 | pool A 尚有 115 個 unique records，story-event E 33/33 已有 record-level rows；C 與完整劇情／武將／地名／官職／策略專名仍未建立完整批次；自然畫面 QA 尚未完成 |
 
 ## 可重現命令
 
@@ -605,6 +605,19 @@ Story-event E 的完整 bounded 結論見
 | E custom encoder／plane gate | `confirmed-static / bounded` | E-specific map 使用 U+737B／U+6B0A／U+570B／U+65BC 對 indices 34／36／23／28；292-record bounded source-use non-use；custom plane `4/4`；target codepage membership `2/2`；新增 U+6B0A 候選 raw `0x8256`／index `36` 的 source-use receipt | raw-unit non-use 不是 full-ROM proof；secondary plane、版面和自然 writer 仍 pending |
 | fixed-slot re-extract | `confirmed-static / bounded` | story E 33-entry pointer table unchanged；changed `380` bytes；selected re-extract／fixed-slot `2/2`；unselected records byte-identical；relocation disabled | 只覆蓋 E:030、E:031 |
 | BPS build/apply | `confirmed-static / bounded` | BPS `480` bytes；source CRC32 `a4a1c956`、target CRC32 `62569c89`、BPS CRC32 `0b8ea7ac`；BPS SHA-256 `3e2648a251b056dc91a6ec93d247290bec776e1f1a311e67f4d0ba1ded5a4f6c`；apply 與 patched ROM `cmp` 相等，patched SHA-256 `bce7799bc61eb64cf4438b3222cccc7af2e2aa497d10e8c7fd7f4d042555a098` | 產物留 ignored／暫存；E 自然 formatter→cache→VRAM receipt 仍 pending |
+
+## M3 story-event E batch 18／existing-codepage round-trip（2026-08-16）
+
+完整欄位、命令和限制見
+[`research/m3-story-event-batch18-roundtrip-20260816.md`](m3-story-event-batch18-roundtrip-20260816.md)。
+本帳只補充 hash／計數，不保存 E pool 日文 source、work 或 generated glyph bytes。
+
+| 項目 | 狀態 | 已有證據 | 尚未證實／限制 |
+|---|---|---|---|
+| story ledger／layout | `confirmed-static / ai-review` | `translations/story-event-batch-18.jsonl` 有 E:000、E:001 兩筆 source-free rows；restore／strip 逐 byte 相同，source fields `0`；`audit_story_layout.py` line budget／control／fit `2/2`；劉備臨終、桃園結義誓言與安詳離世分組有公開流程背景 | 仍待自然結局畫面與人工 zh-TW 終審；不是自然 runtime 完成證明 |
+| existing codepage gate | `confirmed-static / bounded` | existing B3EJ codepage coverage `2/2`；無新增 E custom glyph；四行／五行保留、max width `13` | conservative line budget 不等於 pixel-width proof；自然 writer／tilemap 仍 pending |
+| fixed-slot re-extract | `confirmed-static / bounded` | story E 33-entry pointer table unchanged；changed `218` bytes；selected re-extract／fixed-slot `2/2`；unselected records byte-identical；relocation disabled | 只覆蓋 E:000、E:001；全池 re-extract 仍不是全 ROM round-trip |
+| BPS build/apply | `confirmed-static / bounded` | BPS `257` bytes；source CRC32 `a4a1c956`、target CRC32 `bc9b1427`、BPS CRC32 `42125eb4`；BPS SHA-256 `cd3a1f0ac18c09ee84898d684cdffdacfe52bf68d403c22de39577f6e9def09e`；apply 與 patched ROM `cmp` 相等，patched SHA-256 `44fd11a906f6698c0c66f806a60da75280f5e49ea9f58db1e221b0333c41851a` | 產物留 ignored／暫存；自然 E formatter→cache→VRAM receipt 仍 pending |
 
 ## 後續證據邊界
 

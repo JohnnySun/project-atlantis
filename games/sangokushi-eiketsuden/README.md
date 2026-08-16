@@ -126,6 +126,10 @@
   都是 2/2 layout／control／fixed-slot round-trip，新增 `權` 的 E-specific bounded slot，
   custom plane `4/4`。380-byte fixed-slot patch 與 480-byte BPS 套用逐 byte 相同；自然 E
   writer／VRAM receipt 與人工終審仍 pending，詳見 `research/m3-story-event-batch17-roundtrip-20260816.md`。
+- **story-event E batch 18 已建立**：E:000／E:001 處理劉備臨終思緒、桃園結義誓言與安詳離世；兩筆
+  都是 2/2 layout／control／fixed-slot round-trip，existing B3EJ codepage coverage `2/2`，
+  沒有新增 map slot。218-byte fixed-slot patch 與 257-byte BPS 套用逐 byte 相同；自然 E
+  writer／VRAM receipt 與人工終審仍 pending，詳見 `research/m3-story-event-batch18-roundtrip-20260816.md`。
 - **glyph format 已交叉核對**：`font_glyph_format.py` 依有效 Thumb expander 重現兩組
   `0x20`-byte source plane → `0x80`-byte cache；clean ROM codepage index `1301`／
   `0x9594`／selector `0` 的靜態 cache hash 與 controlled runtime cache hash 相同。
