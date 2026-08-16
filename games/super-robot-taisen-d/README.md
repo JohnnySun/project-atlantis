@@ -518,3 +518,13 @@ queue 觸發尚未取代這條受控驗證。
 目前尚未開始完整批量翻譯；M1.8／M2／M4 的十二筆 static `ai_draft` 與 M2 glossary 只證明窄字 allocator、同長
 glyph POC 與 BPS round-trip，不代表完整文字覆蓋、newline／控制碼語意、zh-TW
 字型美術品質、自然畫面 runtime 或完整可逆回插已證明。
+- [x] M1.30 完成 corrected controlled runtime target gate：fresh 自有 mGBA／GDB
+  port `2350` 分別重跑 base／patched；font slot `0x020131D0/0x020103AC` 均
+  nonzero。target `526424` 的窄字 units `0xE883/0xE783` 對應 slots `543/542`，
+  兩個 codepage／glyph path、writer／`strh` destination、NUL branch 與 suffix-aware
+  16px／8px layout render hash exact；adjacent `526432` base／patched hashes 相等。
+  BPS 66-byte hash／apply 通過。摘要在
+  [`research/m130-corrected-runtime-receipt.json`](research/m130-corrected-runtime-receipt.json)，
+  工具／測試在 `tools/m130_runtime_target.py`、`tools/m130_runtime_receipt.py` 與
+  對應 tests；這是 controlled consumer／glyph proof，不是自然 menu／queue screen QA，
+  `natural_screen_proven=false`、`release_ready=false`，維持 `ai_draft`。

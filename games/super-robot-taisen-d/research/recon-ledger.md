@@ -1332,3 +1332,25 @@ M1.24 的 coverage matrix 不是完整 caller map，也不批准第二輪翻譯�
 是同一個 exact source record 同時綁定到 verified consumer callsite、producer／queue
 context 與 screen／layout state；在此之前 12 筆 ledger、609 pointer candidate 與
 structural callsite 不能外推成場景覆蓋。
+
+## 2026-08-17：M1.30 corrected controlled runtime target gate
+
+本輪停止新增同類 UI prompt，改以自有 mGBA／GDB port `2350` 對 base／patched ROM 各做
+fresh、single-connection capture；沒有接觸其他 session，也沒有把 ROM、raw memory、
+source／target text、pixels 或 screenshot 寫入 tracked output。ROM identity guard 以
+`scripts/gba-rom-identity.py` 核對 A6SJ、8 MiB、CRC `efb45117` 與 base SHA；final
+batch-5 static re-extraction 與 BPS apply 另行重跑，作為 static gate。
+
+| 項目 | 結果 |
+| --- | --- |
+| font initialization | `0x020131D0` writer `0x08008456` -> `0x0814F664`；`0x020103AC` writer `0x08008462` -> `0x08120DBC`；兩者 nonzero |
+| target | `string_id=526424`、source address `0x08080858`；units `0xE883/0xE783` -> narrow slots `543/542`；兩個 live glyph hash 與 static hash 相等 |
+| consumer／writer | codepage／glyph `2/2`；每 unit writer `24`；entry `0x08008650`、store `0x08008670`；callsite `0x08008914/0x08008926`；`strh` `48` bytes |
+| layout／termination | suffix-aware first／second unit `16px/8px`、height `12`；render hashes exact；NUL `0x0808085C`、branch `0x08008770` |
+| adjacent | `526432` base／patched payload、glyph、render hashes equal；`runtime_untouched=true` |
+| release boundary | controlled consumer／glyph proof only；natural screen `false`；translation `ai_draft`；`release_ready=false` |
+
+The tracked receipt is generated from ignored captures by `tools/m130_runtime_receipt.py` and
+rejects source text, raw/pixel output, hash drift, wrong slot/base, wrong unit count, and
+non-exact layout. M1.30 does not prove natural menu／queue navigation, complete newline／
+speaker／branch semantics, maximum width／line count, full reinsert coverage, or release.

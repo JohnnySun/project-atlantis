@@ -240,3 +240,9 @@
   screen／VRAM／writer evidence；所有未達成畫面保留 pending，不宣稱發行完成。
 - [ ] 最終通過 game tests、core/gba tests、strict source、ledger schema、AST、
   repository safety，並以 path-limited JohnnySun commit 保存本作全部可提交成果。
+- [x] M1.30 完成 corrected controlled runtime target gate：fresh 自有 mGBA／GDB
+  port `2350` 的 base／patched 單一 connection capture 通過兩個 live font base、
+  target `526424` 兩 unit、NUL branch、writer／tile destination 與 suffix-aware
+  16px／8px render hash；adjacent `526432` base／patched hashes 不變。這只解除
+  controlled glyph/layout 因果鏈，不解除自然 menu／queue screen、newline／speaker／
+  branch semantics 或 release；摘要在 `research/m130-corrected-runtime-receipt.json`。
