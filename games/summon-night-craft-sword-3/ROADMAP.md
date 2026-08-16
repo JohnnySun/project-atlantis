@@ -83,6 +83,16 @@ M2.4 完整啟動、PID／listener、client 設定、static writer 邊界與下�
 
 M2.5 只完成第一個有界 static translation slice。下一個最小缺口是先完成這一筆的人工／術語／字型審核，再在 runtime 解鎖後驗證畫面；不擴大到劇情、支線、夥伴、鍛造、戰鬥或道具的大批翻譯。
 
+## M2.6：第一筆翻譯 runtime renderer QA
+
+- [x] 以 M2.5 ignored target ROM／BPS 做前置 hash guard：clean base CRC32 `12afae5d`／SHA-256 `39bc…fad2d`、target SHA-256 `da9c…5b16`、BPS SHA-256 `4261…e5b`、applied ROM byte-identical。
+- [x] 建立 `tools/runtime_m2_6.py` 與測試；先驗證 target ID `b3cj:t2:024:0x0064`、`ec64/ec65/ec66`→`0x847/0x848/0x849` static render、adjacent glyph `0x846` base／target cell hash，以及 361／1／360 re-extraction receipt，再只開一條 core GDB connection。
+- [x] 完成兩輪 fresh launcher／process ownership 收據：高位 port `25126` 無 listener；GUI PID `50537` 啟動後退出，headless PID `50654` 輸出 `Debugger: Couldn't open socket`；兩個自有 process 均已停止，沒有附加其他 session。
+- [~] qSupported／renderer runtime gate 仍 blocked：兩份 diagnostic 都是 `handshake=blocked`，本環境 socket connect 回報 `PermissionError [Errno 1]`；沒有 breakpoint／watchpoint、font cache、writer destination、palette、VRAM／tilemap／OAM 或畫面可讀性證據。這是 transport-only negative，不是 ROM／譯文失敗。
+- [ ] 使用 `/private/tmp` compile-time GDB-port mGBA build，或在允許 localhost socket 的環境，以同一 hash-guarded diagnostic 重跑；runtime 解鎖前不擴大第二筆翻譯、不改 `ai_draft` 狀態。
+
+M2.6 已把 static target／adjacent proof 與 runtime transport failure 分開記錄。完整 launcher、PID、port、hash、static glyph 與下一個 runtime 方案見 [`research/m2.6-runtime.md`](research/m2.6-runtime.md)；這一輪沒有宣稱畫面通過或可發布 patch。
+
 ## M2：文本與字型格式
 
 - [~] 定位已確認的 `PSI3` script resource、bounded text record 與部分 VM control shape；仍需把劇情／支線／夥伴／鍛造／戰鬥／道具群組完整分類。

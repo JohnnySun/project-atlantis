@@ -6,7 +6,7 @@
 
 ## 目前狀態
 
-截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3、M2.4 與 M2.5 static slices 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、fail-closed glyph encoder、1 筆 zh-TW／3-glyph bounded static build、BPS apply round-trip，以及 gdb.port／單次 handshake diagnostic 與 static writer→RAM destination contract。完整 VM／未命名 opcode、palette／runtime VRAM、自然畫面 QA 與批次翻譯仍未完成；本批仍是 `ai_draft`，不是可發布 patch。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md)、[`research/m2.4-runtime.md`](research/m2.4-runtime.md)、[`research/m2.5-batch.md`](research/m2.5-batch.md) 與 [`ROADMAP.md`](ROADMAP.md)。
+截至 2026-08-16，已從使用者提供的日版 ZIP 唯讀取出單一 32 MiB ROM，並以 `inspect_rom.py --strict` 證實為 `B3CJ`。M1.5、M2.1、M2.2、M2.3、M2.4、M2.5 與 M2.6 static／transport slices 已完成：依固定的 csm3 callsite 鎖定 type-2 script resource table，對 LZ77／`PSI3` 資源建立有界 extractor，從 13 個 resource ID 可重抽 361 筆真實日文 record；新增控制碼保真 parser、opaque fallback、Shift-JIS source re-encode 與解壓 stream byte-identical round-trip；再由 type-3 `BIT` resource、lookup table、24-byte glyph cell 與固定 codepage samples 建立可重跑的 static renderer、27-slot allocation manifest、fail-closed glyph encoder、1 筆 zh-TW／3-glyph bounded static build、BPS apply round-trip、target／adjacent static proof，以及兩輪本作專屬 mGBA transport diagnostic。完整 VM／未命名 opcode、palette／runtime VRAM、自然畫面 QA 與批次翻譯仍未完成；本批仍是 `ai_draft`，不是可發布 patch。完整狀態見 [`research/recon-ledger.md`](research/recon-ledger.md)、[`research/static-format.md`](research/static-format.md)、[`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)、[`research/m2.2-font.md`](research/m2.2-font.md)、[`research/m2.3-poc.md`](research/m2.3-poc.md)、[`research/m2.4-runtime.md`](research/m2.4-runtime.md)、[`research/m2.5-batch.md`](research/m2.5-batch.md)、[`research/m2.6-runtime.md`](research/m2.6-runtime.md) 與 [`ROADMAP.md`](ROADMAP.md)。
 
 ### ROM metadata／外部比對
 
@@ -141,6 +141,14 @@ ledger candidate。
 
 固定收據、hash 與未證實邊界見 [`research/m2.5-batch.md`](research/m2.5-batch.md)；ROM、完整原文、working/source adapter、target ROM、BPS、raw dump 與圖片均留在 ignored `roms/`／`research/*-decoded.jsonl`／`work/`。runtime screen reachability、palette、VRAM／tilemap／OAM、畫面可讀性與翻譯審核仍 pending。
 
+## M2.6 第一筆翻譯 runtime renderer QA
+
+本切片先核對 M2.5 clean／target／BPS hash，再以 target ROM 做兩次 fresh mGBA launcher 嘗試，均使用本作專屬 port `25126`、`-C gdb.port=25126 -C skipBios=1 -g`、單一 connection policy 與 core GDB readiness。第一輪 `/opt/homebrew/bin/mgba` 的自有 PID `50537` 啟動後立即退出且沒有 listener；第二輪 `/private/tmp/atlantis-mgba-headless-build2/mgba-headless` 的自有 PID `50654` 輸出 `Debugger: Couldn't open socket`，事後 port 無 listener。兩個 PID 都已停止，沒有連線到其他 session，也沒有取得 `qSupported`、breakpoint／watchpoint 或 live memory。
+
+`tools/runtime_m2_6.py` 會先 fail closed 驗證 base／target／BPS／applied hash、M2.5 target ID、三個 glyph mapping 與 `0x846` adjacent untouched cell，再用 `core/gba/gdbstub_client.py` 做一次 qSupported readiness；目前兩份 ignored diagnostic 都是 `handshake=blocked`，error 是本環境 socket connect 的 `PermissionError [Errno 1]`，不能把它解讀成 ROM 或譯文失敗。static target proof 確認 `ec64/ec65/ec66`→`0x847/0x848/0x849`、target render hash，以及 glyph `0x846` base／target cell／render hash 完全一致；M2.5 已重抽 361 筆（target 1／untouched 360）並完成 BPS byte-identical apply。
+
+因此 M2.6 runtime gate 仍是 transport-only pending：沒有自然／受控 consumer coverage、font cache、writer destination、palette、VRAM／tilemap／OAM 或畫面可讀性證據，`ai_draft` 不變，也不擴大第二筆翻譯。下一個可執行 runtime 方案是使用 `/private/tmp` 的 compile-time GDB-port mGBA build，或在允許 localhost socket 的執行環境重跑同一個 hash-guarded diagnostic；不得把這兩輪 negative 升格為畫面失敗。
+
 ## 文字系統研究邊界
 
 外部 [Data Crystal TBL](https://datacrystal.tcrf.net/wiki/Summon_Night_Craft_Sword_Monogatari%3A_Hajimari_no_Ishi/TBL?oldid=53006) 提供主日文字型的 16-bit code-table 線索；本輪已用固定 B3CJ ROM 的多個 `0x0308 ... 0x0000` record 交叉驗證：VM halfword 仍按 little-endian 讀取，但 marker 後的 codepage bytes 必須以記憶體原始順序直接做 strict Shift-JIS decode，不能逐 halfword swap。M2.1 另以 csm3 handler／expression callsite 證實有限控制形狀，未知 word 保留 opaque；這不代表字型與所有 opcode 都已命名，也不能假設第一、二代的格式相同。完整格式見 [`research/static-format.md`](research/static-format.md) 與 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。M2.5 另以固定 plan、source hash、code-unit／glyph allocation、resource span 與重抽取收據限制第一筆翻譯，不把 static build 當成 runtime QA。研究時必須分開記錄：
@@ -165,7 +173,7 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 
 目標語言固定明寫為 `zh-TW`。專有名詞先查臺灣繁體 Wikipedia、巴哈姆特等多個社群來源，採既有主流寫法；若來源分裂，保留現有選擇並在 review note 說明，不自行創造音譯。既有英文／中文 patch 可參考工程資訊，但不是未審核的日文翻譯來源。
 
-## 完成標準（M2.5 static slice 已達成，翻譯審核／runtime QA 尚未達成）
+## 完成標準（M2.6 transport slice 已達成，畫面 QA／翻譯審核尚未達成）
 
 - clean 日版 ROM 的 header、revision、CRC32、SHA-256 已記錄並可重跑。
 - type-2 script table、LZ77、`PSI3` stream、bounded text record、Shift-JIS codepage 與 csm3 consumer 有遊戲專用、可重跑證據。
@@ -174,9 +182,10 @@ translations/*.jsonl      (可提交 ledger，只含 source_hash)
 - M2.3 已固定只允許 `0x845..0x85f` 的 glyph allocation manifest；2 個 opaque POC code unit、2 筆等長短 record 通過 source／ROM／font hash、font mapping／cell、record／PSI3 stream 與原 resource span capacity 的 fail-closed byte-level round-trip。這不等於翻譯或完整 ROM 回插。
 - M2.5 已以 `restore → work → strip` 建立 1 筆 `ai_draft` zh-TW ledger；固定 `source_hash`、14-byte／7-cell contract、`ec64/ec65/ec66`→`0x847/0x848/0x849` allocation、resource 24 span 與兩筆 adjacent untouched record。
 - M2.5 static build 重新抽取全部 361 筆 record，驗證 target 1／untouched 360、其他 resource decoded bytes 不變；原 resource span 為 `1379/1392`，新輸出 `1392/1392`，BPS 生成／套用後 target ROM byte-identical。這仍不是發布 patch 或畫面通過。
+- M2.6 以 target ROM 完成 base／target／BPS hash guard、三個 changed glyph 的 static target render 與 adjacent glyph `0x846` base／target byte-identical proof；兩輪 fresh launcher 的 PID／port／log／handshake negative 都只記為 transport pending，沒有 live renderer coverage。
 - 相同 byte length 的 record-level 原地修改可行；zero padding 縮短 blocked，變長需 resource rebuild；完整 VM、字型、LZ77／pointer encoder 與 ROM 回插仍待建立。
 - 至少一個有限量批次通過 `restore → work → strip` 往返與 repository safety check；M2.5 的唯一 target 仍需人工／術語／runtime review。
 - 編碼器／回插器拒絕來源 hash、缺字、控制碼或長度不一致，而不是放寬檢查。
 - 重建 ROM 重新抽取吻合；BPS round-trip 與 mGBA 核心畫面回歸另有收據。
 
-目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction、M2.2 static font chain／POC、M2.3 fail-closed allocation／bounded POC，以及 M2.5 一筆 `ai_draft` zh-TW static build／BPS round-trip；尚無翻譯人工審核、完整 VM／resource rebuild、自然畫面 runtime QA 或可發布 patch 收據。
+目前已完成 clean 日版 ROM 身分／hash、M1.5 靜態 decoder、M2.1 控制碼保真 parser、361 筆 ignored source extraction、M2.2 static font chain／POC、M2.3 fail-closed allocation／bounded POC、M2.5 一筆 `ai_draft` zh-TW static build／BPS round-trip，以及 M2.6 target／adjacent static proof／transport diagnostic；尚無翻譯人工審核、完整 VM／resource rebuild、自然畫面 runtime QA 或可發布 patch 收據。
