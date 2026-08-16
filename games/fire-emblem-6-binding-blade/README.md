@@ -235,6 +235,28 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m120_font_pool.py \
 
 目前 census 固定 ROM map `0x08691644` 的 121 筆 bounded pair、`0x08691736` 的 `0x0000` terminator、wrapper `0x08099314` 的 literal `0x086916e5` 與 indexed-byte window；runtime 部分只統計 glyph source／VRAM address、hash receipt count、group base stride 與 outlier，不替 indexed bytes 命名寬度、字形或 Unicode。既有 M1.17 report 的 21 composer／63 renderer entries 只支持 `0x020020c0`／`0x06014000` 的地址與 `0x40` 常見 transition；source/writer hash 缺失時仍標為 provisional。
 
+M1.21 的 composer literal／address formula 與 ignored runtime receipt census 可重跑如下；工具不輸出 literal 對應的 raw ROM bytes，也不把舊 receipt 當作 fresh writer proof：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m121_font_source.py \
+  roms/base/AFEJ.gba \
+  --runtime-report /private/tmp/afej-m117-natural-selector-consumer.json \
+  --output /private/tmp/afej-m121-font-source.json
+```
+
+static 結果確認兩個 composer 變體的 source base literal 是 `0x02000000`、destination base literal 是 `0x06010000`，另有 `0x02002800` config 與 `0x000003ff` mask；`0x020020c0` 與 `0x06014000` 只作 computed-address candidate。既有 ignored report 的 63 筆 renderer address pair 中兩者均觀察到，但 source hash／writer receipt 都是 `0`，所以不能宣稱同一-run byte equality。這次 fresh mGBA writer refresh 沒有取得可用 23901 listener，該 transport 結果不作遊戲語義證據。
+
+M1.22 的 bounded codepage candidate 可重跑如下；第二、三個輸入是 ignored research/runtime，不會把完整日文或 raw bytes 寫入輸出：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m122_codepage.py \
+  roms/base/AFEJ.gba research/afej-decoded.jsonl \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --output /private/tmp/afej-m122-codepage.json
+```
+
+目前結果是 121/121 map pairs 可 strict Shift-JIS 解碼；natural `start,a` receipt 的 8 筆 map lookup 與 8 筆 glyph-field 都有 map pair／glyph index equality，前 4 筆 code-unit hash 與 index 3087 corpus prefix 相符。這只建立 `shift_jis_candidate_with_runtime_map_correspondence`，不確認完整 Unicode identity、場景／內容分類或翻譯 readiness；M1.6 corpus 與所有原文仍維持 ignored source/work 邊界。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
