@@ -5,8 +5,13 @@ ja	zh-TW	category	status	notes
 桃園の誓い	桃園結義	event	provisional	臺灣三國題材慣用譯法；與桃園三結義條目交叉使用；待 B3EJ ROM 劇情畫面核對
 孔明	孔明	character	provisional	諸葛亮的字；臺灣三國題材常用別稱，與諸葛亮條目交叉使用；待 B3EJ ROM 劇情語境核對
 蜀	蜀	faction	provisional	臺灣三國志慣用國號／勢力名；待 B3EJ ROM 劇情上下文核對
+魏	魏	faction	provisional	臺灣三國志慣用國號／勢力名；待 B3EJ ROM 劇情上下文核對
+蜀漢	蜀漢	faction	provisional	中文三國史／臺灣三國志慣用國號；待 B3EJ ROM 劇情上下文核對
 呉	吳	faction	provisional	臺灣三國志慣用繁體字形；與孫吳／吳國條目交叉使用；待 B3EJ ROM 劇情上下文核對
 漢朝	漢朝	dynasty	provisional	臺灣歷史／三國志慣用朝代名稱；待 B3EJ ROM 劇情上下文核對
+皇帝	皇帝	title	provisional	臺灣歷史／三國志慣用稱謂；待 B3EJ ROM 劇情上下文核對
+玉璽	玉璽	item	provisional	臺灣歷史／三國題材慣用名物；待 B3EJ ROM 劇情上下文核對
+國家	國家	setting	provisional	普通敘事用語；待 B3EJ ROM 劇情上下文核對
 関羽	關羽	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
 張飛	張飛	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
 曹操	曹操	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
@@ -18,6 +23,7 @@ ja	zh-TW	category	status	notes
 龐統	龐統	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
 法正	法正	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
 司馬懿	司馬懿	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
+司馬一族	司馬一族	faction	provisional	依司馬氏家族敘事保留；待 B3EJ ROM 劇情上下文核對
 陸遜	陸遜	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
 呂布	呂布	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
 袁紹	袁紹	character	provisional	臺灣三國志慣用字形；待 B3EJ ROM 核對
