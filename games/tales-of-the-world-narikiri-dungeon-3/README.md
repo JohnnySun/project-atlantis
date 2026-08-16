@@ -84,9 +84,9 @@ return、caller LR、五窗 filter 與 selected-record negative 見
 - `0x12` 等控制碼、換行與 `%` token 的參數語義尚未解出；任何翻譯記錄必須
   原樣保存控制碼，不能把它們當普通文字刪除或重排。
 - 指標表、字串長度／容量、壓縮資源是否與文字池相連尚未證明。
-- 尚無 builder、容量檢查、checksum/round-trip 或實機／mGBA 回插驗證；目前
-  不可宣稱能安全擴長字串。第一個回插試驗必須先限制在等長或已證明有餘裕的
-  NUL 記錄，並逐筆保存原始 bytes、控制碼與 renderer 結果。
+- 尚無可處理變長／指標更新的 builder、容量檢查、checksum policy 或實機／mGBA
+  回插驗證；目前不可宣稱能安全擴長字串。已存在的等長 round-trip POC 只接受
+  exact strict record 與不變的控制／換行形狀，不能替代完整 builder。
 - 本次只完成有限 runtime 證據；M1.8 已可靠導航離開 state 4，但 state 7 的
   特定 menu/event 文字畫面仍未以 source consumer 證明。M1.8 的
   `--trace-first-record` 仍是五窗外／source-read=0 的 negative，因此不能把
@@ -335,6 +335,25 @@ PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \
 `--trace-builder-input --max-builder-hits 4`。它只在 `0x08015B74` 記錄 `r1`、LR
 與 strict-window classification，仍不讀 source bytes；命中後才繼續同一個 loader
 entry/source/asset pipeline。builder hit 本身不是自然文字 consumer proof。
+
+為了把另一條已確認的 formatter edge 收斂成一個可重跑切片，新增
+[`tools/format_record_runtime_probe.py`](tools/format_record_runtime_probe.py)。它只
+在 `0x080014F4` 設 entry breakpoint；命中後先要求 `r0` 是五窗內的 exact strict
+record 起點，才安裝該筆 source read-watchpoint。之後最多觀察一次
+`0x08004D90` codepoint lookup、一次 `0x08001414` font-map／asset slot read、一次
+`0x03000560` scratch write，並保留 caller LR、register snapshot、地址分類與
+hash/count metadata。`--trace-first-strict` 只把第一個實際命中的 strict record
+當成目標；它不掃 resolver／pointer、不輸出 source 或 glyph bytes，也不寫
+state/object/save。測試見
+[`tests/test_format_record_runtime_probe.py`](tests/test_format_record_runtime_probe.py)。
+
+這個 probe 的 offline contract 與目前狀態見
+[`research/m2-format-record-runtime-20260816.md`](research/m2-format-record-runtime-20260816.md)。
+目前沒有新的 live record hit：一次 bounded invocation 保留 ROM identity
+`B3TJ`／CRC32 `1867CCEF`、strict count `8938`，但 listener setup 以
+`PermissionError` 結束，format hits、source read、lookup、asset 與 scratch hits
+均為 `0`；先前獨立 mGBA 啟動也沒有形成可連線的 B3TJ listener。這是 runtime/setup
+negative，不是 renderer 或 codepage 的 negative proof。
 
 2026-08-16 的 port `24387` setup receipt 仍是 runtime negative：ROM identity／strict
 count `8938` 通過，但 sandbox 回報 `PermissionError: [Errno 1] Operation not

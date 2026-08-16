@@ -89,6 +89,9 @@ state 7 text-consumer trace，不是擴大 pointer scan。
 - [x] 建立只針對 `0x08001414` 的 bounded font consumer harness；只保留
   `r2→asset read→transform→scratch write` metadata，未把 harness 產物冒充
   runtime hit
+- [x] 建立只針對 `0x080014F4` 的 formatter strict-record runtime probe；只對
+  exact strict `r0` 安裝 source read-watch，並 bounded 追 lookup／asset／scratch；
+  listener/setup negative 仍不冒充 live hit
 - [x] 固定驗證唯一 `0x08015C26 → 0x080021A8` source-pointer-shaped font-loader
   edge、`r8→r1` provenance 與兩 byte read；strict record membership 與 live read
   仍保留為 unknown
