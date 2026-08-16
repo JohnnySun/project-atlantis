@@ -11,9 +11,9 @@
 - **雜湊已記錄**：CRC32 `a4a1c956`、MD5 `76cccc133899422854687e672f335cbd`、SHA-1 `32b5eeb82b0ffa14adc54223fb9e423efe8a1aa4`、SHA-256 `d61e284ba882cfba6b960b147bbdd0df642c402a8ed2adce3ccb9b837f0c97b0`。header 儲存補數為 `0xe1`、依標準公式計算為 `0x13`，不相符；已原樣保留，沒有修補 ROM。
 - **靜態文本線索已建立**：已確認可讀的標準 Shift-JIS 字串群、`0x00` 終止／`0x0A` 換行、格式參數與候選指標池；`research/recon-ledger.md` 僅記錄偏移、分類與證據，不保存完整原文。
 - **執行期已完成標題畫面有界 capture**：使用共用 `core/gba` 工具在獨立 mGBA/GDB session 讀取 ROM、IWRAM、VRAM、OAM 與 palette，確認 Mode 0 下 BG0–BG3 的 screenbase，並以共用 renderer 重建出開始提示、版權列、日文標題圖樣與裝飾層；尚未把靜態 Shift-JIS 字串池連到文字呼叫、字型 glyph identity 或可逆回插路徑。
-- **M2 短 record trace（2026-08-16）仍未完成 runtime link**：已選定 table B `0x0D1FFC` entry 0 → record `0x078528`，建立只輸出位址／hash／VRAM delta 摘要的 `tools/trace_m2_runtime.py`；本次 headless、SDL、Qt runtime 入口均未取得可用 GDB listener，因此沒有把 pointer／record → glyph/tile writer 寫成 confirmed。分類與 negative 證據見 `research/m2-runtime-trace-20260816.md`。
+- **M2.1 static consumer chain（2026-08-16）已完成有界切片**：table B file base `0x0D1FFC` 有 44 個指標、26 個唯一 record target，連續範圍至 `0x0D20AC`，下一個 word 為零，鄰接 table C 從 `0x0D20D8` 開始。已證實 Thumb consumer `0x080262F8` 取 table base、`0x080262FA–0x08026306` 做 index mask／scale／record load，再呼叫 `0x0800D8F0` → `0x0800D3FC` 的 wrapper／byte formatter；這條證據止於 reader／formatter，尚未證實 glyph writer。呼叫端目前只證實 `index & 0x7f`，沒有 `<44` bound。工具、分類與 runtime pending 見 `research/m2-1-static-chain-20260816.md`。
 - **公開術語研究已建立**：`translations/glossary.zh-TW.tsv` 是待 ROM 畫面／上下文核對的臺灣繁體候選表，涵蓋武將、地名、兵種／官職、策略和戰役事件用語；`research/term-sources.md` 記錄來源交叉核對與爭議項目。
-- **沒有翻譯批次**：尚未產生 `research/sangokushi-eiketsuden-decoded.jsonl`，也沒有任何可提交 ledger 記錄；因此不能宣稱已完成劇情翻譯或可逆回插。
+- **沒有翻譯批次**：`research/sangokushi-eiketsuden-decoded.jsonl` 只在本機 ignored 路徑作為 bounded extractor 輸出，含原文但不進 Git；沒有任何可提交 ledger 記錄，因此不能宣稱已完成劇情翻譯或可逆回插。
 
 ## 可重現的唯讀工具
 

@@ -47,6 +47,10 @@
 | VRAM／DMA | `confirmed-runtime / bounded` | 先前與本次 capture 均觀察到 DMA／資料搬移及非空 VRAM；已知例包含 `0x08079a08 -> 0x03004ee0`、`0x020013d8 -> 0x06000000` 類事件 | 這只能證明執行期圖形資料活動，不證明某段就是字型或文字 tile |
 | M2 selected short record | `confirmed-static / runtime-negative` | table B（`0x0D1FFC`）entry `0` 指向 file `0x078528`；payload 14 bytes、SHA-256 `c7ac47044e9576475f854841981b18ae20eca25ad41df403164ee6307b1aecca`，可由 bounded harness 重核 | 這是早期戰役效果訊息的候選選樣，不是 runtime consumer proof；本次沒有 pointer／record read hit |
 | M2 pointer／record → writer | `negative / not-observed` | 已建立 `tools/trace_m2_runtime.py`，會以 `KEYINPUT`、GBA pointer `0x080d1ffc`、record `0x08078528` read watchpoint 及 VRAM hash delta 做有界追蹤 | headless／SDL／Qt runtime 入口均未建立本 session 可用 GDB listener；沒有 source pointer／record 到 glyph/tile writer 的 confirmed chain |
+| M2.1 table B 邊界 | `confirmed-static` | file `0x0d1ffc` 到 `0x0d20ac` 為 44 個連續 GBA pointer；下一個 word 為零，table C 從 `0x0d20d8` 開始；record target 有 26 個唯一落點 | 呼叫端只證實 index `& 0x7f`；本地未證實 `<44` bound，不能把 dispatch 的 `cmp #0x22` 當成 table B bound |
+| M2.1 static consumer chain | `confirmed-static / Thumb` | `0x080262f8` literal 取 table base；`0x080262fa–0x08026306` mask／scale／load record pointer；`BL 0x0800d8f0` 再 `BL 0x0800d3fc` | 已到 byte reader／formatter；沒有 glyph writer 或 tile destination 證據 |
+| M2.1 table B record 結構 | `confirmed-static` | 44/44 為 NUL 終止且可由標準 Shift-JIS 解碼；payload 長度為 14×16、16×22、18×6；`0x0a`、格式參數和其他 `<0x20` opaque 控制 byte 皆為 0 | 結構結論只適用 table B；未知控制 byte 仍須保留 opaque，不由靜態解碼推論 glyph identity |
+| M2.1 runtime retry | `pending / bounded-negative` | 兩次新 process／獨立 port、無 bind shim；第二次可讀 GDB I/O／VRAM 並命中 16 次 KEYINPUT watchpoint | 未命中 table pointer、record 或 `0x0800d8f0` wrapper；沒有導航到 consumer 的 runtime evidence，本切片不再重試 |
 | 字型資料 | `unmapped` | 看到 VRAM 活動，但未定位 ROM font、runtime glyph pool 或 tilemap identity | 需要畫面／字型候選與渲染路徑交叉驗證 |
 | glyph addressing | `provisional / title-only` | 標題畫面的 BG／tilemap 位址與 renderer 已確認；M2 harness 只會摘要 VRAM 變動 tile | 尚未確認 font base、glyph index、cell stride、writer／DMA destination；不能把 title BG 重建當成 glyph addressing |
 | Unicode identity | `confirmed-static interpretation / runtime-unconfirmed` | M2 payload 可由標準 Shift-JIS 解碼，字元數與 source hash 固定 | 尚未將任何 Unicode 字元與 runtime glyph tile 或已知畫面位置交叉核對；Unicode codepage 和 glyph identity 分開追蹤 |
@@ -107,6 +111,35 @@ capture summary 的可審核讀值為：`DISPCNT=0x1e40`、`BG0CNT=0x1400`、`BG
   `24387` 均未提供可用的本 session GDB runtime；沒有 KEYINPUT 導航後的 pointer
   read、record read、writer PC 或 VRAM delta。因此不能宣稱 source pointer／record
   已連到 runtime glyph/tile writer，也不開始翻譯批次。
+
+## M2.1 static consumer chain（2026-08-16）
+
+本切片改以 table B 為 static consumer chain 錨點，並以
+`tools/analyze_table_b_chain.py`、`tools/table_b_common.py` 和
+`tools/extract_table_b.py` 重跑。分析器只輸出 metadata；extractor 的 44 行原文
+record 只寫到 ignored `research/sangokushi-eiketsuden-decoded.jsonl`，不進 Git。
+
+- **confirmed**：table B file range `[0x0d1ffc, 0x0d20ac)` 為 44 個 32-bit little-endian
+  GBA pointers；其後的零 word 與 table C base `0x0d20d8` 提供邊界交叉證據。record
+  pool 有 26 個唯一落點，全部 44 筆均 NUL 終止並可作標準 Shift-JIS byte-level
+  解碼。此池沒有 LF、`%s`／`%d`／`%u`／`%%` 或其他 `<0x20` opaque control byte。
+- **confirmed**：有效 Thumb consumer function 位於 `0x08026054` 的 dispatch 內；
+  `0x080262f8` 的 literal slot `0x08026350` 解析為 table base `0x080d1ffc`。
+  `0x080262fa–0x08026306` 讀取 event-derived index、套用 `&0x7f`、乘四、加 table
+  base、載入 record pointer，接著 `BL 0x0800d8f0`，wrapper 再呼叫
+  `0x0800d3fc`。反組譯 span、literal pool、branch target 與下一個 function
+  prologue 均由 ROM-independent tests／analyzer 驗證，沒有把 table data 當作 code。
+- **provisional**：`0x0800d3fc` 的 byte reader／formatter 會讀取 record bytes 並
+  分支處理 NUL／`%`；其後呼叫 `0x0806ed80`，但這個切片沒有證明它是 glyph writer。
+  table B caller 的 `<44` index bound 也未找到；`cmp r4,#0x22` 是 dispatch jump
+  table 的 bound，不是 table B entry count。
+- **negative / pending**：兩次乾淨新 mGBA process／獨立 port 重試中，第二次確認
+  transport、I/O／VRAM read 與 KEYINPUT watchpoint 可用，但只觀察到 16 次按鍵讀取，
+  沒有 pointer／record read 或 wrapper breakpoint。故 runtime glyph/tile writer、
+  glyph addressing 和 Unicode identity 仍未確認；不建立翻譯 batch。
+
+此切片的 next static edge 是檢查 `0x0800d3fc` 對 `0x0806ed80` 的 consumer／writer
+語意；需另有 code-flow 或畫面／VRAM 證據後，才能改變目前的 pending 狀態。
 
 ## 後續證據邊界
 

@@ -12,7 +12,9 @@ port.  It keeps one client connection, intercepts active-low KEYINPUT reads to
 send a bounded START sequence, watches the selected pointer-table entry and
 record, then summarizes the post-sequence VRAM change.  Use the shared
 ``core/gba/render_vram.py`` separately on ignored captures when a visual
-check is required.
+check is required.  When enabled, the static-chain wrapper breakpoint at
+``0x0800D8F0`` records the actual ``r0`` source pointer before the byte reader;
+it does not claim that the downstream glyph writer has been found.
 """
 
 from __future__ import annotations
@@ -46,6 +48,10 @@ CANDIDATE = {
     "record_payload_length": 14,
     "record_payload_sha256": "c7ac47044e9576475f854841981b18ae20eca25ad41df403164ee6307b1aecca",
 }
+
+STATIC_RECORD_WRAPPER_ADDRESS = 0x0800D8F0
+RECORD_POOL_START = 0x08078528
+RECORD_POOL_END_EXCLUSIVE = 0x0807870B
 
 
 def parse_sequence(spec: str) -> list[tuple[str, int]]:
@@ -183,6 +189,7 @@ def run_trace(
     event_timeout: float,
     settle_seconds: float,
     post_seconds: float,
+    wrapper_breakpoint: bool = True,
 ) -> dict[str, object]:
     static = static_candidate_metadata(rom_path)
     addresses = candidate_addresses()
@@ -199,10 +206,12 @@ def run_trace(
         "events": [],
         "pointer_hits": [],
         "record_hits": [],
+        "wrapper_hits": [],
         "negative": [],
     }
     client = GdbClient(host, port, timeout=max(5.0, event_timeout), packet_delay=0.08)
     watches: list[tuple[int, int, int]] = []
+    breakpoint_set = False
     before_vram: bytes | None = None
     try:
         client.connect()
@@ -212,6 +221,11 @@ def run_trace(
         report["settle_stop"] = client.continue_and_interrupt(settle_seconds)
         report["settled_io"] = io_values(client)
         before_vram = client.read_memory(0x06000000, 0x18000)
+
+        if wrapper_breakpoint:
+            client.set_breakpoint(STATIC_RECORD_WRAPPER_ADDRESS)
+            breakpoint_set = True
+            report["static_wrapper_breakpoint"] = f"0x{STATIC_RECORD_WRAPPER_ADDRESS:08X}"
 
         for address, length in (
             (KEYINPUT_ADDRESS, 2),
@@ -243,7 +257,19 @@ def run_trace(
                 "registers": register_snapshot(registers),
             }
             report["events"].append(event)
-            if address is not None and KEYINPUT_ADDRESS <= address < KEYINPUT_ADDRESS + 2:
+            pc_without_thumb_bit = registers["pc"] & ~1
+            if pc_without_thumb_bit == STATIC_RECORD_WRAPPER_ADDRESS:
+                report["wrapper_hits"].append({
+                    "event_index": index,
+                    "stop": stop,
+                    "pc": f"0x{registers['pc']:08X}",
+                    "lr": f"0x{registers['lr']:08X}",
+                    "r0": f"0x{registers['r0']:08X}",
+                    "r0_is_candidate_record": registers["r0"] == record_address,
+                    "r0_in_table_b_record_pool": RECORD_POOL_START <= registers["r0"] < RECORD_POOL_END_EXCLUSIVE,
+                    "registers": register_snapshot(registers),
+                })
+            elif address is not None and KEYINPUT_ADDRESS <= address < KEYINPUT_ADDRESS + 2:
                 client.write_register(0, key_value(desired))
             elif address is not None and pointer_address <= address < pointer_address + 4:
                 report["pointer_hits"].append({
@@ -266,8 +292,10 @@ def run_trace(
                 })
 
         report["link_status"] = (
-            "pointer-and-record-runtime-read-observed"
-            if report["pointer_hits"] and report["record_hits"]
+            "pointer-record-wrapper-runtime-observed"
+            if report["pointer_hits"] and report["record_hits"] and report["wrapper_hits"]
+            else "record-wrapper-runtime-observed"
+            if report["wrapper_hits"]
             else "no-runtime-link-observed"
         )
         report["post_sequence_stop"] = client.continue_and_interrupt(post_seconds)
@@ -275,6 +303,11 @@ def run_trace(
         report["post_sequence_io"] = io_values(client)
         report["vram_delta"] = vram_summary(before_vram, after_vram)
     finally:
+        if breakpoint_set:
+            try:
+                client.remove_breakpoint(STATIC_RECORD_WRAPPER_ADDRESS)
+            except (ConnectionError, OSError, RuntimeError, TimeoutError):
+                pass
         for address, length, watch_type in reversed(watches):
             try:
                 client.remove_watchpoint(address, kind=length, watch_type=watch_type)
@@ -294,6 +327,11 @@ def main() -> int:
     parser.add_argument("--event-timeout", type=float, default=5.0)
     parser.add_argument("--settle-seconds", type=float, default=0.25)
     parser.add_argument("--post-seconds", type=float, default=0.50)
+    parser.add_argument(
+        "--disable-wrapper-breakpoint",
+        action="store_true",
+        help="skip the static-chain 0x0800D8F0 breakpoint",
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.max_events < 1:
@@ -309,6 +347,7 @@ def main() -> int:
             event_timeout=args.event_timeout,
             settle_seconds=args.settle_seconds,
             post_seconds=args.post_seconds,
+            wrapper_breakpoint=not args.disable_wrapper_breakpoint,
         )
     except (OSError, RuntimeError, TimeoutError, ValueError) as exc:
         print(f"trace_m2_runtime.py: {exc}", file=sys.stderr)

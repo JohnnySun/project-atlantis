@@ -19,11 +19,16 @@
 ## 里程碑 2：文本、字型與可逆路徑
 
 2026-08-16 的 M2 bounded slice 已選定 table B entry 0（file target `0x078528`）並
-建立 `tools/trace_m2_runtime.py`；由於本 session 的 mGBA runtime 入口未能穩定建立
-GDB listener，pointer／record 到 glyph/tile writer 仍是 negative，以下未勾選項目不變。
+建立 `tools/trace_m2_runtime.py`。後續 M2.1 已以 static consumer chain 前進：table B
+邊界與 44 entries 已固定，並由 Thumb code-flow 證實 table index／record load →
+wrapper／byte formatter；runtime pointer／record → glyph/tile writer 仍 pending，以下
+未勾選項目不變。
 
 - [x] 靜態定位劇情／系統／戰役相關候選 Shift-JIS 區段與四組 pointer-table 候選；分類和範圍見 recon ledger。
 - [x] 初步確認 `0x00` 終止、`0x0A` 換行、格式參數和候選控制序列；尚未確認完整字串結構。
+- [x] M2.1 固定 table B 邊界（44 entries、26 unique targets），驗證 table B record 的 Shift-JIS／NUL 結構，並記錄未知控制 bytes 為 opaque。
+- [x] M2.1 找到有效 Thumb static chain：`0x080262F8` literal → `0x080262FA–0x08026306` index／record load → `0x0800D8F0` wrapper → `0x0800D3FC` byte formatter／reader；glyph writer 尚未證實。
+- [x] M2.1 建立 bounded analyzer、ignored decoded JSONL extractor、反組譯／邊界／結構測試；兩次乾淨 runtime retry 未取得 consumer hit，runtime edge 保留 pending。
 - [ ] 分別確認字串結構、指標／池、壓縮、控制碼、換行和字型／glyph addressing。
 - [ ] 以已知畫面或執行期渲染交叉驗證 codepage；分開記錄 glyph pool 定位和 Unicode 身分確認。
 - [ ] 寫出 `games/sangokushi-eiketsuden/tools/` 下的唯讀 decoder／renderer，輸出本機原文表。
