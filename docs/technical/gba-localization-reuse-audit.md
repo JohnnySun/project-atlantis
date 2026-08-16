@@ -14,8 +14,8 @@ compression、pointer 或 glyph identity 誤放進 `core/`。
 - [x] 找出共同 runtime blocker：mGBA process、listener、port race、PID ownership。
 - [x] 實作 game-agnostic ROM identity 與 runtime session ownership 工具。
 - [x] 完成兩個 Skill 的 baseline／新版 eval 與機器可讀結果。
-- [ ] 將新工具導入八個 agent，收集至少三款實際使用回報。
-- [ ] 完成最終 repository safety、core tests、Skill eval 與 adoption review。
+- [x] 將新工具與採用邊界送達八個 agent；A6SJ、B3TJ、B3CJ 三款實體 ROM 相容性通過。
+- [x] 完成最終 repository safety、core tests、Skill eval 與 adoption review。
 
 ## 專案矩陣
 
@@ -92,6 +92,11 @@ case：baseline 重新手寫約 180 行 shell launcher，新版直接採用
 `dict | None` 型別語法，因此本輪未啟動互動 viewer。標準化 output summary、assertion
 grading、benchmark 與 analyzer notes 仍保存於 ignored workspace；此為 viewer 相容性
 限制，不是略過 eval。
+
+八個翻譯 Session 均已收到 `3f4706b`／`4b040a8` 與本文件的採用指令。為保護共享
+main 上正在進行的 dirty WIP，不要求立即機械式刪除舊 helper；各 Agent 在下一個
+identity 或 runtime gate 採用，並把命令、exit/status 與本作特例寫回自己的
+ROADMAP／research。
 
 ## 後續候選
 
