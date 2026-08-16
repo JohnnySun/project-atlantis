@@ -25,7 +25,7 @@
 - [x] 以本機 ROM 交叉驗證 type-2 table `0x1718ffc`、16-byte pointer units、LZ77 MSB-first flags、`PSI3`／`+0x10` stream 與 `0x0308 ... 0x0000` record。
 - [x] 建立 bounded `tools/extract_static.py` 與測試；可由固定 B3CJ ROM 重抽 361 筆真實 record，完整日文 source 只寫 ignored JSONL。
 - [x] 保留 stable `string_id`、pointer／payload provenance、compressed/decompressed hash 與 control token；tracked 文件不含完整原文。
-- [~] 完成完整 VM opcode／換行語意、修改長度契約與回插路徑；font lookup／glyph identity 已在 M2.2 static 範圍完成，但 palette／runtime／正式 encoder 仍未完成。
+- [~] 完成完整 VM opcode／換行語意、修改長度契約與回插路徑；font lookup／glyph identity、bounded codepage／font encoder、pointer relocation 與 semantic LZ77／container rebuild 已有 static evidence，但未知 VM、完整版面與發布級 encoder／runtime 仍未完成。
 
 M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉驗證的獨立 blocked 項，不是本里程碑的 gate。格式證據與重跑命令見 [`research/static-format.md`](research/static-format.md)。
 
@@ -36,7 +36,7 @@ M1.5 不依賴 mGBA GDB listener；`RUNTIME-003` 仍是 live RAM／VRAM 交叉�
 - [x] stable `string_id`／pointer provenance 不變；ignored source table 新增 `control_structure`、`following_controls`、`record_sha256` 與 length-contract metadata。
 - [x] 對 13 個含 record 的 resource、361 筆 record 做 source Shift-JIS re-encode 與 decoded PSI3 stream no-op round-trip：`32092` bytes，original/encoded aggregate SHA-256 相同。
 - [x] 明確分類相同 byte length 可在 record/stream 層原地處理、zero padding 縮短 blocked、變長需 resource rebuild；未宣稱完整 ROM 回插。
-- [ ] 建立可修改翻譯的 codepage/font encoder、未知 VM handler、pointer relocation、LZ77/container rebuild 與 ROM-level verifier。
+- [~] 建立可修改翻譯的 codepage／font encoder、pointer relocation、bounded LZ77／container rebuild 與 verifier；M2.3／M5 static encoder、M5.1 resource-24 relocation 與 13-resource semantic container no-op 已完成，但未知 VM handler、全遊戲變長翻譯 policy 與發布級 ROM verifier 仍未完成。
 
 M2.1 的完整 opcode／round-trip／length-contract 收據見 [`research/m2.1-control-roundtrip.md`](research/m2.1-control-roundtrip.md)。
 
@@ -48,7 +48,7 @@ M2.1 的完整 opcode／round-trip／length-contract 收據見 [`research/m2.1-c
 - [x] 掃描實際 strict code format：6879 accepted pairs、2087 mapped slots、27 個未引用全零可用槽 `0x845..0x85f`；30 個非空不可尋址槽 `0x141..0x15e` 與 3 個 out-of-resource table target 不分配。
 - [x] 建立 `tools/inspect_font.py`、靜態 12×12 renderer、Unifont 17.0.05 來源／授權紀錄與測試；static POC 只把 opaque `ec48`／`ec49` 暫映射到 `0x845`／`0x846`，並 render adjacent untouched `0x844`。
 - [x] POC 的 table/cell 修改區域共 52 bytes，固定 source 下實際非零 byte diff 為 43；ROM／PGM／summary 留在 ignored `work/`，未更新 header／script container，未宣稱翻譯、可發布 patch 或 runtime QA。
-- [ ] 證實 palette、writer 的實際 VRAM/OAM layout、fallback 語意、out-of-resource targets、font/resource encoder 與 ROM-level insertion；RUNTIME-003 仍為獨立 live evidence blocker。
+- [~] 證實 palette／writer static destination、text tile-data address 與 OAM buffer copy；fallback 語意、out-of-resource targets、live VRAM／OAM layout、font／resource encoder 的全遊戲變長 policy 與 ROM-level release insertion 仍未完成，RUNTIME-003 只保留為歷史 live evidence blocker。
 
 M2.2 的完整字型、slot、source/license 與 POC 收據見 [`research/m2.2-font.md`](research/m2.2-font.md) 與 [`research/font-sources.md`](research/font-sources.md)。
 
@@ -109,7 +109,7 @@ M2.7 的 launcher、listener、single-connection error、safe alternatives 與�
 - [x] 以固定 B3CJ ROM identity guard 重抽 13 個含文字 resource、361 筆 record，並確認 source Shift-JIS re-encode `361/361` 與 stable record-contract aggregate hash。
 - [x] 交叉驗證 type-2 pointer unit 為 16 bytes；13 個 pointer entry 收斂為 11 個 payload groups，resource `9`／`10` 是 resource `11` 的 zero-span alias，positive span 不重疊且 compressed size 不超過 span。
 - [x] 建立 `tools/audit_layout.py`／測試，輸出只含 offset、span、opcode 計數、length histogram、opaque count 與 hash 的 ignored summary；不輸出完整日文或 raw stream。
-- [~] record-level 只確認 `0x0308` inline segment／`0x0000` terminator 與相同 byte length 契約；line/page/wait、glyph width、變長／padding、LZ77／PSI3 container rebuild 與 runtime layout 仍 unknown。
+- [~] record-level 只確認 `0x0308` inline segment／`0x0000` terminator 與相同 byte length 契約；line/page/wait、glyph width、變長／padding、translated LZ77／PSI3 container insertion 與 runtime layout 仍 unknown；semantic no-op rebuild 另有 M5 收據。
 
 M2.8 的 pointer／record／layout 收據見 [`research/m2.8-layout.md`](research/m2.8-layout.md)。這個切片沒有擴大翻譯或宣稱完整 ROM 回插；opaque control 與 runtime transport boundary 仍分開保留。
 
@@ -173,9 +173,9 @@ M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](resear
 
 ## M5：回插、BPS 與 runtime QA
 
-- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成單一 resource 的多筆 pointer relocation static slices，完整多 resource／alias policy 尚未建立。
-- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2／M5.3／M5.4／M5.5 已涵蓋 resource-24 relocation，尚非完整 ROM container coverage。
-- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；目前為八筆 cumulative `ai_draft` static POC，尚未達可發布 gate。
+- [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成 resource-24 translation relocation 與 13-resource semantic container no-op；全遊戲變長 translation／alias policy 尚未建立。
+- [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2／M5.3／M5.4／M5.5 涵蓋 resource-24 translation rebuild，semantic no-op 已覆蓋 13 resources／11 groups，尚非全遊戲 translated insertion。
+- [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；八筆 cumulative `ai_draft` static POC 與 13-resource semantic no-op 均可重跑，但尚未達可發布 gate。
 - [ ] 以 mGBA 測試實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面，保留未測試範圍。
 - [ ] 只有完成上述收據後，才評估 zh-TW 發布。
 
@@ -239,8 +239,9 @@ M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS recei
 - [~] clean mGBA 2347 route 已取得 qSupported／`S02` 與自然 palette DMA live call（`0x03005d60 → 0x05000000`, `0x400` bytes）；但 `0x0308` consumer、writer、changed glyph `0x847/0x848/0x849` 的 live VRAM、tilemap、live OAM values/layout 與畫面可讀性仍無證據。static OAM copy／text tile address 只作替代 static evidence，不升格為文字 runtime QA。
 - [x] 先前 index-lock permission negative 已由 path-limited commit `87ed08a` 解決；不使用 alternate index 或其他繞過方式，歷史收據與最新 runtime 邊界見 [`research/m5.5-release-gates.md`](research/m5.5-release-gates.md)。
 - [x] 以 audit v3 完成可重跑的 static OAM transfer／text tile-data address callsite evidence；tilemap destination、live OAM/VRAM 與 screen readability 仍獨立保留 unknown。
+- [x] 以 `tools/rebuild_container.py` 完成 13 resources／11 payload groups 的 semantic PSI3／LZ77 no-op rebuild；directory byte-identical、361/361 source re-encode、capacity guard 與 BPS apply byte-identical，僅關閉 no-op container 層，不等於 translated release insertion。
 - [ ] 在不同 fresh process 上成功完成一次文字 consumer/writer hit（自然導航或明確標記的 controlled call），並讀出 changed／adjacent live VRAM；一次 controlled connection `Errno 49` negative 不算 ROM／譯文失敗。
 - [ ] 完成八筆人工語意／術語／字型／版面 review，尤其查證 `重金礦`；未通過前不得改為 reviewed／approved。
-- [ ] 取得可實際完成 `qSupported` 的不同 runtime transport，或以更完整且可重跑的 static tilemap／OAM callsite 證據替代；未達成前不宣稱可發布。
+- [ ] 在已確認的 localhost runtime transport 上完成文字 consumer/writer／changed glyph coverage，或取得足以替代的完整 static tilemap／layout／release encoder evidence；未達成前不宣稱可發布。
 
 本節是 M5.5 後的 gate 收斂，不是 M5.6，也不允許再增加同長度、重複通用短句。
