@@ -65,6 +65,15 @@
 - [~] static provenance 尚非自然 runtime selector hit，也不是 glyph/source table；M1.8 的三組自然 negative window 保持不變，未新增 synthetic state。
 - [ ] bounded map `0x08198a98`／`0x087df54c` table shape 及其 source writer，再取得可重抽取的 code-unit/glyph edge；未完成前維持 source table、codepage、ledger、翻譯與回插封鎖。
 
+## M1.10：ROM pointer-table shape 與 bounded consumer
+
+- [x] `0x08198a98` bounded 0x400-byte window 的 hash、word/pointer count、sentinel offsets `0x5c`／`0xa4` 與 variable-stream classification 已重抽取；未假設 fixed pointer stride。
+- [x] `0x087df54c` 的第一個連續 pair run 已確認為 125 records、stride `0x8`、span `0x3e8`、99 unique even ROM data pointers；第一個 non-ROM pointer break 為 `0x3e8`。
+- [x] 交叉到兩個實際 static reader：`0x080bee30` literal → `0x080bee40` selector swap，以及 `0x08153466` literal → `0x081534ae` selector swap；Thumb boundary/function hash 均保留。
+- [x] 對前八個 `0x087df54c` unique target 做 0x80-byte hash/ROM-pointer/LZ77-header count；bounded window 沒有 LZ77 header 命中，但不把此陰性升格為全區未壓縮證明。
+- [~] 兩個 table 都是 ROM-resident state/resource provenance，尚未建立 source writer、code-unit 或 glyph edge；不得建立翻譯 ledger。
+- [ ] 追 `0x08198a98` variable consumer 與 `0x087df54c` data targets 的下一個可命名 source/class edge，再決定是否需要新的自然 runtime watch。
+
 ## M2：可審核翻譯 ledger
 
 - [ ] 先完成日文 source table 與 stable string ID，再建立第一個有限 UI／事件批次。

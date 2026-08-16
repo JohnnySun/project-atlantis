@@ -2,7 +2,7 @@
 
 本目錄只處理日版 GBA《真・女神転生II》（A5TJ），目標為臺灣繁體 `zh-TW`。ROM、sav、完整解出的原文、VRAM／OAM dump、渲染圖片與暫存構建只保存在本機，不進 Git。
 
-## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9 基準狀態（2026-08-16）
+## M0/M1/M1.5/M1.6/M1.7/M1.8/M1.9/M1.10 基準狀態（2026-08-16）
 
 - ROM header 身分已確認：`DDS_2`、`A5TJ`、maker `EB`、revision `0`、8 MiB。
 - 本機候選的 ROM CRC32 為 `af40cc99`，SHA-256 為 `819a6a19a40bfbe7608f4b813dc18285c827f64e1523561ffe8e10ce8ab5991e`；完整指紋和 header complement 異常見 `research/recon-20260816.md`。
@@ -31,6 +31,7 @@
 - 尚未開始翻譯，也沒有可提交的翻譯記錄；專有名詞會在真正建立批次前依 `AGENTS.md` 查 Wikipedia zh-tw、巴哈姆特及其他獨立來源。
 - M1.8 已從 fresh process 起點先 arm `0x03006950` pointer、相鄰 halfword 與 `0x0203db40` counter watches；三條明確 natural transition cohort 與同一路徑的窄 initializer-only follow-up 都沒有 pointer/counter write、selector caller 或 descriptor hit。完整證據與 22 個 provisional static candidates 見 `research/m1.8-selector-initializer-20260816.md`。
 - M1.9 已完成四個 priority writer 的 bounded Thumb static mapping 與 caller 1–3 層：`0x0813e428` 以 incoming `r0` 替換 selector pointer、`0x0813e574` 從 RAM `0x030068c0` 還原，`0x0812f2b4` 的明確分支則寫入 ROM `0x08036666`；`0x080bee40`／`0x081534ae` 的 caller argument 只得到 provisional ROM-table provenance，尚未連到 glyph source。證據見 `research/m1.9-selector-state-mapping-20260816.md`。
+- M1.10 已將兩個 ROM provenance 分開：`0x08198a98` 是含 sentinel 的 variable word stream；`0x087df54c` 是 125 筆、stride `0x8` 的 key＋ROM pointer 區段。reader 只在 `0x080bee40`／`0x081534ae` 將它們送入 selector swap，前八個有限 target window 沒有 LZ77 header 命中；仍未得到 glyph/source table。證據見 `research/m1.10-rom-table-shape-20260816.md`。
 
 ## 可重現入口
 
@@ -110,6 +111,17 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B \
 Thumb BL caller；它不做 glyph scan、不輸出 instruction/raw source，也不建立
 source table。
 
+M1.10 ROM table shape（唯讀 static）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B \
+  games/shin-megami-tensei-2/tools/m110_rom_table_shape.py \
+  --rom /path/to/A5TJ.gba --output /private/tmp/smt2-m110-static.json
+```
+
+工具只檢查 `0x08198a98`／`0x087df54c` 的 bounded word/pair shape、literal
+reader 與少量 target-window hash；不輸出 table key、raw bytes 或完整原文。
+
 本回合優先使用專案共用的 `core/gba/gdbstub_client.py`、
 `core/gba/capture_runtime.py`、`core/gba/render_oam.py` 與本目錄的
 `tools/analyze_obj_tiles.py`、`tools/trace_swi_consumers.py`、
@@ -119,8 +131,8 @@ memory/tile/OAM 操作；A5TJ 的 offset、來源判定與 negative evidence 均
 
 ## 下一個安全切片
 
-沿 M1.9 確認的 RAM save/restore edge，先對 `0x08198a98`、`0x087df54c` 兩個
-provisional ROM pointer-table provenance 做 bounded table-shape／caller mapping，
-再決定是否有不重複 runtime window 的最小自然 transition。仍不得把 selector
-state table 當成文字 source；只有 decoder 能穩定重新抽出同一批資料、且回插後能
-byte-for-byte 驗證，才進入有限量翻譯與 patch 工程。
+沿 M1.10 的 ROM reader edge，對 `0x08198a98` 的 variable descriptor／state
+consumer 與 `0x087df54c` 的 data-pointer targets 做下一個 bounded source-class
+mapping；若仍是 resource/state data，轉向下一個可命名的文字 code-unit consumer。
+仍不得把 selector state table 當成文字 source；只有 decoder 能穩定重新抽出同一
+批資料、且回插後能 byte-for-byte 驗證，才進入有限量翻譯與 patch 工程。
