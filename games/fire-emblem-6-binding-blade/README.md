@@ -224,6 +224,17 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m19_glyph_sink.py \
 
 本次 fresh `start,a` receipt 保存 loader `1`、map lookup `8`、glyph-field write `8`；長 natural route `start,a,a,a,a,a,a,a,a,down,a,a,start,a,b,b,left,right,up,down,a` 保存 loader `3`，但 `0x08098f68`／composer／kernel／writer 均為 0。這是 bounded scene/instrumentation negative；M0/M1 既有 `0x08099424`／`0x080995b0`／`0x06014000` 正向 baseline 另存，不能與本次 0-hit 合併成同一份 receipt。完整 JSON 僅留 ignored `/private/tmp`，不提交 ROM、RAM 或完整原文。
 
+M1.20 的 hash-only map/font-pool census 可重跑如下；`--runtime-report` 只讀 ignored runtime receipt，不輸出 raw source／RAM：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m120_font_pool.py \
+  roms/base/AFEJ.gba \
+  --runtime-report /private/tmp/afej-m117-natural-selector-consumer.json \
+  --output /private/tmp/afej-m120-font-pool-census.json
+```
+
+目前 census 固定 ROM map `0x08691644` 的 121 筆 bounded pair、`0x08691736` 的 `0x0000` terminator、wrapper `0x08099314` 的 literal `0x086916e5` 與 indexed-byte window；runtime 部分只統計 glyph source／VRAM address、hash receipt count、group base stride 與 outlier，不替 indexed bytes 命名寬度、字形或 Unicode。既有 M1.17 report 的 21 composer／63 renderer entries 只支持 `0x020020c0`／`0x06014000` 的地址與 `0x40` 常見 transition；source/writer hash 缺失時仍標為 provisional。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
