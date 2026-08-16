@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Bounded M33 target-text relocation POC for A9PJ.
+"""Bounded M33/M34 target-text relocation POC for A9PJ.
 
-This is deliberately limited to the already eligible M32 name-entry row and
-the static Latin row-2 target subset exposed by ``m20_keyboard_codepage_probe``.
-It relocates one pointed-to halfword stream to the end of the ROM image and
-rewrites exactly one known caller literal.  It is not a general extractor,
-translator, CJK encoder, or patcher for unclassified rows.
+The fixed profiles are limited to the already eligible M32 surname row and
+M34 protagonist-name row, both using the static Latin row-2 target subset
+exposed by ``m20_keyboard_codepage_probe``. Each profile relocates one pointed-
+to halfword stream to the end of the ROM image and rewrites exactly one known
+caller literal. It is not a general extractor, translator, CJK encoder, or
+patcher for unclassified rows.
 
 The generated image and BPS belong in a caller-selected private/work path. The
 receipt is metadata-only and never includes source text or stream bytes.
@@ -31,9 +32,26 @@ from m20_keyboard_codepage_probe import (  # noqa: E402
 
 ROM_BASE = 0x08000000
 EXPECTED_A9PJ_SHA256 = "b41c293fc0ed6111b7a37d960d9cd0c685e5d521a4739e0e2eaa7ff6186cfdd3"
-CALLER_POINTER_FILE_OFFSET = 0x52720
-EXPECTED_OLD_POINTER = 0x081FA4B4
-ORIGINAL_STREAM_FILE_OFFSET = 0x1FA4B4
+PROFILES = {
+    "m32": {
+        "caller_pointer_file_offset": 0x52720,
+        "expected_old_pointer": 0x081FA4B4,
+        "original_stream_file_offset": 0x1FA4B4,
+        "original_stream_byte_length": 0x10,
+        "policy": "append-at-end-and-rewrite-one-M32-caller-literal",
+    },
+    "m34": {
+        "caller_pointer_file_offset": 0x003E34,
+        "expected_old_pointer": 0x08087384,
+        "original_stream_file_offset": 0x087384,
+        "original_stream_byte_length": 0x0A,
+        "policy": "append-at-end-and-rewrite-one-M34-source-pointer-literal",
+    },
+}
+# Backward-compatible aliases used by the M33 unit tests and callers.
+CALLER_POINTER_FILE_OFFSET = PROFILES["m32"]["caller_pointer_file_offset"]
+EXPECTED_OLD_POINTER = PROFILES["m32"]["expected_old_pointer"]
+ORIGINAL_STREAM_FILE_OFFSET = PROFILES["m32"]["original_stream_file_offset"]
 MAX_STREAM_UNITS = 0x100
 
 
@@ -41,35 +59,52 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def build_target(rom: bytes, target_text: str) -> tuple[bytes, dict[str, object]]:
+def profile_metadata(name: str) -> dict[str, int | str]:
+    try:
+        return PROFILES[name]
+    except KeyError as exc:
+        raise ValueError(f"unknown bounded relocation profile: {name}") from exc
+
+
+def build_target(
+    rom: bytes,
+    target_text: str,
+    *,
+    profile: str = "m32",
+) -> tuple[bytes, dict[str, object]]:
     """Build the bounded relocated image and a source-free receipt."""
 
-    if len(rom) < CALLER_POINTER_FILE_OFFSET + 4:
+    selected = profile_metadata(profile)
+    pointer_file_offset = int(selected["caller_pointer_file_offset"])
+    expected_old_pointer = int(selected["expected_old_pointer"])
+    original_stream_file_offset = int(selected["original_stream_file_offset"])
+    if len(rom) < pointer_file_offset + 4:
         raise ValueError("ROM is too short for the bounded caller literal")
-    old_pointer = struct.unpack_from("<I", rom, CALLER_POINTER_FILE_OFFSET)[0]
-    if old_pointer != EXPECTED_OLD_POINTER:
+    old_pointer = struct.unpack_from("<I", rom, pointer_file_offset)[0]
+    if old_pointer != expected_old_pointer:
         raise ValueError(
-            f"unexpected M32 caller pointer 0x{old_pointer:08X}; refusing relocation"
+            f"unexpected {profile} caller pointer 0x{old_pointer:08X}; refusing relocation"
         )
     encoded = encode_bounded_target(rom, target_text)
     stream = encoded + b"\x00\x00"
     target_offset = len(rom)
     new_pointer = ROM_BASE + target_offset
     patched = bytearray(rom)
-    patched[CALLER_POINTER_FILE_OFFSET:CALLER_POINTER_FILE_OFFSET + 4] = struct.pack(
+    patched[pointer_file_offset:pointer_file_offset + 4] = struct.pack(
         "<I", new_pointer
     )
     patched.extend(stream)
     receipt = {
-        "probe_version": "m33-target-reinsertion-poc-20260816.v1",
+        "probe_version": "m33-m34-target-reinsertion-poc-20260816.v2",
+        "profile": profile,
         "input_rom_sha256": sha256(rom),
         "input_rom_size": len(rom),
         "target_rom_sha256": sha256(bytes(patched)),
         "target_rom_size": len(patched),
-        "caller_pointer_file_offset": f"0x{CALLER_POINTER_FILE_OFFSET:X}",
+        "caller_pointer_file_offset": f"0x{pointer_file_offset:X}",
         "old_pointer_bus": f"0x{old_pointer:08X}",
         "new_pointer_bus": f"0x{new_pointer:08X}",
-        "original_stream_file_offset": f"0x{ORIGINAL_STREAM_FILE_OFFSET:X}",
+        "original_stream_file_offset": f"0x{original_stream_file_offset:X}",
         "relocated_stream_file_offset": f"0x{target_offset:X}",
         "relocated_stream_byte_length": len(stream),
         "relocated_stream_sha256": sha256(stream),
@@ -77,7 +112,7 @@ def build_target(rom: bytes, target_text: str) -> tuple[bytes, dict[str, object]
         "encoded_target_sha256": sha256(encoded),
         "target_character_count": len(target_text),
         "terminator": "0x0000",
-        "relocation_policy": "append-at-end-and-rewrite-one-M32-caller-literal",
+        "relocation_policy": selected["policy"],
         "source_text_emitted": False,
         "general_codepage_confirmed": False,
         "cjk_encoder_confirmed": False,
@@ -89,9 +124,13 @@ def build_target(rom: bytes, target_text: str) -> tuple[bytes, dict[str, object]
 def verify_target(clean_rom: bytes, target_rom: bytes, receipt: dict[str, object]) -> dict[str, object]:
     """Re-read the relocated stream and verify the bounded target alphabet."""
 
+    selected = profile_metadata(str(receipt.get("profile", "m32")))
+    pointer_file_offset = int(selected["caller_pointer_file_offset"])
+    original_stream_file_offset = int(selected["original_stream_file_offset"])
+    original_stream_byte_length = int(selected["original_stream_byte_length"])
     if sha256(target_rom) != receipt.get("target_rom_sha256"):
         raise ValueError("target ROM hash does not match the build receipt")
-    pointer = struct.unpack_from("<I", target_rom, CALLER_POINTER_FILE_OFFSET)[0]
+    pointer = struct.unpack_from("<I", target_rom, pointer_file_offset)[0]
     stream_offset = pointer - ROM_BASE
     if stream_offset < len(clean_rom) or stream_offset + 2 > len(target_rom):
         raise ValueError("relocated pointer is outside the appended target stream")
@@ -123,8 +162,8 @@ def verify_target(clean_rom: bytes, target_rom: bytes, receipt: dict[str, object
         "encoded_target_sha256": sha256(encoded),
         "receipt_match": sha256(encoded) == receipt.get("encoded_target_sha256"),
         "original_stream_unchanged": (
-            clean_rom[ORIGINAL_STREAM_FILE_OFFSET:ORIGINAL_STREAM_FILE_OFFSET + 0x10]
-            == target_rom[ORIGINAL_STREAM_FILE_OFFSET:ORIGINAL_STREAM_FILE_OFFSET + 0x10]
+            clean_rom[original_stream_file_offset:original_stream_file_offset + original_stream_byte_length]
+            == target_rom[original_stream_file_offset:original_stream_file_offset + original_stream_byte_length]
         ),
         "source_text_emitted": False,
     }
@@ -133,6 +172,7 @@ def verify_target(clean_rom: bytes, target_rom: bytes, receipt: dict[str, object
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("rom", type=Path)
+    parser.add_argument("--profile", choices=tuple(PROFILES), default="m32")
     parser.add_argument("--target-text", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
@@ -141,7 +181,7 @@ def main() -> None:
     clean_rom = args.rom.read_bytes()
     if sha256(clean_rom) != EXPECTED_A9PJ_SHA256:
         raise SystemExit("A9PJ clean-ROM SHA-256 mismatch; refusing target POC")
-    target_rom, receipt = build_target(clean_rom, args.target_text)
+    target_rom, receipt = build_target(clean_rom, args.target_text, profile=args.profile)
     receipt["verification"] = verify_target(clean_rom, target_rom, receipt)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(target_rom)

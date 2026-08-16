@@ -205,6 +205,10 @@
 - [x] 取得 bounded Latin target encoder 與 append relocation policy；M33 對 M32 caller
   literal 完成一個有實際文字變更、可重新讀取 terminator／target hash 且可產生 BPS
   的 bounded reinsertion POC。CJK／一般 codepage 與 patched runtime QA 仍未完成。
+- [x] M34 以第二個固定 source-pointer profile 完成 private source-hash
+  restore／strip round-trip，以及 `Fulein` bounded target 的實際 relocation／BPS
+  apply equality；原 source span 未改、runtime QA 未宣稱，target terminology 仍待
+  zh-TW 多來源核對。
 
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 

@@ -10,15 +10,22 @@ from m20_keyboard_codepage_probe import latin_row2_expected_values
 from m33_target_reinsertion_poc import (
     CALLER_POINTER_FILE_OFFSET,
     EXPECTED_OLD_POINTER,
+    PROFILES,
     build_target,
     verify_target,
 )
 
 
 class M33TargetReinsertionTests(unittest.TestCase):
-    def fake_rom(self) -> bytes:
+    def fake_rom(self, profile: str = "m32") -> bytes:
         data = bytearray(0x800000)
-        struct.pack_into("<I", data, CALLER_POINTER_FILE_OFFSET, EXPECTED_OLD_POINTER)
+        selected = PROFILES[profile]
+        struct.pack_into(
+            "<I",
+            data,
+            int(selected["caller_pointer_file_offset"]),
+            int(selected["expected_old_pointer"]),
+        )
         table = 0x8884C + 2 * 65 * 2
         for index, value in enumerate(latin_row2_expected_values()):
             data[table + index * 2:table + index * 2 + 2] = value.to_bytes(2, "little")
@@ -39,6 +46,19 @@ class M33TargetReinsertionTests(unittest.TestCase):
     def test_rejects_unknown_target_character(self) -> None:
         with self.assertRaises(ValueError):
             build_target(self.fake_rom(), "・漢")
+
+    def test_m34_profile_relocates_its_fixed_source_pointer(self) -> None:
+        clean = self.fake_rom("m34")
+        target, receipt = build_target(clean, "Fulein", profile="m34")
+        self.assertEqual(len(target), len(clean) + 0x0E)
+        pointer_offset = int(PROFILES["m34"]["caller_pointer_file_offset"])
+        self.assertEqual(struct.unpack_from("<I", target, pointer_offset)[0], 0x08800000)
+        self.assertEqual(receipt["profile"], "m34")
+        verification = verify_target(clean, target, receipt)
+        self.assertTrue(verification["terminator_confirmed"])
+        self.assertTrue(verification["receipt_match"])
+        self.assertTrue(verification["original_stream_unchanged"])
+        self.assertEqual(verification["unresolved_unit_count"], 0)
 
 
 if __name__ == "__main__":

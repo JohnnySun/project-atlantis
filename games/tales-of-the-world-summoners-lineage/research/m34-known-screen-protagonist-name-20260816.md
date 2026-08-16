@@ -78,6 +78,39 @@ record identity、screen cross 與 checksum 都有證據；提交的 ledger 若�
 `source_hash`，不得包含 source text。M34 沒有證明 general Japanese/CJK mapping、
 variable／name／item control、live reader 或 CPU/DMA byte-identical copy。
 
+## M34 private ledger／回插 POC
+
+以 M34 source span 建立的 private row 使用 stable ID
+`f4bc65e10318a0204bebc5b0`。`restore_translations.rb` 需要 ledger 先帶有
+`source_hash`；缺少該欄位時會 fail closed，補入由 source table 計算的
+`8c24214195799be96f68bbd812d4ae8de1a086856c20846cf18c629f1f4283e4` 後，
+restore→strip receipt 為：
+
+```text
+source_hash == ledger_source_hash == stripped_source_hash
+stable_id_preserved = true
+targets = zh-Hans + zh-TW
+stripped_contains_source_key_or_text = false
+```
+
+private `m33_target_reinsertion_poc.py --profile m34` 再將 bounded official Latin target
+`Fulein` 編成 6 個 code unit + `0x0000`，把 stream append 到 `0x800000`，並只改寫
+file `0x003E34` 的 `0x08087384 → 0x08800000` pointer：
+
+| receipt | result |
+| --- | --- |
+| target image | 8,388,622 bytes，SHA-256 `c0b28bfe039ba828783e9a3ea36398754be31bc080fc7f40861bce1f48d82bcb` |
+| relocated stream | 14 bytes，SHA-256 `4d38b4cde1e4990ef5573f2d2e56869cd30e29c068808d3eb00283ff7094fb34` |
+| encoded target | 12 bytes，SHA-256 `64478cd575a409ef1c86b8c78d2780631f428596c61034c31b04b1c35b48c5f1` |
+| BPS | 51 bytes，SHA-256 `7aed24815b443895f98815431c59cb2d5ad3b22c7d4a142c1b0882fe0214c7b1` |
+| BPS apply | target image byte-identical |
+| original source span | unchanged；原 8 MiB 內只有 3 bytes（pointer literal）變更 |
+| runtime QA | `false` |
+
+這證明第二個 bounded source-hash／target relocation／BPS plumbing path，但 target 仍
+`terminology-pending`，沒有建立可發布的 zh-TW 翻譯，也沒有把 M34 static pointer 當成
+live runtime reader 或 fixed-slot policy。
+
 ## 判定摘要
 
 ```text
@@ -90,7 +123,6 @@ general_codepage_confirmed = false
 control_schema_confirmed = false
 ```
 
-下一個最小缺口是把這個 bounded row 以私有 source table 重建，跑一次
-`restore_translations.rb`／`strip_translations.rb` 的 source-hash round-trip，再用
-terminator／fixed-width policy 檢查是否能形成第二個最小回插 POC；一般劇情、地圖／事件、
-角色與戰鬥 rows 仍不得批次進 ledger。
+下一個最小缺口是取得一個可獨立驗證的 general Japanese／CJK mapping 或控制碼 consumer，
+並把 fixed-width／relocation policy 接到 clean re-extract；一般劇情、地圖／事件、角色與
+戰鬥 rows 仍不得批次進 ledger，patched mGBA runtime QA 也尚未成立。

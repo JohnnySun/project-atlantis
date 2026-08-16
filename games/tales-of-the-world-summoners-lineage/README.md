@@ -9,7 +9,8 @@
 
 目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7／M1.8／M1.9 執行期切片；
 M32 已將一條已知 name-entry 畫面 row 提升到可進最小 ledger POC 的 gate，M33 再完成該 row
-的 bounded Latin target／append relocation／BPS POC；尚未完成一般日文／CJK codepage、
+的 bounded Latin target／append relocation／BPS POC；M34 也完成第二個固定 source-pointer
+row 的 private restore／strip round-trip 與 bounded target BPS apply equality；尚未完成一般日文／CJK codepage、
 批次翻譯或 patched runtime QA。M34 又沿同一 known-screen 補上主角姓名欄位的 static
 source-pointer／record-raster／BG0 tilemap cross，確認 `4/4` 非 Latin glyph identity；
 這不等於 general codepage 或 live reader。M1.7 在不重做 startup baseline 的前提下，
@@ -139,8 +140,9 @@ semantic／glyph identity 尚未完成。
   [`research/m33-latin-target-reinsertion-20260816.md`](research/m33-latin-target-reinsertion-20260816.md)。
 - M34 重用既有 M29 tool，以 M19 的 BG1 `8/8` gate、`0x08003E24` source-pointer literal、
   `0x087384` terminated span、四個 record mask 與 BG0 tilemap `8/8` 交叉確認主角姓名
-  欄位的四個非 Latin glyph；reader breakpoint、raw byte copy、general codepage 與 control
-  schema 仍為 false。詳見
+  欄位的四個非 Latin glyph；再以 M34 profile 完成 source-hash round-trip、實際 target
+  relocation 與 51-byte BPS apply equality；reader breakpoint、raw byte copy、general
+  codepage 與 control schema 仍為 false。詳見
   [`research/m34-known-screen-protagonist-name-20260816.md`](research/m34-known-screen-protagonist-name-20260816.md)。
 
 ## ROM 基準

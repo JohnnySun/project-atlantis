@@ -182,3 +182,8 @@ M34 的 row 可以在本機建立 source／working record，但提交 ledger 仍
 source hash、scene、width／line budget、control metadata 與 terminology status。source
 span、record rows、圖片與完整原文不可進 Git。若 keyboard selection slot 與 known-screen
 identity 不一致，必須維持兩個欄位，不得用 table slot 自動覆寫 identity。
+
+M34 private row 的 restore→strip 已以 source hash equality、stable ID equality 與
+`source` key absence 驗證；`m33_target_reinsertion_poc.py --profile m34` 另證明一個
+14-byte terminated target relocation 與 BPS apply equality。這兩項只代表 bounded plumbing
+可重跑，不代表 general codepage、fixed-slot policy 或 patched runtime 可用。
