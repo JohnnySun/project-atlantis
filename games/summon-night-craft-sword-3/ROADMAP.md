@@ -241,7 +241,7 @@ M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS recei
 - [x] 以 audit v3 完成可重跑的 static OAM transfer／text tile-data address callsite evidence；tilemap destination、live OAM/VRAM 與 screen readability 仍獨立保留 unknown。
 - [x] 以 `tools/rebuild_container.py` 完成 13 resources／11 payload groups 的 semantic PSI3／LZ77 no-op rebuild；directory byte-identical、361/361 source re-encode、capacity guard 與 BPS apply byte-identical，僅關閉 no-op container 層，不等於 translated release insertion。
 - [ ] 在不同 fresh process 上成功完成一次文字 consumer/writer hit（自然導航或明確標記的 controlled call），並讀出 changed／adjacent live VRAM；一次 controlled connection `Errno 49` negative 不算 ROM／譯文失敗。
-- [ ] 完成八筆人工語意／術語／字型／版面 review，尤其查證 `重金礦`；未通過前不得改為 reviewed／approved。
+- [~] 完成本 session 逐筆 source-to-target 語意／字型／版面 review：7 筆 provisional-pass、`重金礦` 1 筆 term-blocked；外部人工作業／術語核准與 ledger `ai_review`／`approved` 狀態仍未完成。
 - [ ] 在已確認的 localhost runtime transport 上完成文字 consumer/writer／changed glyph coverage，或取得足以替代的完整 static tilemap／layout／release encoder evidence；未達成前不宣稱可發布。
 
 本節是 M5.5 後的 gate 收斂，不是 M5.6，也不允許再增加同長度、重複通用短句。

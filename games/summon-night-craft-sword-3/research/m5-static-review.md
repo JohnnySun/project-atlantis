@@ -33,6 +33,28 @@ no Taiwan-community majority. The existing `重金礦` spelling remains
 provisional and `blocked_external_lookup`; human terminology approval is
 still required.
 
+## Session manual source-to-target pass
+
+On 2026-08-16, the session reopened each of the eight ignored source rows by
+stable ID and source hash, then checked semantic scope against its current
+`zh-TW` target without copying the Japanese source into this report:
+
+- The three repeated prize headers share the same source hash and target; the
+  wording is consistent across all three occurrences.
+- The wood-chopping rank preserves both the action and novice/rank meaning;
+  the explicit full-width padding is layout data, not translated content.
+- The warning label preserves the direct warning sense and punctuation.
+- The hesitation label preserves the pause/ellipsis function, but its
+  colloquial register remains a review choice (`嗯…` versus alternatives).
+- The reward label preserves the award separator and ore-name boundary; the
+  ore term stays blocked by the external-source split recorded above.
+- The lottery question preserves the yes/no question force and uses the
+  Taiwan Traditional `嗎` allocation already guarded by the static encoder.
+
+Result: seven rows pass this bounded semantic pass, and one row remains
+term-blocked. This is a reproducible session review, not a claim of external
+human approval; all eight ledger statuses therefore remain `ai_draft`.
+
 ## Font and layout review
 
 - The shared static font base remains `0x14d5c88`, with 12×12 active pixels in
@@ -54,7 +76,7 @@ still required.
 
 ## Gate result
 
-Static semantic review: `7 provisional-pass`, `1 blocked-term`.
+Session manual semantic review: `7 provisional-pass`, `1 blocked-term`.
 
 Static font/layout review: `8 pass` under the current bounded contracts.
 
