@@ -20,6 +20,8 @@ M1.25 已把 consumer 控制結構與原始 leaf 序列 guard 固化為可重跑
 
 兩份 ignored M1.19 natural receipt 的 bounded consumer reads 都在 buffer offset `8` 實讀 opaque `0x01`，各自的 static read target 是 `0x08098c78`，獨立 branch hit count 為短 route `1`、長 route `2`；兩份 branch receipt 都沒有可配對的 source byte，且沒有 `0x00` 行為對照。因此 `0x01` 語義、scene/content category、Unicode 身分、翻譯 ledger、任意 encode 與回插仍未完成。
 
+M1.26 已將 source/provenance census 擴成兩個不重疊的 16 筆窗口：`2672..2687`（含 natural generic caller `0x08009252` 的 2678／2679）與 `3080..3095`（含 selector caller `0x08098b10` 的 3087）。32/32 筆共用同一 strict tree worker、source-span 與原始 leaf round-trip；兩條 natural route 的 4 筆 loader receipt 其 source pointer 4/4 對上、output hash 3/4 對上，2679 mismatch 仍保留為未定原因的 negative。這只擴大格式／來源證據，不把兩個 caller family 或 route 名稱升格為內容類別。
+
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
@@ -142,6 +144,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m125_control_corpus.py \
 ```
 
 這份報告只保存 marker offsets/counts、hash、loader provenance、consumer branch topology 與 bounded runtime hit/read 摘要，不保存 source bytes、code-unit bytes、完整日文或 raw RAM。`0x01` 的 branch target 是結構性收據，不是 newline／wait／end 名稱；`encode_guard.scope=original_decoded_leaf_sequence_only`，未宣稱可安全回插。
+
+要重跑 M1.26 的跨 caller source/provenance census：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m126_provenance.py \
+  roms/base/AFEJ.gba --range 2672:16 --range 3080:16 \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --runtime-report /private/tmp/afej-m119-natural-long-menu.json \
+  --output /private/tmp/afej-m126-provenance.json
+```
+
+`scene_or_content_category` 固定為 `unknown`；工具只 join table/source/output hash、caller LR/callsite 與 bounded route metadata，不輸出完整原文、code-unit bytes 或 Unicode。
 
 要重跑 M1.11 的 static caller／callback gate report：
 
