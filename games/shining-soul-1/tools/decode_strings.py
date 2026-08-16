@@ -132,6 +132,109 @@ from scan_sentence_strings import (  # noqa: E402
 CHOONPU_CHAR_IDX = 247
 CHOONPU_CHAR = "ー"
 
+# Session 14, provisional tier, direct-pixel-read + real-corpus-context
+# evidence (NOT OCR - this is the "known-ground-truth" technique from
+# .agents/skills/gba-localization/SKILL.md step 6/9 applied to the
+# category-0 master table's own punctuation/Latin block, char_idx
+# 151-260ish, which follows the confirmed kana range 0-150 and was never
+# examined before this session because nothing in categories 1-4 needed
+# it). Method: render the whole char_idx 151-260 block as a labelled
+# grid (games/shining-soul-1/research/obj-master-table-punct-latin-grid.png)
+# and read it directly - punctuation/Latin/digit shapes are essentially
+# unambiguous at this resolution (unlike kanji, there's no plausible
+# alternative reading for a clean "P" or a comma-tail blob), then cross-
+# checked every candidate against real corpus usage before accepting -
+# this is the same "shape check + context/fluency check" two-layer
+# discipline session 13 used for OCR, applied to a different (stronger,
+# OCR-misread-free) evidence source. Every entry below cleared BOTH
+# layers; none were accepted on shape alone. Kept in "provisional" (not
+# "confirmed") because this is still a single evidence source (one
+# direct read of the ROM table) without an independent second ROM
+# address cross-reference of the KANJI_MAP kind - the project's standing
+# rule is not to conflate "very confident" with "confirmed".
+#
+#   char_idx 172 "、" (comma) - shape: small asymmetric teardrop with a
+#     tail into the lower-left of the cell, the standard bitmap-font
+#     comma silhouette (verified at native-resolution zoom, see
+#     /tmp/big_172.png in session notes - distinct from idx173's
+#     symmetric centered dot). Context: 22 real records, always in
+#     mid-sentence separator position ("あんた、そんなに", "だから、オレ",
+#     "おう、なにか") - textbook 読点 usage, zero occurrences in any
+#     known noise/debug record.
+#   char_idx 173 "。" (period/kuten) - shape: small symmetric filled
+#     circle in the lower-left of the cell (distinct from idx172's
+#     asymmetric comma-tail and from idx205's much larger centered
+#     circle, which was NOT added - unclear icon, see rejected list).
+#     Positioned immediately after idx172 in table order, consistent
+#     with conventional comma-then-period punctuation-block layout.
+#   char_idx 165 "―" (em dash / dramatic trailing-off pause) - shape:
+#     the WIDEST of three distinct dash-family glyphs in this table
+#     (idx162 short "－" hyphen, idx165 this one, idx247 already-
+#     confirmed "ー" chōonpu with a small hook at the left end - all
+#     three are pixel-distinct, not duplicates, see session notes byte
+#     comparison). Context: this session's single highest-value target
+#     (29 records / 47 total occurrences), consistently sentence-final
+#     after a complete clause with no trailing particle ("ここまでとは
+#     な―", "あなどっておったわ―", "オレ―") - the classic JP dialogue
+#     "trailing off dramatically" usage, not mid-word vowel extension
+#     (which would land on the already-confirmed idx247 instead).
+#   char_idx 233 "！" (exclamation mark) - shape: a solid vertical bar
+#     filling most of the cell height with no visible separate dot
+#     (weaker visual match than the other entries here - flagged
+#     explicitly since a bare "|" is also a plausible literal reading).
+#     Context is what carries this entry: 25 records, always sentence-
+#     final after casual/imperative phrasing ("また来てくれよな{X}",
+#     "また来て下さいね{X}") - an exclamation mark is by far the more
+#     sensible reading for NPC dialogue than a literal pipe character,
+#     but this is the one entry in this batch where shape alone would
+#     not have been sufficient.
+#   char_idx 234 "？" (question mark) - shape: clear hook-with-gap-then-
+#     dot silhouette, the standard bitmap question-mark shape (distinct
+#     from idx252's very similar but separately-addressed glyph -
+#     apparently a second, undeduplicated "？" elsewhere in the table,
+#     consistent with this ROM's already-documented pattern of not
+#     deduplicating repeated glyphs, e.g. session 12's monster-name
+#     tile 112/118). Context: airtight - 28 records, 100% immediately
+#     preceded by "か" (the question particle: "いますか{X}",
+#     "しますか{X}", "これでいいですか{X}") - this is as close to a
+#     zero-ambiguity real-sentence cross-reference as this project's
+#     provisional tier gets.
+#   char_idx 190 "P", char_idx 195 "U" (Latin uppercase) - shape: read
+#     directly off the table's own internal A-Z ordering (idx175-200 is
+#     a contiguous, self-consistent alphabetical run - see
+#     research/obj-master-table-punct-latin-grid.png - there is no
+#     plausible alternative reading for a letter sitting in correct
+#     alphabetical position between confirmed neighbors on both sides).
+#     Context: these two ALWAYS appear adjacent, in the fixed order
+#     idx195-then-idx190, immediately after an already-legible "力"
+#     (from ○○力, "[stat] power") in 13 independent real records - i.e.
+#     the decoded text reads "...力UP" (a completely standard Japanese
+#     RPG stat-increase message using the Roman letters "UP" directly,
+#     not a Japanese word) - about as strong a real-sentence
+#     cross-reference as the existing KANJI_MAP entries had.
+#
+# Explicitly NOT added despite being visually rendered this session
+# (recorded so a future session does not re-render the same ground for
+# no reason): idx205 (large centered filled circle, no corpus-frequency
+# signal, ambiguous - could be a bullet/orb UI icon rather than
+# punctuation); idx253 (small blob shape, appears once after the new
+# "UP" pair in real text but shape doesn't cleanly match any standard
+# punctuation/symbol - left unmapped rather than guessed); idx71 (small-
+# kana block position, ambiguous shape, low frequency - not worth the
+# risk this session); idx252 (a second "？"-shaped glyph, no corpus-
+# frequency signal to cross-check against, so despite looking like idx234
+# it is not added - shape alone is exactly the kind of single-layer
+# evidence this project's provisional tier requires a second layer for).
+PUNCT_LATIN_CHAR_IDX = {
+    172: "、",
+    173: "。",
+    165: "―",
+    233: "！",
+    234: "？",
+    190: "P",
+    195: "U",
+}
+
 KANJI_MAP = {
     # (category, glyph_entry_index) -> confirmed Unicode identity.
     # category 1, base 0x474584 (research/obj-sentence-kanji-categories.md):
@@ -317,7 +420,7 @@ def line_passes_filter(codes):
         _cat, _idx, char_idx = decode_code(c)
         if 0 <= char_idx <= 70 or char_idx in (79, CHOONPU_CHAR_IDX) or (
             KATAKANA_BASE <= char_idx < KATAKANA_BASE + len(KATAKANA)
-        ):
+        ) or char_idx in PUNCT_LATIN_CHAR_IDX:
             known += 1
     return (known / len(cat0)) >= MIN_KNOWN_CAT0_RATIO
 
@@ -334,6 +437,8 @@ def decode_glyph(category, glyph_entry_index, char_idx):
             return CHOONPU_CHAR, "provisional"
         if KATAKANA_BASE <= char_idx < KATAKANA_BASE + len(KATAKANA):
             return KATAKANA[char_idx - KATAKANA_BASE], "provisional"
+        if char_idx in PUNCT_LATIN_CHAR_IDX:
+            return PUNCT_LATIN_CHAR_IDX[char_idx], "provisional"
         return None, None
     char = KANJI_MAP.get((category, glyph_entry_index))
     if char is not None:
