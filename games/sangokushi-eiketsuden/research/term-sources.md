@@ -15,6 +15,7 @@
 5. [日文《三國志英傑伝》GBA 攻略 Wiki](https://wikiwiki.jp/rimei/)：確認 GBA 版日文章節、戰場、兵種與策略的原詞索引；網站自稱有志整理，個別內容待 ROM 核對。
 6. [日文全體戰場流程](https://wikiwiki.jp/rimei/%E3%82%B7%E3%83%8A%E3%83%AA%E3%82%AA%E6%94%BB%E7%95%A5/%E5%85%A8%E4%BD%93%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88)：建立戰場事件與路線的待核對清單。
 7. [公開產品資料中的 B3EJ 型號](https://w.atwiki.jp/yamamura2/pages/3354.html)：只支援 `AGB-P-B3EJ` 產品代碼候選；不能替代 ROM header 或雜湊證據。
+8. [GameHacking：Sangokushi Eiketsuden GBA 資料](https://gamehacking.org/game/5844)：作為外部 CRC32／4 MiB／`AGB-B3EJ-JPN` 交叉核對；不保存其 ROM 或完整資料，也不把單一資料庫頁面當成翻譯來源。
 
 ## 暫定決策
 
@@ -27,4 +28,6 @@
 
 ## 術語表狀態
 
-`translations/glossary.zh-TW.tsv` 的 `provisional` 表示「公開來源支持但尚未以 B3EJ ROM 核對」，不是已核准翻譯。`unresolved` 表示來源或字形有分歧；沒有 ROM 前不強行消除分歧。
+`translations/glossary.zh-TW.tsv` 的 `provisional` 表示「公開來源支持但尚未以 B3EJ ROM 畫面／上下文核對」，不是已核准翻譯。`unresolved` 表示來源或字形有分歧；沒有足夠 ROM 證據前不強行消除分歧。
+
+本機 ROM 的 SHA-256 與其他雜湊以 `research/recon-ledger.md` 的 ROM receipt 為準；外部 CRC 只作一致性線索。header complement 的 stored／calculated mismatch 已保留，不因外部頁面而修補 dump。

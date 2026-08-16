@@ -8,9 +8,20 @@ titles:
 source:
   region: JP
   product_code: B3EJ
-  revision: unknown
-  header_game_code: unknown
-  maker_code: unknown
+  revision: 0
+  header_game_code: B3EJ
+  maker_code: "C8"
+  size: 4194304
+  crc32: a4a1c956
+  md5: 76cccc133899422854687e672f335cbd
+  sha1: 32b5eeb82b0ffa14adc54223fb9e423efe8a1aa4
+  sha256: d61e284ba882cfba6b960b147bbdd0df642c402a8ed2adce3ccb9b837f0c97b0
+  header_complement:
+    stored: "0xe1"
+    calculated: "0x13"
+    matches: false
+  verified: true
+  provenance: "本機唯讀 ROM header、ZIP CRC 與雜湊；ROM 不進 Git"
 targets:
   - zh-Hans
   - zh-TW
