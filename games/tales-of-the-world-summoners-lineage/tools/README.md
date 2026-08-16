@@ -96,6 +96,30 @@ PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/too
 鍵盤位置、ROM exact match 與 table arithmetic；目前沒有 confirmed identity，因此不
 建立 source table、work ledger 或翻譯 batch。
 
+## M1.7 font-record to VRAM consumer slice
+
+`m17_font_tile_probe.py` 不重做 startup baseline；先以既有 `DISPCNT/BG1CNT` 與八格
+BG1 metadata gate 導航，再在 `A, RIGHT, A` 期間對下列分開觀察：
+
+- `0x0808A6D0`／`0x0808A790` 的 2-byte ROM read watchpoint，完成後只留 24-byte hash；
+- renderer 的 `0x08004C82 str r0,[r2,#0x20]` 與 `0x08004D1A stm r3!,{r0}`，由
+  `r12-0x18` 還原 record pointer，並以 context formula／post-store 32-byte hash 取得
+  實際 VRAM tile；
+- BG1 `0x06004020`／`0x06004040` 的 32-byte write watchpoint，以及 DMA3 control
+  `0x040000DC` 的前／後 register receipt；CPU game ROM、DMA 與 BIOS PC 分開分類。
+
+本次 runtime receipt 證明 `0x005E`／`0x0066` 的 CPU consumer 寫入
+`0x060020xx/0x060023xx`，不是 BG1 `0x060040xx`；BG1 watchpoint 為零且前後 hash
+相同，所以兩者都是 provisional，沒有 source-table POC、控制碼證明或翻譯。完整結論見
+[`../research/m17-font-record-to-vram-20260816.md`](../research/m17-font-record-to-vram-20260816.md)。
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 games/tales-of-the-world-summoners-lineage/tools/m17_font_tile_probe.py \
+  /private/tmp/project-atlantis-a9pj.gba --port 39123 \
+  --dump-dir /private/tmp/tow-a9pj-m17-runtime-final \
+  --output /private/tmp/tow-a9pj-m17-runtime-final/summary.json
+```
+
 ## 後續 decoder 約束
 
 真正的 `decoder` 必須以日版 ROM 為輸入、產生被 `.gitignore` 排除的

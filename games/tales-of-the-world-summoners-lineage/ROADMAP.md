@@ -64,6 +64,28 @@
   table arithmetic、runtime tile match 與鍵盤位置三者共同確認 glyph identity；gate
   通過前不建立 source table、work ledger 或翻譯。
 
+## 里程碑 1.7：font-record → VRAM consumer 有界切片
+
+- [x] 重用既有 BG1 keyboard gate 與 `A, RIGHT, A`，不重做 startup logo baseline；
+  `DISPCNT=0x1B40`、`BG1CNT=0x0106`、BG1 `charbase=0x4000/screenbase=0x0800` 與
+  八格 tile metadata/hash 前後一致。
+- [x] 對 `0x005E`／`0x0066` 各取得一次實際 24-byte font-record read：
+  `0x0808A6D0`／`0x0808A790`，並保留 record hash、stop PC/LR 與 alternate `ldrh`
+  site；這不是只靠靜態 table arithmetic。
+- [x] 以 `0x08004C82 str`、`0x08004D1A stm` breakpoint 反向取得 `r12-0x18` record
+  pointer、context formula、CPU writer／LR、有效 VRAM destination 與 post-store tile
+  hash；兩個 code unit 都落在 `0x060020xx/0x060023xx` 的非 BG1 VRAM slice。
+- [x] 對 BG1 tile 1／2 各設 32-byte write watchpoint；命中 `0`，前後
+  `0x06004020`／`0x06004040` hash 相同，留下可重跑的精確陰性。
+- [x] 對 DMA3 control 做 bounded 前／後寄存器 receipt；觀察到的 setup 不含兩個
+  font-record pointer，也沒有 BG1 destination；CPU／DMA／BIOS 分開記錄，未把它誤標
+  成文字 DMA。
+- [x] 擴充 `m17_font_tile_probe.py` 與 5 個純算術測試；重用 `core/gba` capture 與
+  `render_vram.py`，raw／圖片／ROM 均留 private／ignored。
+- [ ] 定位 BG1 keyboard 資產初始化自己的 source／DMA／copy caller，證明它與
+  `0x005E`／`0x0066` path 的共同關係；目前 confirmed identity `0`、provisional `2`，
+  其他 code units unknown，控制碼與 source table gate 維持關閉。
+
 ## 里程碑 2：可審核 zh-TW 翻譯帳本
 
 - [ ] 先完成 Wikipedia zh-tw、Bahamut 與其他獨立社群來源的專有名詞核對；有分歧

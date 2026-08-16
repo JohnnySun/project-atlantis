@@ -7,12 +7,15 @@
 
 ## 當前狀態
 
-目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6 執行期切片；尚未
-開始有限量翻譯，也沒有可回插的文字 patch。M1.6 已在不重做 startup baseline 的
-前提下，以 BG1 假名鍵盤簽名安全導航，證明 EWRAM 姓名 buffer 的第一、第二個 code
-unit 變動，並以 writer／reader watchpoint 追到 font-record renderer caller；glyph
-identity 仍是 provisional，沒有建立 source table／work ledger。詳見
+目前完成的是「ROM 身分＋唯讀結構偵察」以及有界 M1／M1.5／M1.6／M1.7 執行期切片；尚未
+開始有限量翻譯，也沒有可回插的文字 patch。M1.7 在不重做 startup baseline 的前提下，
+以 BG1 假名鍵盤簽名安全導航，對 `0x005E`／`0x0066` 實際命中 24-byte font record
+read 與 renderer CPU VRAM store；但目的位址是 `0x060020xx/0x060023xx`，不是 BG1
+`0x06004020/0x06004040`，所以 glyph identity 仍是 provisional，沒有建立 source
+table／work ledger。詳見
 [`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
+M1.7 的完整 writer／DMA／BG1 negative receipt 見
+[`research/m17-font-record-to-vram-20260816.md`](research/m17-font-record-to-vram-20260816.md)。
 M1.5 的圖層與 VRAM negative receipt 仍見
 [`research/m15-name-entry-runtime-20260816.md`](research/m15-name-entry-runtime-20260816.md)。
 下一個安全技術關卡是把 font-record／runtime tile 的關係、控制碼與劇情／地圖／事件、
@@ -39,6 +42,10 @@ M1.5 的圖層與 VRAM negative receipt 仍見
   [`research/m16-name-entry-code-unit-20260816.md`](research/m16-name-entry-code-unit-20260816.md)。
 - M1.6 只確認 code-unit consumer／caller；selected BG1 glyph 的 clean-ROM aligned
   exact match 為零，confirmed glyph identity 為零，故仍不產生 source rows 或翻譯。
+- M1.7 確認兩個 code unit 的 `0x08089E00 + unit*0x18` record read 與
+  `0x08004C82`／`0x08004D1A` CPU VRAM consumer；BG1 `0x06004020`／`0x06004040` 的
+  32-byte write watchpoint 為零且前後 hash 不變，故這是非 BG1 consumer，不能當作鍵盤
+  glyph identity。DMA3 只取得不屬於該 record path 的 bounded setup receipt；控制碼仍未證明。
 
 ## ROM 基準
 
