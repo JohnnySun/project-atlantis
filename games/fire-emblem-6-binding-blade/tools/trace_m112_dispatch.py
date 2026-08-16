@@ -87,6 +87,12 @@ NATURAL_GENERIC_CALLSITE = 0x08009252
 GENERIC_WRAPPER_ENTRY = 0x08009240
 GENERIC_WRAPPER_CALLSITE = 0x080117BA
 GENERIC_HIGH_CALLER = 0x08011778
+GENERIC_HIGH_POINTER_WORD = 0x085C4414
+GENERIC_HIGH_STORED_POINTER = 0x08011779
+DISPATCH_CALLSITE = 0x0800E02A
+DISPATCH_THUNK = 0x0809DF14
+DISPATCH_TABLE_BASE = 0x085C4164
+DISPATCH_TABLE_STRIDE = 8
 
 RENDERER_BREAKPOINTS = (
     0x08098F68,
@@ -269,6 +275,22 @@ def _generic_call_chain_gate(rom: bytes) -> dict[str, object]:
     returns = return_addresses(rom, ROM_BASE, ROM_BASE + len(rom))
     wrapper_bounds = _function_for_call(GENERIC_WRAPPER_CALLSITE, prologues, returns)
     high_bounds = _function_for_call(GENERIC_WRAPPER_CALLSITE, prologues, returns)
+    pointer_locations = [
+        ROM_BASE + offset
+        for offset in range(0, len(rom) - 3, 4)
+        if int.from_bytes(rom[offset:offset + 4], "little") == GENERIC_HIGH_STORED_POINTER
+    ]
+    record_window = []
+    pointer_offset = GENERIC_HIGH_POINTER_WORD - ROM_BASE
+    pointer_index = (GENERIC_HIGH_POINTER_WORD - DISPATCH_TABLE_BASE) // DISPATCH_TABLE_STRIDE
+    for record_offset in range(pointer_offset - 0x20, pointer_offset + 0x28, 8):
+        pointer = int.from_bytes(rom[record_offset:record_offset + 4], "little")
+        flag = int.from_bytes(rom[record_offset + 4:record_offset + 8], "little")
+        record_window.append({
+            "file_offset": f"0x{record_offset:06x}",
+            "stored_pointer": hex32(pointer),
+            "flag": hex32(flag),
+        })
     return {
         "high_caller": hex32(GENERIC_HIGH_CALLER),
         "high_caller_function_start": high_bounds["function_start"],
@@ -279,6 +301,19 @@ def _generic_call_chain_gate(rom: bytes) -> dict[str, object]:
         "wrapper_function_start": _function_for_call(NATURAL_GENERIC_CALLSITE, prologues, returns)["function_start"],
         "wrapper_function_return": _function_for_call(NATURAL_GENERIC_CALLSITE, prologues, returns)["function_return"],
         "all_wrapper_direct_callsite_count": len(scan_direct_calls(rom, GENERIC_WRAPPER_ENTRY)),
+        "dispatch_callsite": hex32(DISPATCH_CALLSITE),
+        "dispatch_thunk": hex32(DISPATCH_THUNK),
+        "dispatch_thunk_instruction": "bx r1",
+        "dispatch_table_base": hex32(DISPATCH_TABLE_BASE),
+        "dispatch_table_stride": DISPATCH_TABLE_STRIDE,
+        "high_pointer_table_index": pointer_index,
+        "high_caller_dispatch_pointer": {
+            "pointer_word": hex32(GENERIC_HIGH_POINTER_WORD),
+            "file_offset": f"0x{pointer_offset:06x}",
+            "stored_thumb_pointer": hex32(GENERIC_HIGH_STORED_POINTER),
+            "aligned_match_count": len(pointer_locations),
+            "record_window": record_window,
+        },
     }
 
 
@@ -344,6 +379,7 @@ def _route_report(
         GENERIC_WRAPPER_ENTRY,
         GENERIC_WRAPPER_CALLSITE,
         GENERIC_HIGH_CALLER,
+        DISPATCH_CALLSITE,
         *RENDERER_BREAKPOINTS,
         HIGH_CALLER,
         HIGH_CALLSITE,
@@ -354,7 +390,11 @@ def _route_report(
         CONSUMER_BYTE_READ,
         CONSUMER_CONTROL_BRANCH,
     )
-    watchpoints = (KEYINPUT, *(info["pointer_word"] for info in CALLBACKS.values()))
+    watchpoints = (
+        KEYINPUT,
+        *(info["pointer_word"] for info in CALLBACKS.values()),
+        GENERIC_HIGH_POINTER_WORD,
+    )
     counts = {hex32(address): 0 for address in breakpoints}
     pointer_counts = {hex32(address): 0 for address in watchpoints[1:]}
     started = time.monotonic()
@@ -380,13 +420,21 @@ def _route_report(
             pointer_key = hex32(stop_address)
             pointer_counts[pointer_key] += 1
             value = int.from_bytes(_read_memory(client, stop_address, 4), "little")
+            pointer_kind = (
+                "high_caller_dispatch_pointer_read_watch"
+                if stop_address == GENERIC_HIGH_POINTER_WORD
+                else "callback_pointer_read_watch"
+            )
             event.update({
-                "kind": "callback_pointer_read_watch",
+                "kind": pointer_kind,
                 "pointer_word": pointer_key,
                 "stored_thumb_pointer": hex32(value),
                 "read_pc_after_access": hex32(pc),
             })
-            runtime["callback_pointer_reads"].append(event.copy())
+            if stop_address == GENERIC_HIGH_POINTER_WORD:
+                runtime["call_chain_receipts"].append(event.copy())
+            else:
+                runtime["callback_pointer_reads"].append(event.copy())
         elif pc in CALLBACKS:
             info = CALLBACKS[pc]
             value = int.from_bytes(_read_memory(client, info["pointer_word"], 4), "little")
@@ -399,6 +447,63 @@ def _route_report(
                 "pointer_word": hex32(info["pointer_word"]),
             })
             runtime["callback_entries"].append(event.copy())
+        elif pc == DISPATCH_CALLSITE:
+            dispatch_object_word = None
+            dispatch_storage_word = None
+            dispatch_table_index = None
+            dispatch_table_entry = None
+            dispatch_table_pointer = None
+            dispatch_table_flag = None
+            if _valid_rom_or_ram(regs["r0"], 4):
+                try:
+                    dispatch_object_word_value = int.from_bytes(
+                        _read_memory(client, regs["r0"], 4), "little"
+                    )
+                    dispatch_object_word = hex32(dispatch_object_word_value)
+                    if _valid_rom_or_ram(dispatch_object_word_value, 4):
+                        dispatch_storage_word = hex32(
+                            int.from_bytes(_read_memory(client, dispatch_object_word_value, 4), "little")
+                        )
+                except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+                    pass
+            try:
+                dispatch_table_index = int.from_bytes(
+                    _read_memory(client, regs["r7"] + 4, 4), "little"
+                )
+                dispatch_table_entry_value = (
+                    DISPATCH_TABLE_BASE + dispatch_table_index * DISPATCH_TABLE_STRIDE
+                )
+                if _valid_rom_or_ram(dispatch_table_entry_value, 8):
+                    dispatch_table_entry = hex32(dispatch_table_entry_value)
+                    entry_bytes = _read_memory(client, dispatch_table_entry_value, 8)
+                    dispatch_table_pointer = hex32(int.from_bytes(entry_bytes[0:4], "little"))
+                    dispatch_table_flag = hex32(int.from_bytes(entry_bytes[4:8], "little"))
+            except (ConnectionError, OSError, RuntimeError, TimeoutError, ValueError):
+                pass
+            event.update({
+                "kind": "dispatch_bl_callsite",
+                "callsite": hex32(DISPATCH_CALLSITE),
+                "target_thunk": hex32(DISPATCH_THUNK),
+                "function_pointer_register_r1": hex32(regs["r1"]),
+                "dispatch_object_register_r0": hex32(regs["r0"]),
+                "dispatch_object_word": dispatch_object_word,
+                "dispatch_storage_word": dispatch_storage_word,
+                "dispatch_table_index": dispatch_table_index,
+                "dispatch_table_entry": dispatch_table_entry,
+                "dispatch_table_pointer": dispatch_table_pointer,
+                "dispatch_table_flag": dispatch_table_flag,
+                "caller_lr_before_bl": hex32(regs["lr"]),
+            })
+            runtime["call_chain_receipts"].append(event.copy())
+        elif pc == DISPATCH_THUNK:
+            event.update({
+                "kind": "dispatch_bx_r1_thunk",
+                "thunk": hex32(DISPATCH_THUNK),
+                "instruction": "bx r1",
+                "function_pointer_register_r1": hex32(regs["r1"]),
+                "thunk_lr": hex32(regs["lr"]),
+            })
+            runtime["call_chain_receipts"].append(event.copy())
         elif pc == GENERIC_HIGH_CALLER:
             event.update({
                 "kind": "generic_high_caller_entry",

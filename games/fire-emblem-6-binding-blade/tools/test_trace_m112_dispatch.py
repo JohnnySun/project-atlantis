@@ -50,6 +50,22 @@ class AfejM112DispatchTests(unittest.TestCase):
         self.assertEqual(chain["wrapper_function_start"], "0x08009240")
         self.assertEqual(chain["all_wrapper_direct_callsite_count"], 6)
         self.assertEqual((0x080117BF & ~1) - 4, 0x080117BA)
+        pointer = chain["high_caller_dispatch_pointer"]
+        self.assertEqual(pointer["pointer_word"], "0x085c4414")
+        self.assertEqual(pointer["file_offset"], "0x5c4414")
+        self.assertEqual(pointer["stored_thumb_pointer"], "0x08011779")
+        self.assertEqual(pointer["aligned_match_count"], 1)
+        self.assertEqual(chain["dispatch_callsite"], "0x0800e02a")
+        self.assertEqual(chain["dispatch_thunk"], "0x0809df14")
+        self.assertEqual(chain["dispatch_thunk_instruction"], "bx r1")
+        self.assertEqual(chain["dispatch_table_base"], "0x085c4164")
+        self.assertEqual(chain["dispatch_table_stride"], 8)
+        self.assertEqual(chain["high_pointer_table_index"], 86)
+        entry = next(
+            row for row in pointer["record_window"] if row["file_offset"] == "0x5c4414"
+        )
+        self.assertEqual(entry["stored_pointer"], "0x08011779")
+        self.assertEqual(entry["flag"], "0x00000002")
 
     def test_stale_packet_filters_are_bounded(self) -> None:
         self.assertTrue(dispatch._packet_is_registers("0" * (len(dispatch.REG_NAMES) * 8)))

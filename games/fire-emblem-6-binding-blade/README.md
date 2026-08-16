@@ -163,6 +163,10 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/trace_m112_dispatch.py \
 
 M1.13 的 renderer 0-hit 是 bounded negative；不要把 `0x08009240` 的 wrapper 或 generic route 的畫面狀態命名成章節／支援／對話，也不開始翻譯。
 
+M1.14 再往上確認 generic high caller 的 function-pointer dispatch：static body 在 `0x0800e02a` `BL 0x0809df14`，而 `0x0809df14` 的 bounded entry instruction 是共用 `BX r1` thunk；table literal base 是 `0x085c4164`，以 `index*8` 查找。AFEJ static record 以 4-byte aligned word 唯一命中 `0x08011779` 於 file `0x5c4414`／GBA `0x085c4414`，index 86、flag `0x00000002`。fresh route 的 callsite 13 hits 中，2 筆實測 `r1=0x08011779`、index 86、entry pointer/flag 相符，隨後各命中 `0x08011778`；這是 function-pointer dispatch receipt，不是自然場景或內容分類。初次直接在共用 thunk 設 breakpoint 造成 1257 hits，已排除為 unbounded shared-thunk noise，正式 tracer 只停 callsite。
+
+M1.14 同一路徑的 `0x085c4414`／舊 callback pointer read-watch 均 0，表示不能把 GDB ROM read-watch 當作 CPU 讀取證據；實際正證據是 static `BL`／`BX r1`、runtime `r1`、table index/entry/pointer 對應與 callback entry LR。renderer candidates 仍全 0，只有 EWRAM consumer branch；`0x01`、flag、Unicode/codepage、字型、回插與 BPS 仍 unknown/opaque。
+
 工具只讀 ROM；輸出的 `work/afej-recon.json` 是本機偵察報告，不進 Git。它會記錄 GBA 標頭、校驗值、雜湊、標準 Shift-JIS 探針、ROM 內指標候選、BIOS 壓縮標頭候選及 4bpp 字形窗口的啟發式候選。候選不能單獨視為文本或字型證據，必須再以執行期畫面／VRAM 或可重現的字節交叉比對確認。
 
 偵察完成後，遊戲專屬工具必須再提供：
