@@ -1281,3 +1281,28 @@ process 由本 session 乾淨停止，沒有把別的 session 的 mGBA 當成替
 不保存完整原文、raw memory、圖片或 work log。下一次 runtime 入口是取得可用的單一
 GDB 連線後，在已知 caller／callsite 檢查 source pointer 與兩-unit loop 同時吻合
 `0x08080858`；在此之前不宣稱字型、layout 或畫面 QA 通過。
+
+## 2026-08-16：M1.23 control／newline／speaker／branch semantic boundary
+
+本輪不重新掃描 pointer，也不增加翻譯。`tools/m123_control_semantic_boundary.py`
+只反組譯已驗證的 `0x08008724..0x08008A0C`，並重用 M1.18 layout report、M4
+source-safe inventory 與 M1.20 caller inventory。工具會拒絕輸入 report 中的 `text` key，
+輸出只保留 instruction／window hash、offset、count、register provenance 與 gate。
+
+### 可重現結果
+
+| 項目 | 結果 |
+| --- | --- |
+| source／render terminator | source `ldrb/cmp/beq` `0x0800876C..0x08008770` → `0x08008798`；render `0x08008950..0x08008954` → `0x08008958`；兩者皆 NUL |
+| glyph loop | `ldrh` `0x08008774`；source cursor `adds r5,#2` `0x0800878C`；loop `0x08008796` → `0x08008774`；2-byte unit confirmed |
+| mode field origin | `ldr r1,[sp,#0x5C]` `0x08008966` → `asrs r0,r1,#0x10` → `cmp r0,#1` `0x0800896C`；欄位來源確認，語意仍 opaque |
+| mode paths | equal `#1` 為 bounded halfword destination-copy path；other 為 opaque helper path，direct BL target `0x08002418`；沒有 speaker/newline 命名 |
+| dedicated newline compare | consumer window 內 `0x0A/0x0D` immediate compare `0`；這不是 engine newline absence proof |
+| corpus | 2325/2325 NUL／token no-op；opaque newline candidate `0`；opaque units `1120`（ASCII／format `1032`＋unaligned tail `88`）；observed width `0..240` |
+| fail-closed | 只維持 glyph-only narrow、single-line static subset、64px POC cap、same-length；opaque／newline candidate／speaker／branch／變長／超 cap 一律 reject |
+| status | `newline_semantics_proven=false`、`speaker_semantics_proven=false`、`branch_semantics_proven=false`、`engine_width_limit_proven=false`；未開始翻譯 |
+
+這個 milestone 只把 consumer 的固定控制流與 mode-field origin 收斂成可審核的負責任
+邊界；它沒有把 `[sp+0x5C]` 命名成 speaker、newline 或 branch，也沒有把 `240px`
+觀測值外推成引擎上限。下一步仍需要 source-buffer producer／queue record 加上 mode
+欄位值，或自然 screen／VRAM layout 證據，才能解除相應 reject。

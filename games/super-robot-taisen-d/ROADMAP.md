@@ -110,6 +110,14 @@
   VRAM 或 screen 命中；ROM／譯文失敗與 transport negative 分開。target／相鄰的
   source-safe static hash、BPS byte-identical 與 M1.19 已知 caller/callsite 仍保留在
   `research/m122-runtime-receipt.json`；M1.9 patched target runtime QA 仍未完成。
+- [x] M1.23 在已驗證 consumer window `0x08008724..0x08008A0C` 做 bounded control／
+  semantic boundary：確認 source／render NUL exits、2-byte glyph loop、`[sp+0x5C]`
+  高 halfword→`cmp #1` 的 routing field origin，以及 equal／other fixed paths；窗口內
+  沒有 `0x0A/0x0D` dedicated compare。全 corpus 維持 2325/2325 NUL／token no-op、
+  opaque newline candidate `0`、opaque units `1120`、observed width `0..240`；64px
+  只是 static POC cap，engine width、newline、speaker、branch semantics 仍未證明。
+  摘要在 `research/m123-control-semantic-boundary.json`，工具與測試在
+  `tools/m123_control_semantic_boundary.py`／`tools/test_m123_control_semantic_boundary.py`。
 - [x] M1.10 對 2325 筆 source record 完成 NUL／ordering／overlap／ROM equality
   audit、opaque／unaligned 分布、line-width 統計與 `0x0807B3FC` 16-record bounded
   no-op cohort；unknown token 與 newline semantics 維持 opaque／未命名。

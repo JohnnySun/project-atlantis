@@ -456,6 +456,16 @@ queue 觸發尚未取代這條受控驗證。
   [`research/m122-runtime-receipt.json`](research/m122-runtime-receipt.json)，建置工具
   為 [`tools/m122_runtime_receipt.py`](tools/m122_runtime_receipt.py)，測試為
   [`tools/test_m122_runtime_receipt.py`](tools/test_m122_runtime_receipt.py)。
+- [x] M1.23 在既有 `0x08008724..0x08008A0C` consumer window 做 bounded control／
+  semantic boundary：static disassembly 固定 source／render NUL exits、2-byte glyph
+  loop、`[sp+0x5C]` 高 halfword→`cmp #1` routing field origin，以及 equal／other paths；
+  沒有 `0x0A/0x0D` dedicated compare。2325/2325 source NUL／token no-op、opaque
+  newline candidate `0`、opaque units `1120` 通過；observed width `0..240` 不是 engine
+  limit，64px 仍只是 fail-closed static POC cap。newline／speaker／branch semantics、
+  完整 line count 與 natural screen 仍 `unconfirmed`／`pending`。摘要在
+  [`research/m123-control-semantic-boundary.json`](research/m123-control-semantic-boundary.json)，
+  工具／測試在 [`tools/m123_control_semantic_boundary.py`](tools/m123_control_semantic_boundary.py)
+  與 [`tools/test_m123_control_semantic_boundary.py`](tools/test_m123_control_semantic_boundary.py)。
 - [x] M4 full-corpus fail-closed gate 重讀 2325/2325 source／NUL／token no-op，確認 12
   筆 ledger 可進窄字 static subset；927 筆窄字未翻譯、833 筆 mixed、417 筆 wide、136 筆
   opaque／unaligned 明確拒絕，`full_encoder_status=fail_closed_subset_only`。摘要在
