@@ -16,6 +16,10 @@ M1.8 已靜態枚舉 AFEJ 全 ROM 163 個合法、對齊的 ARM7TDMI 雙半字 T
 
 M1.9 已用三個 fresh mGBA／各自單一 GDB connection，僅透過 active-low `KEYINPUT` read-watchpoint 導航，完成三條 bounded natural route：`start,a`、`start,a,a,a`、`start,a,a,a,a,a,a,a,a,down,a,a,start,a`。三條都自然命中既有 selector `0x08098afc` → `0x08098b10` → index `3087`，沒有命中第二類 `0x080985ec` 或 `0x08098624`；每條都有 `0x08013ad0=1`、`0x08098b10=1`、第二 caller=0 的 hit-count、VRAM hash 與 display-register receipt。自然 consumer `0x08098c24` 實際讀取 `0x02029404`，`0x08098c78` 也命中控制分支；但本三條路徑均沒有命中 `0x08099424`、`0x080995b0`、實際 CPU `str r1,[r2]` 的 `0x080995a6` 或固定 sink watchpoint。這是精確 bounded negative，不把 M1.8 controlled probe 冒充自然 reachability；`0x01` 仍為 opaque，未建立 codepage 或語義分類。
 
+M1.25 已把 consumer 控制結構與原始 leaf 序列 guard 固化為可重跑工具 `tools/analyze_m125_control_corpus.py`。對 bounded `index 3064..3095`，32/32 筆保留 table/source/output hash、marker offsets、長度與 provenance，並完成原始 decode→encode byte equality；此 guard 不允許任意新文字 encode、marker 改寫或 ROM 回插。static gate 只記錄 `0x08098c24` 的 byte read、`value <= 0x01` → `0x08098c78`、`value == 0x04` → `0x08098c80` 及 `0x08003e60` callsite，不替 marker 命名。
+
+兩份 ignored M1.19 natural receipt 的 bounded consumer reads 都在 buffer offset `8` 實讀 opaque `0x01`，各自的 static read target 是 `0x08098c78`，獨立 branch hit count 為短 route `1`、長 route `2`；兩份 branch receipt 都沒有可配對的 source byte，且沒有 `0x00` 行為對照。因此 `0x01` 語義、scene/content category、Unicode 身分、翻譯 ledger、任意 encode 與回插仍未完成。
+
 M1.10 以同一個已驗證 tree worker 對 pointer domain `[0,3342)` 做 hash-only structural census。3203/3342 筆通過 decode→encode byte-identical 與相鄰 pointer span check；139 筆以明確的 `decoder_buffer_limit_no_terminator` 留在 negative corpus（第一筆 index 17），不把它們擅自當成另一種壓縮或文本格式。支援範圍的 marker record counts 為 `0x00=3203`、`0x01=1789`、`0x04=87`、`0xff=99`；`research/m110-table-census.json` 只含 index/provenance/hash/長度/marker counts，沒有 source bytes、code-unit bytes 或 Unicode。這是結構 coverage，不是劇情／支援／事件／資料表的語義分類；139 筆的專用 worker/格式缺口仍待 caller 與 runtime 證據。
 
 M1.11 已把下一層 caller gate 收斂成可重跑的 static report：AFEJ 全 ROM 有 163 個合法 loader direct BL；非 selector 候選 `0x080985d8` 有 10 個 direct callers，另一候選 `0x08098624` 有 1 個（`0x0809837c`），已知 selector `0x08098afc` 有 8 個。ROM 內以對齊 word 搜尋到 Thumb callback pointer `0x08098341`（file offset `0x691230`）與 `0x080984a9`（`0x691358`），兩者都伴隨 ROM-pointer／scalar／zero 的固定鄰接形狀；這是 dispatch-like 結構候選，不是場景、內容類別或自然觸發證據。`0x08098340` 的上游 gate 仍需 runtime callback receipt，`0x01`、Unicode/codepage、回插與 139 筆 worker 缺口維持 unknown/opaque。
@@ -126,6 +130,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m110_corpus.py \
 ```
 
 工具會對每個 pointer entry 嘗試既有 worker；不符合 `0x400` buffer/terminator 邊界的 entry 只記錄 failure kind，不輸出其解碼 bytes。`research/m110-table-census.json` 可提交作為結構研究摘要；任何完整 decoder/work corpus 仍留在 ignored 路徑。
+
+要重跑 M1.25 的 bounded control corpus（runtime receipt 只從 ignored `/private/tmp` 讀取）：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tools/analyze_m125_control_corpus.py \
+  roms/base/AFEJ.gba --start 3064 --count 32 \
+  --runtime-report /private/tmp/afej-m119-natural-start-a-detail-released.json \
+  --runtime-report /private/tmp/afej-m119-natural-long-menu.json \
+  --output /private/tmp/afej-m125-control-corpus.json
+```
+
+這份報告只保存 marker offsets/counts、hash、loader provenance、consumer branch topology 與 bounded runtime hit/read 摘要，不保存 source bytes、code-unit bytes、完整日文或 raw RAM。`0x01` 的 branch target 是結構性收據，不是 newline／wait／end 名稱；`encode_guard.scope=original_decoded_leaf_sequence_only`，未宣稱可安全回插。
 
 要重跑 M1.11 的 static caller／callback gate report：
 
