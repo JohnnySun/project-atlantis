@@ -176,7 +176,7 @@ M4 target-side QA 的工具與固定範圍見 [`research/m4-batch-qa.md`](resear
 - [~] 建立本作專用 bounded encoder／font allocation／回插器；缺字、來源 hash、控制碼與長度不符時 fail closed。已完成 resource-24 translation relocation、13-resource 與全 type-2 table 的 semantic container no-op；全遊戲變長 translation／alias policy 尚未建立。
 - [~] 從 bounded static 重建 ROM 重新抽取，確認未修改 record 與目標 target 吻合；M5.2／M5.3／M5.4／M5.5 涵蓋 resource-24 translation rebuild，`tools/rebuild_full_container.py` 另覆蓋 79 entries／68 non-zero payload groups 的 no-op／BPS，尚非全遊戲 translated insertion。
 - [~] 生成 BPS，套用後做 byte-for-byte round-trip，記錄 target CRC32、patch size、SHA-256；八筆 cumulative `ai_draft` static POC 與 13-resource semantic no-op 均可重跑，但尚未達可發布 gate。
-- [ ] 以 mGBA 測試實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面，保留未測試範圍。
+- [~] clean mGBA 2350 已完成一次受控 glyph lookup／writer→queue→flush→VRAM probe；實際可達的劇情／支線／夥伴／鍛造／戰鬥／道具畫面、自然 `0x0308` consumer、tilemap／live OAM 與可讀性仍未測試，保留未測試範圍。
 - [ ] 只有完成上述收據後，才評估 zh-TW 發布。
 
 ## M5.1：static type-2 pointer relocation POC
@@ -242,8 +242,8 @@ M5.5 的 plan、ledger 分界、multi-record relocation／re-extract／BPS recei
 - [x] 以 `tools/audit_static_text_oam.py` 補足文字 renderer 的 static object path：`sub_0800D81C → sub_0800B730` per-glyph `0x28` descriptor、`sub_08001C00 → sub_0800901C` pack 至 `gOamBuffer=0x030038B0`，再接既有 `0x07000000` OAM DMA；tilemap、live OAM／VRAM 與 screen readability 仍 unknown。
 - [x] 以 `tools/rebuild_container.py` 完成 13 resources／11 payload groups 的 semantic PSI3／LZ77 no-op rebuild；directory byte-identical、361/361 source re-encode、capacity guard 與 BPS apply byte-identical，僅關閉 no-op container 層，不等於 translated release insertion。
 - [x] 以 `tools/rebuild_full_container.py` 擴展至固定 type-2 table 的全部 79 entries／68 non-zero PSI3 payload groups；zero-span alias、positive span 不重疊、79-entry PSI3 round-trip、361/361 source re-encode、24507-byte payload-only diff 與 26147-byte BPS apply byte-identical 均通過；仍不等於 translated release insertion。
-- [ ] 在不同 fresh process 上成功完成一次文字 consumer/writer hit（自然導航或明確標記的 controlled call），並讀出 changed／adjacent live VRAM；一次 controlled connection `Errno 49` negative 不算 ROM／譯文失敗。
+- [~] 在 fresh clean 2350 process 上完成一次明確標記的 controlled `sub_080036F8`／`sub_08002CB4` writer hit，並由 `sub_08006BA4`／`0x08006ac4` 讀出 changed `0x847/0x848/0x849` 的 live VRAM；自然 `0x0308` consumer／target record reachability、adjacent natural equality 與畫面可讀性仍未完成。
 - [~] 完成本 session 逐筆 source-to-target 語意／字型／版面 review：8 筆 provisional-pass；`重金礦` 已有兩個臺灣社群來源支持但仍需人工術語核准，ledger `ai_review`／`approved` 狀態仍未完成。
-- [ ] 在已確認的 localhost runtime transport 上以不同於已失敗 IWRAM injection 的路徑完成文字 consumer/writer／changed glyph coverage，或取得足以替代的完整 static tilemap／layout／release encoder evidence；2348 的一次 qSupported 與 `E06`／`Errno 49` 不算完成，未達成前不宣稱可發布。
+- [ ] 在已確認的 localhost runtime transport 上補齊自然文字 consumer／target record／tilemap／palette／OAM／screen coverage，或取得足以替代的完整 static layout／release encoder evidence；2350 的 controlled writer→VRAM receipt 只關閉其中一段，未達成前不宣稱可發布。
 
 本節是 M5.5 後的 gate 收斂，不是 M5.6，也不允許再增加同長度、重複通用短句。
